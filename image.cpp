@@ -18,9 +18,9 @@ Image::~Image()
 
 void Image::set(int row, int col, float r, float g, float b)
 {
-    unsigned char byteR = (unsigned char)(r * 255);
-    unsigned char byteG = (unsigned char)(g * 255);
-    unsigned char byteB = (unsigned char)(b * 255);
+    unsigned char byteR = r * 255;
+    unsigned char byteG = g * 255;
+    unsigned char byteB = b * 255;
 
     m_data[3 * (row * m_width + col) + 0] = byteR;
     m_data[3 * (row * m_width + col) + 1] = byteG;
