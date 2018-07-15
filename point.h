@@ -1,7 +1,11 @@
 #pragma once
 
+#include "json.hpp"
+using json = nlohmann::json;
+
 class Point3 {
 public:
+    Point3(json pointJson);
     Point3(float x, float y, float z);
 
     int x() const { return m_x; }

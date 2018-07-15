@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -16,7 +17,9 @@ int main() {
 
     Image image(width, height);
 
-    Scene scene;
+    ifstream scene_file("scene.json");
+    Scene scene(json::parse(scene_file));
+
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             Ray ray(
