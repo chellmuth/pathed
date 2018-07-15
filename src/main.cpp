@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <GLFW/glfw3.h>
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -10,6 +11,7 @@ using json = nlohmann::json;
 using namespace std;
 
 int main() {
+    glfwInit();
     printf("Hello, world!\n");
 
     int height = 300;
