@@ -1,5 +1,8 @@
 #include <iostream>
 
+#include "json.hpp"
+using json = nlohmann::json;
+
 #include "image.h"
 #include "scene.h"
 
