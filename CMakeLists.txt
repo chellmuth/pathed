@@ -4,6 +4,8 @@ project (pathed)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories(include)
+include_directories(vendor)
+
 file(GLOB SOURCES "src/*.cpp")
 
 add_executable(pathed ${SOURCES})
