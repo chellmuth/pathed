@@ -21,9 +21,10 @@ set(CORELIBS ${COREFOUNDATION} ${COREGRAPHICS} ${COREVIDEO} ${IOKIT} ${APPKIT})
 
 # OpenGL & GLFW
 find_package(OPENGL)
+find_library(GLAD_LIBRARY "glad" HINTS lib/)
 find_library(GLFW_LIBRARY "glfw3" HINTS lib/)
 
-set(CORELIBS ${CORELIBS} ${GLFW_LIBRARY} ${OPENGL_LIBRARY})
+set(CORELIBS ${CORELIBS} ${GLFW_LIBRARY} ${GLAD_LIBRARY} ${OPENGL_LIBRARY})
 
 add_executable(pathed ${SOURCES})
 target_link_libraries(pathed ${CORELIBS})

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "json.hpp"
 using json = nlohmann::json;
@@ -11,11 +12,29 @@ using json = nlohmann::json;
 using namespace std;
 
 int main() {
-    glfwInit();
-    printf("Hello, world!\n");
+    if (!glfwInit()) {
+        printf("GLFW init failed!\n");
+        return 1;
+    }
+    
+    const int height = 300;
+    const int width = 400;
 
-    int height = 300;
-    int width = 400;
+    GLFWwindow* window = glfwCreateWindow(width, height, "Path tracer", NULL, NULL);
+    if (!window) {
+        printf("GLFW window failed!\n");
+        glfwTerminate();
+        return 1;
+    }
+
+    while (!glfwWindowShouldClose(window)) {
+        gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    printf("Hello, world!\n");
 
     Image image(width, height);
 
