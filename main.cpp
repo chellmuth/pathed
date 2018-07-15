@@ -14,21 +14,19 @@ int main() {
     Image image(width, height);
 
     Scene scene;
-    Ray ray(
-        Point3(0.f, 0.f, 0.f),
-        Vector3(1.f, 2.f, 3.f)
-    );
-    printf("intersect? %d\n", scene.testIntersect(ray));
-
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            image.set(
-                row,
-                col,
-                row / (1.f * (height - 1)),
-                col / (1.f * (width - 1)),
-                1.f
+            Ray ray(
+                Point3(col, row, 0.f),
+                Vector3(0.f, 0.f, 1.f)
             );
+
+            bool intersects = scene.testIntersect(ray);
+            if (intersects) {
+                image.set(row, col, 1.f, 1.f, 1.f);
+            } else {
+                image.set(row, col, 0.f, 0.f, 0.f);
+            }
         }
     }
 

@@ -1,9 +1,14 @@
+#pragma once
+
 #include "point.h"
 #include "vector.h"
 
 class Ray {
 public:
     Ray(Point3 origin, Vector3 direction);
+
+    const Point3& origin() const { return m_origin; }
+    const Vector3& direction() const { return m_direction; }
 
 private:
     Point3 m_origin;
