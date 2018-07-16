@@ -3,6 +3,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include "intersection.h"
 #include "point.h"
 #include "ray.h"
 
@@ -11,7 +12,7 @@ public:
     Sphere(json sphereJson);
     Sphere(Point3 center, float radius);
 
-    bool testIntersect(const Ray &ray);
+    Intersection testIntersect(const Ray &ray);
 
 private:
     Point3 m_center;

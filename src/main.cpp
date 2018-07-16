@@ -5,8 +5,10 @@
 using json = nlohmann::json;
 
 #include "image.h"
-#include "window.h"
+#include "intersection.h"
 #include "scene.h"
+#include "vector.h"
+#include "window.h"
 
 using namespace std;
 
@@ -28,9 +30,16 @@ int main() {
                 Vector3(0.f, 0.f, 1.f)
             );
 
-            bool intersects = scene.testIntersect(ray);
-            if (intersects) {
-                image.set(row, col, 1.f, 1.f, 1.f);
+            Intersection intersection = scene.testIntersect(ray);
+            if (intersection.hit) {
+                Vector3 normal = intersection.normal;
+                image.set(
+                    row,
+                    col,
+                    0.5f * (normal.x() + 1.f),
+                    0.5f * (normal.y() + 1.f),
+                    0.5f * (normal.z() + 1.f)
+                );
             } else {
                 image.set(row, col, 0.f, 0.f, 0.f);
             }
