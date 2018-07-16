@@ -6,6 +6,7 @@ using json = nlohmann::json;
 
 #include "image.h"
 #include "intersection.h"
+#include "ray.h"
 #include "scene.h"
 #include "vector.h"
 #include "window.h"

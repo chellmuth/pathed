@@ -4,8 +4,9 @@
 using json = nlohmann::json;
 
 #include "intersection.h"
-#include "ray.h"
 #include "sphere.h"
+
+class Ray;
 
 class Scene {
 public:

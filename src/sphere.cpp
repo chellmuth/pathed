@@ -1,5 +1,6 @@
 #include "sphere.h"
 
+#include "ray.h"
 #include "util.h"
 
 Sphere::Sphere(json sphereJson)

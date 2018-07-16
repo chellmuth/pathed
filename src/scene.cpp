@@ -1,5 +1,6 @@
 #include "scene.h"
 
+#include "ray.h"
 #include "util.h"
 
 Scene::Scene(json sceneJson)
