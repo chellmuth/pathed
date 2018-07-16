@@ -26,8 +26,8 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
     "void main()\n"
     "{\n"
-    "  float s = gl_FragCoord.x/1024;\n"
-    "  float t = gl_FragCoord.y/1024;\n"
+    "  float s = 0.5*gl_FragCoord.x/1024;\n"
+    "  float t = 0.5*gl_FragCoord.y/1024;\n"
     "  FragColor = vec4(texture(sampler, vec2(s, t)).rgb, 1.0);\n"
     "}\n\0";
 
@@ -43,7 +43,7 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-bool loop()
+bool loop(const unsigned char *renderedBuffer)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -76,9 +76,19 @@ bool loop()
     unsigned char data[textureWidth * textureHeight * 3];
     for (int row = 0; row < textureHeight; row++) {
         for (int col = 0; col < textureWidth; col++) {
-            data[3 * (row * textureWidth + col) + 0] = 255 * row / (1.f * 600);
-            data[3 * (row * textureWidth + col) + 1] = 255 * col / (1.f * 800);
+            data[3 * (row * textureWidth + col) + 0] = 255;
+            data[3 * (row * textureWidth + col) + 1] = 255;
             data[3 * (row * textureWidth + col) + 2] = 0;
+        }
+    }
+
+    for (int row = 0; row < SCR_HEIGHT; row++) {
+        for (int col = 0; col < SCR_WIDTH; col++) {
+            const int targetIndex = 3 * (row * textureWidth + col);
+            const int sourceIndex = 3 * (row * SCR_WIDTH + col);
+            data[targetIndex + 0] = renderedBuffer[sourceIndex + 0];
+            data[targetIndex + 1] = renderedBuffer[sourceIndex + 1];
+            data[targetIndex + 2] = renderedBuffer[sourceIndex + 2];
         }
     }
 

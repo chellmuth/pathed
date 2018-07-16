@@ -42,6 +42,11 @@ void Image::debug()
     }
 }
 
+const unsigned char* Image::data()
+{
+    return m_data;
+}
+
 
 void Image::write(char const *filename)
 {

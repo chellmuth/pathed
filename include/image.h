@@ -9,6 +9,8 @@ public:
     void debug();
     void write(char const *filename);
 
+    const unsigned char* data();
+
 private:
     int m_height, m_width;
     unsigned char *m_data;
