@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 400;
+const unsigned int SCR_HEIGHT = 300;
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -22,11 +22,13 @@ const char *vertexShaderSource = "#version 330 core\n"
 
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform sampler2D sampler;"
+
     "void main()\n"
     "{\n"
-	"  float s = gl_FragCoord.x/800;\n"
-    "  float t = gl_FragCoord.y/600;\n"
-	"  FragColor = vec4(s, t, s * t, 1.0);\n"
+    "  float s = gl_FragCoord.x/1024;\n"
+    "  float t = gl_FragCoord.y/1024;\n"
+    "  FragColor = vec4(texture(sampler, vec2(s, t)).rgb, 1.0);\n"
     "}\n\0";
 
 static void processInput(GLFWwindow *window)
@@ -67,6 +69,31 @@ bool loop()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return false;
     }
+
+    // TEXTURES
+    const int textureWidth = 1024;
+    const int textureHeight = 1024;
+    unsigned char data[textureWidth * textureHeight * 3];
+    for (int row = 0; row < textureHeight; row++) {
+        for (int col = 0; col < textureWidth; col++) {
+            data[3 * (row * textureWidth + col) + 0] = 255 * row / (1.f * 600);
+            data[3 * (row * textureWidth + col) + 1] = 255 * col / (1.f * 800);
+            data[3 * (row * textureWidth + col) + 2] = 0;
+        }
+    }
+
+    // Create one OpenGL texture
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Give the image to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     // vertex shader
     int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -138,7 +165,8 @@ bool loop()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // uncomment for wireframe
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(window))
     {
