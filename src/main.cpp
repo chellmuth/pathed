@@ -47,7 +47,7 @@ int main() {
     }
 
     // image.debug();
-    image.write("test.bmp");
+    // image.write("test.bmp");
 
     return loop(image.data());
 }
