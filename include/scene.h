@@ -2,9 +2,6 @@
 
 #include <list>
 
-#include "json.hpp"
-using json = nlohmann::json;
-
 #include "intersection.h"
 #include "sphere.h"
 
@@ -12,7 +9,7 @@ class Ray;
 
 class Scene {
 public:
-    Scene(json sceneJson);
+    Scene(std::list<Sphere> objects);
 
     Intersection testIntersect(const Ray &ray);
 

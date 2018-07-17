@@ -4,13 +4,9 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(json sceneJson)
-{
-    auto objects = sceneJson["objects"];
-    for (json::iterator it = objects.begin(); it != objects.end(); ++it) {
-        m_objects.push_back(Sphere((*it)["parameters"]));
-    }
-}
+Scene::Scene(std::list<Sphere> objects)
+    : m_objects(objects)
+{}
 
 Intersection Scene::testIntersect(const Ray &ray)
 {

@@ -9,6 +9,7 @@ using json = nlohmann::json;
 #include "intersection.h"
 #include "ray.h"
 #include "scene.h"
+#include "scene_parser.h"
 #include "vector.h"
 #include "window.h"
 
@@ -23,7 +24,7 @@ int main() {
     Image image(width, height);
 
     ifstream scene_file("scene.json");
-    Scene scene(json::parse(scene_file));
+    Scene scene = parseScene(json::parse(scene_file));
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
