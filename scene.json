@@ -8,18 +8,20 @@
           "y": 200,
           "z": 100
         },
-        "radius": 100
+        "radius": 100,
+        "color": [ 0.0, 1.0, 0.0 ]
       }
     },
     {
       "type": "sphere",
       "parameters": {
         "center": {
-          "x": 220,
+          "x": 120,
           "y": 100,
-          "z": 100
+          "z": 50
         },
-        "radius": 10
+        "radius": 10,
+        "color": [ 1.0, 0.0, 0.0 ]
       }
     }
   ]

@@ -1,14 +1,15 @@
 #include "sphere.h"
 
+#include "color.h"
 #include "ray.h"
 #include "util.h"
 
 Sphere::Sphere(json sphereJson)
-    : m_center(sphereJson["center"]), m_radius(sphereJson["radius"])
+    : m_center(sphereJson["center"]), m_radius(sphereJson["radius"]), m_color(sphereJson["color"])
 {}
 
-Sphere::Sphere(Point3 center, float radius)
-    : m_center(center), m_radius(radius)
+Sphere::Sphere(Point3 center, float radius, Color color)
+    : m_center(center), m_radius(radius), m_color(color)
 {}
 
 Intersection Sphere::testIntersect(const Ray &ray)
@@ -27,13 +28,17 @@ Intersection Sphere::testIntersect(const Ray &ray)
         Point3 hitPoint = ray.at(solution.solution1);
         Intersection result = {
             .hit = true,
-            .normal = (hitPoint - m_center).toVector().normalized()
+            .t = solution.solution1,
+            .normal = (hitPoint - m_center).toVector().normalized(),
+            .color = m_color
         };
         return result;
     } else {
         Intersection result = {
             .hit = false,
-            .normal = Vector3(0.f, 0.f, 0.f)
+            .t = std::numeric_limits<float>::max(),
+            .normal = Vector3(0.f, 0.f, 0.f),
+            .color = Color(0.f, 0.f, 0.f)
         };
         return result;
     }

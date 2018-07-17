@@ -4,6 +4,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include "color.h"
 #include "image.h"
 #include "intersection.h"
 #include "ray.h"
@@ -33,13 +34,22 @@ int main() {
 
             Intersection intersection = scene.testIntersect(ray);
             if (intersection.hit) {
-                Vector3 normal = intersection.normal;
+                // Vector3 normal = intersection.normal;
+                // image.set(
+                //     row,
+                //     col,
+                //     0.5f * (normal.x() + 1.f),
+                //     0.5f * (normal.y() + 1.f),
+                //     0.5f * (normal.z() + 1.f)
+                // );
+
+                Color color = intersection.color;
                 image.set(
                     row,
                     col,
-                    0.5f * (normal.x() + 1.f),
-                    0.5f * (normal.y() + 1.f),
-                    0.5f * (normal.z() + 1.f)
+                    color.r(),
+                    color.b(),
+                    color.g()
                 );
             } else {
                 image.set(row, col, 0.f, 0.f, 0.f);
