@@ -1,13 +1,9 @@
 #pragma once
 
-#include "json.hpp"
-using json = nlohmann::json;
-
 class Vector3;
 
 class Point3 {
 public:
-    Point3(json pointJson);
     Point3(float x, float y, float z);
 
     float x() const { return m_x; }

@@ -1,3 +1,5 @@
+#include <limits>
+
 #include "scene.h"
 
 #include "color.h"

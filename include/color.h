@@ -1,11 +1,7 @@
 #pragma once
 
-#include "json.hpp"
-using json = nlohmann::json;
-
 class Color {
 public:
-    Color(json colorJson);
     Color(float r, float g, float b);
 
     float r() const { return m_r; }

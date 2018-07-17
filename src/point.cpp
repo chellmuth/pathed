@@ -4,12 +4,6 @@
 
 #include "vector.h"
 
-Point3::Point3(json pointJson)
-{
-    m_x = pointJson["x"];
-    m_y = pointJson["y"];
-    m_z = pointJson["z"];
-}
 
 Point3::Point3(float x, float y, float z)
     : m_x(x), m_y(y), m_z(z)

@@ -1,12 +1,10 @@
+#include <limits>
+
 #include "sphere.h"
 
 #include "color.h"
 #include "ray.h"
 #include "util.h"
-
-Sphere::Sphere(json sphereJson)
-    : m_center(sphereJson["center"]), m_radius(sphereJson["radius"]), m_color(sphereJson["color"])
-{}
 
 Sphere::Sphere(Point3 center, float radius, Color color)
     : m_center(center), m_radius(radius), m_color(color)
