@@ -1,10 +1,26 @@
 {
-  "sphere": {
-    "center": {
-      "x": 120,
-      "y": 200,
-      "z": 100
+  "objects": [
+    {
+      "type": "sphere",
+      "parameters": {
+        "center": {
+          "x": 120,
+          "y": 200,
+          "z": 100
+        },
+        "radius": 100
+      }
     },
-    "radius": 100
-  }
+    {
+      "type": "sphere",
+      "parameters": {
+        "center": {
+          "x": 220,
+          "y": 100,
+          "z": 100
+        },
+        "radius": 10
+      }
+    }
+  ]
 }

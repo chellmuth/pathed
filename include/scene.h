@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -15,5 +17,5 @@ public:
     Intersection testIntersect(const Ray &ray);
 
 private:
-    Sphere m_sphere;
+    std::list<Sphere> m_objects;
 };
