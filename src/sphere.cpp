@@ -22,7 +22,7 @@ Intersection Sphere::testIntersect(const Ray &ray)
     float c = L.dot(L) - m_radius * m_radius;
 
     QuadraticSolution solution = solveQuadratic(a, b, c);
-    if (solution.hasRealSolutions) {
+    if (solution.hasRealSolutions && solution.solution1 > 0) {
         Point3 hitPoint = ray.at(solution.solution1);
         Intersection result = {
             .hit = true,

@@ -8,6 +8,8 @@ public:
     float g() const { return m_g; }
     float b() const { return m_b; }
 
+    Color operator* (const float t) const;
+
 private:
     float m_r, m_g, m_b;
 };

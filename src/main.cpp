@@ -7,6 +7,7 @@ using json = nlohmann::json;
 #include "color.h"
 #include "image.h"
 #include "intersection.h"
+#include "material.h"
 #include "ray.h"
 #include "scene.h"
 #include "scene_parser.h"
@@ -44,7 +45,7 @@ int main() {
                 //     0.5f * (normal.z() + 1.f)
                 // );
 
-                Color color = intersection.color;
+                Color color = shade(intersection);
                 image.set(
                     row,
                     col,

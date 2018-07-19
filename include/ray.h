@@ -11,6 +11,7 @@ public:
     const Vector3& direction() const { return m_direction; }
 
     Point3 at(float t) const;
+    void debug() const;
 
 private:
     Point3 m_origin;

@@ -9,12 +9,12 @@ Point3::Point3(float x, float y, float z)
     : m_x(x), m_y(y), m_z(z)
 {}
 
-float Point3::dot(const Point3& p)
+float Point3::dot(const Point3& p) const
 {
     return m_x * p.x() + m_y * p.y() + m_z * p.z();
 }
 
-Vector3 Point3::toVector()
+Vector3 Point3::toVector() const
 {
     return Vector3(
         m_x,
@@ -41,7 +41,7 @@ Point3 Point3::operator+ (const Vector3& v) const
     );
 }
 
-void Point3::debug()
+void Point3::debug() const
 {
     printf("<Point3> (%f %f %f)\n", m_x, m_y, m_z);
 }

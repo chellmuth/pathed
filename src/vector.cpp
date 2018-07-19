@@ -9,17 +9,17 @@ Vector3::Vector3(float x, float y, float z)
     : m_x(x), m_y(y), m_z(z)
 {}
 
-float Vector3::dot(const Vector3& v)
+float Vector3::dot(const Vector3& v) const
 {
     return m_x * v.x() + m_y * v.y() + m_z * v.z();
 }
 
-float Vector3::dot(const Point3& p)
+float Vector3::dot(const Point3& p) const
 {
     return m_x * p.x() + m_y * p.y() + m_z * p.z();
 }
 
-Vector3 Vector3::normalized()
+Vector3 Vector3::normalized() const
 {
     float norm = sqrt(
         m_x * m_x +
@@ -44,7 +44,7 @@ Vector3 Vector3::operator* (const float t) const
 }
 
 
-void Vector3::debug()
+void Vector3::debug() const
 {
     printf("<Vector3> (%f %f %f)\n", m_x, m_y, m_z);
 }

@@ -29,8 +29,8 @@ QuadraticSolution solveQuadratic(const float a, const float b, const float c)
         return fail();
     }
 
-    float solution1 = (-b + sqrt(discriminant)) / (-2 * a);
-    float solution2 = (-b - sqrt(discriminant)) / (-2 * a);
+    float solution1 = (-b + sqrt(discriminant)) / (2 * a);
+    float solution2 = (-b - sqrt(discriminant)) / (2 * a);
     if (solution1 < solution2) {
         return solve(solution1, solution2);
     } else {
