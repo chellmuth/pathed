@@ -6,8 +6,8 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(std::list<Sphere> objects)
-    : m_objects(objects)
+Scene::Scene(std::list<Sphere> objects, Point3 light)
+    : m_objects(objects), m_light(light)
 {}
 
 Intersection Scene::testIntersect(const Ray &ray)

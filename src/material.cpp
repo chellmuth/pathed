@@ -6,13 +6,11 @@
 #include "point.h"
 #include "vector.h"
 
-Color shade(const Intersection &intersection)
+Color shade(const Intersection &intersection, const Scene &scene)
 {
-    Point3 fakeLight = Point3(
-        0.f, 0.f, 0.f
-    );
+    Point3 light = scene.light();
 
-    Vector3 lightDirection = (fakeLight - intersection.point).toVector().normalized();
+    Vector3 lightDirection = (light - intersection.point).toVector().normalized();
     float LDotNormal = lightDirection.dot(intersection.normal);
 
     return intersection.color * fmaxf(0.f, LDotNormal);

@@ -45,7 +45,7 @@ int main() {
                 //     0.5f * (normal.z() + 1.f)
                 // );
 
-                Color color = shade(intersection);
+                Color color = shade(intersection, scene);
                 image.set(
                     row,
                     col,

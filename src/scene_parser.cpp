@@ -1,6 +1,7 @@
 #include "scene_parser.h"
 
 #include "color.h"
+#include "point.h"
 #include "sphere.h"
 
 static Sphere parseSphere(json sphereJson);
@@ -16,7 +17,9 @@ Scene parseScene(json sceneJson)
         objects.push_back(parseSphere((*it)["parameters"]));
     }
 
-    return Scene(objects);
+    Point3 light = parsePoint(sceneJson["light"]);
+
+    return Scene(objects, light);
 }
 
 static Sphere parseSphere(json sphereJson)
