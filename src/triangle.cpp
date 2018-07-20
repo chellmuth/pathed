@@ -20,7 +20,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .color = Color(0.f, 0.f, 0.f)
     };
 
-    Vector3 e1 = (m_p2 - m_p1).toVector();
+    Vector3 e1 = (m_p1 - m_p0).toVector();
     Vector3 e2 = (m_p2 - m_p0).toVector();
 
     Vector3 s1 = ray.direction().cross(e2);
@@ -30,7 +30,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
 
     float inverseDivisor = 1.f / divisor;
 
-    Vector3 s = (ray.origin() - m_p1).toVector();
+    Vector3 s = (ray.origin() - m_p0).toVector();
     float b1 = s.dot(s1) * inverseDivisor;
 
     if (b1 < 0.f || b1 > 1.f) { return miss; }
@@ -47,7 +47,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .hit = true,
         .t = t,
         .point = hitPoint,
-        .normal = m_p0.toVector().cross(m_p1.toVector()).normalized(),
+        .normal = e2.cross(e1).normalized(),
         .color = Color(0.f, 1.f, 0.f)
     };
 
