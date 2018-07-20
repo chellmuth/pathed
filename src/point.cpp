@@ -23,12 +23,30 @@ Vector3 Point3::toVector() const
     );
 }
 
+Point3 Point3::operator* (const float t) const
+{
+    return Point3(
+        m_x * t,
+        m_y * t,
+        m_z * t
+    );
+}
+
 Point3 Point3::operator- (const Point3& p) const
 {
     return Point3(
         m_x - p.x(),
         m_y - p.y(),
         m_z - p.z()
+    );
+}
+
+Point3 Point3::operator+ (const Point3& p) const
+{
+    return Point3(
+        m_x + p.x(),
+        m_y + p.y(),
+        m_z + p.z()
     );
 }
 

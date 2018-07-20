@@ -8,14 +8,14 @@ class Ray;
 
 class Triangle : public Shape {
 public:
-    Triangle(Point3 v0, Point3 v1, Point3 v2);
+    Triangle(Point3 p0, Point3 p1, Point3 p2);
 
-    Point3 v0() const { return m_v0; }
-    Point3 v1() const { return m_v1; }
-    Point3 v2() const { return m_v2; }
+    Point3 p0() const { return m_p0; }
+    Point3 p1() const { return m_p1; }
+    Point3 p2() const { return m_p2; }
 
     Intersection testIntersect(const Ray &ray);
 
 private:
-    Point3 m_v0, m_v1, m_v2;
+    Point3 m_p0, m_p1, m_p2;
 };

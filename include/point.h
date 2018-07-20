@@ -14,7 +14,9 @@ public:
 
     Vector3 toVector() const;
 
+    Point3 operator* (const float t) const;
     Point3 operator- (const Point3& v) const;
+    Point3 operator+ (const Point3& v) const;
     Point3 operator+ (const Vector3& v) const;
 
     void debug() const;

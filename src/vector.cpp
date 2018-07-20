@@ -19,6 +19,15 @@ float Vector3::dot(const Point3& p) const
     return m_x * p.x() + m_y * p.y() + m_z * p.z();
 }
 
+Vector3 Vector3::cross(const Vector3& v) const
+{
+    return Vector3(
+        (m_y * v.z()) - (m_z * v.y()),
+        (m_z * v.x()) - (m_x * v.z()),
+        (m_x * v.y()) - (m_y * v.x())
+    );
+}
+
 Vector3 Vector3::normalized() const
 {
     float norm = sqrt(
@@ -42,7 +51,6 @@ Vector3 Vector3::operator* (const float t) const
         m_z * t
     );
 }
-
 
 void Vector3::debug() const
 {

@@ -13,6 +13,8 @@ public:
     float dot(const Vector3& v) const;
     float dot(const Point3& p) const;
 
+    Vector3 cross(const Vector3& v) const;
+
     Vector3 normalized() const;
 
     Vector3 operator* (const float t) const;

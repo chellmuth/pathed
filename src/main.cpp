@@ -50,8 +50,8 @@ int main() {
                     row,
                     col,
                     color.r(),
-                    color.b(),
-                    color.g()
+                    color.g(),
+                    color.b()
                 );
             } else {
                 image.set(row, col, 0.f, 0.f, 0.f);
