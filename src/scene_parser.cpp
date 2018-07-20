@@ -1,5 +1,7 @@
 #include "scene_parser.h"
 
+#include <iostream>
+
 #include "color.h"
 #include "point.h"
 #include "sphere.h"
@@ -14,7 +16,12 @@ Scene parseScene(json sceneJson)
 
     auto jsonObjects = sceneJson["objects"];
     for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
-        objects.push_back(parseSphere((*it)["parameters"]));
+        auto jsonObject = *it;
+        if (jsonObject["type"] == "sphere") {
+            objects.push_back(parseSphere(jsonObject["parameters"]));
+        } else {
+            std::cout << "No support for type: " << jsonObject["type"].dump() << std::endl;
+        }
     }
 
     Point3 light = parsePoint(sceneJson["light"]);
