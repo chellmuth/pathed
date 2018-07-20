@@ -6,7 +6,7 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(std::list<Sphere> objects, Point3 light)
+Scene::Scene(std::list<Shape *> objects, Point3 light)
     : m_objects(objects), m_light(light)
 {}
 
@@ -20,8 +20,8 @@ Intersection Scene::testIntersect(const Ray &ray)
         .color = Color(0.f, 0.f, 0.f)
     };
 
-    for (Sphere sphere : m_objects) {
-        Intersection intersection = sphere.testIntersect(ray);
+    for (Shape *shape : m_objects) {
+        Intersection intersection = shape->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
         }
