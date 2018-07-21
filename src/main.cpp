@@ -4,6 +4,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include "camera.h"
 #include "color.h"
 #include "image.h"
 #include "intersection.h"
@@ -27,11 +28,13 @@ int main() {
     ifstream scene_file("scene.json");
     Scene scene = parseScene(json::parse(scene_file));
 
+    Camera camera(45 / 180.f * M_PI);
+
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            Ray ray(
-                Point3(col, row, 0.f),
-                Vector3(0.f, 0.f, 1.f)
+            Ray ray = camera.generateRay(
+                row, col,
+                width, height
             );
 
             Intersection intersection = scene.testIntersect(ray);
