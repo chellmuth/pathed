@@ -29,7 +29,8 @@ int main() {
     ObjParser objParser;
     Scene scene = objParser.parseScene(sceneFile);
 
-    Camera camera(45 / 180.f * M_PI);
+    Point3 origin(0.f, 1.f, -4.f);
+    Camera camera(origin, 45 / 180.f * M_PI);
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
