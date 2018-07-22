@@ -11,7 +11,7 @@ using json = nlohmann::json;
 #include "material.h"
 #include "ray.h"
 #include "scene.h"
-#include "scene_parser.h"
+#include "obj_parser.h"
 #include "vector.h"
 #include "window.h"
 
@@ -25,8 +25,9 @@ int main() {
 
     Image image(width, height);
 
-    ifstream scene_file("scene.json");
-    Scene scene = parseScene(json::parse(scene_file));
+    ifstream sceneFile("data/simple.obj");
+    ObjParser objParser;
+    Scene scene = objParser.parseScene(sceneFile);
 
     Camera camera(45 / 180.f * M_PI);
 

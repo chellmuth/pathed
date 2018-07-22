@@ -1,6 +1,7 @@
 #include "scene_parser.h"
 
 #include <iostream>
+#include <vector>
 
 #include "color.h"
 #include "point.h"
@@ -15,7 +16,7 @@ static Color parseColor(json colorJson);
 
 Scene parseScene(json sceneJson)
 {
-    std::list<Shape *> objects;
+    std::vector<Shape *> objects;
 
     auto jsonObjects = sceneJson["objects"];
     for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {

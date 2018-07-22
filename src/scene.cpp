@@ -6,7 +6,7 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(std::list<Shape *> objects, Point3 light)
+Scene::Scene(std::vector<Shape *> objects, Point3 light)
     : m_objects(objects), m_light(light)
 {}
 

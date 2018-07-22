@@ -16,6 +16,8 @@ public:
 
     Intersection testIntersect(const Ray &ray);
 
+    void debug() const;
+
 private:
     Point3 m_p0, m_p1, m_p2;
 };
