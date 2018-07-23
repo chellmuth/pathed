@@ -1,6 +1,7 @@
-#include <limits>
-
 #include "triangle.h"
+
+#include <limits>
+#include <stdio.h>
 
 #include "point.h"
 #include "ray.h"
@@ -52,4 +53,13 @@ Intersection Triangle::testIntersect(const Ray &ray)
     };
 
     return hit;
+}
+
+void Triangle::debug() const
+{
+    printf("<Triangle>\n");
+    m_p0.debug();
+    m_p1.debug();
+    m_p2.debug();
+    printf("</Triangle>\n");
 }

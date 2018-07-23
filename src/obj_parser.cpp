@@ -13,7 +13,7 @@ Scene ObjParser::parseScene(std::ifstream &objFile)
 
     return Scene(
         m_faces,
-        Point3(0.f, 0.f, 0.f)
+        Point3(0.f, 0.f, -5.f)
     );
 }
 
@@ -22,6 +22,8 @@ void ObjParser::parseLine(std::string &line)
     if (line.empty()) { return; }
 
     char command = line[0];
+    if (command == '#') { return; }
+
     std::string rest = line.substr(2);
 
     if (command == 'v') {
@@ -33,7 +35,7 @@ void ObjParser::parseLine(std::string &line)
 
 void ObjParser::processVertex(std::string &vertexArgs)
 {
-    std::string::size_type index;
+    std::string::size_type index = 0;
     std::string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
@@ -54,28 +56,48 @@ void ObjParser::processFace(std::string &faceArgs)
     std::string rest = faceArgs;
 
     int index0 = std::stoi(rest, &index);
+    if (index0 < 0) {
+        index0 += m_vertices.size();
+    } else {
+        index0 -= 1;
+    }
 
     rest = rest.substr(index);
     int index1 = std::stoi(rest, &index);
+    if (index1 < 0) {
+        index1 += m_vertices.size();
+    } else {
+        index1 -= 1;
+    }
 
     rest = rest.substr(index);
     int index2 = std::stoi(rest, &index);
+    if (index2 < 2) {
+        index2 += m_vertices.size();
+    } else {
+        index2 -= 1;
+    }
 
     rest = rest.substr(index);
     int index3 = std::stoi(rest, &index);
+    if (index3 < 3) {
+        index3 += m_vertices.size();
+    } else {
+        index3 -= 1;
+    }
 
     Triangle *face1 = new Triangle(
-        m_vertices[index0 - 1],
-        m_vertices[index1 - 1],
-        m_vertices[index2 - 1]
+        m_vertices[index0],
+        m_vertices[index1],
+        m_vertices[index2]
     );
 
     m_faces.push_back(face1);
 
     Triangle *face2 = new Triangle(
-        m_vertices[index2 - 1],
-        m_vertices[index3 - 1],
-        m_vertices[index0 - 1]
+        m_vertices[index2],
+        m_vertices[index3],
+        m_vertices[index0]
     );
 
     m_faces.push_back(face2);
