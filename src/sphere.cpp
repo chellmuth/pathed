@@ -37,7 +37,7 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .hit = false,
             .t = std::numeric_limits<float>::max(),
             .point = Point3(0.f, 0.f, 0.f),
-            .normal = Vector3(0.f, 0.f, 0.f),
+            .normal = Vector3(),
             .color = Color(0.f, 0.f, 0.f)
         };
         return result;
