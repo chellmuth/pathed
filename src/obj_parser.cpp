@@ -4,10 +4,15 @@
 
 #include "triangle.h"
 
-Scene ObjParser::parseScene(std::ifstream &objFile)
+
+ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
+    : m_objFile(objFile), m_handedness(handedness)
+{}
+
+Scene ObjParser::parseScene()
 {
     std::string line;
-    while(std::getline(objFile, line)) {
+    while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
 
@@ -86,20 +91,35 @@ void ObjParser::processFace(std::string &faceArgs)
         index3 -= 1;
     }
 
-    Triangle *face1 = new Triangle(
-        m_vertices[index0],
-        m_vertices[index1],
-        m_vertices[index2]
-    );
+    Triangle *face1, *face2;
+
+    switch (m_handedness) {
+    case Right:
+        face1 = new Triangle(
+            m_vertices[index0],
+            m_vertices[index1],
+            m_vertices[index2]
+        );
+        face2 = new Triangle(
+            m_vertices[index2],
+            m_vertices[index3],
+            m_vertices[index0]
+        );
+        break;
+    case Left:
+        face1 = new Triangle(
+            m_vertices[index1],
+            m_vertices[index0],
+            m_vertices[index2]
+        );
+        face2 = new Triangle(
+            m_vertices[index3],
+            m_vertices[index2],
+            m_vertices[index0]
+        );
+        break;
+    }
 
     m_faces.push_back(face1);
-
-    Triangle *face2 = new Triangle(
-        m_vertices[index2],
-        m_vertices[index3],
-        m_vertices[index0]
-    );
-
     m_faces.push_back(face2);
-
 }
