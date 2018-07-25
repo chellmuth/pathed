@@ -34,8 +34,8 @@ int main() {
     Scene scene = objParser.parseScene();
 
     Transform cameraToWorld = lookAt(
-        Point3(0.f, 1.5f, 5.f),
-        Point3(0.f, 0.f, -1.f),
+        Point3(0.f, 1.3f, 4.f),
+        Point3(0.f, 1.3f, 0.f),
         Vector3(0.f, 1.f, 0.f)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
