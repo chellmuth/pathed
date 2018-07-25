@@ -13,7 +13,7 @@ public:
     Scene(std::vector<Shape *> objects, Point3 light);
 
     Point3 light() const { return m_light; }
-    Intersection testIntersect(const Ray &ray);
+    Intersection testIntersect(const Ray &ray) const;
 
 private:
     std::vector<Shape *> m_objects;

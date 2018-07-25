@@ -13,7 +13,7 @@ public:
 
     float dot(const Vector3& v) const;
     float dot(const Point3& p) const;
-
+    float length() const;
     Vector3 cross(const Vector3& v) const;
 
     Vector3 normalized() const;

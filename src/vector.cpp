@@ -19,6 +19,15 @@ float Vector3::dot(const Point3& p) const
     return m_x * p.x() + m_y * p.y() + m_z * p.z();
 }
 
+float Vector3::length() const
+{
+    return sqrtf(
+        m_x * m_x +
+        m_y * m_y +
+        m_z * m_z
+    );
+}
+
 Vector3 Vector3::cross(const Vector3& v) const
 {
     return Vector3(

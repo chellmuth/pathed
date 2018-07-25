@@ -42,6 +42,8 @@ Intersection Triangle::testIntersect(const Ray &ray)
     if (b2 < 0.f || (b1 + b2) > 1.f) { return miss; }
 
     float t = e2.dot(s2) * inverseDivisor;
+    if (t <= 0.001f) { return miss; }
+
     Point3 hitPoint = m_p0 * (1 - b1 - b2)  + (m_p1 * b1) + (m_p2 * b2);
 
     Intersection hit = {

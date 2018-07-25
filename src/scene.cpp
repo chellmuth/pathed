@@ -10,7 +10,7 @@ Scene::Scene(std::vector<Shape *> objects, Point3 light)
     : m_objects(objects), m_light(light)
 {}
 
-Intersection Scene::testIntersect(const Ray &ray)
+Intersection Scene::testIntersect(const Ray &ray) const
 {
     Intersection result = {
         .hit = false,
