@@ -49,23 +49,23 @@ int main() {
 
             Intersection intersection = scene.testIntersect(ray);
             if (intersection.hit) {
-                Vector3 normal = intersection.normal;
-                image.set(
-                    row,
-                    col,
-                    0.5f * (normal.x() + 1.f),
-                    0.5f * (normal.y() + 1.f),
-                    0.5f * (normal.z() + 1.f)
-                );
-
-                // Color color = shade(intersection, scene);
+                // Vector3 normal = intersection.normal;
                 // image.set(
                 //     row,
                 //     col,
-                //     color.r(),
-                //     color.g(),
-                //     color.b()
+                //     0.5f * (normal.x() + 1.f),
+                //     0.5f * (normal.y() + 1.f),
+                //     0.5f * (normal.z() + 1.f)
                 // );
+
+                Color color = shade(intersection, scene);
+                image.set(
+                    row,
+                    col,
+                    color.r(),
+                    color.g(),
+                    color.b()
+                );
             } else {
                 image.set(row, col, 0.f, 0.f, 0.f);
             }

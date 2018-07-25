@@ -18,7 +18,7 @@ Scene ObjParser::parseScene()
 
     return Scene(
         m_faces,
-        Point3(0.f, 0.f, -5.f)
+        Point3(0.5f, 0.f, 5.f)
     );
 }
 
