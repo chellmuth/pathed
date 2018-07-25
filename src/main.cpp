@@ -13,6 +13,7 @@ using json = nlohmann::json;
 #include "scene.h"
 #include "obj_parser.h"
 #include "vector.h"
+#include "transform.h"
 #include "window.h"
 
 using namespace std;
@@ -32,8 +33,12 @@ int main() {
     ObjParser objParser(sceneFile, Handedness::Left);
     Scene scene = objParser.parseScene();
 
-    Point3 origin(0.f, 1.f, -5.f);
-    Camera camera(origin, 45 / 180.f * M_PI);
+    Transform cameraToWorld = lookAt(
+        Point3(0.f, 1.5f, 5.f),
+        Point3(0.f, 0.f, -1.f),
+        Vector3(0.f, 1.f, 0.f)
+    );
+    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -44,23 +49,23 @@ int main() {
 
             Intersection intersection = scene.testIntersect(ray);
             if (intersection.hit) {
-                // Vector3 normal = intersection.normal;
-                // image.set(
-                //     row,
-                //     col,
-                //     0.5f * (normal.x() + 1.f),
-                //     0.5f * (normal.y() + 1.f),
-                //     0.5f * (normal.z() + 1.f)
-                // );
-
-                Color color = shade(intersection, scene);
+                Vector3 normal = intersection.normal;
                 image.set(
                     row,
                     col,
-                    color.r(),
-                    color.g(),
-                    color.b()
+                    0.5f * (normal.x() + 1.f),
+                    0.5f * (normal.y() + 1.f),
+                    0.5f * (normal.z() + 1.f)
                 );
+
+                // Color color = shade(intersection, scene);
+                // image.set(
+                //     row,
+                //     col,
+                //     color.r(),
+                //     color.g(),
+                //     color.b()
+                // );
             } else {
                 image.set(row, col, 0.f, 0.f, 0.f);
             }
