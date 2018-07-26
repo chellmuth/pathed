@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "mtl_parser.h"
 #include "triangle.h"
 
 using string = std::string;
@@ -132,5 +133,17 @@ void ObjParser::processFace(string &faceArgs)
 
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)
 {
-    std::cout << "Process Library: " << libraryArgs << std::endl;
+    string filename = libraryArgs;
+
+    string::size_type spaceIndex = filename.find_last_of(" \t");
+    if (spaceIndex != string::npos) {
+        filename = filename.substr(spaceIndex + 1);
+    }
+
+    std::cout << "Process Library: (" << filename << ")" << std::endl;
+
+    MtlParser mtlParser(filename);
+    mtlParser.parse();
+
+    std::cout << "Done!" << std::endl;
 }

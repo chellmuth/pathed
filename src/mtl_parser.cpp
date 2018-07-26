@@ -1,0 +1,20 @@
+#include "mtl_parser.h"
+
+#include <iostream>
+
+MtlParser::MtlParser(const string &mtlFilename)
+    : m_mtlFile(mtlFilename)
+{}
+
+void MtlParser::parse()
+{
+    string line;
+    while(std::getline(m_mtlFile, line)) {
+        parseLine(line);
+    }
+}
+
+void MtlParser::parseLine(string &line)
+{
+    std::cout << line << std::endl;
+}
