@@ -39,6 +39,8 @@ void ObjParser::parseLine(string &line)
         processVertex(rest);
     } else if (command == "f") {
         processFace(rest);
+    } else if (command == "mtllib") {
+        processMaterialLibrary(rest);
     }
 }
 
@@ -126,4 +128,9 @@ void ObjParser::processFace(string &faceArgs)
 
     m_faces.push_back(face1);
     m_faces.push_back(face2);
+}
+
+void ObjParser::processMaterialLibrary(std::string &libraryArgs)
+{
+    std::cout << "Process Library: " << libraryArgs << std::endl;
 }

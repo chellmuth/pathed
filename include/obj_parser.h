@@ -29,5 +29,6 @@ private:
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
     void processFace(std::string &faceArgs);
+    void processMaterialLibrary(std::string &libraryArgs);
 };
 
