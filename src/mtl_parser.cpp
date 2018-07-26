@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using string = std::string;
+
 MtlParser::MtlParser(const string &mtlFilename)
     : m_mtlFile(mtlFilename)
 {}

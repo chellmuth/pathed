@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "mtl_parser.h"
+#include "string_util.h"
 #include "triangle.h"
 
 using string = std::string;
@@ -34,7 +35,7 @@ void ObjParser::parseLine(string &line)
     string command = line.substr(0, spaceIndex);
     if (command[0] == '#') { return; }
 
-    string rest = line.substr(spaceIndex);
+    string rest = lTrim(line.substr(spaceIndex + 1));
 
     if (command == "v") {
         processVertex(rest);
@@ -134,16 +135,6 @@ void ObjParser::processFace(string &faceArgs)
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)
 {
     string filename = libraryArgs;
-
-    string::size_type spaceIndex = filename.find_last_of(" \t");
-    if (spaceIndex != string::npos) {
-        filename = filename.substr(spaceIndex + 1);
-    }
-
-    std::cout << "Process Library: (" << filename << ")" << std::endl;
-
     MtlParser mtlParser(filename);
     mtlParser.parse();
-
-    std::cout << "Done!" << std::endl;
 }

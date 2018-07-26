@@ -3,16 +3,14 @@
 #include <fstream>
 #include <string>
 
-using string = std::string;
-
 class MtlParser {
 public:
-    MtlParser(const string &mtlFilename);
+    MtlParser(const std::string &mtlFilename);
 
     void parse();
 
 private:
     std::ifstream m_mtlFile;
 
-    void parseLine(string &line);
+    void parseLine(std::string &line);
 };
