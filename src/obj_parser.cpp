@@ -4,6 +4,7 @@
 
 #include "triangle.h"
 
+using string = std::string;
 
 ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
     : m_objFile(objFile), m_handedness(handedness)
@@ -11,7 +12,7 @@ ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
 
 Scene ObjParser::parseScene()
 {
-    std::string line;
+    string line;
     while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
@@ -22,26 +23,29 @@ Scene ObjParser::parseScene()
     );
 }
 
-void ObjParser::parseLine(std::string &line)
+void ObjParser::parseLine(string &line)
 {
     if (line.empty()) { return; }
 
-    char command = line[0];
-    if (command == '#') { return; }
+    string::size_type spaceIndex = line.find_first_of(" \t");
+    if (spaceIndex == string::npos) { return; }
 
-    std::string rest = line.substr(2);
+    string command = line.substr(0, spaceIndex);
+    if (command[0] == '#') { return; }
 
-    if (command == 'v') {
+    string rest = line.substr(spaceIndex);
+
+    if (command == "v") {
         processVertex(rest);
-    } else if (command == 'f') {
+    } else if (command == "f") {
         processFace(rest);
     }
 }
 
-void ObjParser::processVertex(std::string &vertexArgs)
+void ObjParser::processVertex(string &vertexArgs)
 {
-    std::string::size_type index = 0;
-    std::string rest = vertexArgs;
+    string::size_type index = 0;
+    string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
 
@@ -55,10 +59,10 @@ void ObjParser::processVertex(std::string &vertexArgs)
     m_vertices.push_back(vertex);
 }
 
-void ObjParser::processFace(std::string &faceArgs)
+void ObjParser::processFace(string &faceArgs)
 {
-    std::string::size_type index;
-    std::string rest = faceArgs;
+    string::size_type index;
+    string rest = faceArgs;
 
     int index0 = std::stoi(rest, &index);
     if (index0 < 0) {
