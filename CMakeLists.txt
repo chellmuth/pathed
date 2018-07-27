@@ -11,6 +11,7 @@ include_directories(vendor)
 
 # Source files
 file(GLOB SOURCES "src/*.cpp")
+file(GLOB TESTS "test/*.cpp")
 
 # Core libraries to link
 set(APPKIT "-framework AppKit")
@@ -30,5 +31,5 @@ set(CORELIBS ${CORELIBS} ${GLFW_LIBRARY} ${GLAD_LIBRARY} ${OPENGL_LIBRARY})
 add_executable(pathed app/main.cpp ${SOURCES})
 target_link_libraries(pathed ${CORELIBS})
 
-add_executable(pathed_tests test/main.cpp ${SOURCES})
+add_executable(pathed_tests ${TESTS} ${SOURCES})
 target_link_libraries(pathed_tests ${CORELIBS})
