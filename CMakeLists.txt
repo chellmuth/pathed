@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.8.2)
 project (pathed)
+project (pathed_tests)
 
 # Compiler settings
 set (CMAKE_CXX_STANDARD 11)
@@ -26,5 +27,8 @@ find_library(GLFW_LIBRARY "glfw3" HINTS lib/)
 
 set(CORELIBS ${CORELIBS} ${GLFW_LIBRARY} ${GLAD_LIBRARY} ${OPENGL_LIBRARY})
 
-add_executable(pathed ${SOURCES})
+add_executable(pathed app/main.cpp ${SOURCES})
 target_link_libraries(pathed ${CORELIBS})
+
+add_executable(pathed_tests test/main.cpp ${SOURCES})
+target_link_libraries(pathed_tests ${CORELIBS})
