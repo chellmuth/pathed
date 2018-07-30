@@ -1,7 +1,7 @@
 #include "string_util.h"
 
 #include <string>
-#include <vector>
+#include <queue>
 #include "catch.hpp"
 
 using string = std::string;
@@ -19,7 +19,7 @@ TEST_CASE("lTrim", "[string_util]") {
 }
 
 TEST_CASE("basic tokenize", "[string_util]") {
-    std::vector<string> expected = { "a", "b", "c" };
+    std::queue<string> expected({ "a", "b", "c" });
 
     REQUIRE(tokenize("a b c") == expected);
     REQUIRE(tokenize(" a b c") == expected);
@@ -29,7 +29,7 @@ TEST_CASE("basic tokenize", "[string_util]") {
 }
 
 TEST_CASE("tokenize empty", "[string_util]") {
-    std::vector<string> expected = {};
+    std::queue<string> expected;
 
     REQUIRE(tokenize("") == expected);
     REQUIRE(tokenize(" ") == expected);

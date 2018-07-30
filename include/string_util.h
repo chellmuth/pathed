@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <queue>
 
-std::vector<std::string> tokenize(const std::string &line);
+std::queue<std::string> tokenize(const std::string &line);
 std::string lTrim(const std::string &token);

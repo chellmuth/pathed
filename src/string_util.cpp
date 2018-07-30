@@ -4,19 +4,19 @@
 
 using string = std::string;
 
-std::vector<string> tokenize(const string &line)
+std::queue<string> tokenize(const string &line)
 {
-    std::vector<string> tokens;
+    std::queue<string> tokens;
     string remaining = lTrim(line);
 
     while(remaining.length() > 0) {
         string::size_type endContentIndex = remaining.find_first_of(" \t");
         if (endContentIndex == std::string::npos) {
-            tokens.push_back(remaining);
+            tokens.push(remaining);
             return tokens;
         }
 
-        tokens.push_back(remaining.substr(0, endContentIndex));
+        tokens.push(remaining.substr(0, endContentIndex));
         remaining = lTrim(remaining.substr(endContentIndex));
     }
 
