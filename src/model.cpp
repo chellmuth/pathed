@@ -20,7 +20,7 @@ Intersection Model::testIntersect(const Ray &ray)
         Intersection intersection = shape->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
-            result.material = &this->m_material;
+            result.material = &m_material;
         }
     }
 
