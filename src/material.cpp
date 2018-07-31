@@ -30,7 +30,6 @@ Color Material::shade(const Intersection &intersection, const Scene &scene)
         return Color(0.f, 0.f, 0.f);
     }
 
-    std::cout << m_diffuse.r() << " | " << m_diffuse.g() << " | " << m_diffuse.b() << std::endl;
     float lightDotNormal = normalizedLightDirection.dot(intersection.normal);
     return m_diffuse * fmaxf(0.f, lightDotNormal);
 }
