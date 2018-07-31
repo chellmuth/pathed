@@ -29,7 +29,7 @@ private:
     std::vector<Point3> m_vertices;
     std::vector<std::shared_ptr<Shape>> m_faces;
 
-    std::vector<Model> m_models;
+    std::vector<std::shared_ptr<Model>> m_models;
     std::map<std::string, MtlMaterial> m_materialLookup;
 
     void parseLine(std::string &line);

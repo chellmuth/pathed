@@ -72,8 +72,7 @@ void ObjParser::processGroup(string &groupArgs)
     if (m_currentGroup != "") {
         Material material(m_materialLookup[m_currentGroup].diffuse);
 
-        Model model(m_faces, material);
-        m_models.push_back(model);
+        m_models.push_back(std::shared_ptr<Model>(new Model(m_faces, material)));
         m_faces.clear();
     }
 

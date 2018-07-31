@@ -10,12 +10,12 @@ class Ray;
 
 class Scene {
 public:
-    Scene(std::vector<Model> models, Point3 light);
+    Scene(std::vector<std::shared_ptr<Model>> models, Point3 light);
 
     Point3 light() const { return m_light; }
     Intersection testIntersect(const Ray &ray) const;
 
 private:
-    std::vector<Model> m_models;
+    std::vector<std::shared_ptr<Model>> m_models;
     Point3 m_light;
 };
