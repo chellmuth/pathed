@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "mtl_parser.h"
 #include "point.h"
 #include "scene.h"
 #include "shape.h"
@@ -25,10 +26,12 @@ private:
 
     std::vector<Point3> m_vertices;
     std::vector<Shape *> m_faces;
+    std::map<std::string, MtlMaterial> m_materialLookup;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);
+    void processUseMaterial(std::string &materialArgs);
 };
 

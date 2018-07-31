@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "mtl_parser.h"
+#include "color.h"
 #include "string_util.h"
 #include "triangle.h"
 
@@ -43,6 +43,8 @@ void ObjParser::parseLine(string &line)
         processFace(rest);
     } else if (command == "mtllib") {
         processMaterialLibrary(rest);
+    } else if (command == "usemtl") {
+        processUseMaterial(rest);
     }
 }
 
@@ -137,4 +139,14 @@ void ObjParser::processMaterialLibrary(std::string &libraryArgs)
     string filename = libraryArgs;
     MtlParser mtlParser(filename);
     mtlParser.parse();
+    m_materialLookup = mtlParser.materialLookup();
+}
+
+void ObjParser::processUseMaterial(std::string &materialArgs)
+{
+    string materialName = materialArgs;
+    MtlMaterial currentMaterial = m_materialLookup[materialName];
+    Color color = currentMaterial.diffuse;
+
+    std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
 }
