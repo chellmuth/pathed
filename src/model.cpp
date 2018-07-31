@@ -2,7 +2,7 @@
 
 #include "ray.h"
 
-Model::Model(std::vector<Shape *> objects, Material material)
+Model::Model(std::vector<std::shared_ptr<Shape>> objects, Material material)
     : m_objects(objects), m_material(material)
 {}
 
@@ -16,8 +16,8 @@ Intersection Model::testIntersect(const Ray &ray)
         .material = nullptr
     };
 
-    for (Shape *shape : m_objects) {
-        Intersection intersection = shape->testIntersect(ray);
+    for (std::shared_ptr<Shape> shapePtr : m_objects) {
+        Intersection intersection = shapePtr.get()->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
             result.material = &m_material;

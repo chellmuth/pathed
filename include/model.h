@@ -10,10 +10,10 @@ class Ray;
 
 class Model {
 public:
-    Model(std::vector<Shape *> objects, Material material);
+    Model(std::vector<std::shared_ptr<Shape>> objects, Material material);
 
     Intersection testIntersect(const Ray &ray);
 private:
-    std::vector<Shape *> m_objects;
+    std::vector<std::shared_ptr<Shape>> m_objects;
     Material m_material;
 };

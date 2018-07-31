@@ -146,8 +146,8 @@ void ObjParser::processFace(string &faceArgs)
         break;
     }
 
-    m_faces.push_back(face1);
-    m_faces.push_back(face2);
+    m_faces.push_back(std::shared_ptr<Triangle>(face1));
+    m_faces.push_back(std::shared_ptr<Triangle>(face2));
 }
 
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)
