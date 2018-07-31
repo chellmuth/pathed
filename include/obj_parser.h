@@ -7,7 +7,7 @@
 #include "mtl_parser.h"
 #include "point.h"
 #include "scene.h"
-#include "shape.h"
+#include "surface.h"
 
 enum Handedness {
     Right,
@@ -25,11 +25,11 @@ private:
     Handedness m_handedness;
 
     std::string m_currentGroup;
+    std::string m_currentMaterialName;
 
     std::vector<Point3> m_vertices;
-    std::vector<std::shared_ptr<Shape>> m_faces;
+    std::vector<std::shared_ptr<Surface>> m_surfaces;
 
-    std::vector<std::shared_ptr<Model>> m_models;
     std::map<std::string, MtlMaterial> m_materialLookup;
 
     void parseLine(std::string &line);

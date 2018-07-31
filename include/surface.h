@@ -8,12 +8,12 @@
 
 class Ray;
 
-class Model {
+class Surface {
 public:
-    Model(std::vector<std::shared_ptr<Shape>> objects, Material material);
+    Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> material);
 
     Intersection testIntersect(const Ray &ray);
 private:
-    std::vector<std::shared_ptr<Shape>> m_objects;
-    Material m_material;
+    std::shared_ptr<Shape> m_shape;
+    std::shared_ptr<Material> m_material;
 };

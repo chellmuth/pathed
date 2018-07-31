@@ -20,7 +20,7 @@ Scene ObjParser::parseScene()
     }
 
     return Scene(
-        m_models,
+        m_surfaces,
         Point3(0.5f, 0.f, 5.f)
     );
 }
@@ -72,8 +72,8 @@ void ObjParser::processGroup(string &groupArgs)
     if (m_currentGroup != "") {
         Material material(m_materialLookup[m_currentGroup].diffuse);
 
-        m_models.push_back(std::shared_ptr<Model>(new Model(m_faces, material)));
-        m_faces.clear();
+        // m_models.push_back(std::shared_ptr<Model>(new Model(m_faces, material)));
+        // m_faces.clear();
     }
 
     string name = lTrim(groupArgs);
@@ -145,8 +145,18 @@ void ObjParser::processFace(string &faceArgs)
         break;
     }
 
-    m_faces.push_back(std::shared_ptr<Triangle>(face1));
-    m_faces.push_back(std::shared_ptr<Triangle>(face2));
+    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
+    std::shared_ptr<Material> material(new Material(diffuse));
+
+    std::shared_ptr<Triangle> shape1(face1);
+    std::shared_ptr<Triangle> shape2(face2);
+
+    m_surfaces.push_back(
+        std::shared_ptr<Surface>(new Surface(shape1, material))
+    );
+    m_surfaces.push_back(
+        std::shared_ptr<Surface>(new Surface(shape2, material))
+    );
 }
 
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)
@@ -164,4 +174,6 @@ void ObjParser::processUseMaterial(std::string &materialArgs)
     Color color = currentMaterial.diffuse;
 
     std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
+
+    m_currentMaterialName = materialArgs;
 }

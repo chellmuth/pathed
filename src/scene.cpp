@@ -6,8 +6,8 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(std::vector<std::shared_ptr<Model>> models, Point3 light)
-    : m_models(models), m_light(light)
+Scene::Scene(std::vector<std::shared_ptr<Surface>> surfaces, Point3 light)
+    : m_surfaces(surfaces), m_light(light)
 {}
 
 Intersection Scene::testIntersect(const Ray &ray) const
@@ -20,8 +20,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
         .material = nullptr
     };
 
-    for (std::shared_ptr<Model> modelPtr : m_models) {
-        Intersection intersection = modelPtr.get()->testIntersect(ray);
+    for (std::shared_ptr<Surface> surfacePtr : m_surfaces) {
+        Intersection intersection = surfacePtr.get()->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
         }
