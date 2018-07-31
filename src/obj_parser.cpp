@@ -39,6 +39,8 @@ void ObjParser::parseLine(string &line)
 
     if (command == "v") {
         processVertex(rest);
+    } else if (command == "g") {
+        processGroup(rest);
     } else if (command == "f") {
         processFace(rest);
     } else if (command == "mtllib") {
@@ -63,6 +65,12 @@ void ObjParser::processVertex(string &vertexArgs)
 
     Point3 vertex(x, y, z);
     m_vertices.push_back(vertex);
+}
+
+void ObjParser::processGroup(string &groupArgs)
+{
+    string name = lTrim(groupArgs);
+    m_currentGroup = name;
 }
 
 void ObjParser::processFace(string &faceArgs)

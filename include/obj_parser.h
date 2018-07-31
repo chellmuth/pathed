@@ -24,12 +24,15 @@ private:
     std::ifstream &m_objFile;
     Handedness m_handedness;
 
+    std::string m_currentGroup;
+
     std::vector<Point3> m_vertices;
     std::vector<Shape *> m_faces;
     std::map<std::string, MtlMaterial> m_materialLookup;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
+    void processGroup(std::string &groupArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
