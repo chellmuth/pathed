@@ -18,7 +18,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .t = std::numeric_limits<float>::max(),
         .point = Point3(0.f, 0.f, 0.f),
         .normal = Vector3(),
-        .color = Color(0.f, 0.f, 0.f)
+        .material = nullptr
     };
 
     Vector3 e1 = (m_p1 - m_p0).toVector();
@@ -51,7 +51,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .t = t,
         .point = hitPoint,
         .normal = e2.cross(e1).normalized(),
-        .color = Color(0.f, 1.f, 0.f)
+        .material = nullptr
     };
 
     return hit;

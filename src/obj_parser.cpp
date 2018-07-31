@@ -9,7 +9,7 @@
 using string = std::string;
 
 ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
-    : m_objFile(objFile), m_handedness(handedness)
+    : m_objFile(objFile), m_handedness(handedness), m_currentGroup("")
 {}
 
 Scene ObjParser::parseScene()
@@ -20,7 +20,7 @@ Scene ObjParser::parseScene()
     }
 
     return Scene(
-        m_faces,
+        m_models,
         Point3(0.5f, 0.f, 5.f)
     );
 }
@@ -69,6 +69,14 @@ void ObjParser::processVertex(string &vertexArgs)
 
 void ObjParser::processGroup(string &groupArgs)
 {
+    if (m_currentGroup != "") {
+        Material material(m_materialLookup[m_currentGroup].diffuse);
+
+        Model model(m_faces, material);
+        m_models.push_back(model);
+        m_faces.clear();
+    }
+
     string name = lTrim(groupArgs);
     m_currentGroup = name;
 }

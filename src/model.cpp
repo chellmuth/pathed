@@ -1,16 +1,12 @@
-#include <limits>
+#include "model.h"
 
-#include "scene.h"
-
-#include "color.h"
 #include "ray.h"
-#include "util.h"
 
-Scene::Scene(std::vector<Model> models, Point3 light)
-    : m_models(models), m_light(light)
+Model::Model(std::vector<Shape *> objects, Material material)
+    : m_objects(objects), m_material(material)
 {}
 
-Intersection Scene::testIntersect(const Ray &ray) const
+Intersection Model::testIntersect(const Ray &ray)
 {
     Intersection result = {
         .hit = false,
@@ -20,10 +16,11 @@ Intersection Scene::testIntersect(const Ray &ray) const
         .material = nullptr
     };
 
-    for (Model model : m_models) {
-        Intersection intersection = model.testIntersect(ray);
+    for (Shape *shape : m_objects) {
+        Intersection intersection = shape->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
+            result.material = &this->m_material;
         }
     }
 

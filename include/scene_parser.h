@@ -1,6 +1,8 @@
-#include "json.hpp"
-using json = nlohmann::json;
+#pragma once
 
-#include "scene.h"
+/* #include "json.hpp" */
+/* using json = nlohmann::json; */
 
-Scene parseScene(json sceneJson);
+/* #include "scene.h" */
+
+/* Scene parseScene(json sceneJson); */

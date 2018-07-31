@@ -28,6 +28,8 @@ private:
 
     std::vector<Point3> m_vertices;
     std::vector<Shape *> m_faces;
+
+    std::vector<Model> m_models;
     std::map<std::string, MtlMaterial> m_materialLookup;
 
     void parseLine(std::string &line);

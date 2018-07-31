@@ -3,19 +3,19 @@
 #include <vector>
 
 #include "intersection.h"
+#include "model.h"
 #include "point.h"
-#include "shape.h"
 
 class Ray;
 
 class Scene {
 public:
-    Scene(std::vector<Shape *> objects, Point3 light);
+    Scene(std::vector<Model> models, Point3 light);
 
     Point3 light() const { return m_light; }
     Intersection testIntersect(const Ray &ray) const;
 
 private:
-    std::vector<Shape *> m_objects;
+    std::vector<Model> m_models;
     Point3 m_light;
 };
