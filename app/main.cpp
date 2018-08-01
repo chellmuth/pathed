@@ -60,6 +60,28 @@ int main() {
 
                 Material material = *intersection.material;
                 Color color = material.shade(intersection, scene);
+
+                Ray bounceRay(
+                    intersection.point,
+                    ray.direction().reflect(intersection.normal)
+                );
+                Intersection bounceIntersection = scene.testIntersect(bounceRay);
+                if (bounceIntersection.hit) {
+                    material = *bounceIntersection.material;
+                    Color bounceColor = material.shade(bounceIntersection, scene);
+
+                    float bounceContribution = fmaxf(
+                        0.f,
+                        bounceRay.direction().dot(intersection.normal)
+                    );
+
+                    color = Color(
+                        color.r() + bounceColor.r() * bounceContribution,
+                        color.g() + bounceColor.g() * bounceContribution,
+                        color.b() + bounceColor.b() * bounceContribution
+                    );
+                }
+
                 image.set(
                     row,
                     col,
