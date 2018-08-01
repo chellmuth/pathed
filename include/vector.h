@@ -15,10 +15,13 @@ public:
     float dot(const Point3& p) const;
     float length() const;
     Vector3 cross(const Vector3& v) const;
+    Vector3 reflect(const Vector3& normal) const;
 
     Vector3 normalized() const;
 
     Vector3 operator* (const float t) const;
+    Vector3 operator- (const Vector3& v) const;
+    bool operator==(const Vector3 &v) const;
 
     void debug() const;
 
