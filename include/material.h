@@ -2,6 +2,15 @@
 
 #include "color.h"
 #include "intersection.h"
-#include "scene.h"
 
-Color shade(const Intersection &intersection, const Scene &scene);
+class Scene;
+
+class Material {
+public:
+    Material(Color diffuse);
+
+    Color shade(const Intersection &intersection, const Scene &scene);
+
+private:
+    Color m_diffuse;
+};

@@ -51,15 +51,15 @@ void MtlParser::processDiffuse(std::queue<string> &arguments)
 {
     assert(arguments.size() >= 3);
 
-    float x = std::stof(arguments.front());
+    float r = std::stof(arguments.front());
     arguments.pop();
 
-    float y = std::stof(arguments.front());
+    float g = std::stof(arguments.front());
     arguments.pop();
 
-    float z = std::stof(arguments.front());
+    float b = std::stof(arguments.front());
     arguments.pop();
 
-    Color diffuse(x, y, z);
+    Color diffuse(r, g, b);
     m_materialLookup[m_currentMaterialName].diffuse = diffuse;
 }
