@@ -9,6 +9,7 @@ using json = nlohmann::json;
 #include "image.h"
 #include "intersection.h"
 #include "material.h"
+#include "monte_carlo.h"
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
@@ -61,6 +62,8 @@ int main() {
                 Material material = *intersection.material;
                 Color color = material.shade(intersection, scene);
 
+                // Hemisphere sample will be in its own coordinate space, need
+                // a transform that maps the intersection normal to (0, 1, 0)
                 Ray bounceRay(
                     intersection.point,
                     ray.direction().reflect(intersection.normal)
