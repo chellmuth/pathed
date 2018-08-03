@@ -35,8 +35,8 @@ int main() {
     Scene scene = objParser.parseScene();
 
     Transform cameraToWorld = lookAt(
-        Point3(0.f, 1.3f, 4.f),
-        Point3(0.f, 1.3f, 0.f),
+        Point3(0.f, 1.f, 3.6f),
+        Point3(0.f, 1.f, 0.f),
         Vector3(0.f, 1.f, 0.f)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
@@ -66,26 +66,30 @@ int main() {
                     intersection.normal,
                     ray.direction()
                 );
-                Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
-                Ray bounceRay(
-                    intersection.point,
-                    bounceDirection
-                );
-                Intersection bounceIntersection = scene.testIntersect(bounceRay);
-                if (bounceIntersection.hit) {
-                    material = *bounceIntersection.material;
-                    Color bounceColor = material.shade(bounceIntersection, scene);
+                int count = 2;
+                for (int i = 0; i < count; i++) {
+                    Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
+                    Ray bounceRay(
+                        intersection.point,
+                        bounceDirection
+                        );
+                    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+                    if (bounceIntersection.hit) {
+                        material = *bounceIntersection.material;
+                        Color bounceColor = material.shade(bounceIntersection, scene);
 
-                    float bounceContribution = fmaxf(
-                        0.f,
-                        bounceRay.direction().dot(intersection.normal)
-                    );
+                        float bounceContribution = fmaxf(
+                            0.f,
+                            bounceRay.direction().dot(intersection.normal)
+                            );
 
-                    color = Color(
-                        color.r() + bounceColor.r() * bounceContribution,
-                        color.g() + bounceColor.g() * bounceContribution,
-                        color.b() + bounceColor.b() * bounceContribution
-                    );
+                        color = Color(
+                            color.r() + bounceColor.r() * bounceContribution / count,
+                            color.g() + bounceColor.g() * bounceContribution / count,
+                            color.b() + bounceColor.b() * bounceContribution / count
+                            );
+                    }
+
                 }
 
                 image.set(
