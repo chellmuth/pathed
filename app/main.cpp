@@ -62,11 +62,14 @@ int main() {
                 Material material = *intersection.material;
                 Color color = material.shade(intersection, scene);
 
-                // Hemisphere sample will be in its own coordinate space, need
-                // a transform that maps the intersection normal to (0, 1, 0)
+                Transform hemisphereToWorld = normalToWorldSpace(
+                    intersection.normal,
+                    ray.direction()
+                );
+                Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
                 Ray bounceRay(
                     intersection.point,
-                    ray.direction().reflect(intersection.normal)
+                    bounceDirection
                 );
                 Intersection bounceIntersection = scene.testIntersect(bounceRay);
                 if (bounceIntersection.hit) {
