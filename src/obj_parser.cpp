@@ -69,13 +69,6 @@ void ObjParser::processVertex(string &vertexArgs)
 
 void ObjParser::processGroup(string &groupArgs)
 {
-    if (m_currentGroup != "") {
-        Material material(m_materialLookup[m_currentGroup].diffuse);
-
-        // m_models.push_back(std::shared_ptr<Model>(new Model(m_faces, material)));
-        // m_faces.clear();
-    }
-
     string name = lTrim(groupArgs);
     m_currentGroup = name;
 }
