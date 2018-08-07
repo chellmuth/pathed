@@ -19,3 +19,4 @@ private:
 };
 
 Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up);
+Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection);

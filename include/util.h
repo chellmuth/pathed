@@ -1,5 +1,7 @@
 #pragma once
 
+#define INV_TWOPI 0.15915494309189533577f
+
 typedef struct {
     bool hasRealSolutions;
     float solution1;

@@ -9,6 +9,7 @@ using json = nlohmann::json;
 #include "image.h"
 #include "intersection.h"
 #include "material.h"
+#include "monte_carlo.h"
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
@@ -34,8 +35,8 @@ int main() {
     Scene scene = objParser.parseScene();
 
     Transform cameraToWorld = lookAt(
-        Point3(0.f, 1.3f, 4.f),
-        Point3(0.f, 1.3f, 0.f),
+        Point3(0.f, 1.f, 3.6f),
+        Point3(0.f, 1.f, 0.f),
         Vector3(0.f, 1.f, 0.f)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
@@ -61,25 +62,34 @@ int main() {
                 Material material = *intersection.material;
                 Color color = material.shade(intersection, scene);
 
-                Ray bounceRay(
-                    intersection.point,
-                    ray.direction().reflect(intersection.normal)
+                Transform hemisphereToWorld = normalToWorldSpace(
+                    intersection.normal,
+                    ray.direction()
                 );
-                Intersection bounceIntersection = scene.testIntersect(bounceRay);
-                if (bounceIntersection.hit) {
-                    material = *bounceIntersection.material;
-                    Color bounceColor = material.shade(bounceIntersection, scene);
-
-                    float bounceContribution = fmaxf(
-                        0.f,
-                        bounceRay.direction().dot(intersection.normal)
+                int count = 0;
+                for (int i = 0; i < count; i++) {
+                    Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
+                    Ray bounceRay(
+                        intersection.point,
+                        bounceDirection
                     );
+                    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+                    if (bounceIntersection.hit) {
+                        material = *bounceIntersection.material;
+                        Color bounceColor = material.shade(bounceIntersection, scene);
 
-                    color = Color(
-                        color.r() + bounceColor.r() * bounceContribution,
-                        color.g() + bounceColor.g() * bounceContribution,
-                        color.b() + bounceColor.b() * bounceContribution
-                    );
+                        float bounceContribution = fmaxf(
+                            0.f,
+                            bounceRay.direction().dot(intersection.normal)
+                        );
+
+                        color = Color(
+                            color.r() + bounceColor.r() * bounceContribution / count,
+                            color.g() + bounceColor.g() * bounceContribution / count,
+                            color.b() + bounceColor.b() * bounceContribution / count
+                        );
+                    }
+
                 }
 
                 image.set(
