@@ -66,13 +66,13 @@ int main() {
                     intersection.normal,
                     ray.direction()
                 );
-                int count = 2;
+                int count = 0;
                 for (int i = 0; i < count; i++) {
                     Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
                     Ray bounceRay(
                         intersection.point,
                         bounceDirection
-                        );
+                    );
                     Intersection bounceIntersection = scene.testIntersect(bounceRay);
                     if (bounceIntersection.hit) {
                         material = *bounceIntersection.material;
@@ -81,13 +81,13 @@ int main() {
                         float bounceContribution = fmaxf(
                             0.f,
                             bounceRay.direction().dot(intersection.normal)
-                            );
+                        );
 
                         color = Color(
                             color.r() + bounceColor.r() * bounceContribution / count,
                             color.g() + bounceColor.g() * bounceContribution / count,
                             color.b() + bounceColor.b() * bounceContribution / count
-                            );
+                        );
                     }
 
                 }
