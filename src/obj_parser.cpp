@@ -1,5 +1,6 @@
 #include "obj_parser.h"
 
+#include <assert.h>
 #include <iostream>
 
 #include "color.h"
@@ -76,52 +77,44 @@ void ObjParser::processGroup(string &groupArgs)
 void ObjParser::processFace(string &faceArgs)
 {
     string::size_type index;
-    string rest = faceArgs;
 
-    int index0 = std::stoi(rest, &index);
+    std::queue<string> tokens = tokenize(faceArgs);
+    assert(tokens.size() == 3 || tokens.size() == 4);
+
+    int index0 = std::stoi(tokens.front());
     if (index0 < 0) {
         index0 += m_vertices.size();
     } else {
         index0 -= 1;
     }
+    tokens.pop();
 
-    rest = rest.substr(index);
-    int index1 = std::stoi(rest, &index);
+    int index1 = std::stoi(tokens.front());
     if (index1 < 0) {
         index1 += m_vertices.size();
     } else {
         index1 -= 1;
     }
+    tokens.pop();
 
-    rest = rest.substr(index);
-    int index2 = std::stoi(rest, &index);
+    int index2 = std::stoi(tokens.front());
     if (index2 < 2) {
         index2 += m_vertices.size();
     } else {
         index2 -= 1;
     }
+    tokens.pop();
 
-    rest = rest.substr(index);
-    int index3 = std::stoi(rest, &index);
-    if (index3 < 3) {
-        index3 += m_vertices.size();
-    } else {
-        index3 -= 1;
-    }
+    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
+    std::shared_ptr<Material> material(new Material(diffuse));
 
-    Triangle *face1, *face2;
-
+    Triangle *face1;
     switch (m_handedness) {
     case Right:
         face1 = new Triangle(
             m_vertices[index0],
             m_vertices[index1],
             m_vertices[index2]
-        );
-        face2 = new Triangle(
-            m_vertices[index2],
-            m_vertices[index3],
-            m_vertices[index0]
         );
         break;
     case Left:
@@ -130,6 +123,36 @@ void ObjParser::processFace(string &faceArgs)
             m_vertices[index0],
             m_vertices[index2]
         );
+        break;
+    }
+
+    std::shared_ptr<Triangle> shape1(face1);
+
+    m_surfaces.push_back(
+        std::shared_ptr<Surface>(new Surface(shape1, material))
+    );
+
+    if (tokens.empty()) { return; }
+
+    int index3 = std::stoi(tokens.front());
+    if (index3 < 3) {
+        index3 += m_vertices.size();
+    } else {
+        index3 -= 1;
+    }
+    tokens.pop();
+
+    Triangle *face2;
+
+    switch (m_handedness) {
+    case Right:
+        face2 = new Triangle(
+            m_vertices[index2],
+            m_vertices[index3],
+            m_vertices[index0]
+        );
+        break;
+    case Left:
         face2 = new Triangle(
             m_vertices[index3],
             m_vertices[index2],
@@ -138,15 +161,7 @@ void ObjParser::processFace(string &faceArgs)
         break;
     }
 
-    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
-    std::shared_ptr<Material> material(new Material(diffuse));
-
-    std::shared_ptr<Triangle> shape1(face1);
     std::shared_ptr<Triangle> shape2(face2);
-
-    m_surfaces.push_back(
-        std::shared_ptr<Surface>(new Surface(shape1, material))
-    );
     m_surfaces.push_back(
         std::shared_ptr<Surface>(new Surface(shape2, material))
     );
