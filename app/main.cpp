@@ -13,8 +13,9 @@ using json = nlohmann::json;
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
-#include "vector.h"
+#include "random_generator.h"
 #include "transform.h"
+#include "vector.h"
 #include "window.h"
 
 using namespace std;
@@ -40,6 +41,7 @@ int main() {
         Vector3(0.f, 1.f, 0.f)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+    RandomGenerator random;
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -68,7 +70,8 @@ int main() {
                 );
                 int count = 0;
                 for (int i = 0; i < count; i++) {
-                    Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
+                    Vector3 hemisphereSample = UniformSampleHemisphere(random);
+                    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
                     Ray bounceRay(
                         intersection.point,
                         bounceDirection
