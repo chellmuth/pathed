@@ -111,5 +111,5 @@ int main() {
     // image.debug();
     // image.write("test.bmp");
 
-    return loop(image.data());
+    return loop(image.data(), width, height);
 }

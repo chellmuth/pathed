@@ -1,1 +1,1 @@
-bool loop(const unsigned char *renderedBuffer);
+bool loop(const unsigned char *renderedBuffer, int width, int height);
