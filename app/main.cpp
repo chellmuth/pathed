@@ -48,7 +48,7 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
                 intersection.normal,
                 ray.direction()
             );
-            int count = 0;
+            int count = 1;
             for (int i = 0; i < count; i++) {
                 Vector3 hemisphereSample = UniformSampleHemisphere(random);
                 Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);

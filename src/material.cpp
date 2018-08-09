@@ -34,5 +34,5 @@ Color Material::shade(const Intersection &intersection, const Scene &scene, Rand
     }
 
     float lightDotNormal = normalizedLightDirection.dot(intersection.normal);
-    return m_diffuse * fmaxf(0.f, lightDotNormal) * (1.0 / (lightDistance * lightDistance));
+    return m_diffuse * fmaxf(0.f, lightDotNormal) * (1.0 / (lightDistance * lightDistance)) * scene.lights().size();
 }
