@@ -6,9 +6,14 @@
 #include "ray.h"
 #include "util.h"
 
-Scene::Scene(std::vector<std::shared_ptr<Surface>> surfaces, Point3 light)
-    : m_surfaces(surfaces), m_light(light)
+Scene::Scene(std::vector<std::shared_ptr<Surface>> surfaces, std::vector<std::shared_ptr<Light>> lights)
+    : m_surfaces(surfaces), m_lights(lights)
 {}
+
+Point3 Scene::tempLight() const
+{
+    return Point3(0.f, 1.9f, 0.f);
+}
 
 Intersection Scene::testIntersect(const Ray &ray) const
 {

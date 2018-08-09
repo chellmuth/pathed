@@ -11,13 +11,13 @@
 #include "scene.h"
 #include "vector.h"
 
-Material::Material(Color diffuse)
-    : m_diffuse(diffuse)
+Material::Material(Color diffuse, Color emit)
+    : m_diffuse(diffuse), m_emit(emit)
 {}
 
-Color Material::shade(const Intersection &intersection, const Scene &scene)
+Color Material::shade(const Intersection &intersection, const Scene &scene) const
 {
-    Point3 light = scene.light();
+    Point3 light = scene.tempLight();
 
     Vector3 lightDirection = (light - intersection.point).toVector();
     float lightDistance = lightDirection.length();

@@ -7,10 +7,11 @@ class Scene;
 
 class Material {
 public:
-    Material(Color diffuse);
+    Material(Color diffuse, Color emit);
 
-    Color shade(const Intersection &intersection, const Scene &scene);
+    Color shade(const Intersection &intersection, const Scene &scene) const;
 
 private:
     Color m_diffuse;
+    Color m_emit;
 };
