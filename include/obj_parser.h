@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "mtl_parser.h"
+#include "light.h"
 #include "point.h"
 #include "scene.h"
 #include "surface.h"
@@ -29,6 +30,7 @@ private:
 
     std::vector<Point3> m_vertices;
     std::vector<std::shared_ptr<Surface>> m_surfaces;
+    std::vector<std::shared_ptr<Light>> m_lights;
 
     std::map<std::string, MtlMaterial> m_materialLookup;
 

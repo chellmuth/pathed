@@ -19,10 +19,7 @@ Scene ObjParser::parseScene()
         parseLine(line);
     }
 
-    return Scene(
-        m_surfaces,
-        Point3(0.f, 1.9f, 0.f)
-    );
+    return Scene(m_surfaces, m_lights);
 }
 
 void ObjParser::parseLine(string &line)
@@ -69,13 +66,6 @@ void ObjParser::processVertex(string &vertexArgs)
 
 void ObjParser::processGroup(string &groupArgs)
 {
-    if (m_currentGroup != "") {
-        Material material(m_materialLookup[m_currentGroup].diffuse);
-
-        // m_models.push_back(std::shared_ptr<Model>(new Model(m_faces, material)));
-        // m_faces.clear();
-    }
-
     string name = lTrim(groupArgs);
     m_currentGroup = name;
 }
@@ -146,17 +136,25 @@ void ObjParser::processFace(string &faceArgs)
     }
 
     Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
-    std::shared_ptr<Material> material(new Material(diffuse));
+    Color emit = m_materialLookup[m_currentMaterialName].emit;
+    std::shared_ptr<Material> material(new Material(diffuse, emit));
 
     std::shared_ptr<Triangle> shape1(face1);
     std::shared_ptr<Triangle> shape2(face2);
 
-    m_surfaces.push_back(
-        std::shared_ptr<Surface>(new Surface(shape1, material))
-    );
-    m_surfaces.push_back(
-        std::shared_ptr<Surface>(new Surface(shape2, material))
-    );
+    std::shared_ptr<Surface> surface1(new Surface(shape1, material));
+    std::shared_ptr<Surface> surface2(new Surface(shape2, material));
+
+    m_surfaces.push_back(surface1);
+    m_surfaces.push_back(surface2);
+
+    if (emit.isBlack()) { return; }
+
+    std::shared_ptr<Light> light1(new Light(surface1));
+    std::shared_ptr<Light> light2(new Light(surface2));
+
+    m_lights.push_back(light1);
+    m_lights.push_back(light2);
 }
 
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)

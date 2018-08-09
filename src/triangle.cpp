@@ -1,6 +1,7 @@
 #include "triangle.h"
 
 #include <limits>
+#include <math.h>
 #include <stdio.h>
 
 #include "point.h"
@@ -10,6 +11,18 @@
 Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
     : m_p0(p0), m_p1(p1), m_p2(p2)
 {}
+
+Point3 Triangle::sample(RandomGenerator &random) const
+{
+    float r1 = random.next();
+    float r2 = random.next();
+
+    float a = 1 - sqrt(r1);
+    float b = sqrt(r1) * (1 - r2);
+    float c = 1 - a - b;
+
+    return m_p0 * a + m_p1 * b + m_p2 * c;
+}
 
 Intersection Triangle::testIntersect(const Ray &ray)
 {

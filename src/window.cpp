@@ -7,9 +7,6 @@
 
 #include <iostream>
 
-const unsigned int SCR_WIDTH = 400;
-const unsigned int SCR_HEIGHT = 300;
-
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "\n"
@@ -43,7 +40,7 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-bool loop(const unsigned char *renderedBuffer)
+bool loop(const unsigned char *renderedBuffer, int width, int height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -54,7 +51,7 @@ bool loop(const unsigned char *renderedBuffer)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Path Tracer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Path Tracer", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -82,10 +79,10 @@ bool loop(const unsigned char *renderedBuffer)
         }
     }
 
-    for (int row = 0; row < SCR_HEIGHT; row++) {
-        for (int col = 0; col < SCR_WIDTH; col++) {
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
             const int targetIndex = 3 * (row * textureWidth + col);
-            const int sourceIndex = 3 * (row * SCR_WIDTH + col);
+            const int sourceIndex = 3 * (row * width + col);
             data[targetIndex + 0] = renderedBuffer[sourceIndex + 0];
             data[targetIndex + 1] = renderedBuffer[sourceIndex + 1];
             data[targetIndex + 2] = renderedBuffer[sourceIndex + 2];

@@ -13,11 +13,74 @@ using json = nlohmann::json;
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
-#include "vector.h"
+#include "random_generator.h"
 #include "transform.h"
+#include "vector.h"
 #include "window.h"
 
 using namespace std;
+
+
+void sample(float radianceLookup[], int width, int height, Scene &scene, Camera &camera, RandomGenerator &random)
+{
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            Ray ray = camera.generateRay(
+                row, col,
+                width, height
+            );
+
+            Intersection intersection = scene.testIntersect(ray);
+            if (!intersection.hit) { continue; }
+            // Vector3 normal = intersection.normal;
+            // image.set(
+            //     row,
+            //     col,
+            //     0.5f * (normal.x() + 1.f),
+            //     0.5f * (normal.y() + 1.f),
+            //     0.5f * (normal.z() + 1.f)
+            // );
+
+            Material material = *intersection.material;
+            Color color = material.shade(intersection, scene, random);
+
+            Transform hemisphereToWorld = normalToWorldSpace(
+                intersection.normal,
+                ray.direction()
+            );
+            int count = 1;
+            for (int i = 0; i < count; i++) {
+                Vector3 hemisphereSample = UniformSampleHemisphere(random);
+                Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+                Ray bounceRay(
+                    intersection.point,
+                    bounceDirection
+                );
+                Intersection bounceIntersection = scene.testIntersect(bounceRay);
+                if (bounceIntersection.hit) {
+                    material = *bounceIntersection.material;
+                    Color bounceColor = material.shade(bounceIntersection, scene, random);
+
+                    float bounceContribution = fmaxf(
+                        0.f,
+                        bounceRay.direction().dot(intersection.normal)
+                    );
+
+                    color = Color(
+                        color.r() + bounceColor.r() * bounceContribution / count,
+                        color.g() + bounceColor.g() * bounceContribution / count,
+                        color.b() + bounceColor.b() * bounceContribution / count
+                    );
+                }
+
+            }
+
+            radianceLookup[3 * (row * width + col) + 0] += color.r();
+            radianceLookup[3 * (row * width + col) + 1] += color.g();
+            radianceLookup[3 * (row * width + col) + 2] += color.b();
+        }
+    }
+}
 
 int main() {
     printf("Hello, world!\n");
@@ -40,73 +103,38 @@ int main() {
         Vector3(0.f, 1.f, 0.f)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+    RandomGenerator random;
+
+    float radianceLookup[3 * width * height];
+    for (int i = 0; i < 3 * width * height; i++) {
+        radianceLookup[i] = 0.f;
+    }
+
+    int primarySamples = 1;
+    for (int i = 0; i < primarySamples; i++) {
+        sample(
+            radianceLookup,
+            width, height,
+            scene, camera,
+            random
+        );
+    }
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            Ray ray = camera.generateRay(
-                row, col,
-                width, height
+            int index = 3 * (row * width + col);
+            image.set(
+                row,
+                col,
+                radianceLookup[index + 0] / primarySamples,
+                radianceLookup[index + 1] / primarySamples,
+                radianceLookup[index + 2] / primarySamples
             );
-
-            Intersection intersection = scene.testIntersect(ray);
-            if (intersection.hit) {
-                // Vector3 normal = intersection.normal;
-                // image.set(
-                //     row,
-                //     col,
-                //     0.5f * (normal.x() + 1.f),
-                //     0.5f * (normal.y() + 1.f),
-                //     0.5f * (normal.z() + 1.f)
-                // );
-
-                Material material = *intersection.material;
-                Color color = material.shade(intersection, scene);
-
-                Transform hemisphereToWorld = normalToWorldSpace(
-                    intersection.normal,
-                    ray.direction()
-                );
-                int count = 0;
-                for (int i = 0; i < count; i++) {
-                    Vector3 bounceDirection = hemisphereToWorld.apply(UniformSampleHemisphere());
-                    Ray bounceRay(
-                        intersection.point,
-                        bounceDirection
-                    );
-                    Intersection bounceIntersection = scene.testIntersect(bounceRay);
-                    if (bounceIntersection.hit) {
-                        material = *bounceIntersection.material;
-                        Color bounceColor = material.shade(bounceIntersection, scene);
-
-                        float bounceContribution = fmaxf(
-                            0.f,
-                            bounceRay.direction().dot(intersection.normal)
-                        );
-
-                        color = Color(
-                            color.r() + bounceColor.r() * bounceContribution / count,
-                            color.g() + bounceColor.g() * bounceContribution / count,
-                            color.b() + bounceColor.b() * bounceContribution / count
-                        );
-                    }
-
-                }
-
-                image.set(
-                    row,
-                    col,
-                    color.r(),
-                    color.g(),
-                    color.b()
-                );
-            } else {
-                image.set(row, col, 0.f, 0.f, 0.f);
-            }
         }
     }
 
     // image.debug();
     // image.write("test.bmp");
 
-    return loop(image.data());
+    return loop(image.data(), width, height);
 }

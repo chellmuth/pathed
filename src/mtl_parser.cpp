@@ -31,6 +31,8 @@ void MtlParser::parseLine(string &line)
         processNewMaterial(tokens);
     } else if (command == "Kd") {
         processDiffuse(tokens);
+    } else if (command == "Ke") {
+        processEmit(tokens);
     } else {
         // std::cout << "Unknown command: " << command << std::endl;
     }
@@ -62,4 +64,21 @@ void MtlParser::processDiffuse(std::queue<string> &arguments)
 
     Color diffuse(r, g, b);
     m_materialLookup[m_currentMaterialName].diffuse = diffuse;
+}
+
+void MtlParser::processEmit(std::queue<string> &arguments)
+{
+    assert(arguments.size() >= 3);
+
+    float r = std::stof(arguments.front());
+    arguments.pop();
+
+    float g = std::stof(arguments.front());
+    arguments.pop();
+
+    float b = std::stof(arguments.front());
+    arguments.pop();
+
+    Color emit(r, g, b);
+    m_materialLookup[m_currentMaterialName].emit = emit;
 }

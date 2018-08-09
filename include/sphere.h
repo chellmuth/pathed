@@ -11,6 +11,7 @@ class Sphere : public Shape {
 public:
     Sphere(Point3 center, float radius, Color color);
 
+    Point3 sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray);
 private:
     Point3 m_center;

@@ -14,6 +14,7 @@ public:
     Point3 p1() const { return m_p1; }
     Point3 p2() const { return m_p2; }
 
+    Point3 sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray);
 
     void debug() const;

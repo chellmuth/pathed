@@ -8,9 +8,10 @@
 #include "color.h"
 
 struct MtlMaterial {
-    MtlMaterial() : diffuse(0.f, 0.f, 0.f) {};
+    MtlMaterial() : diffuse(0.f, 0.f, 0.f), emit(0.f, 0.f, 0.f) {};
 
     Color diffuse;
+    Color emit;
 };
 
 class MtlParser {
@@ -29,4 +30,5 @@ private:
     void parseLine(std::string &line);
     void processNewMaterial(std::queue<std::string> &arguments);
     void processDiffuse(std::queue<std::string> &arguments);
+    void processEmit(std::queue<std::string> &arguments);
 };
