@@ -20,29 +20,9 @@ using json = nlohmann::json;
 
 using namespace std;
 
-int main() {
-    printf("Hello, world!\n");
 
-    const int width = 400;
-    const int height = 300;
-
-    Image image(width, height);
-
-    // ifstream sceneFile("data/simple.obj");
-    // ObjParser objParser(sceneFile);
-
-    ifstream sceneFile("CornellBox-Original.obj");
-    ObjParser objParser(sceneFile, Handedness::Left);
-    Scene scene = objParser.parseScene();
-
-    Transform cameraToWorld = lookAt(
-        Point3(0.f, 1.f, 3.6f),
-        Point3(0.f, 1.f, 0.f),
-        Vector3(0.f, 1.f, 0.f)
-    );
-    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
-    RandomGenerator random;
-
+void sample(float radianceLookup[], int width, int height, Scene &scene, Camera &camera, RandomGenerator &random)
+{
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             Ray ray = camera.generateRay(
@@ -95,16 +75,62 @@ int main() {
 
                 }
 
-                image.set(
-                    row,
-                    col,
-                    color.r(),
-                    color.g(),
-                    color.b()
-                );
-            } else {
-                image.set(row, col, 0.f, 0.f, 0.f);
+                radianceLookup[3 * (row * width + col) + 0] += color.r();
+                radianceLookup[3 * (row * width + col) + 1] += color.g();
+                radianceLookup[3 * (row * width + col) + 2] += color.b();
             }
+        }
+    }
+}
+
+int main() {
+    printf("Hello, world!\n");
+
+    const int width = 400;
+    const int height = 300;
+
+    Image image(width, height);
+
+    // ifstream sceneFile("data/simple.obj");
+    // ObjParser objParser(sceneFile);
+
+    ifstream sceneFile("CornellBox-Original.obj");
+    ObjParser objParser(sceneFile, Handedness::Left);
+    Scene scene = objParser.parseScene();
+
+    Transform cameraToWorld = lookAt(
+        Point3(0.f, 1.f, 3.6f),
+        Point3(0.f, 1.f, 0.f),
+        Vector3(0.f, 1.f, 0.f)
+    );
+    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+    RandomGenerator random;
+
+    float radianceLookup[3 * width * height];
+    for (int i = 0; i < 3 * width * height; i++) {
+        radianceLookup[i] = 0.f;
+    }
+
+    int primarySamples = 1;
+    for (int i = 0; i < primarySamples; i++) {
+        sample(
+            radianceLookup,
+            width, height,
+            scene, camera,
+            random
+        );
+    }
+
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            int index = 3 * (row * width + col);
+            image.set(
+                row,
+                col,
+                radianceLookup[index + 0] / primarySamples,
+                radianceLookup[index + 1] / primarySamples,
+                radianceLookup[index + 2] / primarySamples
+            );
         }
     }
 
