@@ -6,7 +6,7 @@ Color::Color(float r, float g, float b)
 
 bool Color::isBlack() const
 {
-    return m_r != 0.f || m_g != 0.f || m_b != 0.f;
+    return m_r == 0.f && m_g == 0.f && m_b == 0.f;
 }
 
 Color Color::operator* (const float t) const

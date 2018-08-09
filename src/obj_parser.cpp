@@ -148,7 +148,7 @@ void ObjParser::processFace(string &faceArgs)
     m_surfaces.push_back(surface1);
     m_surfaces.push_back(surface2);
 
-    if (emit.isBlack()) { return ; }
+    if (emit.isBlack()) { return; }
 
     std::shared_ptr<Light> light1(new Light(surface1));
     std::shared_ptr<Light> light2(new Light(surface2));

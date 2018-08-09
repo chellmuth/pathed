@@ -26,7 +26,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
     };
 
     for (std::shared_ptr<Surface> surfacePtr : m_surfaces) {
-        Intersection intersection = surfacePtr.get()->testIntersect(ray);
+        Intersection intersection = surfacePtr->testIntersect(ray);
         if (intersection.hit && intersection.t < result.t) {
             result = intersection;
         }

@@ -62,7 +62,7 @@ int main() {
                 // );
 
                 Material material = *intersection.material;
-                Color color = material.shade(intersection, scene);
+                Color color = material.shade(intersection, scene, random);
 
                 Transform hemisphereToWorld = normalToWorldSpace(
                     intersection.normal,
@@ -79,7 +79,7 @@ int main() {
                     Intersection bounceIntersection = scene.testIntersect(bounceRay);
                     if (bounceIntersection.hit) {
                         material = *bounceIntersection.material;
-                        Color bounceColor = material.shade(bounceIntersection, scene);
+                        Color bounceColor = material.shade(bounceIntersection, scene, random);
 
                         float bounceContribution = fmaxf(
                             0.f,

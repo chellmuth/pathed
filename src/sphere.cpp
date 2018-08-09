@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <limits>
 
 #include "sphere.h"
@@ -9,6 +10,13 @@
 Sphere::Sphere(Point3 center, float radius, Color color)
     : m_center(center), m_radius(radius), m_color(color)
 {}
+
+Point3 Sphere::sample(RandomGenerator &random) const
+{
+    assert(false);
+
+    return Point3(0.f, 0.f, 0.f);
+}
 
 Intersection Sphere::testIntersect(const Ray &ray)
 {

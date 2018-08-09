@@ -15,9 +15,13 @@ Material::Material(Color diffuse, Color emit)
     : m_diffuse(diffuse), m_emit(emit)
 {}
 
-Color Material::shade(const Intersection &intersection, const Scene &scene) const
+Color Material::shade(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
 {
-    Point3 light = scene.tempLight();
+    float whichLight = random.next();
+    int lightIndex = whichLight > 0.5f ? 0 : 1;
+
+    Point3 light = scene.lights()[lightIndex]->sample(random);
+    // printf("%f %f %f\n", light.x(), light.y(), light.z());
 
     Vector3 lightDirection = (light - intersection.point).toVector();
     float lightDistance = lightDirection.length();
@@ -26,7 +30,7 @@ Color Material::shade(const Intersection &intersection, const Scene &scene) cons
 
     Ray shadowRay = Ray(intersection.point, normalizedLightDirection);
     Intersection shadowIntersection = scene.testIntersect(shadowRay);
-    if (shadowIntersection.hit && shadowIntersection.t < lightDistance) {
+    if (shadowIntersection.hit && shadowIntersection.t + 0.001f < lightDistance) {
         return Color(0.f, 0.f, 0.f);
     }
 
