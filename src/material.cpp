@@ -21,7 +21,6 @@ Color Material::shade(const Intersection &intersection, const Scene &scene, Rand
     int lightIndex = whichLight > 0.5f ? 0 : 1;
 
     Point3 light = scene.lights()[lightIndex]->sample(random);
-    // printf("%f %f %f\n", light.x(), light.y(), light.z());
 
     Vector3 lightDirection = (light - intersection.point).toVector();
     float lightDistance = lightDirection.length();
