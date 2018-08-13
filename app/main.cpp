@@ -44,35 +44,41 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
             Material material = *intersection.material;
             Color color = material.shade(intersection, scene, random);
 
-            Transform hemisphereToWorld = normalToWorldSpace(
-                intersection.normal,
-                ray.direction()
-            );
-            int bounceCount = 1;
+            float bounceContribution = 1.f;
+            Intersection bounceIntersection = intersection;
+
+            int bounceCount = 2;
             for (int i = 0; i < bounceCount; i++) {
+                Transform hemisphereToWorld = normalToWorldSpace(
+                    intersection.normal,
+                    ray.direction()
+                );
+
                 Vector3 hemisphereSample = UniformSampleHemisphere(random);
                 Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
                 Ray bounceRay(
                     intersection.point,
                     bounceDirection
                 );
-                Intersection bounceIntersection = scene.testIntersect(bounceRay);
-                if (bounceIntersection.hit) {
-                    material = *bounceIntersection.material;
-                    Color bounceColor = material.shade(bounceIntersection, scene, random);
 
-                    float bounceContribution = fmaxf(
-                        0.f,
-                        bounceRay.direction().dot(intersection.normal)
-                    );
+                bounceIntersection = scene.testIntersect(bounceRay);
+                if (!bounceIntersection.hit) { break; }
 
-                    color = Color(
-                        color.r() + bounceColor.r() * bounceContribution / bounceCount,
-                        color.g() + bounceColor.g() * bounceContribution / bounceCount,
-                        color.b() + bounceColor.b() * bounceContribution / bounceCount
-                    );
-                }
+                material = *bounceIntersection.material;
+                Color bounceColor = material.shade(bounceIntersection, scene, random);
 
+                bounceContribution *= fmaxf(
+                    0.f,
+                    bounceRay.direction().dot(intersection.normal)
+                );
+
+                color = Color(
+                    color.r() + bounceColor.r() * bounceContribution,
+                    color.g() + bounceColor.g() * bounceContribution,
+                    color.b() + bounceColor.b() * bounceContribution
+                );
+
+                intersection = bounceIntersection;
             }
 
             radianceLookup[3 * (row * width + col) + 0] += color.r();
