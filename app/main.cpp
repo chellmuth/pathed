@@ -48,8 +48,8 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
                 intersection.normal,
                 ray.direction()
             );
-            int count = 1;
-            for (int i = 0; i < count; i++) {
+            int bounceCount = 1;
+            for (int i = 0; i < bounceCount; i++) {
                 Vector3 hemisphereSample = UniformSampleHemisphere(random);
                 Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
                 Ray bounceRay(
@@ -67,9 +67,9 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
                     );
 
                     color = Color(
-                        color.r() + bounceColor.r() * bounceContribution / count,
-                        color.g() + bounceColor.g() * bounceContribution / count,
-                        color.b() + bounceColor.b() * bounceContribution / count
+                        color.r() + bounceColor.r() * bounceContribution / bounceCount,
+                        color.g() + bounceColor.g() * bounceContribution / bounceCount,
+                        color.b() + bounceColor.b() * bounceContribution / bounceCount
                     );
                 }
 
