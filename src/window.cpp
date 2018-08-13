@@ -6,6 +6,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <vector>
+
+#include "window.h"
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -70,7 +73,7 @@ bool loop(const unsigned char *renderedBuffer, int width, int height)
     // TEXTURES
     const int textureWidth = 1024;
     const int textureHeight = 1024;
-    unsigned char data[textureWidth * textureHeight * 3];
+    std::vector<unsigned char> data(textureWidth * textureHeight * 3);
     for (int row = 0; row < textureHeight; row++) {
         for (int col = 0; col < textureWidth; col++) {
             data[3 * (row * textureWidth + col) + 0] = 255;
@@ -97,7 +100,7 @@ bool loop(const unsigned char *renderedBuffer, int width, int height)
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Give the image to OpenGL
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
