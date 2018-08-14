@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <vector>
 
 #include "camera.h"
 #include "color.h"
@@ -18,7 +20,10 @@
 using namespace std;
 
 
-void sample(float radianceLookup[], int width, int height, Scene &scene, Camera &camera, RandomGenerator &random)
+void sample(
+    std::vector<float> &radianceLookup,
+    int width, int height,
+    Scene &scene, Camera &camera, RandomGenerator &random)
 {
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -44,7 +49,7 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
             float bounceContribution = 1.f;
             Intersection bounceIntersection = intersection;
 
-            int bounceCount = 2;
+            int bounceCount = 1;
             for (int i = 0; i < bounceCount; i++) {
                 Transform hemisphereToWorld = normalToWorldSpace(
                     intersection.normal,
@@ -85,17 +90,8 @@ void sample(float radianceLookup[], int width, int height, Scene &scene, Camera 
     }
 }
 
-int main() {
-    printf("Hello, world!\n");
-
-    const int width = 400;
-    const int height = 300;
-
-    Image image(width, height);
-
-    // ifstream sceneFile("data/simple.obj");
-    // ObjParser objParser(sceneFile);
-
+void run(Image &image, int width, int height)
+{
     ifstream sceneFile("CornellBox-Original.obj");
     ObjParser objParser(sceneFile, Handedness::Left);
     Scene scene = objParser.parseScene();
@@ -108,7 +104,7 @@ int main() {
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
     RandomGenerator random;
 
-    float radianceLookup[3 * width * height];
+    std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {
         radianceLookup[i] = 0.f;
     }
@@ -135,6 +131,18 @@ int main() {
             );
         }
     }
+}
+
+int main() {
+    printf("Hello, world!\n");
+
+    const int width = 400;
+    const int height = 300;
+
+    Image image(width, height);
+
+    std::thread renderThread(run, std::ref(image), width, height);
+    renderThread.join();
 
     // image.debug();
     // image.write("test.bmp");
