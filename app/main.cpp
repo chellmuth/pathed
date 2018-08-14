@@ -1,9 +1,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "json.hpp"
-using json = nlohmann::json;
-
 #include "camera.h"
 #include "color.h"
 #include "image.h"
