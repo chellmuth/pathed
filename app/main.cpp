@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -109,7 +110,7 @@ void run(Image &image, int width, int height)
         radianceLookup[i] = 0.f;
     }
 
-    int primarySamples = 1;
+    int primarySamples = 3;
     for (int i = 0; i < primarySamples; i++) {
         sample(
             radianceLookup,
@@ -117,19 +118,25 @@ void run(Image &image, int width, int height)
             scene, camera,
             random
         );
-    }
 
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            int index = 3 * (row * width + col);
-            image.set(
-                row,
-                col,
-                radianceLookup[index + 0] / primarySamples,
-                radianceLookup[index + 1] / primarySamples,
-                radianceLookup[index + 2] / primarySamples
-            );
+        std::mutex &lock = image.getLock();
+        lock.lock();
+
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                int index = 3 * (row * width + col);
+                image.set(
+                    row,
+                    col,
+                    radianceLookup[index + 0] / (i + 1),
+                    radianceLookup[index + 1] / (i + 1),
+                    radianceLookup[index + 2] / (i + 1)
+                );
+            }
         }
+
+        lock.unlock();
+        printf("sample: (%d/%d)\n", i + 1, primarySamples);
     }
 }
 
@@ -142,10 +149,13 @@ int main() {
     Image image(width, height);
 
     std::thread renderThread(run, std::ref(image), width, height);
-    renderThread.join();
 
     // image.debug();
     // image.write("test.bmp");
 
-    return loop(image, width, height);
+    loop(image, width, height);
+
+    renderThread.join();
+
+    return 0;
 }

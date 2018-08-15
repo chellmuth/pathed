@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <mutex>
 #include <vector>
 
 #include "window.h"
@@ -49,6 +50,9 @@ void syncTextureBuffer(
     int renderWidth, int renderHeight,
     int textureWidth, int textureHeight)
 {
+    std::mutex &lock = image.getLock();
+    lock.lock();
+
     const std::vector<unsigned char> &renderedBuffer = image.data();
 
     for (int row = 0; row < renderHeight; row++) {
@@ -60,6 +64,8 @@ void syncTextureBuffer(
             textureBuffer[targetIndex + 2] = renderedBuffer[sourceIndex + 2];
         }
     }
+
+    lock.unlock();
 }
 
 bool loop(Image &image, int width, int height)
@@ -212,6 +218,7 @@ bool loop(Image &image, int width, int height)
         glfwPollEvents();
 
         syncTextureBuffer(image, data, width, height, textureWidth, textureHeight);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
     }
 
     glDeleteVertexArrays(1, &VAO);
