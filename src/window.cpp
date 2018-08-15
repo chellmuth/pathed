@@ -44,11 +44,13 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 }
 
 void syncTextureBuffer(
-    const std::vector<unsigned char> &renderedBuffer,
+    Image &image,
     std::vector<unsigned char> &textureBuffer,
     int renderWidth, int renderHeight,
     int textureWidth, int textureHeight)
 {
+    const std::vector<unsigned char> &renderedBuffer = image.data();
+
     for (int row = 0; row < renderHeight; row++) {
         for (int col = 0; col < renderWidth; col++) {
             const int targetIndex = 3 * (row * textureWidth + col);
@@ -60,7 +62,7 @@ void syncTextureBuffer(
     }
 }
 
-bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int height)
+bool loop(Image &image, int width, int height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -99,7 +101,7 @@ bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int heigh
         }
     }
 
-    syncTextureBuffer(renderedBuffer, data, width, height, textureWidth, textureHeight);
+    syncTextureBuffer(image, data, width, height, textureWidth, textureHeight);
 
     // Create one OpenGL texture
     GLuint textureID;
@@ -208,6 +210,8 @@ bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int heigh
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        syncTextureBuffer(image, data, width, height, textureWidth, textureHeight);
     }
 
     glDeleteVertexArrays(1, &VAO);

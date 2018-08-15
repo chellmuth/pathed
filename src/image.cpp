@@ -40,7 +40,6 @@ const std::vector<unsigned char> &Image::data()
     return m_data;
 }
 
-
 void Image::write(char const *filename)
 {
     stbi_write_bmp(filename, m_width, m_height, 3, m_data.data());

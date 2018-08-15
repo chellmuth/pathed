@@ -2,4 +2,6 @@
 
 #include <vector>
 
-bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int height);
+#include "image.h"
+
+bool loop(Image &image, int width, int height);
