@@ -43,6 +43,23 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void syncTextureBuffer(
+    const std::vector<unsigned char> &renderedBuffer,
+    std::vector<unsigned char> &textureBuffer,
+    int renderWidth, int renderHeight,
+    int textureWidth, int textureHeight)
+{
+    for (int row = 0; row < renderHeight; row++) {
+        for (int col = 0; col < renderWidth; col++) {
+            const int targetIndex = 3 * (row * textureWidth + col);
+            const int sourceIndex = 3 * (row * renderWidth + col);
+            textureBuffer[targetIndex + 0] = renderedBuffer[sourceIndex + 0];
+            textureBuffer[targetIndex + 1] = renderedBuffer[sourceIndex + 1];
+            textureBuffer[targetIndex + 2] = renderedBuffer[sourceIndex + 2];
+        }
+    }
+}
+
 bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int height)
 {
     glfwInit();
@@ -82,15 +99,7 @@ bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int heigh
         }
     }
 
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            const int targetIndex = 3 * (row * textureWidth + col);
-            const int sourceIndex = 3 * (row * width + col);
-            data[targetIndex + 0] = renderedBuffer[sourceIndex + 0];
-            data[targetIndex + 1] = renderedBuffer[sourceIndex + 1];
-            data[targetIndex + 2] = renderedBuffer[sourceIndex + 2];
-        }
-    }
+    syncTextureBuffer(renderedBuffer, data, width, height, textureWidth, textureHeight);
 
     // Create one OpenGL texture
     GLuint textureID;
