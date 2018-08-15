@@ -43,7 +43,7 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-bool loop(const unsigned char *renderedBuffer, int width, int height)
+bool loop(const std::vector<unsigned char> &renderedBuffer, int width, int height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

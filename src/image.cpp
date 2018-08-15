@@ -6,15 +6,8 @@
 #include "image.h"
 
 Image::Image(int width, int height)
-    : m_height(height), m_width(width)
-{
-    m_data = (unsigned char *)malloc(m_height * m_width * 3 * sizeof(unsigned char));
-}
-
-Image::~Image()
-{
-    free(m_data);
-}
+    : m_height(height), m_width(width), m_data(3 * m_height * m_width)
+{}
 
 void Image::set(int row, int col, float r, float g, float b)
 {
@@ -42,7 +35,7 @@ void Image::debug()
     }
 }
 
-const unsigned char* Image::data()
+const std::vector<unsigned char> &Image::data()
 {
     return m_data;
 }
@@ -50,5 +43,5 @@ const unsigned char* Image::data()
 
 void Image::write(char const *filename)
 {
-    stbi_write_bmp(filename, m_width, m_height, 3, m_data);
+    stbi_write_bmp(filename, m_width, m_height, 3, m_data.data());
 }
