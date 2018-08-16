@@ -10,11 +10,6 @@ Scene::Scene(std::vector<std::shared_ptr<Surface>> surfaces, std::vector<std::sh
     : m_surfaces(surfaces), m_lights(lights)
 {}
 
-Point3 Scene::tempLight() const
-{
-    return Point3(0.f, 1.9f, 0.f);
-}
-
 Intersection Scene::testIntersect(const Ray &ray) const
 {
     Intersection result = {

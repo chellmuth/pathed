@@ -13,8 +13,6 @@ class Scene {
 public:
     Scene(std::vector<std::shared_ptr<Surface>> surfaces, std::vector<std::shared_ptr<Light>> lights);
 
-    Point3 tempLight() const;
-
     std::vector<std::shared_ptr<Light>> lights() const { return m_lights; }
     Intersection testIntersect(const Ray &ray) const;
 
