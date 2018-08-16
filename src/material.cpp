@@ -1,6 +1,7 @@
 #include "material.h"
 
 #include <math.h>
+#include <memory>
 #include <stdio.h>
 #include <iostream>
 
@@ -20,9 +21,10 @@ Color Material::shade(const Intersection &intersection, const Scene &scene, Rand
     float whichLight = random.next();
     int lightIndex = whichLight > 0.5f ? 0 : 1;
 
-    Point3 light = scene.lights()[lightIndex]->sample(random);
+    std::shared_ptr<Light> light = scene.lights()[lightIndex];
+    SurfaceSample lightSample = light->sample(random);
 
-    Vector3 lightDirection = (light - intersection.point).toVector();
+    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     float lightDistance = lightDirection.length();
 
     Vector3 normalizedLightDirection = lightDirection.normalized();

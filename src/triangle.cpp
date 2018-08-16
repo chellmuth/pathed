@@ -12,7 +12,7 @@ Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
     : m_p0(p0), m_p1(p1), m_p2(p2)
 {}
 
-Point3 Triangle::sample(RandomGenerator &random) const
+SurfaceSample Triangle::sample(RandomGenerator &random) const
 {
     float r1 = random.next();
     float r2 = random.next();
@@ -21,7 +21,17 @@ Point3 Triangle::sample(RandomGenerator &random) const
     float b = sqrt(r1) * (1 - r2);
     float c = 1 - a - b;
 
-    return m_p0 * a + m_p1 * b + m_p2 * c;
+    Point3 point = m_p0 * a + m_p1 * b + m_p2 * c;
+
+    Vector3 e1 = (m_p1 - m_p0).toVector();
+    Vector3 e2 = (m_p2 - m_p0).toVector();
+    Vector3 normal = e1.cross(e2);
+
+    SurfaceSample sample = {
+        .point = point,
+        .normal = normal,
+    };
+    return sample;
 }
 
 Intersection Triangle::testIntersect(const Ray &ray)

@@ -6,7 +6,7 @@ Surface::Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> materia
     : m_shape(shape), m_material(material)
 {}
 
-Point3 Surface::sample(RandomGenerator &random) const
+SurfaceSample Surface::sample(RandomGenerator &random) const
 {
     return m_shape->sample(random);
 }
@@ -18,4 +18,3 @@ Intersection Surface::testIntersect(const Ray &ray) const
 
     return intersection;
 }
-
