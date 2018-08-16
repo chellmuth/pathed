@@ -20,10 +20,13 @@
 
 using namespace std;
 
+static const int width = 400;
+static const int height = 300;
+static const int primarySamples = 10;
+static const int bounceCount = 1;
 
 void sample(
     std::vector<float> &radianceLookup,
-    int width, int height,
     Scene &scene, Camera &camera, RandomGenerator &random)
 {
     for (int row = 0; row < height; row++) {
@@ -50,7 +53,6 @@ void sample(
             float bounceContribution = 1.f;
             Intersection bounceIntersection = intersection;
 
-            int bounceCount = 1;
             for (int i = 0; i < bounceCount; i++) {
                 Transform hemisphereToWorld = normalToWorldSpace(
                     intersection.normal,
@@ -91,7 +93,7 @@ void sample(
     }
 }
 
-void run(Image &image, int width, int height)
+void run(Image &image)
 {
     ifstream sceneFile("CornellBox-Original.obj");
     ObjParser objParser(sceneFile, Handedness::Left);
@@ -110,11 +112,9 @@ void run(Image &image, int width, int height)
         radianceLookup[i] = 0.f;
     }
 
-    int primarySamples = 3;
     for (int i = 0; i < primarySamples; i++) {
         sample(
             radianceLookup,
-            width, height,
             scene, camera,
             random
         );
@@ -143,12 +143,9 @@ void run(Image &image, int width, int height)
 int main() {
     printf("Hello, world!\n");
 
-    const int width = 400;
-    const int height = 300;
-
     Image image(width, height);
 
-    std::thread renderThread(run, std::ref(image), width, height);
+    std::thread renderThread(run, std::ref(image));
 
     // image.debug();
     // image.write("test.bmp");
