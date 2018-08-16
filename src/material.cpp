@@ -28,6 +28,9 @@ Color Material::shade(const Intersection &intersection, const Scene &scene, Rand
     float lightDistance = lightDirection.length();
 
     Vector3 normalizedLightDirection = lightDirection.normalized();
+    if (lightSample.normal.dot(normalizedLightDirection) >= 0.f) {
+        return Color(0.f, 0.f, 0.f);
+    }
 
     Ray shadowRay = Ray(intersection.point, normalizedLightDirection);
     Intersection shadowIntersection = scene.testIntersect(shadowRay);

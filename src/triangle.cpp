@@ -25,7 +25,7 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
 
     Vector3 e1 = (m_p1 - m_p0).toVector();
     Vector3 e2 = (m_p2 - m_p0).toVector();
-    Vector3 normal = e1.cross(e2);
+    Vector3 normal = e2.cross(e1).normalized();
 
     SurfaceSample sample = {
         .point = point,
