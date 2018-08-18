@@ -10,6 +10,7 @@ class Ray;
 typedef struct {
     Point3 point;
     Vector3 normal;
+    float invPDF;
 } SurfaceSample;
 
 class Shape {

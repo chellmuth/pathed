@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 class Color {
 public:
     Color(float r, float g, float b);
@@ -11,7 +13,11 @@ public:
     bool isBlack() const;
 
     Color operator* (const float t) const;
+    Color operator/ (const float t) const;
 
 private:
     float m_r, m_g, m_b;
 };
+
+std::ostream &operator<<(std::ostream &os, const Color &c);
+

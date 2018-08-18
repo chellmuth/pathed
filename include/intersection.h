@@ -9,6 +9,7 @@ struct Intersection {
     bool hit;
     float t;
     Point3 point;
+    Vector3 wi;
     Vector3 normal;
     Material *material;
 };

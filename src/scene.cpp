@@ -16,7 +16,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
         .hit = false,
         .t = std::numeric_limits<float>::max(),
         .point = Point3(0.f, 0.f, 0.f),
-        .normal = Vector3(),
+        .wi = Vector3(0.f),
+        .normal = Vector3(0.f),
         .material = nullptr
     };
 

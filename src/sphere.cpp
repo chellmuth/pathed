@@ -40,6 +40,7 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .hit = true,
             .t = solution.solution1,
             .point = hitPoint,
+            .wi = ray.direction(),
             .normal = (hitPoint - m_center).toVector().normalized(),
             .material = nullptr
         };
@@ -49,7 +50,8 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .hit = false,
             .t = std::numeric_limits<float>::max(),
             .point = Point3(0.f, 0.f, 0.f),
-            .normal = Vector3(),
+            .wi = Vector3(0.f),
+            .normal = Vector3(0.f),
             .material = nullptr
         };
         return result;
