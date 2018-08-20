@@ -11,5 +11,5 @@ public:
 private:
     std::random_device m_device;
     std::mt19937 m_generator;
-    std::uniform_real_distribution<> m_distribution;
+    std::uniform_real_distribution<float> m_distribution;
 };
