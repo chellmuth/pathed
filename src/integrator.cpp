@@ -7,6 +7,11 @@
 
 Color Integrator::Ld(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
 {
+    Color emit = intersection.material->emit();
+    if (!emit.isBlack()) {
+        return emit;
+    }
+
     int lightCount = scene.lights().size();
     int lightIndex = (int)floorf(random.next() * lightCount);
 
@@ -30,9 +35,8 @@ Color Integrator::Ld(const Intersection &intersection, const Scene &scene, Rando
 
     float invPDF = lightSample.invPDF * lightCount;
 
-    return intersection.material->f(intersection.wi, wo)
+    return light->biradiance(lightSample.point, intersection.point)
+        * intersection.material->f(intersection.wi, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
-        * (1.0 / (lightDistance * lightDistance)) // biradiance
-        * invPDF
-        * 50.f; // why am I off by so much?
+        * invPDF;
 }

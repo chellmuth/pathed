@@ -22,8 +22,8 @@ using namespace std;
 
 static const int width = 400;
 static const int height = 400;
-static const int primarySamples = 10;
-static const int bounceCount = 1;
+static const int primarySamples = 50;
+static const int bounceCount = 0;
 
 void sample(
     std::vector<float> &radianceLookup,

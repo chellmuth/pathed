@@ -10,6 +10,7 @@ public:
     Material(Color diffuse, Color emit);
 
     Color f(const Vector3 &wo, const Vector3 &wi) const;
+    Color emit() const;
 
 private:
     Color m_diffuse;
