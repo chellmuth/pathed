@@ -15,11 +15,11 @@ Color Integrator::L(const Intersection &intersection, const Scene &scene, Random
     }
 
     return
-        Ld(intersection, scene, random)
+        direct(intersection, scene, random)
         + indirect(intersection, scene, random);
 }
 
-Color Integrator::Ld(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
+Color Integrator::direct(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
 {
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
@@ -73,7 +73,7 @@ Color Integrator::indirect(const Intersection &intersection, const Scene &scene,
     if (!bounceIntersection.hit) { return Color(0.f, 0.f, 0.f); }
 
     float invPDF = 1.f / UniformHemispherePdf();
-    Color bounceColor = Ld(bounceIntersection, scene, random)
+    Color bounceColor = direct(bounceIntersection, scene, random)
         * intersection.material->f(intersection.wi, bounceDirection)
         * fmaxf(0.f, bounceDirection.dot(intersection.normal))
         * invPDF;

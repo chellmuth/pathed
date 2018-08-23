@@ -9,6 +9,6 @@ public:
     Color L(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const;
 
 private:
-    Color Ld(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const;
+    Color direct(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const;
     Color indirect(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const;
 };
