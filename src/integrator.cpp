@@ -7,16 +7,15 @@
 #include "transform.h"
 #include "vector.h"
 
-Color Integrator::L(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
+Color Integrator::L(const Intersection &intersection, const Scene &scene, RandomGenerator &random, int count) const
 {
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        return emit;
+    if (count == 0) {
+        return direct(intersection, scene, random);
     }
 
     return
         direct(intersection, scene, random)
-        + indirect(intersection, scene, random);
+        + indirect(intersection, scene, random, count);
 }
 
 Color Integrator::direct(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
@@ -55,7 +54,7 @@ Color Integrator::direct(const Intersection &intersection, const Scene &scene, R
         * invPDF;
 }
 
-Color Integrator::indirect(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
+Color Integrator::indirect(const Intersection &intersection, const Scene &scene, RandomGenerator &random, int count) const
 {
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
@@ -73,7 +72,7 @@ Color Integrator::indirect(const Intersection &intersection, const Scene &scene,
     if (!bounceIntersection.hit) { return Color(0.f, 0.f, 0.f); }
 
     float invPDF = 1.f / UniformHemispherePdf();
-    Color bounceColor = direct(bounceIntersection, scene, random)
+    Color bounceColor = L(bounceIntersection, scene, random, count - 1)
         * intersection.material->f(intersection.wi, bounceDirection)
         * fmaxf(0.f, bounceDirection.dot(intersection.normal))
         * invPDF;

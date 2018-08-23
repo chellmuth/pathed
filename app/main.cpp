@@ -47,7 +47,12 @@ void sample(
             //     0.5f * (normal.z() + 1.f)
             // );
 
-            Color color = integrator.L(intersection, scene, random);
+            Color color = integrator.L(intersection, scene, random, 2);
+
+            Color emit = intersection.material->emit();
+            if (!emit.isBlack()) {
+                color = emit;
+            }
 
             radianceLookup[3 * (row * width + col) + 0] += color.r();
             radianceLookup[3 * (row * width + col) + 1] += color.g();
