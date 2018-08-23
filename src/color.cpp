@@ -20,6 +20,15 @@ Color Color::operator+ (const Color c) const
     );
 }
 
+Color& Color::operator+= (const Color &c)
+{
+    m_r += c.r();
+    m_g += c.g();
+    m_b += c.b();
+
+    return *this;
+}
+
 Color Color::operator* (const Color c) const
 {
     return Color(
@@ -36,6 +45,15 @@ Color Color::operator* (const float t) const
         m_g * t,
         m_b * t
     );
+}
+
+Color& Color::operator*= (const Color &c)
+{
+    m_r *= c.r();
+    m_g *= c.g();
+    m_b *= c.b();
+
+    return *this;
 }
 
 Color Color::operator/ (const float t) const

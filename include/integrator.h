@@ -6,9 +6,8 @@
 
 class Integrator {
 public:
-    Color L(const Intersection &intersection, const Scene &scene, RandomGenerator &random, int count) const;
+    Color L(const Intersection &intersection, const Scene &scene, RandomGenerator &random, int bounceCount) const;
 
 private:
     Color direct(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const;
-    Color indirect(const Intersection &intersection, const Scene &scene, RandomGenerator &random, int count) const;
 };
