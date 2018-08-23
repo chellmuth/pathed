@@ -1,3 +1,4 @@
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <mutex>
@@ -82,11 +83,15 @@ void run(Image &image)
     }
 
     for (int i = 0; i < primarySamples; i++) {
+        std::clock_t begin = clock();
+
         sample(
             radianceLookup,
             scene, integrator,
             camera, random
         );
+
+        std::clock_t end = clock();
 
         std::mutex &lock = image.getLock();
         lock.lock();
@@ -105,7 +110,8 @@ void run(Image &image)
         }
 
         lock.unlock();
-        printf("sample: (%d/%d)\n", i + 1, primarySamples);
+        double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
+        printf("sample: %d/%d (%0.1fs elapsed)\n", i + 1, primarySamples, elapsedSeconds);
     }
 }
 
