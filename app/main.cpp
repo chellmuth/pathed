@@ -24,6 +24,7 @@ using namespace std;
 static const int width = 400;
 static const int height = 400;
 static const int primarySamples = 50;
+static const int bounceCount = 2;
 
 void sample(
     std::vector<float> &radianceLookup,
@@ -48,7 +49,7 @@ void sample(
             //     0.5f * (normal.z() + 1.f)
             // );
 
-            Color color = integrator.L(intersection, scene, random, 2);
+            Color color = integrator.L(intersection, scene, random, bounceCount);
 
             Color emit = intersection.material->emit();
             if (!emit.isBlack()) {
