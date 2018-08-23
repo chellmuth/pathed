@@ -11,6 +11,15 @@ bool Color::isBlack() const
     return m_r == 0.f && m_g == 0.f && m_b == 0.f;
 }
 
+Color Color::operator+ (const Color c) const
+{
+    return Color(
+        m_r + c.r(),
+        m_g + c.g(),
+        m_b + c.b()
+    );
+}
+
 Color Color::operator* (const Color c) const
 {
     return Color(

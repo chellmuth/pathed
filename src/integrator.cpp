@@ -2,14 +2,28 @@
 
 #include "color.h"
 #include "light.h"
+#include "monte_carlo.h"
 #include "ray.h"
+#include "transform.h"
 #include "vector.h"
+
+Color Integrator::L(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
+{
+    Color emit = intersection.material->emit();
+    if (!emit.isBlack()) {
+        return emit;
+    }
+
+    return
+        Ld(intersection, scene, random)
+        + indirect(intersection, scene, random);
+}
 
 Color Integrator::Ld(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
 {
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
-        return emit;
+        return Color(0.f, 0.f, 0.f);
     }
 
     int lightCount = scene.lights().size();
@@ -39,4 +53,30 @@ Color Integrator::Ld(const Intersection &intersection, const Scene &scene, Rando
         * intersection.material->f(intersection.wi, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
+}
+
+Color Integrator::indirect(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
+{
+    Transform hemisphereToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
+
+    Vector3 hemisphereSample = UniformSampleHemisphere(random);
+    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    Ray bounceRay(
+        intersection.point,
+        bounceDirection
+    );
+
+    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    if (!bounceIntersection.hit) { return Color(0.f, 0.f, 0.f); }
+
+    float invPDF = 1.f / UniformHemispherePdf();
+    Color bounceColor = Ld(bounceIntersection, scene, random)
+        * intersection.material->f(intersection.wi, bounceDirection)
+        * fmaxf(0.f, bounceDirection.dot(intersection.normal))
+        * invPDF;
+
+    return bounceColor;
 }

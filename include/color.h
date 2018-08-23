@@ -12,6 +12,7 @@ public:
 
     bool isBlack() const;
 
+    Color operator+ (const Color c) const;
     Color operator* (const Color c) const;
     Color operator* (const float t) const;
     Color operator/ (const float t) const;

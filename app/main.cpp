@@ -23,7 +23,6 @@ using namespace std;
 static const int width = 400;
 static const int height = 400;
 static const int primarySamples = 50;
-static const int bounceCount = 0;
 
 void sample(
     std::vector<float> &radianceLookup,
@@ -48,43 +47,7 @@ void sample(
             //     0.5f * (normal.z() + 1.f)
             // );
 
-            Color color = integrator.Ld(intersection, scene, random);
-
-            // float bounceContribution = 1.f;
-            // Intersection bounceIntersection = intersection;
-
-            // for (int i = 0; i < bounceCount; i++) {
-            //     Transform hemisphereToWorld = normalToWorldSpace(
-            //         intersection.normal,
-            //         ray.direction()
-            //     );
-
-            //     Vector3 hemisphereSample = UniformSampleHemisphere(random);
-            //     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-            //     Ray bounceRay(
-            //         intersection.point,
-            //         bounceDirection
-            //     );
-
-            //     bounceIntersection = scene.testIntersect(bounceRay);
-            //     if (!bounceIntersection.hit) { break; }
-
-            //     material = *bounceIntersection.material;
-            //     Color bounceColor = material.shade(bounceIntersection, scene, random);
-
-            //     bounceContribution *= fmaxf(
-            //         0.f,
-            //         bounceRay.direction().dot(intersection.normal)
-            //     );
-
-            //     color = Color(
-            //         color.r() + bounceColor.r() * bounceContribution,
-            //         color.g() + bounceColor.g() * bounceContribution,
-            //         color.b() + bounceColor.b() * bounceContribution
-            //     );
-
-            //     intersection = bounceIntersection;
-            // }
+            Color color = integrator.L(intersection, scene, random);
 
             radianceLookup[3 * (row * width + col) + 0] += color.r();
             radianceLookup[3 * (row * width + col) + 1] += color.g();
