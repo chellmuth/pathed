@@ -4,7 +4,7 @@ class Point3;
 
 class Vector3 {
 public:
-    Vector3() : Vector3(0.f, 0.f, 0.f) {};
+    Vector3(float xyz) : Vector3(xyz, xyz, xyz) {};
     Vector3(float x, float y, float z);
 
     float x() const { return m_x; }

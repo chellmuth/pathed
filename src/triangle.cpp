@@ -30,6 +30,7 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     SurfaceSample sample = {
         .point = point,
         .normal = normal,
+        .invPDF = area()
     };
     return sample;
 }
@@ -40,7 +41,8 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .hit = false,
         .t = std::numeric_limits<float>::max(),
         .point = Point3(0.f, 0.f, 0.f),
-        .normal = Vector3(),
+        .wi = Vector3(0.f),
+        .normal = Vector3(0.f),
         .material = nullptr
     };
 
@@ -73,11 +75,21 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .hit = true,
         .t = t,
         .point = hitPoint,
+        .wi = ray.direction(),
         .normal = e2.cross(e1).normalized(),
         .material = nullptr
     };
 
     return hit;
+}
+
+float Triangle::area() const
+{
+    Vector3 e1 = (m_p1 - m_p0).toVector();
+    Vector3 e2 = (m_p2 - m_p0).toVector();
+
+    Vector3 cross = e1.cross(e2);
+    return fabsf(cross.length() / 2.f);
 }
 
 void Triangle::debug() const

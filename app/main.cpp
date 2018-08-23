@@ -1,3 +1,4 @@
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <mutex>
@@ -8,7 +9,7 @@
 #include "color.h"
 #include "image.h"
 #include "intersection.h"
-#include "material.h"
+#include "integrator.h"
 #include "monte_carlo.h"
 #include "ray.h"
 #include "scene.h"
@@ -21,13 +22,14 @@
 using namespace std;
 
 static const int width = 400;
-static const int height = 300;
-static const int primarySamples = 10;
-static const int bounceCount = 1;
+static const int height = 400;
+static const int primarySamples = 50;
+static const int bounceCount = 2;
 
 void sample(
     std::vector<float> &radianceLookup,
-    Scene &scene, Camera &camera, RandomGenerator &random)
+    Scene &scene, Integrator &integrator,
+    Camera &camera, RandomGenerator &random)
 {
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -47,43 +49,11 @@ void sample(
             //     0.5f * (normal.z() + 1.f)
             // );
 
-            Material material = *intersection.material;
-            Color color = material.shade(intersection, scene, random);
+            Color color = integrator.L(intersection, scene, random, bounceCount);
 
-            float bounceContribution = 1.f;
-            Intersection bounceIntersection = intersection;
-
-            for (int i = 0; i < bounceCount; i++) {
-                Transform hemisphereToWorld = normalToWorldSpace(
-                    intersection.normal,
-                    ray.direction()
-                );
-
-                Vector3 hemisphereSample = UniformSampleHemisphere(random);
-                Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-                Ray bounceRay(
-                    intersection.point,
-                    bounceDirection
-                );
-
-                bounceIntersection = scene.testIntersect(bounceRay);
-                if (!bounceIntersection.hit) { break; }
-
-                material = *bounceIntersection.material;
-                Color bounceColor = material.shade(bounceIntersection, scene, random);
-
-                bounceContribution *= fmaxf(
-                    0.f,
-                    bounceRay.direction().dot(intersection.normal)
-                );
-
-                color = Color(
-                    color.r() + bounceColor.r() * bounceContribution,
-                    color.g() + bounceColor.g() * bounceContribution,
-                    color.b() + bounceColor.b() * bounceContribution
-                );
-
-                intersection = bounceIntersection;
+            Color emit = intersection.material->emit();
+            if (!emit.isBlack()) {
+                color = emit;
             }
 
             radianceLookup[3 * (row * width + col) + 0] += color.r();
@@ -106,6 +76,7 @@ void run(Image &image)
     );
     Camera camera(cameraToWorld, 45 / 180.f * M_PI);
     RandomGenerator random;
+    Integrator integrator;
 
     std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {
@@ -113,11 +84,15 @@ void run(Image &image)
     }
 
     for (int i = 0; i < primarySamples; i++) {
+        std::clock_t begin = clock();
+
         sample(
             radianceLookup,
-            scene, camera,
-            random
+            scene, integrator,
+            camera, random
         );
+
+        std::clock_t end = clock();
 
         std::mutex &lock = image.getLock();
         lock.lock();
@@ -136,7 +111,8 @@ void run(Image &image)
         }
 
         lock.unlock();
-        printf("sample: (%d/%d)\n", i + 1, primarySamples);
+        double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
+        printf("sample: %d/%d (%0.1fs elapsed)\n", i + 1, primarySamples, elapsedSeconds);
     }
 }
 

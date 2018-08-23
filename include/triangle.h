@@ -20,5 +20,7 @@ public:
     void debug() const;
 
 private:
+    float area() const;
+
     Point3 m_p0, m_p1, m_p2;
 };
