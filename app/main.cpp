@@ -11,6 +11,7 @@
 #include "intersection.h"
 #include "integrator.h"
 #include "monte_carlo.h"
+#include "point.h"
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
@@ -21,10 +22,13 @@
 
 using namespace std;
 
-static const int width = 400;
-static const int height = 400;
-static const int primarySamples = 50;
-static const int bounceCount = 2;
+static const int width = 40;
+static const int height = 40;
+static const int primarySamples = 1;
+static const int bounceCount = 0;
+// static const Point3 *debugPoint;
+// static const Point3 *debugPoint = new Point3(338, 156, 0);
+static const Point3 *debugPoint = new Point3(32, 22, 0);
 
 void samplePixel(
     int row, int col,
@@ -32,13 +36,14 @@ void samplePixel(
     Scene &scene, Integrator &integrator,
     Camera &camera, RandomGenerator &random)
 {
+    std::cout << "row: " << row << " col: " << col << std::endl;
     Ray ray = camera.generateRay(
         row, col,
         width, height
     );
 
     Intersection intersection = scene.testIntersect(ray);
-    if (!intersection.hit) { return; }
+    if (!intersection.hit) { printf("oh\n"); return; }
 
     Color color = integrator.L(intersection, scene, random, bounceCount);
 
@@ -46,6 +51,16 @@ void samplePixel(
     if (!emit.isBlack()) {
         color = emit;
     }
+
+    std::cout << color << std::endl;
+
+    radianceLookup[3 * (0) + 0] += color.r();
+    radianceLookup[3 * (0) + 1] += color.g();
+    radianceLookup[3 * (0) + 2] += color.b();
+
+    radianceLookup[3 * (1) + 0] += color.r();
+    radianceLookup[3 * (1) + 1] += color.g();
+    radianceLookup[3 * (1) + 2] += color.b();
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
     radianceLookup[3 * (row * width + col) + 1] += color.g();
@@ -87,17 +102,27 @@ void run(Image &image)
     for (int i = 0; i < primarySamples; i++) {
         std::clock_t begin = clock();
 
-        sampleImage(
-            radianceLookup,
-            scene, integrator,
-            camera, random
-        );
+        if (debugPoint) {
+            samplePixel(
+                debugPoint->y(), debugPoint->x(),
+                radianceLookup,
+                scene, integrator,
+                camera, random
+            );
+        } else {
+            sampleImage(
+                radianceLookup,
+                scene, integrator,
+                camera, random
+            );
+        }
 
         std::clock_t end = clock();
 
         std::mutex &lock = image.getLock();
         lock.lock();
 
+        printf("%f %f\n", radianceLookup[0], radianceLookup[0] / (i+1) );
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 int index = 3 * (row * width + col);
