@@ -26,39 +26,40 @@ static const int height = 400;
 static const int primarySamples = 50;
 static const int bounceCount = 2;
 
-void sample(
+void samplePixel(
+    int row, int col,
+    std::vector<float> &radianceLookup,
+    Scene &scene, Integrator &integrator,
+    Camera &camera, RandomGenerator &random)
+{
+    Ray ray = camera.generateRay(
+        row, col,
+        width, height
+    );
+
+    Intersection intersection = scene.testIntersect(ray);
+    if (!intersection.hit) { return; }
+
+    Color color = integrator.L(intersection, scene, random, bounceCount);
+
+    Color emit = intersection.material->emit();
+    if (!emit.isBlack()) {
+        color = emit;
+    }
+
+    radianceLookup[3 * (row * width + col) + 0] += color.r();
+    radianceLookup[3 * (row * width + col) + 1] += color.g();
+    radianceLookup[3 * (row * width + col) + 2] += color.b();
+}
+
+void sampleImage(
     std::vector<float> &radianceLookup,
     Scene &scene, Integrator &integrator,
     Camera &camera, RandomGenerator &random)
 {
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            Ray ray = camera.generateRay(
-                row, col,
-                width, height
-            );
-
-            Intersection intersection = scene.testIntersect(ray);
-            if (!intersection.hit) { continue; }
-            // Vector3 normal = intersection.normal;
-            // image.set(
-            //     row,
-            //     col,
-            //     0.5f * (normal.x() + 1.f),
-            //     0.5f * (normal.y() + 1.f),
-            //     0.5f * (normal.z() + 1.f)
-            // );
-
-            Color color = integrator.L(intersection, scene, random, bounceCount);
-
-            Color emit = intersection.material->emit();
-            if (!emit.isBlack()) {
-                color = emit;
-            }
-
-            radianceLookup[3 * (row * width + col) + 0] += color.r();
-            radianceLookup[3 * (row * width + col) + 1] += color.g();
-            radianceLookup[3 * (row * width + col) + 2] += color.b();
+            samplePixel(row, col, radianceLookup, scene, integrator, camera, random);
         }
     }
 }
@@ -86,7 +87,7 @@ void run(Image &image)
     for (int i = 0; i < primarySamples; i++) {
         std::clock_t begin = clock();
 
-        sample(
+        sampleImage(
             radianceLookup,
             scene, integrator,
             camera, random
