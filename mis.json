@@ -1,0 +1,26 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "2", "15" ],
+      "target": [ "0", "-2", "2.5" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "28"
+  },
+
+  "film": {
+    "width": "768",
+    "height": "512"
+  },
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "plate1.obj",
+      "bsdf": {
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
+        "specularReflectance": "1"
+       }
+    }
+  ]
+}

@@ -1,4 +1,36 @@
-// #include "scene_parser.h"
+#include "scene_parser.h"
+
+#include "light.h"
+#include "model.h"
+#include "obj_parser.h"
+#include "scene.h"
+#include "surface.h"
+
+#include "json.hpp"
+using json = nlohmann::json;
+
+Scene parseScene(std::ifstream &sceneFile)
+{
+    json sceneJson = json::parse(sceneFile);
+
+    auto objects = sceneJson["models"];
+    auto object = objects[0];
+
+    std::ifstream objFile(object["filename"].get<std::string>());
+    ObjParser objParser(objFile, Handedness::Left);
+    Scene scene = objParser.parseScene();
+
+    Color diffuse(
+        stof(object["bsdf"]["diffuseReflectance"][0].get<std::string>()),
+        stof(object["bsdf"]["diffuseReflectance"][1].get<std::string>()),
+        stof(object["bsdf"]["diffuseReflectance"][2].get<std::string>())
+    );
+    float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
+    Model model(scene.getSurfaces(), diffuse, specular);
+
+    return scene;
+}
+
 
 // #include <iostream>
 // #include <vector>

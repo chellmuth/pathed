@@ -10,6 +10,11 @@ Scene::Scene(std::vector<std::shared_ptr<Surface>> surfaces, std::vector<std::sh
     : m_surfaces(surfaces), m_lights(lights)
 {}
 
+std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
+{
+    return m_surfaces;
+}
+
 Intersection Scene::testIntersect(const Ray &ray) const
 {
     Intersection result = {

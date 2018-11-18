@@ -14,6 +14,7 @@
 #include "ray.h"
 #include "scene.h"
 #include "obj_parser.h"
+#include "scene_parser.h"
 #include "random_generator.h"
 #include "transform.h"
 #include "vector.h"
@@ -66,6 +67,9 @@ void sampleImage(
 
 void run(Image &image)
 {
+    ifstream jsonScene("mis.json");
+    Scene s1 = parseScene(jsonScene);
+
     ifstream sceneFile("CornellBox-Original.obj");
     ObjParser objParser(sceneFile, Handedness::Left);
     Scene scene = objParser.parseScene();
