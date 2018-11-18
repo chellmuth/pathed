@@ -25,7 +25,7 @@ Scene parseScene(std::ifstream &sceneFile)
 
     std::ifstream objFile(object["filename"].get<std::string>());
     ObjParser objParser(objFile, Handedness::Left);
-    Scene scene = objParser.parseScene();
+    Scene objScene = objParser.parseScene();
 
     Color diffuse(
         stof(object["bsdf"]["diffuseReflectance"][0].get<std::string>()),
@@ -33,7 +33,7 @@ Scene parseScene(std::ifstream &sceneFile)
         stof(object["bsdf"]["diffuseReflectance"][2].get<std::string>())
     );
     float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
-    Model model(scene.getSurfaces(), diffuse, specular);
+    auto model = std::make_shared<Model>(objScene.getSurfaces(), diffuse, specular);
 
     auto sensor = sceneJson["sensor"];
     Transform cameraToWorld = lookAt(
@@ -41,7 +41,19 @@ Scene parseScene(std::ifstream &sceneFile)
         parsePoint(sensor["lookAt"]["target"]),
         parseVector(sensor["lookAt"]["up"])
     );
-    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+    auto camera = std::make_shared<Camera>(cameraToWorld, 45 / 180.f * M_PI);
+
+    std::vector<std::shared_ptr<Surface>> dummySurfaces;
+    std::vector<std::shared_ptr<Light>> dummyLights;
+
+    std::vector<std::shared_ptr<Model>> models = { model };
+
+    Scene scene(
+        dummySurfaces,
+        dummyLights,
+        models,
+        camera
+    );
 
     return scene;
 }
