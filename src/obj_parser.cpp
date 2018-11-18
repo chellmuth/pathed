@@ -2,7 +2,9 @@
 
 #include <iostream>
 
+#include "camera.h"
 #include "color.h"
+#include "model.h"
 #include "string_util.h"
 #include "triangle.h"
 
@@ -19,7 +21,9 @@ Scene ObjParser::parseScene()
         parseLine(line);
     }
 
-    return Scene(m_surfaces, m_lights);
+    std::vector<std::shared_ptr<Model>> models;
+    std::shared_ptr<Camera> camera;
+    return Scene(m_surfaces, m_lights, models, camera);
 }
 
 void ObjParser::parseLine(string &line)

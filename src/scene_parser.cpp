@@ -1,13 +1,20 @@
 #include "scene_parser.h"
 
+#include "camera.h"
 #include "light.h"
 #include "model.h"
 #include "obj_parser.h"
+#include "point.h"
 #include "scene.h"
 #include "surface.h"
+#include "transform.h"
+#include "vector.h"
 
 #include "json.hpp"
 using json = nlohmann::json;
+
+static Point3 parsePoint(json pointJson);
+static Vector3 parseVector(json vectorJson);
 
 Scene parseScene(std::ifstream &sceneFile)
 {
@@ -28,9 +35,34 @@ Scene parseScene(std::ifstream &sceneFile)
     float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
     Model model(scene.getSurfaces(), diffuse, specular);
 
+    auto sensor = sceneJson["sensor"];
+    Transform cameraToWorld = lookAt(
+        parsePoint(sensor["lookAt"]["origin"]),
+        parsePoint(sensor["lookAt"]["target"]),
+        parseVector(sensor["lookAt"]["up"])
+    );
+    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+
     return scene;
 }
 
+static Point3 parsePoint(json pointJson)
+{
+    return Point3(
+        stof(pointJson[0].get<std::string>()),
+        stof(pointJson[1].get<std::string>()),
+        stof(pointJson[2].get<std::string>())
+    );
+}
+
+static Vector3 parseVector(json vectorJson)
+{
+    return Vector3(
+        stof(vectorJson[0].get<std::string>()),
+        stof(vectorJson[1].get<std::string>()),
+        stof(vectorJson[2].get<std::string>())
+    );
+}
 
 // #include <iostream>
 // #include <vector>
