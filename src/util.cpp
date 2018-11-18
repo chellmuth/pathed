@@ -1,6 +1,6 @@
-#import "math.h"
+#include "math.h"
 
-#import "util.h"
+#include "util.h"
 
 static QuadraticSolution solve(float a, float b)
 {

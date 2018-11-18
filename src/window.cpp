@@ -79,7 +79,7 @@ bool loop(Image &image, int width, int height)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "Path Tracer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width*2, height*2, "Path Tracer", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
