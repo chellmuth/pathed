@@ -18,3 +18,8 @@ Intersection Surface::testIntersect(const Ray &ray) const
 
     return intersection;
 }
+
+std::shared_ptr<Shape> Surface::getShape() const
+{
+    return m_shape;
+}

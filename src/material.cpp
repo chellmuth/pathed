@@ -3,8 +3,8 @@
 #include <math.h>
 #include <stdio.h>
 
-Material::Material(Color diffuse, Color emit)
-    : m_diffuse(diffuse), m_emit(emit)
+Material::Material(Color diffuse, float specular, Color emit)
+    : m_diffuse(diffuse), m_specular(specular), m_emit(emit)
 {}
 
 Color Material::emit() const

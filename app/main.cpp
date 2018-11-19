@@ -31,9 +31,9 @@ void samplePixel(
     int row, int col,
     std::vector<float> &radianceLookup,
     Scene &scene, Integrator &integrator,
-    Camera &camera, RandomGenerator &random)
+    RandomGenerator &random)
 {
-    Ray ray = camera.generateRay(
+    Ray ray = scene.getCamera()->generateRay(
         row, col,
         width, height
     );
@@ -41,26 +41,31 @@ void samplePixel(
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    Color color = integrator.L(intersection, scene, random, bounceCount);
+    // Color color = integrator.L(intersection, scene, random, bounceCount);
 
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        color = emit;
-    }
+    // Color emit = intersection.material->emit();
+    // if (!emit.isBlack()) {
+    //     color = emit;
+    // }
 
-    radianceLookup[3 * (row * width + col) + 0] += color.r();
-    radianceLookup[3 * (row * width + col) + 1] += color.g();
-    radianceLookup[3 * (row * width + col) + 2] += color.b();
+    // radianceLookup[3 * (row * width + col) + 0] += color.r();
+    // radianceLookup[3 * (row * width + col) + 1] += color.g();
+    // radianceLookup[3 * (row * width + col) + 2] += color.b();
+
+    Vector3 normal = intersection.normal;
+    radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
+    radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
+    radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);
 }
 
 void sampleImage(
     std::vector<float> &radianceLookup,
     Scene &scene, Integrator &integrator,
-    Camera &camera, RandomGenerator &random)
+    RandomGenerator &random)
 {
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            samplePixel(row, col, radianceLookup, scene, integrator, camera, random);
+            samplePixel(row, col, radianceLookup, scene, integrator, random);
         }
     }
 }
@@ -68,18 +73,18 @@ void sampleImage(
 void run(Image &image)
 {
     ifstream jsonScene("mis.json");
-    Scene s1 = parseScene(jsonScene);
+    Scene scene = parseScene(jsonScene);
 
-    ifstream sceneFile("CornellBox-Original.obj");
-    ObjParser objParser(sceneFile, Handedness::Left);
-    Scene scene = objParser.parseScene();
+    // ifstream sceneFile("CornellBox-Original.obj");
+    // ObjParser objParser(sceneFile, Handedness::Left);
+    // Scene scene = objParser.parseScene();
 
-    Transform cameraToWorld = lookAt(
-        Point3(0.f, 1.f, 3.6f),
-        Point3(0.f, 1.f, 0.f),
-        Vector3(0.f, 1.f, 0.f)
-    );
-    Camera camera(cameraToWorld, 45 / 180.f * M_PI);
+    // Transform cameraToWorld = lookAt(
+    //     Point3(0.f, 1.f, 3.6f),
+    //     Point3(0.f, 1.f, 0.f),
+    //     Vector3(0.f, 1.f, 0.f)
+    // );
+    // Camera camera(cameraToWorld, 45 / 180.f * M_PI);
     RandomGenerator random;
     Integrator integrator;
 
@@ -94,7 +99,7 @@ void run(Image &image)
         sampleImage(
             radianceLookup,
             scene, integrator,
-            camera, random
+            random
         );
 
         std::clock_t end = clock();

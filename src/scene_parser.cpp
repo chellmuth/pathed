@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "light.h"
-#include "model.h"
 #include "obj_parser.h"
 #include "point.h"
 #include "scene.h"
@@ -24,16 +23,6 @@ Scene parseScene(std::ifstream &sceneFile)
     auto object = objects[0];
 
     std::ifstream objFile(object["filename"].get<std::string>());
-    ObjParser objParser(objFile, Handedness::Left);
-    Scene objScene = objParser.parseScene();
-
-    Color diffuse(
-        stof(object["bsdf"]["diffuseReflectance"][0].get<std::string>()),
-        stof(object["bsdf"]["diffuseReflectance"][1].get<std::string>()),
-        stof(object["bsdf"]["diffuseReflectance"][2].get<std::string>())
-    );
-    float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
-    auto model = std::make_shared<Model>(objScene.getSurfaces(), diffuse, specular);
 
     auto sensor = sceneJson["sensor"];
     Transform cameraToWorld = lookAt(
@@ -43,15 +32,28 @@ Scene parseScene(std::ifstream &sceneFile)
     );
     auto camera = std::make_shared<Camera>(cameraToWorld, 45 / 180.f * M_PI);
 
-    std::vector<std::shared_ptr<Surface>> dummySurfaces;
+    ObjParser objParser(objFile, Handedness::Left);
+    Scene objScene = objParser.parseScene();
+
+    Color diffuse(
+        stof(object["bsdf"]["diffuseReflectance"][0].get<std::string>()),
+        stof(object["bsdf"]["diffuseReflectance"][1].get<std::string>()),
+        stof(object["bsdf"]["diffuseReflectance"][2].get<std::string>())
+    );
+    float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
+    auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
+
+    std::vector<std::shared_ptr<Surface>> surfaces;
+    for (auto surfacePtr : objScene.getSurfaces()) {
+        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
+        surfaces.push_back(surface);
+    }
+
     std::vector<std::shared_ptr<Light>> dummyLights;
 
-    std::vector<std::shared_ptr<Model>> models = { model };
-
     Scene scene(
-        dummySurfaces,
+        surfaces,
         dummyLights,
-        models,
         camera
     );
 

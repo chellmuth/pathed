@@ -17,6 +17,8 @@ public:
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray) const;
 
+    std::shared_ptr<Shape> getShape() const;
+
 private:
     std::shared_ptr<Shape> m_shape;
     std::shared_ptr<Material> m_material;
