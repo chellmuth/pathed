@@ -41,21 +41,21 @@ void samplePixel(
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    // Color color = integrator.L(intersection, scene, random, bounceCount);
+    Color color = integrator.L(intersection, scene, random, bounceCount);
 
-    // Color emit = intersection.material->emit();
-    // if (!emit.isBlack()) {
-    //     color = emit;
-    // }
+    Color emit = intersection.material->emit();
+    if (!emit.isBlack()) {
+        color = emit;
+    }
 
-    // radianceLookup[3 * (row * width + col) + 0] += color.r();
-    // radianceLookup[3 * (row * width + col) + 1] += color.g();
-    // radianceLookup[3 * (row * width + col) + 2] += color.b();
+    radianceLookup[3 * (row * width + col) + 0] += color.r();
+    radianceLookup[3 * (row * width + col) + 1] += color.g();
+    radianceLookup[3 * (row * width + col) + 2] += color.b();
 
-    Vector3 normal = intersection.normal;
-    radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
-    radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
-    radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);
+    // Vector3 normal = intersection.normal;
+    // radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
+    // radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
+    // radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);
 }
 
 void sampleImage(
@@ -75,16 +75,6 @@ void run(Image &image)
     ifstream jsonScene("mis.json");
     Scene scene = parseScene(jsonScene);
 
-    // ifstream sceneFile("CornellBox-Original.obj");
-    // ObjParser objParser(sceneFile, Handedness::Left);
-    // Scene scene = objParser.parseScene();
-
-    // Transform cameraToWorld = lookAt(
-    //     Point3(0.f, 1.f, 3.6f),
-    //     Point3(0.f, 1.f, 0.f),
-    //     Vector3(0.f, 1.f, 0.f)
-    // );
-    // Camera camera(cameraToWorld, 45 / 180.f * M_PI);
     RandomGenerator random;
     Integrator integrator;
 

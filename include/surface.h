@@ -18,6 +18,7 @@ public:
     Intersection testIntersect(const Ray &ray) const;
 
     std::shared_ptr<Shape> getShape() const;
+    std::shared_ptr<Material> getMaterial() const;
 
 private:
     std::shared_ptr<Shape> m_shape;

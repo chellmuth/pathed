@@ -37,11 +37,18 @@ Scene parseScene(std::ifstream &sceneFile)
     );
     auto camera = std::make_shared<Camera>(cameraToWorld, 45 / 180.f * M_PI);
 
-    std::vector<std::shared_ptr<Light>> dummyLights;
+    std::vector<std::shared_ptr<Light>> lights;
+    for (auto surfacePtr : surfaces) {
+        if (surfacePtr->getMaterial()->emit().isBlack()) {
+            continue;
+        }
+        auto light = std::make_shared<Light>(surfacePtr);
+        lights.push_back(light);
+    }
 
     Scene scene(
         surfaces,
-        dummyLights,
+        lights,
         camera
     );
 
@@ -91,12 +98,12 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
     );
     float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
-    auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
+    auto material = std::make_shared<Material>(diffuse, specular, Color(1.f, 1.f, 1.f));
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
         parseFloat(sphereJson["radius"]),
-        Color(0.f, 0.f, 0.f)
+        Color(0.f, 1.f, 0.f)
     );
     auto surface = std::make_shared<Surface>(sphere, material);
 

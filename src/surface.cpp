@@ -23,3 +23,8 @@ std::shared_ptr<Shape> Surface::getShape() const
 {
     return m_shape;
 }
+
+std::shared_ptr<Material> Surface::getMaterial() const
+{
+    return m_material;
+}
