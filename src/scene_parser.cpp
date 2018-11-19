@@ -14,15 +14,16 @@ using json = nlohmann::json;
 
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
+static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseObject(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 
 Scene parseScene(std::ifstream &sceneFile)
 {
     json sceneJson = json::parse(sceneFile);
 
+    std::vector<std::shared_ptr<Surface>> surfaces;
     auto objects = sceneJson["models"];
-    auto object = objects[0];
-
-    std::ifstream objFile(object["filename"].get<std::string>());
+    parseObjects(objects, surfaces);
 
     auto sensor = sceneJson["sensor"];
     Transform cameraToWorld = lookAt(
@@ -31,23 +32,6 @@ Scene parseScene(std::ifstream &sceneFile)
         parseVector(sensor["lookAt"]["up"])
     );
     auto camera = std::make_shared<Camera>(cameraToWorld, 45 / 180.f * M_PI);
-
-    ObjParser objParser(objFile, Handedness::Left);
-    Scene objScene = objParser.parseScene();
-
-    Color diffuse(
-        stof(object["bsdf"]["diffuseReflectance"][0].get<std::string>()),
-        stof(object["bsdf"]["diffuseReflectance"][1].get<std::string>()),
-        stof(object["bsdf"]["diffuseReflectance"][2].get<std::string>())
-    );
-    float specular = stof(object["bsdf"]["specularReflectance"].get<std::string>());
-    auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
-
-    std::vector<std::shared_ptr<Surface>> surfaces;
-    for (auto surfacePtr : objScene.getSurfaces()) {
-        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
-        surfaces.push_back(surface);
-    }
 
     std::vector<std::shared_ptr<Light>> dummyLights;
 
@@ -58,6 +42,35 @@ Scene parseScene(std::ifstream &sceneFile)
     );
 
     return scene;
+}
+
+static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces)
+{
+    for (auto objectJson : objectsJson) {
+        parseObject(objectJson, surfaces);
+    }
+}
+
+static void parseObject(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces)
+{
+    std::ifstream objFile(objectJson["filename"].get<std::string>());
+
+    ObjParser objParser(objFile, Handedness::Left);
+    Scene objScene = objParser.parseScene();
+
+    auto bsdfJson = objectJson["bsdf"];
+    Color diffuse(
+        stof(bsdfJson["diffuseReflectance"][0].get<std::string>()),
+        stof(bsdfJson["diffuseReflectance"][1].get<std::string>()),
+        stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
+    );
+    float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
+    auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
+
+    for (auto surfacePtr : objScene.getSurfaces()) {
+        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
+        surfaces.push_back(surface);
+    }
 }
 
 static Point3 parsePoint(json pointJson)
