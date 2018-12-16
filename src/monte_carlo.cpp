@@ -18,5 +18,5 @@ Vector3 UniformSampleHemisphere(RandomGenerator &random)
 
 float UniformHemispherePdf()
 {
-    return INV_TWOPI;
+    return INV_TWO_PI;
 }

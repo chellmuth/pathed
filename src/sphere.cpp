@@ -12,8 +12,8 @@ Sphere::Sphere(Point3 center, float radius, Color color)
 
 SurfaceSample Sphere::sample(RandomGenerator &random) const
 {
-    float theta = random.next();
-    float phi = random.next();
+    float theta = random.next() * TWO_PI;
+    float phi = random.next() * TWO_PI;
 
     Vector3 v = Vector3(
         m_radius * cosf(theta) * sinf(phi),
