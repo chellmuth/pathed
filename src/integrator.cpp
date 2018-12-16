@@ -77,7 +77,7 @@ Color Integrator::direct(const Intersection &intersection, const Scene &scene, R
 
     float invPDF = lightSample.invPDF * lightCount;
 
-    return light->biradiance(lightSample.point, intersection.point)
+    return light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection.wi, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
