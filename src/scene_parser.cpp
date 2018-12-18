@@ -16,6 +16,7 @@ using json = nlohmann::json;
 static float parseFloat(json floatJson);
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
+static Color parseColor(json colorJson);
 
 static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
@@ -86,7 +87,11 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
 
     for (auto surfacePtr : objScene.getSurfaces()) {
-        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
+        auto surface = std::make_shared<Surface>(
+            surfacePtr->getShape(),
+            material,
+            surfacePtr->getRadiance()
+        );
         surfaces.push_back(surface);
     }
 }
@@ -107,7 +112,9 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         parseFloat(sphereJson["radius"]),
         Color(0.f, 1.f, 0.f)
     );
-    auto surface = std::make_shared<Surface>(sphere, material);
+
+    Color radiance = parseColor(sphereJson["radiance"]);
+    auto surface = std::make_shared<Surface>(sphere, material, radiance);
 
     surfaces.push_back(surface);
 }
@@ -135,6 +142,16 @@ static Vector3 parseVector(json vectorJson)
     );
 }
 
+static Color parseColor(json colorJson)
+{
+    return Color(
+        stof(colorJson[0].get<std::string>()),
+        stof(colorJson[1].get<std::string>()),
+        stof(colorJson[2].get<std::string>())
+    );
+}
+
+
 // #include <iostream>
 // #include <vector>
 
@@ -147,7 +164,6 @@ static Vector3 parseVector(json vectorJson)
 // static Triangle *parseTriangle(json triangleJson);
 
 // static Point3 parsePoint(json pointJson);
-// static Color parseColor(json colorJson);
 
 // Scene parseScene(json sceneJson)
 // {
@@ -194,14 +210,5 @@ static Vector3 parseVector(json vectorJson)
 //         pointJson["x"],
 //         pointJson["y"],
 //         pointJson["z"]
-//     );
-// }
-
-// static Color parseColor(json colorJson)
-// {
-//     return Color(
-//         colorJson[0],
-//         colorJson[1],
-//         colorJson[2]
 //     );
 // }
