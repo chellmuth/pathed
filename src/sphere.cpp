@@ -1,3 +1,4 @@
+#include "math.h"
 #include <limits>
 
 #include "sphere.h"
@@ -12,17 +13,14 @@ Sphere::Sphere(Point3 center, float radius, Color color)
 
 SurfaceSample Sphere::sample(RandomGenerator &random) const
 {
-    float theta = random.next() * M_PI;
-    float phi = random.next() * M_TWO_PI;
-
-    Vector3 v = Vector3(
-        m_radius * cosf(phi) * sinf(theta),
-        m_radius * sinf(phi) * sinf(theta),
-        m_radius * cosf(theta)
-    );
+    // from pbrt
+    float z = 1 - 2 * random.next();
+    float r = sqrt(fmaxf(0, 1 - z * z));
+    float phi = 2 * M_PI * random.next();
+    Vector3 v(r * cosf(phi), r * sinf(phi), z);
 
     SurfaceSample sample = {
-        .point = m_center + v,
+        .point = m_center + v * m_radius,
         .normal = v.normalized(),
         .invPDF = area()
     };
