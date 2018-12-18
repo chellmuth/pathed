@@ -21,7 +21,6 @@ Color Light::biradiance(const SurfaceSample &lightSample, const Point3 &surfaceP
 
     float cosineAttenuation = fmaxf(0.f, wo.dot(lightSample.normal));
 
-    // g3d has 60 so I am off by 10x- where is that coming from?
-    Color power = Color(1.f, 1.f, 1.f) * 600.f;
-    return power * cosineAttenuation / (4.f * M_PI * distance * distance);
+    Color radiance = m_surface->getRadiance();
+    return radiance * cosineAttenuation / (distance * distance);
 }
