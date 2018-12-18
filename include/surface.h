@@ -12,11 +12,7 @@ class Ray;
 
 class Surface {
 public:
-    Surface(
-        std::shared_ptr<Shape> shape,
-        std::shared_ptr<Material> material,
-        Color radiance
-    );
+    Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> material);
 
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray) const;
@@ -28,5 +24,4 @@ public:
 private:
     std::shared_ptr<Shape> m_shape;
     std::shared_ptr<Material> m_material;
-    Color m_radiance;
 };

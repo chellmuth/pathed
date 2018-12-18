@@ -144,7 +144,7 @@ void ObjParser::processFace(string &faceArgs)
     std::shared_ptr<Triangle> shape1(face1);
     // std::shared_ptr<Triangle> shape2(face2);
 
-    std::shared_ptr<Surface> surface1(new Surface(shape1, material, Color(0.f, 0.f, 0.f)));
+    std::shared_ptr<Surface> surface1(new Surface(shape1, material));
     // std::shared_ptr<Surface> surface2(new Surface(shape2, material));
 
     m_surfaces.push_back(surface1);

@@ -87,11 +87,7 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
 
     for (auto surfacePtr : objScene.getSurfaces()) {
-        auto surface = std::make_shared<Surface>(
-            surfacePtr->getShape(),
-            material,
-            surfacePtr->getRadiance()
-        );
+        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
         surfaces.push_back(surface);
     }
 }
@@ -105,7 +101,8 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
     );
     float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
-    auto material = std::make_shared<Material>(diffuse, specular, Color(1.f, 1.f, 1.f));
+    Color radiance = parseColor(sphereJson["radiance"]);
+    auto material = std::make_shared<Material>(diffuse, specular, radiance);
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
@@ -113,8 +110,7 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         Color(0.f, 1.f, 0.f)
     );
 
-    Color radiance = parseColor(sphereJson["radiance"]);
-    auto surface = std::make_shared<Surface>(sphere, material, radiance);
+    auto surface = std::make_shared<Surface>(sphere, material);
 
     surfaces.push_back(surface);
 }

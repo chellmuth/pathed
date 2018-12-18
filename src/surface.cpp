@@ -2,12 +2,8 @@
 
 #include "ray.h"
 
-Surface::Surface(
-    std::shared_ptr<Shape> shape,
-    std::shared_ptr<Material> material,
-    Color radiance
-)
-    : m_shape(shape), m_material(material), m_radiance(radiance)
+Surface::Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> material)
+    : m_shape(shape), m_material(material)
 {}
 
 SurfaceSample Surface::sample(RandomGenerator &random) const
@@ -35,5 +31,5 @@ std::shared_ptr<Material> Surface::getMaterial() const
 
 Color Surface::getRadiance() const
 {
-    return m_radiance;
+    return m_material->emit();
 }
