@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "light.h"
 #include "obj_parser.h"
+#include "lambertian.h"
 #include "point.h"
 #include "scene.h"
 #include "sphere.h"
@@ -84,7 +85,7 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
         stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
     );
     float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
-    auto material = std::make_shared<Material>(diffuse, specular, Color(0.f, 0.f, 0.f));
+    auto material = std::make_shared<Lambertian>(diffuse, specular, Color(0.f, 0.f, 0.f));
 
     for (auto surfacePtr : objScene.getSurfaces()) {
         auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
@@ -102,7 +103,7 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     );
     float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
     Color radiance = parseColor(sphereJson["radiance"]);
-    auto material = std::make_shared<Material>(diffuse, specular, radiance);
+    auto material = std::make_shared<Lambertian>(diffuse, specular, radiance);
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),

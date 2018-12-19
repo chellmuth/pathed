@@ -7,13 +7,11 @@ class Scene;
 
 class Material {
 public:
-    Material(Color diffuse, float specular, Color emit);
+    Material(Color emit);
 
-    Color f(const Vector3 &wo, const Vector3 &wi) const;
+    virtual Color f(const Vector3 &wo, const Vector3 &wi) const = 0;
     Color emit() const;
 
-private:
-    Color m_diffuse;
-    float m_specular;
+protected:
     Color m_emit;
 };

@@ -4,6 +4,7 @@
 
 #include "camera.h"
 #include "color.h"
+#include "lambertian.h"
 #include "string_util.h"
 #include "triangle.h"
 
@@ -139,7 +140,7 @@ void ObjParser::processFace(string &faceArgs)
 
     Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
     Color emit = m_materialLookup[m_currentMaterialName].emit;
-    std::shared_ptr<Material> material(new Material(diffuse, 0.f, emit));
+    auto material = std::make_shared<Lambertian>(diffuse, 0.f, emit);
 
     std::shared_ptr<Triangle> shape1(face1);
     // std::shared_ptr<Triangle> shape2(face2);
