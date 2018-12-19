@@ -6,11 +6,10 @@
 
 class Lambertian : public Material {
 public:
-    Lambertian(Color diffuse, float specular, Color emit);
+    Lambertian(Color diffuse, Color emit);
 
-    Color f(const Vector3 &wo, const Vector3 &wi) const;
+    Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal) const;
 
 private:
     Color m_diffuse;
-    float m_specular;
 };

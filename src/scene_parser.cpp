@@ -1,9 +1,10 @@
 #include "scene_parser.h"
 
 #include "camera.h"
+#include "lambertian.h"
 #include "light.h"
 #include "obj_parser.h"
-#include "lambertian.h"
+#include "phong.h"
 #include "point.h"
 #include "scene.h"
 #include "sphere.h"
@@ -18,6 +19,7 @@ static float parseFloat(json floatJson);
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson);
+static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
 static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
@@ -78,14 +80,7 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     ObjParser objParser(objFile, Handedness::Left);
     Scene objScene = objParser.parseScene();
 
-    auto bsdfJson = objJson["bsdf"];
-    Color diffuse(
-        stof(bsdfJson["diffuseReflectance"][0].get<std::string>()),
-        stof(bsdfJson["diffuseReflectance"][1].get<std::string>()),
-        stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
-    );
-    float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
-    auto material = std::make_shared<Lambertian>(diffuse, specular, Color(0.f, 0.f, 0.f));
+    auto material = parseMaterial(objJson["bsdf"]);
 
     for (auto surfacePtr : objScene.getSurfaces()) {
         auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
@@ -101,9 +96,8 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         stof(bsdfJson["diffuseReflectance"][1].get<std::string>()),
         stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
     );
-    float specular = stof(bsdfJson["specularReflectance"].get<std::string>());
     Color radiance = parseColor(sphereJson["radiance"]);
-    auto material = std::make_shared<Lambertian>(diffuse, specular, radiance);
+    auto material = std::make_shared<Lambertian>(diffuse, radiance);
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
@@ -114,6 +108,26 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     auto surface = std::make_shared<Surface>(sphere, material);
 
     surfaces.push_back(surface);
+}
+
+static std::shared_ptr<Material> parseMaterial(json bsdfJson)
+{
+    if (bsdfJson["type"] == "phong") {
+        Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        Color specular = parseColor(bsdfJson["specularReflectance"]);
+        return std::make_shared<Phong>(
+            diffuse,
+            specular,
+            1000,
+            Color(0.f, 0.f, 0.f)
+        );
+    } else {
+        Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        return std::make_shared<Lambertian>(
+            diffuse,
+            Color(0.f, 0.f, 0.f)
+        );
+    }
 }
 
 static float parseFloat(json floatJson)

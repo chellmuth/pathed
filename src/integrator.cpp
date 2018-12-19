@@ -36,7 +36,12 @@ Color Integrator::L(
 
         float invPDF = 1.f / UniformHemispherePdf();
 
-        modulation *= lastIntersection.material->f(lastIntersection.wi, bounceDirection)
+        Color f = lastIntersection.material->f(
+            lastIntersection.wi,
+            bounceDirection,
+            lastIntersection.normal
+        );
+        modulation *= f
             * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
             * invPDF;
         lastIntersection = bounceIntersection;
@@ -78,7 +83,7 @@ Color Integrator::direct(const Intersection &intersection, const Scene &scene, R
     float invPDF = lightSample.invPDF * lightCount;
 
     return light->biradiance(lightSample, intersection.point)
-        * intersection.material->f(intersection.wi, wo)
+        * intersection.material->f(intersection.wi, wo, intersection.normal)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
 }

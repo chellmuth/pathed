@@ -9,7 +9,7 @@ class Material {
 public:
     Material(Color emit);
 
-    virtual Color f(const Vector3 &wo, const Vector3 &wi) const = 0;
+    virtual Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal) const = 0;
     Color emit() const;
 
 protected:
