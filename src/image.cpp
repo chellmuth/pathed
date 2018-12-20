@@ -11,9 +11,9 @@ Image::Image(int width, int height)
 
 void Image::set(int row, int col, float r, float g, float b)
 {
-    unsigned char byteR = fminf(r, 1.f) * 255;
-    unsigned char byteG = fminf(g, 1.f) * 255;
-    unsigned char byteB = fminf(b, 1.f) * 255;
+    unsigned char byteR = fminf(powf(r, 1/2.2), 1.f) * 255;
+    unsigned char byteG = fminf(powf(g, 1/2.2), 1.f) * 255;
+    unsigned char byteB = fminf(powf(b, 1/2.2), 1.f) * 255;
 
     m_data[3 * (row * m_width + col) + 0] = byteR;
     m_data[3 * (row * m_width + col) + 1] = byteG;
