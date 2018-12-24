@@ -1,9 +1,17 @@
 #pragma once
 
 #include "color.h"
+#include "point.h"
 #include "vector.h"
 
 class Scene;
+
+typedef struct {
+    Vector3 normal;
+    Point3 x;
+    Vector3 wo;
+    Vector3 wi;
+} BSDFSample;
 
 class Material {
 public:

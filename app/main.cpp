@@ -22,10 +22,10 @@
 
 using namespace std;
 
-static const int width = 400;
-static const int height = 400;
-static const int primarySamples = 50;
-static const int bounceCount = 2;
+static const int width = 768/2;
+static const int height = 512/2;
+static const int primarySamples = 100000;
+static const int bounceCount = 0;
 
 void samplePixel(
     int row, int col,
