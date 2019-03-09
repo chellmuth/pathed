@@ -28,8 +28,8 @@
 
 using namespace std;
 
-static const int width = 400;
-static const int height = 400;
+static const int width = 768;
+static const int height = 512;
 static const int primarySamples = 50;
 static const int bounceCount = 2;
 
@@ -76,7 +76,7 @@ void sampleImage(
     }
 }
 
-void run(Image &image)
+void run(Image &image, bool *quit)
 {
     ifstream jsonScene("mis.json");
     Scene scene = parseScene(jsonScene);
@@ -119,6 +119,8 @@ void run(Image &image)
         lock.unlock();
         double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
         printf("sample: %d/%d (%0.1fs elapsed)\n", i + 1, primarySamples, elapsedSeconds);
+
+        if (*quit) { return; }
     }
 }
 
@@ -161,7 +163,8 @@ int main() {
 
     Image image(width, height);
 
-    std::thread renderThread(run, std::ref(image));
+    bool quit = false;
+    std::thread renderThread(run, std::ref(image), &quit);
 
     // image.debug();
     // image.write("test.bmp");
@@ -177,6 +180,8 @@ int main() {
         }
 
         nanogui::shutdown();
+        quit = true;
+
     } catch (const std::runtime_error &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(_WIN32)
