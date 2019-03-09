@@ -15,7 +15,7 @@ public:
     void syncTextureBuffer();
 private:
     Shader mShader;
-    GLuint mVertexArrayID, mVertexBufferID, mElementBufferID, mTextureID;
+    GLuint mVertexArrayID, mVertexBufferID, mUVBufferID, mElementBufferID, mTextureID;
 
     Image &mImage;
     int mWidth, mHeight;

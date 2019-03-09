@@ -124,11 +124,11 @@ void run(Image &image)
 
 class PathApplication : public nanogui::Screen {
 public:
-    PathApplication(Image &image, int width, int height) : nanogui::Screen(Eigen::Vector2i(1024, 1024), "Path Tracer", false) {
+    PathApplication(Image &image, int width, int height) : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false) {
         using namespace nanogui;
 
         mCanvas = new Canvas(this, image, width, height);
-        mCanvas->setSize({1024, 1024});
+        mCanvas->setSize({width, height});
         mCanvas->init();
         mCanvas->setBackgroundColor({100, 100, 100, 255});
 
