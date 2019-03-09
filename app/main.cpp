@@ -1,3 +1,5 @@
+#define  GL_SILENCE_DEPRECATION 1
+
 #include <ctime>
 #include <iostream>
 #include <fstream>
@@ -5,7 +7,12 @@
 #include <thread>
 #include <vector>
 
+#include <nanogui/opengl.h>
+#include <nanogui/screen.h>
+#include <nanogui/glcanvas.h>
+
 #include "camera.h"
+#include "canvas.h"
 #include "color.h"
 #include "image.h"
 #include "intersection.h"
@@ -18,7 +25,6 @@
 #include "random_generator.h"
 #include "transform.h"
 #include "vector.h"
-#include "window.h"
 
 using namespace std;
 
@@ -116,6 +122,40 @@ void run(Image &image)
     }
 }
 
+class PathApplication : public nanogui::Screen {
+public:
+    PathApplication(Image &image, int width, int height) : nanogui::Screen(Eigen::Vector2i(1024, 1024), "Path Tracer", false) {
+        using namespace nanogui;
+
+        mCanvas = new Canvas(this, image, width, height);
+        mCanvas->setSize({1024, 1024});
+        mCanvas->init();
+        mCanvas->setBackgroundColor({100, 100, 100, 255});
+
+        performLayout();
+    }
+
+    virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
+        if (Screen::keyboardEvent(key, scancode, action, modifiers))
+            return true;
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            setVisible(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual void draw(NVGcontext *ctx) {
+        mCanvas->syncTextureBuffer();
+
+        Screen::draw(ctx);
+    }
+
+private:
+    Canvas *mCanvas;
+};
+
 int main() {
     printf("Hello, world!\n");
 
@@ -126,7 +166,26 @@ int main() {
     // image.debug();
     // image.write("test.bmp");
 
-    loop(image, width, height);
+    try {
+        nanogui::init();
+
+        {
+            nanogui::ref<PathApplication> app = new PathApplication(image, width, height);
+            app->drawAll();
+            app->setVisible(true);
+            nanogui::mainloop();
+        }
+
+        nanogui::shutdown();
+    } catch (const std::runtime_error &e) {
+        std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
+        #if defined(_WIN32)
+            MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
+        #else
+            std::cerr << error_msg << endl;
+        #endif
+        return -1;
+    }
 
     renderThread.join();
 
