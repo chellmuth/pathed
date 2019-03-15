@@ -76,11 +76,8 @@ void sampleImage(
     }
 }
 
-void run(Image &image, bool *quit)
+void run(Image &image, Scene &scene, bool *quit)
 {
-    ifstream jsonScene("mis.json");
-    Scene scene = parseScene(jsonScene);
-
     RandomGenerator random;
     Integrator integrator;
 
@@ -163,8 +160,11 @@ int main() {
 
     Image image(width, height);
 
+    ifstream jsonScene("mis.json");
+    Scene scene = parseScene(jsonScene);
+
     bool quit = false;
-    std::thread renderThread(run, std::ref(image), &quit);
+    std::thread renderThread(run, std::ref(image), std::ref(scene), &quit);
 
     // image.debug();
     // image.write("test.bmp");
