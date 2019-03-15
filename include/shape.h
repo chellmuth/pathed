@@ -17,8 +17,9 @@ typedef struct {
 
 class Shape {
 public:
-    virtual void pushVertices(std::vector<float> vertices) {};
-    virtual void pushNormals(std::vector<float> normals) {};
+    virtual void pushVertices(std::vector<float> &vertices) {};
+    virtual void pushNormals(std::vector<float> &normals) {};
+    virtual void pushIndices(std::vector<uint> &indices, int offset) {};
 
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
     virtual Intersection testIntersect(const Ray &ray) = 0;

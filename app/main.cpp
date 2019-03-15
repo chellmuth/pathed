@@ -15,14 +15,15 @@
 #include "canvas.h"
 #include "color.h"
 #include "image.h"
-#include "intersection.h"
 #include "integrator.h"
+#include "intersection.h"
 #include "monte_carlo.h"
+#include "obj_parser.h"
+#include "random_generator.h"
+#include "rasterizer.h"
 #include "ray.h"
 #include "scene.h"
-#include "obj_parser.h"
 #include "scene_parser.h"
-#include "random_generator.h"
 #include "transform.h"
 #include "vector.h"
 
@@ -123,7 +124,9 @@ void run(Image &image, Scene &scene, bool *quit)
 
 class PathApplication : public nanogui::Screen {
 public:
-    PathApplication(Image &image, int width, int height) : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false) {
+    PathApplication(Image &image, int width, int height)
+        : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false)
+    {
         using namespace nanogui;
 
         mCanvas = new Canvas(this, image, width, height);
@@ -155,6 +158,40 @@ private:
     Canvas *mCanvas;
 };
 
+class GLApplication : public nanogui::Screen {
+public:
+    GLApplication(Scene &scene, int width, int height)
+        : nanogui::Screen(Eigen::Vector2i(width, height), "Rasterizer", false)
+    {
+        using namespace nanogui;
+
+        mRasterizer = new Rasterizer(this, scene, width, height);
+        mRasterizer->setSize({width, height});
+        mRasterizer->init();
+        mRasterizer->setBackgroundColor({100, 100, 100, 255});
+
+        performLayout();
+    }
+
+    virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
+        if (Screen::keyboardEvent(key, scancode, action, modifiers))
+            return true;
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            setVisible(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual void draw(NVGcontext *ctx) {
+        Screen::draw(ctx);
+    }
+
+private:
+    Rasterizer *mRasterizer;
+};
+
 int main() {
     printf("Hello, world!\n");
 
@@ -176,6 +213,11 @@ int main() {
             nanogui::ref<PathApplication> app = new PathApplication(image, width, height);
             app->drawAll();
             app->setVisible(true);
+
+            nanogui::ref<GLApplication> debug = new GLApplication(scene, width, height);
+            debug->drawAll();
+            debug->setVisible(true);
+
             nanogui::mainloop();
         }
 
