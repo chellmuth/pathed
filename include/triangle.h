@@ -17,6 +17,9 @@ public:
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray);
 
+    void pushVertices(std::vector<float> vertices);
+    void pushNormals(std::vector<float> normals);
+
     void debug() const;
 
 private:

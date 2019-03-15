@@ -5,6 +5,8 @@
 #include "random_generator.h"
 #include "vector.h"
 
+#include <vector>
+
 class Ray;
 
 typedef struct {
@@ -15,6 +17,9 @@ typedef struct {
 
 class Shape {
 public:
+    virtual void pushVertices(std::vector<float> vertices) {};
+    virtual void pushNormals(std::vector<float> normals) {};
+
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
     virtual Intersection testIntersect(const Ray &ray) = 0;
 };

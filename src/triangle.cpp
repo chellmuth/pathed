@@ -92,6 +92,25 @@ float Triangle::area() const
     return fabsf(cross.length() / 2.f);
 }
 
+void Triangle::pushVertices(std::vector<float> vertices)
+{
+    vertices.push_back(m_p0.x());
+    vertices.push_back(m_p0.y());
+    vertices.push_back(m_p0.z());
+
+    vertices.push_back(m_p1.x());
+    vertices.push_back(m_p1.y());
+    vertices.push_back(m_p1.z());
+
+    vertices.push_back(m_p2.x());
+    vertices.push_back(m_p2.y());
+    vertices.push_back(m_p2.z());
+}
+
+void Triangle::pushNormals(std::vector<float> normals)
+{
+}
+
 void Triangle::debug() const
 {
     printf("<Triangle>\n");
