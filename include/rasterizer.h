@@ -3,6 +3,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 
+#include "gl_lines.h"
 #include "gl_scene.h"
 #include "scene.h"
 #include "shader.h"
@@ -16,7 +17,9 @@ public:
 
 private:
     Scene &mScene;
+
     gl::Scene mGLScene;
+    gl::Lines mGLLines;
 
     int mWidth, mHeight;
     Shader mShader;

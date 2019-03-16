@@ -21,10 +21,11 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
 
     mShader = shader::createProgram(
         "shader/geometry.vs",
-        "shader/uniform_color.fs"
+        "shader/normal.fs"
     );
 
     mGLScene.init(scene);
+    mGLLines.init();
 }
 
 void Rasterizer::init()
@@ -72,6 +73,8 @@ void Rasterizer::drawGL()
     glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
     mGLScene.draw();
+
+    mGLLines.draw(model, view, projection);
 
     glDisable(GL_DEPTH_TEST);
 }
