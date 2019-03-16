@@ -3,6 +3,7 @@
 #include <ctime>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -11,6 +12,7 @@
 #include <nanogui/screen.h>
 #include <nanogui/glcanvas.h>
 
+#include "app_controller.h"
 #include "camera.h"
 #include "canvas.h"
 #include "color.h"
@@ -124,12 +126,13 @@ void run(Image &image, Scene &scene, bool *quit)
 
 class PathApplication : public nanogui::Screen {
 public:
-    PathApplication(Image &image, int width, int height)
-        : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false)
+    PathApplication(Image &image, std::shared_ptr<AppController> controller, int width, int height)
+        : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
+          mController(controller)
     {
         using namespace nanogui;
 
-        mCanvas = new Canvas(this, image, width, height);
+        mCanvas = new Canvas(this, controller, image, width, height);
         mCanvas->setSize({width, height});
         mCanvas->init();
         mCanvas->setBackgroundColor({100, 100, 100, 255});
@@ -156,12 +159,14 @@ public:
 
 private:
     Canvas *mCanvas;
+    std::shared_ptr<AppController> mController;
 };
 
 class GLApplication : public nanogui::Screen {
 public:
-    GLApplication(Scene &scene, int width, int height)
-        : nanogui::Screen(Eigen::Vector2i(width, height), "Rasterizer", false)
+    GLApplication(Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
+        : nanogui::Screen(Eigen::Vector2i(width, height), "Rasterizer", false),
+          mController(controller)
     {
         using namespace nanogui;
 
@@ -185,11 +190,13 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
+        mRasterizer->setSelectedPoint(mController->getSelectedPoint());
         Screen::draw(ctx);
     }
 
 private:
     Rasterizer *mRasterizer;
+    std::shared_ptr<AppController> mController;
 };
 
 int main() {
@@ -206,15 +213,17 @@ int main() {
     // image.debug();
     // image.write("test.bmp");
 
+    auto controller = std::make_shared<AppController>(scene, width, height);
+
     try {
         nanogui::init();
 
         {
-            nanogui::ref<PathApplication> app = new PathApplication(image, width, height);
+            nanogui::ref<PathApplication> app = new PathApplication(image, controller, width, height);
             app->drawAll();
             app->setVisible(true);
 
-            nanogui::ref<GLApplication> debug = new GLApplication(scene, width, height);
+            nanogui::ref<GLApplication> debug = new GLApplication(scene, controller, width, height);
             debug->drawAll();
             debug->setVisible(true);
 

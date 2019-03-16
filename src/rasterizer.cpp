@@ -32,6 +32,11 @@ void Rasterizer::init()
 {
 }
 
+void Rasterizer::setSelectedPoint(Point3 point)
+{
+    mGLLines.updatePoint(point);
+}
+
 void Rasterizer::drawGL()
 {
     glEnable(GL_DEPTH_TEST);

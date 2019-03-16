@@ -6,8 +6,8 @@
 #include <mutex>
 #include <vector>
 
-Canvas::Canvas(Widget *parent, Image &image, int width, int height)
-    : mImage(image), nanogui::GLCanvas(parent)
+Canvas::Canvas(Widget *parent, std::shared_ptr<AppController> controller, Image &image, int width, int height)
+    : mController(controller), mImage(image), nanogui::GLCanvas(parent)
 {
     mWidth = width;
     mHeight = height;
@@ -127,4 +127,14 @@ void Canvas::drawGL()
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);
+}
+
+bool Canvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
+{
+    if (button == GLFW_MOUSE_BUTTON_1 && down) {
+        mController->handlePathTraceClick(p.x(), p.y());
+
+        return true;
+    }
+    return false;
 }

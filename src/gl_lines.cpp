@@ -35,11 +35,27 @@ void gl::Lines::init()
             GL_ARRAY_BUFFER,
             sizeof(GLfloat) * positionsGL.size(),
             (GLvoid *)&positionsGL[0],
-            GL_STATIC_DRAW
+            GL_DYNAMIC_DRAW
         );
     }
 
     mLineCount = 1;
+}
+
+void gl::Lines::updatePoint(Point3 point)
+{
+    std::vector<GLfloat> positionsGL = {
+        0.f, 0.f, 0.f,
+        point.x(), point.y(), point.z()
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(GLfloat) * positionsGL.size(),
+        (GLvoid *)&positionsGL[0]
+    );
 }
 
 void gl::Lines::draw(

@@ -5,6 +5,7 @@
 
 #include "gl_lines.h"
 #include "gl_scene.h"
+#include "point.h"
 #include "scene.h"
 #include "shader.h"
 
@@ -14,6 +15,8 @@ public:
 
     void init();
     virtual void drawGL() override;
+
+    void setSelectedPoint(Point3 point);
 
 private:
     Scene &mScene;
