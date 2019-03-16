@@ -3,7 +3,9 @@
 #include <iostream>
 
 #include "camera.h"
+#include "integrator.h"
 #include "intersection.h"
+#include "random_generator.h"
 #include "ray.h"
 
 AppController::AppController(Scene &scene, int width, int height)
@@ -24,5 +26,12 @@ void AppController::handlePathTraceClick(int x, int y)
     if (!intersection.hit) { return; }
 
     mSelectedPoint = intersection.point;
+
+    Integrator integrator;
+    RandomGenerator random;
+    int bounceCount = 0;
+    std::vector<Vector3> intersectionList;
+    Color color = integrator.L(intersection, mScene, random, bounceCount, intersectionList);
+    mIntersections = intersectionList;
 }
 

@@ -1,10 +1,12 @@
 #pragma once
 
 #include <nanogui/opengl.h>
+#include <vector>
 
 #include "gl_scene.h"
 #include "point.h"
 #include "shader.h"
+#include "vector.h"
 
 namespace gl {
     class Lines {
@@ -17,7 +19,7 @@ namespace gl {
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
         );
-        void updatePoint(Point3 point);
+        void update(Point3 point, std::vector<Vector3> intersections);
 
     private:
         Shader mShader;

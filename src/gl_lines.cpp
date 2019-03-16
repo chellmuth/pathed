@@ -42,11 +42,16 @@ void gl::Lines::init()
     mLineCount = 1;
 }
 
-void gl::Lines::updatePoint(Point3 point)
+void gl::Lines::update(Point3 point, std::vector<Vector3> intersections)
 {
+    if (intersections.size() == 0) { return; }
+
+    Vector3 intersection = intersections[0];
     std::vector<GLfloat> positionsGL = {
-        0.f, 0.f, 0.f,
-        point.x(), point.y(), point.z()
+        point.x(), point.y(), point.z(),
+        point.x() + intersection.x(),
+        point.y() + intersection.y(),
+        point.z() + intersection.z(),
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);

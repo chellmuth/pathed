@@ -32,9 +32,9 @@ void Rasterizer::init()
 {
 }
 
-void Rasterizer::setSelectedPoint(Point3 point)
+void Rasterizer::setState(Point3 point, std::vector<Vector3> intersections)
 {
-    mGLLines.updatePoint(point);
+    mGLLines.update(point, intersections);
 }
 
 void Rasterizer::drawGL()
