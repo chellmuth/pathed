@@ -116,6 +116,21 @@ void Triangle::pushIndices(std::vector<uint> &indices, int offset)
 
 void Triangle::pushNormals(std::vector<float> &normals)
 {
+    Vector3 e1 = (m_p1 - m_p0).toVector();
+    Vector3 e2 = (m_p2 - m_p0).toVector();
+    Vector3 normal = e2.cross(e1).normalized();
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
 }
 
 void Triangle::debug() const

@@ -33,6 +33,8 @@ void Rasterizer::init()
 
 void Rasterizer::drawGL()
 {
+    glEnable(GL_DEPTH_TEST);
+
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -70,4 +72,6 @@ void Rasterizer::drawGL()
     glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
     mEntity.draw();
+
+    glDisable(GL_DEPTH_TEST);
 }
