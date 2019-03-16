@@ -1,8 +1,8 @@
-#include "entity.h"
+#include "gl_scene.h"
 
-Entity::Entity() {}
+gl::Scene::Scene() {}
 
-void Entity::init(Scene &scene)
+void gl::Scene::init(::Scene &scene)
 {
     auto surfaces = scene.getSurfaces();
     std::vector<GLfloat> positionsGL;
@@ -53,7 +53,7 @@ void Entity::init(Scene &scene)
     mTriangleCount = indicesGL.size() / 3; 
 }
 
-void Entity::draw()
+void gl::Scene::draw()
 {
     glBindVertexArray(mEntityIDs.vertexArrayID);
 

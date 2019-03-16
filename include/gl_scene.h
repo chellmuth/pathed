@@ -12,14 +12,16 @@ typedef struct {
     GLuint normalBufferID;
 } EntityIDs;
 
-class Entity {
-public:
-    Entity();
+namespace gl {
+    class Scene {
+    public:
+        Scene();
 
-    void init(Scene &scene);
-    void draw();
+        void init(::Scene &scene);
+        void draw();
 
-protected:
-    EntityIDs mEntityIDs;
-    int mTriangleCount;
-};
+    protected:
+        EntityIDs mEntityIDs;
+        int mTriangleCount;
+    };
+}

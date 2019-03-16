@@ -24,7 +24,7 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
         "shader/uniform_color.fs"
     );
 
-    mEntity.init(scene);
+    mGLScene.init(scene);
 }
 
 void Rasterizer::init()
@@ -71,7 +71,7 @@ void Rasterizer::drawGL()
     glUniformMatrix4fv(viewID, 1, GL_TRUE, &view[0][0]);
     glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
-    mEntity.draw();
+    mGLScene.draw();
 
     glDisable(GL_DEPTH_TEST);
 }

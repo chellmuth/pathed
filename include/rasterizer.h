@@ -3,7 +3,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 
-#include "entity.h"
+#include "gl_scene.h"
 #include "scene.h"
 #include "shader.h"
 
@@ -16,7 +16,7 @@ public:
 
 private:
     Scene &mScene;
-    Entity mEntity;
+    gl::Scene mGLScene;
 
     int mWidth, mHeight;
     Shader mShader;
