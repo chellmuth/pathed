@@ -12,6 +12,13 @@
 #include "shader.h"
 #include "vector.h"
 
+enum class Direction {
+    Forward,
+    Backward,
+    Left,
+    Right
+};
+
 class Rasterizer : public nanogui::GLCanvas {
 public:
     Rasterizer(Widget *parent, Scene &scene, int width, int height);
@@ -20,9 +27,12 @@ public:
     virtual void drawGL() override;
 
     void setState(Point3 point, std::vector<Vector3> intersections);
+    void move(Direction direction);
 
 private:
     Scene &mScene;
+    Point3 mOrigin;
+    Point3 mInitialDirection;
 
     nanogui::Arcball mArcball;
     gl::Scene mGLScene;

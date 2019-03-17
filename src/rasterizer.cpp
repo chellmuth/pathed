@@ -14,8 +14,12 @@ static void checkError(const char *identifier)
 }
 
 Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
-    : mScene(scene), nanogui::GLCanvas(parent)
+    : mScene(scene), mOrigin(0.f, 0.f, 0.f), mInitialDirection(0.f, 0.f, 0.f),
+      nanogui::GLCanvas(parent)
 {
+    mOrigin = Point3(0.f, 2.f, 15.f);
+    mInitialDirection = Point3(0.f, -2.f, 2.5f) - mOrigin;
+
     mWidth = width;
     mHeight = height;
 
@@ -59,10 +63,11 @@ void Rasterizer::drawGL()
 
     GLfloat viewLocal[4][4];
     makeIdentity(viewLocal);
+    Point3 lookAt = mOrigin + mInitialDirection;
     buildView(
         viewLocal,
-        0.f, 2.f, 15.f,
-        0.f, -2.f, 2.5f
+        mOrigin.x(), mOrigin.y(), mOrigin.z(),
+        lookAt.x(), lookAt.y(), lookAt.z()
     );
 
     GLfloat view[4][4];
@@ -95,6 +100,65 @@ void Rasterizer::drawGL()
     mGLLines.draw(model, view, projection);
 
     glDisable(GL_DEPTH_TEST);
+}
+
+void Rasterizer::move(Direction direction)
+{
+    auto arcballRotation = mArcball.matrix();
+    GLfloat arcballRotationLocal[4][4];
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            arcballRotationLocal[row][col] = arcballRotation(row, col);
+        }
+    }
+
+    GLfloat viewLocal[4][4];
+    makeIdentity(viewLocal);
+    Point3 lookAt = mOrigin + mInitialDirection;
+    buildView(
+        viewLocal,
+        mOrigin.x(), mOrigin.y(), mOrigin.z(),
+        lookAt.x(), lookAt.y(), lookAt.z()
+    );
+
+    GLfloat view[4][4];
+    multiply(view, arcballRotationLocal, viewLocal);
+
+    Eigen::Matrix4f eigenView;
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            eigenView(row, col) = view[row][col];
+        }
+    }
+
+    switch(direction) {
+       case Direction::Forward: {
+           eigenView(2, 3) += .1f;
+           break;
+       }
+
+       case Direction::Backward: {
+           eigenView(2, 3) -= .1f;
+           break;
+       }
+
+       case Direction::Left: {
+           eigenView(0, 3) += .1f;
+           break;
+       }
+
+       case Direction::Right: {
+           eigenView(0, 3) -= .1f;
+           break;
+       }
+    }
+
+    auto inverseView = eigenView.inverse();
+    mOrigin = Point3(
+        inverseView(0, 3),
+        inverseView(1, 3),
+        inverseView(2, 3)
+    );
 }
 
 bool Rasterizer::mouseButtonEvent(

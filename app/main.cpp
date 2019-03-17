@@ -182,6 +182,17 @@ public:
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
         if (Screen::keyboardEvent(key, scancode, action, modifiers))
             return true;
+
+        if (key == GLFW_KEY_W) {
+            mRasterizer->move(Direction::Forward);
+        } else if (key == GLFW_KEY_S) {
+            mRasterizer->move(Direction::Backward);
+        } else if (key == GLFW_KEY_A) {
+            mRasterizer->move(Direction::Left);
+        } else if (key == GLFW_KEY_D) {
+            mRasterizer->move(Direction::Right);
+        }
+
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             setVisible(false);
             return true;
