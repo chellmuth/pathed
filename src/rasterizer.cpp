@@ -43,16 +43,8 @@ void Rasterizer::setState(Point3 point, std::vector<Vector3> intersections)
     mGLLines.update(point, intersections);
 }
 
-void Rasterizer::drawGL()
+void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
 {
-    glEnable(GL_DEPTH_TEST);
-
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    GLfloat model[4][4];
-    makeIdentity(model);
-
     auto arcballRotation = mArcball.matrix();
     GLfloat arcballRotationLocal[4][4];
     for (int row = 0; row < 4; row++) {
@@ -70,8 +62,22 @@ void Rasterizer::drawGL()
         lookAt.x(), lookAt.y(), lookAt.z()
     );
 
-    GLfloat view[4][4];
     multiply(view, arcballRotationLocal, viewLocal);
+}
+
+
+void Rasterizer::drawGL()
+{
+    glEnable(GL_DEPTH_TEST);
+
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    GLfloat model[4][4];
+    makeIdentity(model);
+
+    GLfloat view[4][4];
+    calculateViewMatrix(view);
 
     float fovDegrees = 28.f;
     float fovRadians = fovDegrees / 180.f * M_PI;
@@ -104,25 +110,8 @@ void Rasterizer::drawGL()
 
 void Rasterizer::move(Direction direction)
 {
-    auto arcballRotation = mArcball.matrix();
-    GLfloat arcballRotationLocal[4][4];
-    for (int row = 0; row < 4; row++) {
-        for (int col = 0; col < 4; col++) {
-            arcballRotationLocal[row][col] = arcballRotation(row, col);
-        }
-    }
-
-    GLfloat viewLocal[4][4];
-    makeIdentity(viewLocal);
-    Point3 lookAt = mOrigin + mInitialDirection;
-    buildView(
-        viewLocal,
-        mOrigin.x(), mOrigin.y(), mOrigin.z(),
-        lookAt.x(), lookAt.y(), lookAt.z()
-    );
-
     GLfloat view[4][4];
-    multiply(view, arcballRotationLocal, viewLocal);
+    calculateViewMatrix(view);
 
     Eigen::Matrix4f eigenView;
     for (int row = 0; row < 4; row++) {

@@ -41,6 +41,8 @@ private:
     int mWidth, mHeight;
     Shader mShader;
 
+    void calculateViewMatrix(GLfloat (&view)[4][4]);
+
     bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
     bool mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers) override;
 };
