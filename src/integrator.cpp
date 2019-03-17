@@ -73,6 +73,8 @@ Color Integrator::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
+    intersectionList.push_back(lightDirection);
+
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);
     }
@@ -80,8 +82,6 @@ Color Integrator::direct(
     Ray shadowRay = Ray(intersection.point, wo);
     Intersection shadowIntersection = scene.testIntersect(shadowRay);
     float lightDistance = lightDirection.length();
-
-    intersectionList.push_back(wo * lightDistance);
 
     if (shadowIntersection.hit && shadowIntersection.t + 0.0001f < lightDistance) {
         return Color(0.f, 0.f, 0.f);
