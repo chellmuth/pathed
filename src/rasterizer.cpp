@@ -26,6 +26,8 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
 
     mGLScene.init(scene);
     mGLLines.init();
+
+    mArcball.setSize({width, height});
 }
 
 void Rasterizer::init()
@@ -47,13 +49,24 @@ void Rasterizer::drawGL()
     GLfloat model[4][4];
     makeIdentity(model);
 
-    GLfloat view[4][4];
-    makeIdentity(view);
+    auto arcballRotation = mArcball.matrix();
+    GLfloat arcballRotationLocal[4][4];
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            arcballRotationLocal[row][col] = arcballRotation(row, col);
+        }
+    }
+
+    GLfloat viewLocal[4][4];
+    makeIdentity(viewLocal);
     buildView(
-        view,
+        viewLocal,
         0.f, 2.f, 15.f,
         0.f, -2.f, 2.5f
     );
+
+    GLfloat view[4][4];
+    multiply(view, arcballRotationLocal, viewLocal);
 
     float fovDegrees = 28.f;
     float fovRadians = fovDegrees / 180.f * M_PI;
@@ -82,4 +95,22 @@ void Rasterizer::drawGL()
     mGLLines.draw(model, view, projection);
 
     glDisable(GL_DEPTH_TEST);
+}
+
+bool Rasterizer::mouseButtonEvent(
+    const Eigen::Vector2i &p, int button, bool down, int modifiers
+) {
+    if (button == GLFW_MOUSE_BUTTON_1) {
+        mArcball.button(p, down);
+        return true;
+    }
+    return false;
+}
+
+bool Rasterizer::mouseMotionEvent(
+    const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers
+) {
+    mArcball.motion(p);
+
+    return true;
 }

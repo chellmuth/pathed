@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Geometry>
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 #include <vector>
@@ -23,9 +24,13 @@ public:
 private:
     Scene &mScene;
 
+    nanogui::Arcball mArcball;
     gl::Scene mGLScene;
     gl::Lines mGLLines;
 
     int mWidth, mHeight;
     Shader mShader;
+
+    bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
+    bool mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers) override;
 };
