@@ -35,13 +35,15 @@ Color Integrator::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        float invPDF = 1.f / UniformHemispherePdf();
-
+        float pdf;
         Color f = lastIntersection.material->f(
             lastIntersection.wi,
             bounceDirection,
-            lastIntersection.normal
+            lastIntersection.normal,
+            &pdf
         );
+        float invPDF = 1.f / pdf;
+
         modulation *= f
             * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
             * invPDF;
