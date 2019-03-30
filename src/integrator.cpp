@@ -11,9 +11,10 @@ Color Integrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
-    int bounceCount) const
-{
-    Color result = direct(intersection, scene, random);
+    int bounceCount,
+    std::vector<Vector3> &intersectionList
+) const {
+    Color result = direct(intersection, scene, random, intersectionList);
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
@@ -34,21 +35,32 @@ Color Integrator::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        float invPDF = 1.f / UniformHemispherePdf();
+        float pdf;
+        Color f = lastIntersection.material->f(
+            lastIntersection.wi,
+            bounceDirection,
+            lastIntersection.normal,
+            &pdf
+        );
+        float invPDF = 1.f / pdf;
 
-        modulation *= lastIntersection.material->f(lastIntersection.wi, bounceDirection)
+        modulation *= f
             * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        result += direct(bounceIntersection, scene, random) * modulation;
+        result += direct(bounceIntersection, scene, random, intersectionList) * modulation;
     }
 
     return result;
 }
 
-Color Integrator::direct(const Intersection &intersection, const Scene &scene, RandomGenerator &random) const
-{
+Color Integrator::direct(
+    const Intersection &intersection,
+    const Scene &scene,
+    RandomGenerator &random,
+    std::vector<Vector3> &intersectionList
+) const {
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         return Color(0.f, 0.f, 0.f);
@@ -62,6 +74,8 @@ Color Integrator::direct(const Intersection &intersection, const Scene &scene, R
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
+
+    intersectionList.push_back(lightDirection);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);
@@ -77,8 +91,8 @@ Color Integrator::direct(const Intersection &intersection, const Scene &scene, R
 
     float invPDF = lightSample.invPDF * lightCount;
 
-    return light->biradiance(lightSample.point, intersection.point)
-        * intersection.material->f(intersection.wi, wo)
+    return light->biradiance(lightSample, intersection.point)
+        * intersection.material->f(intersection.wi, wo, intersection.normal)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
 }

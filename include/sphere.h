@@ -13,7 +13,10 @@ public:
 
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray);
+
 private:
+    float area() const;
+
     Point3 m_center;
     float m_radius;
     Color m_color;

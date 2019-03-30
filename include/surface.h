@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "intersection.h"
@@ -15,6 +16,10 @@ public:
 
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray) const;
+
+    std::shared_ptr<Shape> getShape() const;
+    std::shared_ptr<Material> getMaterial() const;
+    Color getRadiance() const;
 
 private:
     std::shared_ptr<Shape> m_shape;

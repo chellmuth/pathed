@@ -7,12 +7,16 @@ class Scene;
 
 class Material {
 public:
-    Material(Color diffuse, Color emit);
+    Material(Color emit);
 
-    Color f(const Vector3 &wo, const Vector3 &wi) const;
+    virtual Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal, float *pdf) const = 0;
+    Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal) {
+        float pdf;
+        return f(wo, wi, normal, &pdf);
+    }
+
     Color emit() const;
 
-private:
-    Color m_diffuse;
+protected:
     Color m_emit;
 };

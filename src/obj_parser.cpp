@@ -2,7 +2,9 @@
 
 #include <iostream>
 
+#include "camera.h"
 #include "color.h"
+#include "lambertian.h"
 #include "string_util.h"
 #include "triangle.h"
 
@@ -19,7 +21,8 @@ Scene ObjParser::parseScene()
         parseLine(line);
     }
 
-    return Scene(m_surfaces, m_lights);
+    std::shared_ptr<Camera> camera;
+    return Scene(m_surfaces, m_lights, camera);
 }
 
 void ObjParser::parseLine(string &line)
@@ -98,13 +101,13 @@ void ObjParser::processFace(string &faceArgs)
         index2 -= 1;
     }
 
-    rest = rest.substr(index);
-    int index3 = std::stoi(rest, &index);
-    if (index3 < 3) {
-        index3 += m_vertices.size();
-    } else {
-        index3 -= 1;
-    }
+    // rest = rest.substr(index);
+    // int index3 = std::stoi(rest, &index);
+    // if (index3 < 3) {
+    //     index3 += m_vertices.size();
+    // } else {
+    //     index3 -= 1;
+    // }
 
     Triangle *face1, *face2;
 
@@ -115,11 +118,11 @@ void ObjParser::processFace(string &faceArgs)
             m_vertices[index1],
             m_vertices[index2]
         );
-        face2 = new Triangle(
-            m_vertices[index2],
-            m_vertices[index3],
-            m_vertices[index0]
-        );
+        // face2 = new Triangle(
+        //     m_vertices[index2],
+        //     m_vertices[index3],
+        //     m_vertices[index0]
+        // );
         break;
     case Left:
         face1 = new Triangle(
@@ -127,34 +130,34 @@ void ObjParser::processFace(string &faceArgs)
             m_vertices[index0],
             m_vertices[index2]
         );
-        face2 = new Triangle(
-            m_vertices[index3],
-            m_vertices[index2],
-            m_vertices[index0]
-        );
+        // face2 = new Triangle(
+        //     m_vertices[index3],
+        //     m_vertices[index2],
+        //     m_vertices[index0]
+        // );
         break;
     }
 
     Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
     Color emit = m_materialLookup[m_currentMaterialName].emit;
-    std::shared_ptr<Material> material(new Material(diffuse, emit));
+    auto material = std::make_shared<Lambertian>(diffuse, emit);
 
     std::shared_ptr<Triangle> shape1(face1);
-    std::shared_ptr<Triangle> shape2(face2);
+    // std::shared_ptr<Triangle> shape2(face2);
 
     std::shared_ptr<Surface> surface1(new Surface(shape1, material));
-    std::shared_ptr<Surface> surface2(new Surface(shape2, material));
+    // std::shared_ptr<Surface> surface2(new Surface(shape2, material));
 
     m_surfaces.push_back(surface1);
-    m_surfaces.push_back(surface2);
+    // m_surfaces.push_back(surface2);
 
     if (emit.isBlack()) { return; }
 
     std::shared_ptr<Light> light1(new Light(surface1));
-    std::shared_ptr<Light> light2(new Light(surface2));
+    // std::shared_ptr<Light> light2(new Light(surface2));
 
     m_lights.push_back(light1);
-    m_lights.push_back(light2);
+    // m_lights.push_back(light2);
 }
 
 void ObjParser::processMaterialLibrary(std::string &libraryArgs)

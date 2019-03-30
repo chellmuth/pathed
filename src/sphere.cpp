@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "math.h"
 #include <limits>
 
 #include "sphere.h"
@@ -13,12 +13,18 @@ Sphere::Sphere(Point3 center, float radius, Color color)
 
 SurfaceSample Sphere::sample(RandomGenerator &random) const
 {
-    assert(false);
+    // from pbrt
+    float z = 1 - 2 * random.next();
+    float r = sqrt(fmaxf(0, 1 - z * z));
+    float phi = 2 * M_PI * random.next();
+    Vector3 v(r * cosf(phi), r * sinf(phi), z);
 
     SurfaceSample sample = {
-        .point = Point3(0.f, 0.f, 0.f),
-        .normal = Vector3(1.f, 0.f, 0.f)
+        .point = m_center + v * m_radius,
+        .normal = v.normalized(),
+        .invPDF = area()
     };
+
     return sample;
 }
 
@@ -56,4 +62,9 @@ Intersection Sphere::testIntersect(const Ray &ray)
         };
         return result;
     }
+}
+
+float Sphere::area() const
+{
+    return 4 * M_PI * m_radius * m_radius;
 }

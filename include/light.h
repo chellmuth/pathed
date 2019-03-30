@@ -12,7 +12,7 @@ public:
     Light(std::shared_ptr<Surface> surface);
 
     SurfaceSample sample(RandomGenerator &random) const;
-    Color biradiance(const Point3 &lightPoint, const Point3 &surfacePoint) const;
+    Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const;
 
 private:
     std::shared_ptr<Surface> m_surface;

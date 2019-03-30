@@ -92,6 +92,47 @@ float Triangle::area() const
     return fabsf(cross.length() / 2.f);
 }
 
+void Triangle::pushVertices(std::vector<float> &vertices)
+{
+    vertices.push_back(m_p0.x());
+    vertices.push_back(m_p0.y());
+    vertices.push_back(m_p0.z());
+
+    vertices.push_back(m_p1.x());
+    vertices.push_back(m_p1.y());
+    vertices.push_back(m_p1.z());
+
+    vertices.push_back(m_p2.x());
+    vertices.push_back(m_p2.y());
+    vertices.push_back(m_p2.z());
+}
+
+void Triangle::pushIndices(std::vector<uint> &indices, int offset)
+{
+    indices.push_back(offset + 0);
+    indices.push_back(offset + 1);
+    indices.push_back(offset + 2);
+}
+
+void Triangle::pushNormals(std::vector<float> &normals)
+{
+    Vector3 e1 = (m_p1 - m_p0).toVector();
+    Vector3 e2 = (m_p2 - m_p0).toVector();
+    Vector3 normal = e2.cross(e1).normalized();
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
+
+    normals.push_back(normal.x());
+    normals.push_back(normal.y());
+    normals.push_back(normal.z());
+}
+
 void Triangle::debug() const
 {
     printf("<Triangle>\n");
