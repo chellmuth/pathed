@@ -1,5 +1,6 @@
 #pragma once
 
+#include "integrator.h"
 #include "point.h"
 #include "scene.h"
 #include "vector.h"
@@ -11,6 +12,7 @@ public:
     AppController(Scene &scene, int width, int height);
     void handlePathTraceClick(int x, int y);
     Point3 getSelectedPoint() { return mSelectedPoint; }
+    Sample getSample() { return mSample; }
     std::vector<Vector3> getIntersections() { return mIntersections; }
 
 private:
@@ -18,4 +20,5 @@ private:
     int mWidth, mHeight;
     Point3 mSelectedPoint;
     std::vector<Vector3> mIntersections;
+    Sample mSample;
 };

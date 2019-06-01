@@ -9,7 +9,11 @@
 #include "ray.h"
 
 AppController::AppController(Scene &scene, int width, int height)
-    : mScene(scene), mWidth(width), mHeight(height), mSelectedPoint(0.f, 0.f, 0.f)
+    : mScene(scene),
+      mWidth(width),
+      mHeight(height),
+      mSelectedPoint(0.f, 0.f, 0.f),
+      mSample({ Point3(0.f, 0.f, 0.f) })
 {}
 
 void AppController::handlePathTraceClick(int x, int y)
@@ -31,7 +35,16 @@ void AppController::handlePathTraceClick(int x, int y)
     RandomGenerator random;
     int bounceCount = 0;
     std::vector<Vector3> intersectionList;
-    Color color = integrator.L(intersection, mScene, random, bounceCount, intersectionList);
-    mIntersections = intersectionList;
-}
+    Sample sample { ray.origin() };
 
+    Color color = integrator.L(
+        intersection,
+        mScene,
+        random,
+        bounceCount,
+        intersectionList,
+        sample
+    );
+    mIntersections = intersectionList;
+    mSample = sample;
+}

@@ -39,9 +39,10 @@ void Rasterizer::init()
 {
 }
 
-void Rasterizer::setState(Point3 point, std::vector<Vector3> intersections)
+void Rasterizer::setState(Point3 point, std::vector<Vector3> intersections, const Sample &sample)
 {
-    mGLLines.update(point, intersections);
+    // mGLLines.update(point, intersections);
+    mGLLines.update(sample);
 }
 
 void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])

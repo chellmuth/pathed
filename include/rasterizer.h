@@ -5,6 +5,7 @@
 #include <nanogui/glcanvas.h>
 #include <vector>
 
+#include "integrator.h"
 #include "gl_lines.h"
 #include "gl_scene.h"
 #include "point.h"
@@ -26,7 +27,7 @@ public:
     void init();
     virtual void drawGL() override;
 
-    void setState(Point3 point, std::vector<Vector3> intersections);
+    void setState(Point3 point, std::vector<Vector3> intersections, const Sample &sample);
     void move(Direction direction);
 
 private:

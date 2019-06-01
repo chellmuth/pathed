@@ -63,6 +63,27 @@ void gl::Lines::update(Point3 point, std::vector<Vector3> intersections)
     );
 }
 
+void gl::Lines::update(const Sample &sample)
+{
+    if (sample.bounceRays.size() == 0) { return; }
+
+    Point3 source = sample.bounceRays[0];
+    Point3 target = sample.shadowRays[0];
+
+    std::vector<GLfloat> positionsGL = {
+        source.x(), source.y(), source.z(),
+        target.x(), target.y(), target.z()
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(GLfloat) * positionsGL.size(),
+        (GLvoid *)&positionsGL[0]
+    );
+}
+
 void gl::Lines::draw(
     GLfloat (&model)[4][4],
     GLfloat (&view)[4][4],
