@@ -41,7 +41,7 @@ Scene parseScene(std::ifstream &sceneFile)
     );
 
     float fov = parseFloat(sensor["fov"]);
-    auto camera = std::make_shared<Camera>(cameraToWorld,  fov/ 180.f * M_PI);
+    auto camera = std::make_shared<Camera>(cameraToWorld,  fov / 180.f * M_PI);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto surfacePtr : surfaces) {
