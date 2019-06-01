@@ -27,7 +27,7 @@ public:
     void init();
     virtual void drawGL() override;
 
-    void setState(Point3 point, std::vector<Vector3> intersections, const Sample &sample);
+    void setState(const Sample &sample);
     void move(Direction direction);
 
 private:

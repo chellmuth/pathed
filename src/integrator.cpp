@@ -12,12 +12,11 @@ Color Integrator::L(
     const Scene &scene,
     RandomGenerator &random,
     int bounceCount,
-    std::vector<Vector3> &intersectionList,
     Sample &sample
 ) const {
     sample.bounceRays.push_back(intersection.point);
 
-    Color result = direct(intersection, scene, random, intersectionList, sample);
+    Color result = direct(intersection, scene, random, sample);
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
@@ -54,7 +53,7 @@ Color Integrator::L(
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        result += direct(bounceIntersection, scene, random, intersectionList, sample) * modulation;
+        result += direct(bounceIntersection, scene, random, sample) * modulation;
     }
 
     return result;
@@ -64,7 +63,6 @@ Color Integrator::direct(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
-    std::vector<Vector3> &intersectionList,
     Sample &sample
 ) const {
     Color emit = intersection.material->emit();
@@ -83,7 +81,6 @@ Color Integrator::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    intersectionList.push_back(lightDirection);
     sample.shadowRays.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {

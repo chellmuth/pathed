@@ -39,9 +39,8 @@ void Rasterizer::init()
 {
 }
 
-void Rasterizer::setState(Point3 point, std::vector<Vector3> intersections, const Sample &sample)
+void Rasterizer::setState(const Sample &sample)
 {
-    // mGLLines.update(point, intersections);
     mGLLines.update(sample);
 }
 

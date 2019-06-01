@@ -11,14 +11,10 @@ class AppController {
 public:
     AppController(Scene &scene, int width, int height);
     void handlePathTraceClick(int x, int y);
-    Point3 getSelectedPoint() { return mSelectedPoint; }
     Sample getSample() { return mSample; }
-    std::vector<Vector3> getIntersections() { return mIntersections; }
 
 private:
     Scene &mScene;
     int mWidth, mHeight;
-    Point3 mSelectedPoint;
-    std::vector<Vector3> mIntersections;
     Sample mSample;
 };

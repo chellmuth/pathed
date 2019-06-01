@@ -50,9 +50,8 @@ void samplePixel(
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    std::vector<Vector3> intersectionList;
     Sample sample { ray.origin() };
-    Color color = integrator.L(intersection, scene, random, bounceCount, intersectionList, sample);
+    Color color = integrator.L(intersection, scene, random, bounceCount, sample);
 
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
@@ -203,11 +202,7 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
-        mRasterizer->setState(
-            mController->getSelectedPoint(),
-            mController->getIntersections(),
-            mController->getSample()
-        );
+        mRasterizer->setState(mController->getSample());
         Screen::draw(ctx);
     }
 

@@ -20,7 +20,6 @@ namespace gl {
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
         );
-        void update(Point3 point, std::vector<Vector3> intersections);
         void update(const Sample &sample);
 
     private:

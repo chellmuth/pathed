@@ -20,7 +20,6 @@ public:
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
-        std::vector<Vector3> &intersectionList,
         Sample &sample
     ) const;
 
@@ -29,7 +28,6 @@ private:
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
-        std::vector<Vector3> &intersectionList,
         Sample &sample
     ) const;
 };

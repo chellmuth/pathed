@@ -12,7 +12,6 @@ AppController::AppController(Scene &scene, int width, int height)
     : mScene(scene),
       mWidth(width),
       mHeight(height),
-      mSelectedPoint(0.f, 0.f, 0.f),
       mSample({ Point3(0.f, 0.f, 0.f) })
 {}
 
@@ -29,12 +28,9 @@ void AppController::handlePathTraceClick(int x, int y)
     Intersection intersection = mScene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    mSelectedPoint = intersection.point;
-
     Integrator integrator;
     RandomGenerator random;
     int bounceCount = 2;
-    std::vector<Vector3> intersectionList;
     Sample sample { ray.origin() };
 
     Color color = integrator.L(
@@ -42,9 +38,7 @@ void AppController::handlePathTraceClick(int x, int y)
         mScene,
         random,
         bounceCount,
-        intersectionList,
         sample
     );
-    mIntersections = intersectionList;
     mSample = sample;
 }
