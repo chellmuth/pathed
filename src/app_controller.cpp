@@ -33,7 +33,7 @@ void AppController::handlePathTraceClick(int x, int y)
 
     Integrator integrator;
     RandomGenerator random;
-    int bounceCount = 0;
+    int bounceCount = 2;
     std::vector<Vector3> intersectionList;
     Sample sample { ray.origin() };
 

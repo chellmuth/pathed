@@ -38,6 +38,8 @@ Color Integrator::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
+        sample.bounceRays.push_back(bounceIntersection.point);
+
         float pdf;
         Color f = lastIntersection.material->f(
             lastIntersection.wi,

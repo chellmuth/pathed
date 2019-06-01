@@ -10,11 +10,12 @@ gl::Lines::Lines()
 
 void gl::Lines::init()
 {
-    std::vector<GLfloat> positionsGL = {
-        1.25f, 0.f, 0.f,
-        -3.75f, 0.f, 0.f,
-    };
-    std::vector<GLuint> indicesGL = { 0, 1 };
+    static const int MaxLines = 100;
+
+    GLuint indicesGL[2 * MaxLines];
+    for (int i = 0; i < 2 * MaxLines; i++) {
+        indicesGL[i] = i;
+    }
 
     {
         glGenVertexArrays(1, &mEntityIDs.vertexArrayID);
@@ -24,7 +25,7 @@ void gl::Lines::init()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            sizeof(GLuint) * indicesGL.size(),
+            sizeof(GLuint) * 2 * MaxLines,
             (GLvoid *)&indicesGL[0],
             GL_STATIC_DRAW
         );
@@ -33,13 +34,13 @@ void gl::Lines::init()
         glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * positionsGL.size(),
-            (GLvoid *)&positionsGL[0],
+            sizeof(GLfloat) * 3 * 2 * MaxLines,
+            NULL,
             GL_DYNAMIC_DRAW
         );
     }
 
-    mLineCount = 1;
+    mLineCount = 0;
 }
 
 void gl::Lines::update(Point3 point, std::vector<Vector3> intersections)
@@ -75,6 +76,22 @@ void gl::Lines::update(const Sample &sample)
         target.x(), target.y(), target.z()
     };
 
+    for (int i = 1; i < sample.bounceRays.size(); i++) {
+        Point3 bounceSource = sample.bounceRays[i - 1];
+        Point3 bounceTarget = sample.bounceRays[i];
+        std::vector<GLfloat> firstBounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            firstBounce.begin(),
+            firstBounce.end()
+        );
+
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
     glBufferSubData(
         GL_ARRAY_BUFFER,
@@ -82,6 +99,8 @@ void gl::Lines::update(const Sample &sample)
         sizeof(GLfloat) * positionsGL.size(),
         (GLvoid *)&positionsGL[0]
     );
+
+    mLineCount = 1 + sample.bounceRays.size() - 1;
 }
 
 void gl::Lines::draw(
