@@ -80,11 +80,19 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     ObjParser objParser(objFile, Handedness::Left);
     Scene objScene = objParser.parseScene();
 
-    auto material = parseMaterial(objJson["bsdf"]);
+    std::shared_ptr<Material> jsonMaterial;
+    auto bsdf = objJson["bsdf"];
+    if (bsdf.is_object()) {
+        jsonMaterial = parseMaterial(bsdf);
+    }
 
     for (auto surfacePtr : objScene.getSurfaces()) {
-        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
-        surfaces.push_back(surface);
+        if (jsonMaterial) {
+            auto surface = std::make_shared<Surface>(surfacePtr->getShape(), jsonMaterial);
+            surfaces.push_back(surface);
+        } else {
+            surfaces.push_back(surfacePtr);
+        }
     }
 }
 
