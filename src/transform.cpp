@@ -6,7 +6,18 @@
 #include "ray.h"
 #include "vector.h"
 
-Transform::Transform(float matrix[4][4])
+static const float identity[4][4] = {
+    1.f, 0.f, 0.f, 0.f,
+    0.f, 1.f, 0.f, 0.f,
+    0.f, 0.f, 1.f, 0.f,
+    0.f, 0.f, 0.f, 1.f,
+};
+
+Transform::Transform()
+    : Transform(identity)
+{}
+
+Transform::Transform(const float matrix[4][4])
 {
     for (int row = 0; row < 4; row++ ) {
         for (int col = 0; col < 4; col++ ) {
