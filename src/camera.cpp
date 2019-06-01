@@ -6,9 +6,15 @@
 #include "ray.h"
 #include "vector.h"
 
-Camera::Camera(Transform cameraToWorld, float verticalFOV)
-    : m_zNear(0.01f), m_cameraToWorld(cameraToWorld), m_verticalFOV(verticalFOV)
-{}
+Camera::Camera(Point3 origin, Point3 target, Vector3 up, float verticalFOV)
+    : m_zNear(0.01f),
+      m_origin(origin),
+      m_target(target),
+      m_up(up),
+      m_verticalFOV(verticalFOV)
+{
+    m_cameraToWorld = lookAt(origin, target, up);
+}
 
 Ray Camera::generateRay(int row, int col, int resolutionX, int resolutionY)
 {

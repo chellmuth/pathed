@@ -9,7 +9,6 @@
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
-#include "transform.h"
 #include "vector.h"
 
 #include "json.hpp"
@@ -34,14 +33,14 @@ Scene parseScene(std::ifstream &sceneFile)
     parseObjects(objects, surfaces);
 
     auto sensor = sceneJson["sensor"];
-    Transform cameraToWorld = lookAt(
-        parsePoint(sensor["lookAt"]["origin"]),
-        parsePoint(sensor["lookAt"]["target"]),
-        parseVector(sensor["lookAt"]["up"])
-    );
 
     float fov = parseFloat(sensor["fov"]);
-    auto camera = std::make_shared<Camera>(cameraToWorld,  fov/ 180.f * M_PI);
+    auto camera = std::make_shared<Camera>(
+        parsePoint(sensor["lookAt"]["origin"]),
+        parsePoint(sensor["lookAt"]["target"]),
+        parseVector(sensor["lookAt"]["up"]),
+        fov / 180.f * M_PI
+    );
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto surfacePtr : surfaces) {
@@ -80,11 +79,19 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     ObjParser objParser(objFile, Handedness::Left);
     Scene objScene = objParser.parseScene();
 
-    auto material = parseMaterial(objJson["bsdf"]);
+    std::shared_ptr<Material> jsonMaterial;
+    auto bsdf = objJson["bsdf"];
+    if (bsdf.is_object()) {
+        jsonMaterial = parseMaterial(bsdf);
+    }
 
     for (auto surfacePtr : objScene.getSurfaces()) {
-        auto surface = std::make_shared<Surface>(surfacePtr->getShape(), material);
-        surfaces.push_back(surface);
+        if (jsonMaterial) {
+            auto surface = std::make_shared<Surface>(surfacePtr->getShape(), jsonMaterial);
+            surfaces.push_back(surface);
+        } else {
+            surfaces.push_back(surfacePtr);
+        }
     }
 }
 

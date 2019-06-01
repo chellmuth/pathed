@@ -1,12 +1,13 @@
 #include "obj_parser.h"
 
-#include <iostream>
-
 #include "camera.h"
 #include "color.h"
 #include "lambertian.h"
 #include "string_util.h"
 #include "triangle.h"
+
+#include <iostream>
+#include <regex>
 
 using string = std::string;
 
@@ -73,8 +74,101 @@ void ObjParser::processGroup(string &groupArgs)
     m_currentGroup = name;
 }
 
+bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
+{
+    static const std::regex expression("(-?\\d+)\\s+(-?\\d+)\\s+(-?\\d+)\\s+(-?\\d+)\\s*");
+    std::smatch match;
+    std::regex_match(faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int index0 = std::stoi(match[1]);
+    int index1 = std::stoi(match[2]);
+    int index2 = std::stoi(match[3]);
+    int index3 = std::stoi(match[4]);
+
+    if (index0 < 0) {
+        index0 = m_vertices.size() + index0;
+    } else {
+        index0 -= 1;
+    }
+
+    if (index1 < 1) {
+        index1 = m_vertices.size() + index1;
+    } else {
+        index1 -= 1;
+    }
+
+    if (index2 < 2) {
+        index2 = m_vertices.size() + index2;
+    } else {
+        index2 -= 1;
+    }
+
+    if (index3 < 3) {
+        index3 = m_vertices.size() + index3;
+    } else {
+        index3 -= 1;
+    }
+
+    Triangle *face1, *face2;
+    switch (m_handedness) {
+    case Right:
+        face1 = new Triangle(
+            m_vertices[index0],
+            m_vertices[index1],
+            m_vertices[index2]
+        );
+        face2 = new Triangle(
+            m_vertices[index2],
+            m_vertices[index3],
+            m_vertices[index0]
+        );
+        break;
+    case Left:
+        face1 = new Triangle(
+            m_vertices[index1],
+            m_vertices[index0],
+            m_vertices[index2]
+        );
+        face2 = new Triangle(
+            m_vertices[index3],
+            m_vertices[index2],
+            m_vertices[index0]
+        );
+        break;
+    }
+
+    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
+    Color emit = m_materialLookup[m_currentMaterialName].emit;
+    auto material = std::make_shared<Lambertian>(diffuse, emit);
+
+    std::shared_ptr<Triangle> shape1(face1);
+    std::shared_ptr<Triangle> shape2(face2);
+
+    std::shared_ptr<Surface> surface1(new Surface(shape1, material));
+    std::shared_ptr<Surface> surface2(new Surface(shape2, material));
+
+    m_surfaces.push_back(surface1);
+    m_surfaces.push_back(surface2);
+
+    if (emit.isBlack()) { return true; }
+
+    std::shared_ptr<Light> light1(new Light(surface1));
+    std::shared_ptr<Light> light2(new Light(surface2));
+
+    m_lights.push_back(light1);
+    m_lights.push_back(light2);
+
+    return true;
+}
+
 void ObjParser::processFace(string &faceArgs)
 {
+    if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
+
     string::size_type index;
     string rest = faceArgs;
 

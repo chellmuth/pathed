@@ -40,5 +40,8 @@ private:
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
+
+    bool processDoubleFaceGeometryOnly(std::string &faceArgs);
+
 };
 

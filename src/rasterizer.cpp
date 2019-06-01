@@ -1,5 +1,6 @@
 #define  GL_SILENCE_DEPRECATION 1
 
+#include "camera.h"
 #include "matrix.h"
 #include "rasterizer.h"
 
@@ -17,8 +18,8 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
     : mScene(scene), mOrigin(0.f, 0.f, 0.f), mInitialDirection(0.f, 0.f, 0.f),
       nanogui::GLCanvas(parent)
 {
-    mOrigin = Point3(0.f, 2.f, 15.f);
-    mInitialDirection = Point3(0.f, -2.f, 2.5f) - mOrigin;
+    mOrigin = scene.getCamera()->getOrigin();
+    mInitialDirection = scene.getCamera()->getTarget() - mOrigin;
 
     mWidth = width;
     mHeight = height;

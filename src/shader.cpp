@@ -16,7 +16,7 @@ static std::string shaderString(const char *file_path)
         shaderString = sstr.str();
 		shaderStream.close();
 	} else {
-		printf("Couldn't find file\n");
+		printf("Couldn't find file %s\n", file_path);
     }
 
     return shaderString;

@@ -6,7 +6,8 @@ class Vector3;
 
 class Transform {
 public:
-    Transform(float matrix[4][4]);
+    Transform();
+    Transform(const float matrix[4][4]);
 
     Point3 apply(const Point3 &point) const;
     Vector3 apply(const Vector3 &vector) const;
