@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aabb.h"
 #include "intersection.h"
 #include "point.h"
 #include "random_generator.h"
@@ -23,4 +24,7 @@ public:
 
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
     virtual Intersection testIntersect(const Ray &ray) = 0;
+
+    virtual Point3 centroid() const = 0;
+    virtual void updateAABB(AABB *aabb) = 0;
 };

@@ -12,9 +12,11 @@ Color Integrator::L(
     const Scene &scene,
     RandomGenerator &random,
     int bounceCount,
-    std::vector<Vector3> &intersectionList
+    Sample &sample
 ) const {
-    Color result = direct(intersection, scene, random, intersectionList);
+    sample.bounceRays.push_back(intersection.point);
+
+    Color result = direct(intersection, scene, random, sample);
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
@@ -35,6 +37,8 @@ Color Integrator::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
+        sample.bounceRays.push_back(bounceIntersection.point);
+
         float pdf;
         Color f = lastIntersection.material->f(
             lastIntersection.wi,
@@ -49,7 +53,7 @@ Color Integrator::L(
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        result += direct(bounceIntersection, scene, random, intersectionList) * modulation;
+        result += direct(bounceIntersection, scene, random, sample) * modulation;
     }
 
     return result;
@@ -59,10 +63,12 @@ Color Integrator::direct(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
-    std::vector<Vector3> &intersectionList
+    Sample &sample
 ) const {
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
+        // part of my old logic - if you hit an emitter, don't do direct lighting?
+        sample.shadowRays.push_back(intersection.point);
         return Color(0.f, 0.f, 0.f);
     }
 
@@ -75,7 +81,7 @@ Color Integrator::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    intersectionList.push_back(lightDirection);
+    sample.shadowRays.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);

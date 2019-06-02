@@ -165,9 +165,78 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
     return true;
 }
 
+bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
+{
+    static std::regex expression("(\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+)\\s*");
+    std::smatch match;
+    std::regex_match (faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int index0 = std::stoi(match[1]);
+    int index1 = std::stoi(match[4]);
+    int index2 = std::stoi(match[7]);
+
+    if (index0 < 0) {
+        index0 = m_vertices.size() + index0;
+    } else {
+        index0 -= 1;
+    }
+
+    if (index1 < 1) {
+        index1 = m_vertices.size() + index1;
+    } else {
+        index1 -= 1;
+    }
+
+    if (index2 < 2) {
+        index2 = m_vertices.size() + index2;
+    } else {
+        index2 -= 1;
+    }
+
+    Triangle *face;
+    switch (m_handedness) {
+    case Right:
+        face = new Triangle(
+            m_vertices[index0],
+            m_vertices[index1],
+            m_vertices[index2]
+        );
+        break;
+    case Left:
+        face = new Triangle(
+            m_vertices[index1],
+            m_vertices[index0],
+            m_vertices[index2]
+        );
+        break;
+    }
+
+    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
+    Color emit = m_materialLookup[m_currentMaterialName].emit;
+    auto material = std::make_shared<Lambertian>(diffuse, emit);
+
+    std::shared_ptr<Triangle> shape(face);
+    std::shared_ptr<Surface> surface(new Surface(shape, material));
+
+    m_surfaces.push_back(surface);
+
+    if (emit.isBlack()) { return true; }
+
+    std::shared_ptr<Light> light(new Light(surface));
+
+    m_lights.push_back(light);
+
+    return true;
+}
+
 void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
+    if (processSingleFaceTriplets(faceArgs)) { return; }
 
     string::size_type index;
     string rest = faceArgs;

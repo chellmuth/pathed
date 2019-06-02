@@ -17,6 +17,15 @@
     {
       "type": "obj",
       "filename": "CornellBox-Original.obj"
+    },
+    {
+      "type": "obj",
+      "filename": "bunny.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
     }
   ]
 }

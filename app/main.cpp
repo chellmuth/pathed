@@ -34,7 +34,7 @@ using namespace std;
 static const int width = 768;
 static const int height = 512;
 static const int primarySamples = 50;
-static const int bounceCount = 2;
+static const int bounceCount = 20;
 
 void samplePixel(
     int row, int col,
@@ -50,8 +50,8 @@ void samplePixel(
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    std::vector<Vector3> intersectionList;
-    Color color = integrator.L(intersection, scene, random, bounceCount, intersectionList);
+    Sample sample { ray.origin() };
+    Color color = integrator.L(intersection, scene, random, bounceCount, sample);
 
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
@@ -202,10 +202,7 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
-        mRasterizer->setState(
-            mController->getSelectedPoint(),
-            mController->getIntersections()
-        );
+        mRasterizer->setState(mController->getSample());
         Screen::draw(ctx);
     }
 

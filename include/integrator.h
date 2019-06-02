@@ -7,6 +7,12 @@
 
 #include <vector>
 
+typedef struct {
+    Point3 origin;
+    std::vector<Point3> bounceRays;
+    std::vector<Point3> shadowRays;
+} Sample;
+
 class Integrator {
 public:
     Color L(
@@ -14,7 +20,7 @@ public:
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
-        std::vector<Vector3> &intersectionList
+        Sample &sample
     ) const;
 
 private:
@@ -22,6 +28,6 @@ private:
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
-        std::vector<Vector3> &intersectionList
+        Sample &sample
     ) const;
 };

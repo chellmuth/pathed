@@ -3,6 +3,7 @@
 #include <nanogui/opengl.h>
 #include <vector>
 
+#include "integrator.h"
 #include "gl_scene.h"
 #include "point.h"
 #include "shader.h"
@@ -19,7 +20,7 @@ namespace gl {
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
         );
-        void update(Point3 point, std::vector<Vector3> intersections);
+        void update(const Sample &sample);
 
     private:
         Shader mShader;
