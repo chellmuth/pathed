@@ -4,9 +4,10 @@
 #include "intersection.h"
 #include "point.h"
 #include "primitive.h"
+#include "surface.h"
 #include "ray.h"
-#include "primitive.h"
 
+#include <memory>
 #include <vector>
 
 const int BVHNode_MaxPrimitives = 2;
@@ -18,7 +19,7 @@ struct BVHNode {
     AABB *aabb;
 
     int primitiveCount;
-    Primitive *primitives[BVHNode_MaxPrimitives];
+    std::shared_ptr<Primitive> primitives[BVHNode_MaxPrimitives];
 };
 
 struct IndexedCentroid {
@@ -30,7 +31,7 @@ class BVH : public Primitive {
 public:
     BVH();
 
-    void bake(const std::vector<Primitive *> &primitives);
+    void bake(const std::vector<std::shared_ptr<Primitive>> &primitives);
 
     Intersection castRay(const Ray &ray) const;
     Intersection testIntersect(const Ray &ray) const override;
@@ -42,7 +43,7 @@ public:
 
 private:
     void bakeHelper(
-        const std::vector<Primitive *> &primitives,
+        const std::vector<std::shared_ptr<Primitive>> &primitives,
         BVHNode *root,
         int index
     );

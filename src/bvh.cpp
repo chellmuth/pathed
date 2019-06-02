@@ -49,15 +49,15 @@ static bool compareNodeAlongZ(IndexedCentroid ic1, IndexedCentroid ic2)
     return ic1.centroid.z() < ic2.centroid.z();
 }
 
-void BVH::bake(const std::vector<Primitive *> &primitives)
+void BVH::bake(const std::vector<std::shared_ptr<Primitive>> &primitives)
 {
-    m_root = (BVHNode *)malloc(sizeof(BVHNode));
+    m_root = new BVHNode();
 
     bakeHelper(primitives, m_root, 0);
 }
 
 void BVH::bakeHelper(
-    const std::vector<Primitive *> &primitives,
+    const std::vector<std::shared_ptr<Primitive>> &primitives,
     BVHNode *node,
     int depth
 ) {
@@ -82,7 +82,7 @@ void BVH::bakeHelper(
     std::vector<IndexedCentroid> centroids;
 
     for (int i = 0; i < primitives.size(); i++) {
-        Primitive *primitive = primitives[i];
+        std::shared_ptr<Primitive> primitive = primitives[i];
 
         IndexedCentroid centroid = {
             primitive->centroid(),
@@ -111,11 +111,11 @@ void BVH::bakeHelper(
         std::sort(centroids.begin(), centroids.end(), compareNodeAlongZ);
     }
 
-    std::vector<Primitive *> leftPrimitives;
-    std::vector<Primitive *> rightPrimitives;
+    std::vector<std::shared_ptr<Primitive>> leftPrimitives;
+    std::vector<std::shared_ptr<Primitive>> rightPrimitives;
 
     for (int i = 0; i < centroids.size(); i++) {
-        Primitive *primitive = primitives[centroids[i].primitiveIndex];
+        std::shared_ptr<Primitive> primitive = primitives[centroids[i].primitiveIndex];
 
         if (i < centroids.size()/2) {
             leftPrimitives.push_back(primitive);
@@ -124,8 +124,8 @@ void BVH::bakeHelper(
         }
     }
 
-    node->left = (BVHNode *)malloc(sizeof(BVHNode));
-    node->right = (BVHNode *)malloc(sizeof(BVHNode));
+    node->left = new BVHNode();
+    node->right = new BVHNode();
 
     bakeHelper(leftPrimitives, node->left, depth + 1);
     bakeHelper(rightPrimitives, node->right, depth + 1);
@@ -151,7 +151,7 @@ Intersection BVH::castRay(const Ray &ray, BVHNode *node, Intersection result) co
 
     if (node->primitiveCount > 0) {
         for (int i = 0; i < node->primitiveCount; i++) {
-            Primitive *primitive = node->primitives[i];
+            std::shared_ptr<Primitive> primitive = node->primitives[i];
             Intersection intersection = primitive->testIntersect(ray);
 
             if (!intersection.hit) { continue; }
