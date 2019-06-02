@@ -42,6 +42,6 @@ private:
     void processUseMaterial(std::string &materialArgs);
 
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
-
+    bool processSingleFaceTriplets(std::string &faceArgs);
 };
 

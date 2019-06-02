@@ -15,7 +15,9 @@ Scene::Scene(
     : m_surfaces(surfaces), m_lights(lights), m_camera(camera), m_bvh(new BVH())
 {
     std::vector<std::shared_ptr<Primitive>> primitives(m_surfaces.begin(), m_surfaces.end());
+    printf("BAKING...\n");
     m_bvh->bake(primitives);
+    printf("BAKED...\n");
 }
 
 std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()

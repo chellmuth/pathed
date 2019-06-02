@@ -216,7 +216,7 @@ int main() {
 
     Image image(width, height);
 
-    ifstream jsonScene("cornell.json");
+    ifstream jsonScene("bunny.json");
     Scene scene = parseScene(jsonScene);
 
     bool quit = false;
