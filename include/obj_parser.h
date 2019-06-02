@@ -41,6 +41,7 @@ private:
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
 
+    void processTriangle(int index0, int index1, int index2);
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
     bool processSingleFaceTriplets(std::string &faceArgs);
 };
