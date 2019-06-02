@@ -14,12 +14,15 @@ public:
     Point3 p1() const { return m_p1; }
     Point3 p2() const { return m_p2; }
 
-    SurfaceSample sample(RandomGenerator &random) const;
-    Intersection testIntersect(const Ray &ray);
+    SurfaceSample sample(RandomGenerator &random) const override;
+    Intersection testIntersect(const Ray &ray) override;
 
-    void pushVertices(std::vector<float> &vertices);
-    void pushIndices(std::vector<uint> &indices, int offset);
-    void pushNormals(std::vector<float> &normals);
+    Point3 centroid() const override;
+    void updateAABB(AABB *aabb) override;
+
+    void pushVertices(std::vector<float> &vertices) override;
+    void pushIndices(std::vector<uint> &indices, int offset) override;
+    void pushNormals(std::vector<float> &normals) override;
 
     void debug() const;
 

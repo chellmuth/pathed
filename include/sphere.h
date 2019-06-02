@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aabb.h"
 #include "color.h"
 #include "intersection.h"
 #include "point.h"
@@ -13,6 +14,9 @@ public:
 
     SurfaceSample sample(RandomGenerator &random) const;
     Intersection testIntersect(const Ray &ray);
+
+    Point3 centroid() const override { return m_center; }
+    void updateAABB(AABB *aabb) override;
 
 private:
     float area() const;

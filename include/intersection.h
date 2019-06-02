@@ -1,9 +1,10 @@
 #pragma once
 
+#include "material.h"
 #include "point.h"
 #include "vector.h"
 
-class Material;
+#include <limits>
 
 struct Intersection {
     bool hit;
@@ -13,3 +14,14 @@ struct Intersection {
     Vector3 normal;
     Material *material;
 };
+
+namespace IntersectionHelper {
+    const Intersection miss = {
+        false,
+        std::numeric_limits<float>::max(),
+        Point3(0.f, 0.f, 0.f),
+        Vector3(0.f),
+        Vector3(0.f),
+        nullptr
+    };
+}

@@ -1,12 +1,12 @@
 #include "triangle.h"
 
-#include <limits>
-#include <math.h>
-#include <stdio.h>
-
 #include "point.h"
 #include "ray.h"
 #include "vector.h"
+
+#include <limits>
+#include <math.h>
+#include <stdio.h>
 
 Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
     : m_p0(p0), m_p1(p1), m_p2(p2)
@@ -131,6 +131,31 @@ void Triangle::pushNormals(std::vector<float> &normals)
     normals.push_back(normal.x());
     normals.push_back(normal.y());
     normals.push_back(normal.z());
+}
+
+Point3 Triangle::centroid() const
+{
+    float minX = fminf(fminf(m_p0.x(), m_p1.x()), m_p2.x());
+    float maxX = fmaxf(fmaxf(m_p0.x(), m_p1.x()), m_p2.x());
+
+    float minY = fminf(fminf(m_p0.y(), m_p1.y()), m_p2.y());
+    float maxY = fmaxf(fmaxf(m_p0.y(), m_p1.y()), m_p2.y());
+
+    float minZ = fminf(fminf(m_p0.z(), m_p1.z()), m_p2.z());
+    float maxZ = fmaxf(fmaxf(m_p0.z(), m_p1.z()), m_p2.z());
+
+    return Point3(
+        (minX + maxX) * 0.5f,
+        (minY + maxY) * 0.5f,
+        (minZ + maxZ) * 0.5f
+    );
+}
+
+void Triangle::updateAABB(AABB *aabb)
+{
+    aabb->update(m_p0);
+    aabb->update(m_p1);
+    aabb->update(m_p2);
 }
 
 void Triangle::debug() const
