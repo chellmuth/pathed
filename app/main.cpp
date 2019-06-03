@@ -33,7 +33,7 @@ using namespace std;
 
 static const int width = 768;
 static const int height = 512;
-static const int primarySamples = 50;
+static const int primarySamples = 5000;
 static const int bounceCount = 20;
 
 void samplePixel(

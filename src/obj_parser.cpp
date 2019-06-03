@@ -185,13 +185,13 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
         index0 -= 1;
     }
 
-    if (index1 < 1) {
+    if (index1 < 0) {
         index1 = m_vertices.size() + index1;
     } else {
         index1 -= 1;
     }
 
-    if (index2 < 2) {
+    if (index2 < 0) {
         index2 = m_vertices.size() + index2;
     } else {
         index2 -= 1;
