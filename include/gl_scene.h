@@ -9,6 +9,7 @@ typedef struct {
     GLuint vertexArrayID;
     GLuint vertexIndexBufferID;
     GLuint vertexBufferID;
+    GLuint colorBufferID;
     GLuint normalBufferID;
 } EntityIDs;
 

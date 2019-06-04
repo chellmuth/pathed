@@ -3,8 +3,8 @@
 gl::Lines::Lines()
 {
     mShader = shader::createProgram(
-        "shader/geometry.vs",
-        "shader/uniform_color.fs"
+        "shader/line.vs",
+        "shader/line.fs"
     );
 }
 
@@ -38,6 +38,15 @@ void gl::Lines::init()
             NULL,
             GL_DYNAMIC_DRAW
         );
+
+        glGenBuffers(1, &mEntityIDs.colorBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(GLfloat) * 3 * MaxLines,
+            NULL,
+            GL_DYNAMIC_DRAW
+        );
     }
 
     mLineCount = 0;
@@ -47,12 +56,17 @@ void gl::Lines::update(const Sample &sample)
 {
     if (sample.bounceRays.size() == 0) { return; }
 
-    Point3 source = sample.bounceRays[0];
-    Point3 target = sample.shadowRays[0];
+    Point3 source = sample.origin;
+    Point3 target = sample.bounceRays[0];
 
     std::vector<GLfloat> positionsGL = {
         source.x(), source.y(), source.z(),
         target.x(), target.y(), target.z()
+    };
+
+    std::vector<GLfloat> colorsGL = {
+        1.f, 1.f, 0.f,
+        1.f, 1.f, 0.f,
     };
 
     for (int i = 1; i < sample.bounceRays.size(); i++) {
@@ -69,6 +83,9 @@ void gl::Lines::update(const Sample &sample)
             firstBounce.end()
         );
 
+        for (int i = 0; i < 6; i++) {
+            colorsGL.push_back(1.f);
+        }
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
@@ -77,6 +94,14 @@ void gl::Lines::update(const Sample &sample)
         0,
         sizeof(GLfloat) * positionsGL.size(),
         (GLvoid *)&positionsGL[0]
+    );
+
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(GLfloat) * colorsGL.size(),
+        (GLvoid *)&colorsGL[0]
     );
 
     mLineCount = 1 + sample.bounceRays.size() - 1;
@@ -104,8 +129,13 @@ void gl::Lines::draw(
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
     glDrawElements(GL_LINES, mLineCount * 2, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 }
