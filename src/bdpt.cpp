@@ -20,6 +20,9 @@ Color BDPT::L(
     Vector3 hemisphereSample = UniformSampleHemisphere(random);
     Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    Ray lightRay(lightSample.point, bounceDirection);
+    sample.lightRays.push_back(lightSample.point);
+    sample.lightRays.push_back(lightRay.at(1.f));
 
     Color result(0.f, 0.f, 0.f); // = direct(intersection, scene, random, sample);
 

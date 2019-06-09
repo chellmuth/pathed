@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "bdpt.h"
 #include "camera.h"
 #include "path_tracer.h"
 #include "intersection.h"
@@ -28,7 +29,7 @@ void AppController::handlePathTraceClick(int x, int y)
     Intersection intersection = mScene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    PathTracer integrator;
+    BDPT integrator;
     RandomGenerator random;
     int bounceCount = 10;
     Sample sample { ray.origin() };

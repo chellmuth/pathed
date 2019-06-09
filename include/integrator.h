@@ -7,11 +7,14 @@
 
 #include <vector>
 
-typedef struct {
+struct Sample {
     Point3 origin;
     std::vector<Point3> bounceRays;
+    std::vector<Point3> lightRays;
     std::vector<Point3> shadowRays;
-} Sample;
+
+    Sample(const Point3 &_origin) : origin(_origin) {}
+};
 
 class Integrator {
 public:

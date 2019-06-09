@@ -4,11 +4,11 @@
 
 class BDPT : public Integrator {
 public:
-    virtual Color L(
+    Color L(
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
         Sample &sample
-    ) const = 0;
+    ) const override;
 };
