@@ -3,7 +3,7 @@
 #include "intersection.h"
 #include "random_generator.h"
 #include "scene.h"
-#include "vector.h"
+#include "point.h"
 
 #include <vector>
 
@@ -15,19 +15,11 @@ typedef struct {
 
 class Integrator {
 public:
-    Color L(
+    virtual Color L(
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
         Sample &sample
-    ) const;
-
-private:
-    Color direct(
-        const Intersection &intersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
+    ) const = 0;
 };

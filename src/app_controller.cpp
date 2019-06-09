@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "camera.h"
-#include "integrator.h"
+#include "path_tracer.h"
 #include "intersection.h"
 #include "random_generator.h"
 #include "ray.h"
@@ -28,9 +28,9 @@ void AppController::handlePathTraceClick(int x, int y)
     Intersection intersection = mScene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    Integrator integrator;
+    PathTracer integrator;
     RandomGenerator random;
-    int bounceCount = 2;
+    int bounceCount = 10;
     Sample sample { ray.origin() };
 
     Color color = integrator.L(

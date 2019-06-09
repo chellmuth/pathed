@@ -1,4 +1,4 @@
-#include "integrator.h"
+#include "path_tracer.h"
 
 #include "color.h"
 #include "light.h"
@@ -7,7 +7,7 @@
 #include "transform.h"
 #include "vector.h"
 
-Color Integrator::L(
+Color PathTracer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
@@ -59,7 +59,7 @@ Color Integrator::L(
     return result;
 }
 
-Color Integrator::direct(
+Color PathTracer::direct(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,

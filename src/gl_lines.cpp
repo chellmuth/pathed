@@ -51,8 +51,8 @@ void gl::Lines::update(const Sample &sample)
     Point3 target = sample.shadowRays[0];
 
     std::vector<GLfloat> positionsGL = {
-        source.x(), source.y(), source.z(),
-        target.x(), target.y(), target.z()
+        // source.x(), source.y(), source.z(),
+        // target.x(), target.y(), target.z()
     };
 
     for (int i = 1; i < sample.bounceRays.size(); i++) {
@@ -79,7 +79,7 @@ void gl::Lines::update(const Sample &sample)
         (GLvoid *)&positionsGL[0]
     );
 
-    mLineCount = 1 + sample.bounceRays.size() - 1;
+    mLineCount = sample.bounceRays.size() - 1;
 }
 
 void gl::Lines::draw(

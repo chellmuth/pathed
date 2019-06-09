@@ -21,6 +21,7 @@
 #include "intersection.h"
 #include "monte_carlo.h"
 #include "obj_parser.h"
+#include "path_tracer.h"
 #include "random_generator.h"
 #include "rasterizer.h"
 #include "ray.h"
@@ -34,7 +35,7 @@ using namespace std;
 static const int width = 768;
 static const int height = 512;
 static const int primarySamples = 5000;
-static const int bounceCount = 20;
+static const int bounceCount = 4;
 
 void samplePixel(
     int row, int col,
@@ -83,7 +84,7 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    Integrator integrator;
+    PathTracer integrator;
 
     std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {
