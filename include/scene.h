@@ -8,10 +8,19 @@
 #include "light.h"
 #include "point.h"
 #include "primitive.h"
+#include "random_generator.h"
 #include "surface.h"
+#include "vector.h"
 
 class Camera;
 class Ray;
+
+struct LightSample {
+    std::shared_ptr<Light> light;
+    Point3 point;
+    Vector3 normal;
+    float invPDF;
+};
 
 class Scene {
 public:
@@ -29,6 +38,8 @@ public:
 
     std::vector<std::shared_ptr<Surface>> getSurfaces();
     std::shared_ptr<Camera> getCamera();
+
+    LightSample sampleLights(RandomGenerator &random) const;
 
 private:
     std::unique_ptr<BVH> m_bvh;
