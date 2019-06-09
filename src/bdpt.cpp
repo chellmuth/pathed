@@ -16,6 +16,11 @@ Color BDPT::L(
 ) const {
     sample.bounceRays.push_back(intersection.point);
 
+    LightSample lightSample = scene.sampleLights(random);
+    Vector3 hemisphereSample = UniformSampleHemisphere(random);
+    Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
+    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+
     Color result(0.f, 0.f, 0.f); // = direct(intersection, scene, random, sample);
 
     Color modulation = Color(1.f, 1.f, 1.f);

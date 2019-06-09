@@ -20,6 +20,14 @@ struct LightSample {
     Point3 point;
     Vector3 normal;
     float invPDF;
+
+    LightSample(
+        std::shared_ptr<Light> _light,
+        Point3 _point,
+        Vector3 _normal,
+        float _invPDF
+    ) : light(_light), point(_point), normal(_normal), invPDF(_invPDF)
+    {}
 };
 
 class Scene {
