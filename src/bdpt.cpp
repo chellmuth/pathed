@@ -149,12 +149,18 @@ Color BDPT::L(
         lightSample.light->getMaterial().get()
     );
 
-    std::vector<PathPoint> path = {
+    std::vector<PathPoint> path3 = {
         eyePoint,
         eyeBouncePoint,
         lightBouncePoint,
         lightPoint
     };
 
-    return pathRadiance(scene, path);
+    std::vector<PathPoint> path2 = {
+        eyePoint,
+        eyeBouncePoint,
+        lightPoint
+    };
+
+    return pathRadiance(scene, path3) + pathRadiance(scene, path2);
 }
