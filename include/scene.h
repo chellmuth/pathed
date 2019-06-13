@@ -45,7 +45,7 @@ public:
     Intersection testIntersect(const Ray &ray) const;
 
     std::vector<std::shared_ptr<Surface>> getSurfaces();
-    std::shared_ptr<Camera> getCamera();
+    std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
 

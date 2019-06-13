@@ -13,7 +13,7 @@ AppController::AppController(Scene &scene, int width, int height)
     : mScene(scene),
       mWidth(width),
       mHeight(height),
-      mSample({ Point3(0.f, 0.f, 0.f) })
+      mSample()
 {}
 
 void AppController::handlePathTraceClick(int x, int y)
@@ -32,7 +32,8 @@ void AppController::handlePathTraceClick(int x, int y)
     BDPT integrator;
     RandomGenerator random;
     int bounceCount = 10;
-    Sample sample { ray.origin() };
+    Sample sample;
+    sample.eyePoints.push_back(ray.origin());
 
     Color color = integrator.L(
         intersection,

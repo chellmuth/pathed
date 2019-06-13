@@ -1,5 +1,6 @@
 #include "bdpt.h"
 
+#include "camera.h"
 #include "color.h"
 #include "light.h"
 #include "material.h"
@@ -100,23 +101,25 @@ Color BDPT::L(
     int bounceCount,
     Sample &sample
 ) const {
-    sample.bounceRays.push_back(intersection.point);
+    sample.eyePoints.push_back(intersection.point);
 
     LightSample lightSample = scene.sampleLights(random);
+    sample.lightPoints.push_back(lightSample.point);
     Vector3 hemisphereSample = UniformSampleHemisphere(random);
     Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
     Ray lightRay(lightSample.point, bounceDirection);
-    sample.lightRays.push_back(lightSample.point);
-    sample.lightRays.push_back(lightRay.at(1.f));
 
     Intersection lightIntersection = scene.testIntersect(lightRay);
     if (!lightIntersection.hit) {
         return Color(0.f);
     }
 
+    sample.lightPoints.push_back(lightIntersection.point);
+    sample.connected = true;
+
     PathPoint eyePoint(
-        Point3(0.f, 0.f, 0.f),
+        scene.getCamera()->getOrigin(),
         Vector3(0.f), // not needed!
         -1.f,         // not needed!
         nullptr       // not needed!

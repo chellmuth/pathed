@@ -14,7 +14,7 @@ Color PathTracer::L(
     int bounceCount,
     Sample &sample
 ) const {
-    sample.bounceRays.push_back(intersection.point);
+    // sample.bounceRays.push_back(intersection.point);
 
     Color result = direct(intersection, scene, random, sample);
 
@@ -37,7 +37,7 @@ Color PathTracer::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        sample.bounceRays.push_back(bounceIntersection.point);
+        // sample.bounceRays.push_back(bounceIntersection.point);
 
         float pdf;
         Color f = lastIntersection.material->f(
@@ -68,7 +68,7 @@ Color PathTracer::direct(
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         // part of my old logic - if you hit an emitter, don't do direct lighting?
-        sample.shadowRays.push_back(intersection.point);
+        // sample.shadowRays.push_back(intersection.point);
         return Color(0.f, 0.f, 0.f);
     }
 
@@ -81,7 +81,7 @@ Color PathTracer::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    sample.shadowRays.push_back(lightSample.point);
+    // sample.shadowRays.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);

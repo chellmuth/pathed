@@ -52,7 +52,9 @@ void samplePixel(
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    Sample sample(ray.origin());
+    Sample sample;
+    sample.eyePoints.push_back(ray.origin());
+
     Color color = integrator.L(intersection, scene, random, bounceCount, sample);
 
     Color emit = intersection.material->emit();

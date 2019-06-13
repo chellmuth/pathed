@@ -25,11 +25,6 @@ std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
     return m_surfaces;
 }
 
-std::shared_ptr<Camera> Scene::getCamera()
-{
-    return m_camera;
-}
-
 Intersection Scene::testIntersect(const Ray &ray) const
 {
     return m_bvh->testIntersect(ray);

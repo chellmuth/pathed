@@ -3,8 +3,8 @@
 gl::Lines::Lines()
 {
     mShader = shader::createProgram(
-        "shader/geometry.vs",
-        "shader/uniform_color.fs"
+        "shader/line.vs",
+        "shader/line.fs"
     );
 }
 
@@ -38,6 +38,15 @@ void gl::Lines::init()
             NULL,
             GL_DYNAMIC_DRAW
         );
+
+        glGenBuffers(1, &mEntityIDs.colorBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(GLfloat) * 3 * MaxLines,
+            NULL,
+            GL_DYNAMIC_DRAW
+        );
     }
 
     mLineCount = 0;
@@ -45,19 +54,15 @@ void gl::Lines::init()
 
 void gl::Lines::update(const Sample &sample)
 {
-    if (sample.lightRays.size() == 0) { return; }
+    if (sample.lightPoints.size() < 2 && sample.eyePoints.size() < 2) { return; }
 
-    Point3 source = sample.lightRays[0];
-    Point3 target = sample.shadowRays[0];
+    std::vector<GLfloat> positionsGL = {};
+    std::vector<GLfloat> colorsGL = {};
 
-    std::vector<GLfloat> positionsGL = {
-        // source.x(), source.y(), source.z(),
-        // target.x(), target.y(), target.z()
-    };
+    for (int i = 1; i < sample.eyePoints.size(); i++) {
+        Point3 bounceSource = sample.eyePoints[i - 1];
+        Point3 bounceTarget = sample.eyePoints[i];
 
-    for (int i = 1; i < sample.lightRays.size(); i++) {
-        Point3 bounceSource = sample.lightRays[i - 1];
-        Point3 bounceTarget = sample.lightRays[i];
         std::vector<GLfloat> firstBounce = {
             bounceSource.x(), bounceSource.y(), bounceSource.z(),
             bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
@@ -69,6 +74,9 @@ void gl::Lines::update(const Sample &sample)
             firstBounce.end()
         );
 
+        for (int i = 0; i < 6; i++) {
+            colorsGL.push_back(1.f);
+        }
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
@@ -79,15 +87,22 @@ void gl::Lines::update(const Sample &sample)
         (GLvoid *)&positionsGL[0]
     );
 
-    mLineCount = sample.lightRays.size() - 1;
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(GLfloat) * colorsGL.size(),
+        (GLvoid *)&colorsGL[0]
+    );
+
+    mLineCount = sample.eyePoints.size() - 1;
 }
 
 void gl::Lines::draw(
     GLfloat (&model)[4][4],
     GLfloat (&view)[4][4],
     GLfloat (&projection)[4][4]
-)
-{
+) {
     glUseProgram(mShader.programID);
 
     GLuint modelID = glGetUniformLocation(mShader.programID, "model");
@@ -102,10 +117,15 @@ void gl::Lines::draw(
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
     glDrawElements(GL_LINES, mLineCount * 2, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 }

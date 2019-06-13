@@ -8,12 +8,14 @@
 #include <vector>
 
 struct Sample {
-    Point3 origin;
-    std::vector<Point3> bounceRays;
-    std::vector<Point3> lightRays;
+    std::vector<Point3> eyePoints;
+    std::vector<Point3> lightPoints;
     std::vector<Point3> shadowRays;
+    bool connected;
 
-    Sample(const Point3 &_origin) : origin(_origin) {}
+    Sample()
+    : eyePoints(), lightPoints(), shadowRays(), connected(false)
+    {}
 };
 
 class Integrator {
