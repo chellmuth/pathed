@@ -4,6 +4,7 @@
 
 class Color {
 public:
+    Color(float rgb);
     Color(float r, float g, float b);
 
     float r() const { return m_r; }

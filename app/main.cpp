@@ -13,6 +13,7 @@
 #include <nanogui/glcanvas.h>
 
 #include "app_controller.h"
+#include "bdpt.h"
 #include "camera.h"
 #include "canvas.h"
 #include "color.h"
@@ -84,7 +85,7 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    PathTracer integrator;
+    BDPT integrator;
 
     std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {

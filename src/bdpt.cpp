@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "light.h"
+#include "material.h"
 #include "monte_carlo.h"
 #include "ray.h"
 #include "transform.h"
@@ -13,7 +14,12 @@
 struct PathPoint {
     Point3 point;
     Vector3 normal;
+    float pdf;
     Material *material;
+
+    PathPoint(Point3 _point, Vector3 _normal, float _pdf, Material *_material)
+        : point(_point), normal(_normal), pdf(_pdf), material(_material)
+    {}
 };
 
 static bool visibilityTerm(const Scene &scene, const Point3 &p0, const Point3 &p1)
@@ -45,6 +51,8 @@ static float geometryTerm(
 
 static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &path)
 {
+    Color throughput(1.f);
+
     for (int i = 1; i < path.size() - 1; i++) {
         const auto &previous = path[i - 1];
         const auto &current = path[i];
@@ -59,9 +67,30 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
             current.point, current.normal,
             next.point, next.normal
         );
+
+        throughput *= brdf * geometry;
     }
 
-    return Color(0.f, 0.f, 0.f);
+    return throughput;
+}
+
+static float pathPDF(const std::vector<PathPoint> &path)
+{
+    float pdf = 1.f;
+
+    for (int i = 1; i < path.size(); i++) {
+        const auto &current = path[i];
+
+        pdf *= current.pdf;
+    }
+
+    return pdf;
+}
+
+static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path)
+{
+    Color emitted = path[path.size() - 1].material->emit();
+    return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
 Color BDPT::L(
@@ -81,45 +110,45 @@ Color BDPT::L(
     sample.lightRays.push_back(lightSample.point);
     sample.lightRays.push_back(lightRay.at(1.f));
 
-    Color result(0.f, 0.f, 0.f); // = direct(intersection, scene, random, sample);
-
-    Color modulation = Color(1.f, 1.f, 1.f);
-    Intersection lastIntersection = intersection;
-
-    for (int bounce = 0; bounce < bounceCount; bounce++) {
-        Transform hemisphereToWorld = normalToWorldSpace(
-            lastIntersection.normal,
-            lastIntersection.wi
-        );
-
-        Vector3 hemisphereSample = UniformSampleHemisphere(random);
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-        Ray bounceRay(
-            lastIntersection.point,
-            bounceDirection
-        );
-
-        Intersection bounceIntersection = scene.testIntersect(bounceRay);
-        if (!bounceIntersection.hit) { break; }
-
-        sample.bounceRays.push_back(bounceIntersection.point);
-
-        float pdf;
-        Color f = lastIntersection.material->f(
-            lastIntersection.wi,
-            bounceDirection,
-            lastIntersection.normal,
-            &pdf
-        );
-        float invPDF = 1.f / pdf;
-
-        modulation *= f
-            * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
-            * invPDF;
-        lastIntersection = bounceIntersection;
-
-        // result += direct(bounceIntersection, scene, random, sample) * modulation;
+    Intersection lightIntersection = scene.testIntersect(lightRay);
+    if (!lightIntersection.hit) {
+        return Color(0.f);
     }
 
-    return result;
+    PathPoint eyePoint(
+        Point3(0.f, 0.f, 0.f),
+        Vector3(0.f), // not needed!
+        -1.f,         // not needed!
+        nullptr       // not needed!
+    );
+
+    PathPoint eyeBouncePoint(
+        intersection.point,
+        intersection.normal,
+        1.f,
+        intersection.material
+    );
+
+    PathPoint lightBouncePoint(
+        lightIntersection.point,
+        lightIntersection.normal,
+        UniformHemispherePdf(),
+        lightIntersection.material
+    );
+
+    PathPoint lightPoint(
+        lightSample.point,
+        lightSample.normal,
+        1.f / lightSample.invPDF,
+        lightSample.light->getMaterial().get()
+    );
+
+    std::vector<PathPoint> path = {
+        eyePoint,
+        eyeBouncePoint,
+        lightBouncePoint,
+        lightPoint
+    };
+
+    return pathRadiance(scene, path);
 }
