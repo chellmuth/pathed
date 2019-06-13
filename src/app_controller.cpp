@@ -42,5 +42,6 @@ void AppController::handlePathTraceClick(int x, int y)
         bounceCount,
         sample
     );
+
     mSample = sample;
 }

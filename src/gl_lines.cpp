@@ -54,6 +54,8 @@ void gl::Lines::init()
 
 void gl::Lines::update(const Sample &sample)
 {
+    mLineCount = 0;
+
     if (sample.lightPoints.size() < 2 && sample.eyePoints.size() < 2) { return; }
 
     std::vector<GLfloat> positionsGL = {};
@@ -63,20 +65,72 @@ void gl::Lines::update(const Sample &sample)
         Point3 bounceSource = sample.eyePoints[i - 1];
         Point3 bounceTarget = sample.eyePoints[i];
 
-        std::vector<GLfloat> firstBounce = {
+        std::vector<GLfloat> bounce = {
             bounceSource.x(), bounceSource.y(), bounceSource.z(),
             bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
         };
 
         positionsGL.insert(
             positionsGL.end(),
-            firstBounce.begin(),
-            firstBounce.end()
+            bounce.begin(),
+            bounce.end()
         );
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
             colorsGL.push_back(1.f);
         }
+
+        mLineCount += 1;
+    }
+
+    for (int i = 1; i < sample.lightPoints.size(); i++) {
+        Point3 bounceSource = sample.lightPoints[i - 1];
+        Point3 bounceTarget = sample.lightPoints[i];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(0.f);
+        }
+
+        mLineCount += 1;
+    }
+
+    if (sample.connected) {
+        Point3 bounceSource = sample.eyePoints[sample.eyePoints.size() - 1];
+        Point3 bounceTarget = sample.lightPoints[sample.lightPoints.size() - 1];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
+        }
+
+        mLineCount += 1;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
@@ -94,8 +148,6 @@ void gl::Lines::update(const Sample &sample)
         sizeof(GLfloat) * colorsGL.size(),
         (GLvoid *)&colorsGL[0]
     );
-
-    mLineCount = sample.eyePoints.size() - 1;
 }
 
 void gl::Lines::draw(

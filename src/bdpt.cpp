@@ -112,6 +112,9 @@ Color BDPT::L(
 
     Intersection lightIntersection = scene.testIntersect(lightRay);
     if (!lightIntersection.hit) {
+        sample.lightPoints.push_back(lightRay.at(10.f));
+        sample.connected = false;
+
         return Color(0.f);
     }
 
