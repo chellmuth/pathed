@@ -1,6 +1,6 @@
 #include "transform.h"
 
-#include <cstdlib>
+#include <math.h>
 #include <stdio.h>
 
 #include "point.h"
@@ -102,7 +102,7 @@ Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection)
 Transform normalToWorldSpace(const Vector3 &normal)
 {
     Vector3 xAxis(0.f);
-    if (std::abs(normal.x()) > std::abs(normal.y())) {
+    if (fabsf(normal.x()) > fabsf(normal.y())) {
         xAxis = Vector3(-normal.z(), 0.f, normal.x()).normalized();
     } else {
         xAxis = Vector3(0.f, -normal.z(), normal.y()).normalized();

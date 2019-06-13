@@ -7,6 +7,63 @@
 #include "transform.h"
 #include "vector.h"
 
+#include <assert.h>
+#include <vector>
+
+struct PathPoint {
+    Point3 point;
+    Vector3 normal;
+    Material *material;
+};
+
+static bool visibilityTerm(const Scene &scene, const Point3 &p0, const Point3 &p1)
+{
+    Vector3 direction = (p1 - p0).toVector();
+    Ray ray(p0, direction.normalized());
+    Intersection intersection = scene.testIntersect(ray);
+    assert(intersection.hit);
+
+    return (direction.length() - intersection.t) < 1e-4;
+}
+
+static float geometryTerm(
+    const Scene &scene,
+    const Point3 &p0, const Vector3 &normal0,
+    const Point3 &p1, const Vector3 &normal1
+) {
+    if (!visibilityTerm(scene, p0, p1)) { return 0.f; }
+
+    Vector3 direction = (p1 - p0).toVector();
+    Vector3 p0Out = direction.normalized();
+    Vector3 p1Out = direction * -1.f;
+
+    float numerator = fmaxf(0.f, normal0.dot(p0Out)) * fmaxf(0.f, normal1.dot(p1Out));
+    float denominator = powf(direction.length(), 2);
+
+    return numerator / denominator;
+}
+
+static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &path)
+{
+    for (int i = 1; i < path.size() - 1; i++) {
+        const auto &previous = path[i - 1];
+        const auto &current = path[i];
+        const auto &next = path[i + 1];
+
+        const Vector3 wi = (previous.point - current.point).toVector();
+        const Vector3 wo = (next.point - current.point).toVector();
+
+        Color brdf = current.material->f(wo, wi, current.normal);
+        float geometry = geometryTerm(
+            scene,
+            current.point, current.normal,
+            next.point, next.normal
+        );
+    }
+
+    return Color(0.f, 0.f, 0.f);
+}
+
 Color BDPT::L(
     const Intersection &intersection,
     const Scene &scene,
