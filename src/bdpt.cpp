@@ -145,7 +145,7 @@ Color BDPT::L(
     PathPoint lightPoint(
         lightSample.point,
         lightSample.normal,
-        1.f / lightSample.invPDF,
+        1.f / (lightSample.invPDF * scene.lights().size()),
         lightSample.light->getMaterial().get()
     );
 

@@ -14,7 +14,7 @@ Color PathTracer::L(
     int bounceCount,
     Sample &sample
 ) const {
-    // sample.bounceRays.push_back(intersection.point);
+    sample.eyePoints.push_back(intersection.point);
 
     Color result = direct(intersection, scene, random, sample);
 
@@ -37,7 +37,7 @@ Color PathTracer::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        // sample.bounceRays.push_back(bounceIntersection.point);
+        sample.eyePoints.push_back(bounceIntersection.point);
 
         float pdf;
         Color f = lastIntersection.material->f(
@@ -81,7 +81,7 @@ Color PathTracer::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    // sample.shadowRays.push_back(lightSample.point);
+    sample.shadowPoints.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);

@@ -85,6 +85,30 @@ void gl::Lines::update(const Sample &sample)
         mLineCount += 1;
     }
 
+    for (int i = 0; i < sample.shadowPoints.size(); i++) {
+        Point3 bounceSource = sample.eyePoints[i + 1];
+        Point3 bounceTarget = sample.shadowPoints[i];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(0.f);
+        }
+
+        mLineCount += 1;
+    }
+
     for (int i = 1; i < sample.lightPoints.size(); i++) {
         Point3 bounceSource = sample.lightPoints[i - 1];
         Point3 bounceTarget = sample.lightPoints[i];
