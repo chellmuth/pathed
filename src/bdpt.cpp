@@ -94,6 +94,38 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
     return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
+std::vector<PathPoint> createPath(const Scene &scene, const Intersection &intersection, int s, int t)
+{
+    std::vector<PathPoint> path;
+
+    assert(s >= 2);
+    assert(t >= 1);
+
+    PathPoint eyePoint(
+        scene.getCamera()->getOrigin(),
+        Vector3(0.f), // not needed!
+        -1.f,         // not needed!
+        nullptr       // not needed!
+    );
+
+    PathPoint eyeBouncePoint(
+        intersection.point,
+        intersection.normal,
+        1.f,
+        intersection.material
+    );
+
+    path.push_back(eyePoint);
+    path.push_back(eyeBouncePoint);
+
+    Intersection lastIntersection = intersection;
+    for (int i = 2; i < s; i++) {
+
+    }
+
+    return path;
+}
+
 Color BDPT::L(
     const Intersection &intersection,
     const Scene &scene,
