@@ -87,8 +87,9 @@ Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
 
 Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection)
 {
-    Vector3 xAxis = normal.cross(rayDirection);
-    Vector3 zAxis = normal.cross(xAxis);
+    Vector3 xAxis = normal.cross(rayDirection).normalized();
+    Vector3 zAxis = normal.cross(xAxis).normalized();
+
     float matrix[4][4] {
         { xAxis.x(), normal.x(), zAxis.x(), 0.f },
         { xAxis.y(), normal.y(), zAxis.y(), 0.f },
