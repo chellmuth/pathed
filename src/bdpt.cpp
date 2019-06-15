@@ -17,16 +17,31 @@
 // s = number of light vertices, t = number of eye vertices
 // i = number of light vertices during MIS
 
-
+enum PointType {
+    Eye,
+    Light,
+    Vertex,
+};
 
 struct PathPoint {
+    PointType pointType;
+
     Point3 point;
     Vector3 normal;
     float pdf;
     Material *material;
 
-    PathPoint(Point3 _point, Vector3 _normal, float _pdf, Material *_material)
-        : point(_point), normal(_normal), pdf(_pdf), material(_material)
+    PathPoint(
+        PointType _pointType,
+        Point3 _point,
+        Vector3 _normal,
+        float _pdf,
+        Material *_material
+    ) : pointType(_pointType),
+        point(_point),
+        normal(_normal),
+        pdf(_pdf),
+        material(_material)
     {}
 };
 
@@ -115,7 +130,7 @@ static float pathPDF(const std::vector<PathPoint> &path)
 {
     float pdf = 1.f;
 
-    for (int i = 1; i < path.size(); i++) {
+    for (int i = 0; i < path.size() - 1; i++) {
         const auto &current = path[i];
 
         pdf *= current.pdf;
@@ -138,7 +153,7 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
         assert(t >= minT);
     }
 
-    Color emitted = path[path.size() - 1].material->emit();
+    Color emitted = path[0].material->emit();
     return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
@@ -170,6 +185,7 @@ Color BDPT::L(
     sample.connected = true;
 
     PathPoint eyePoint(
+        PointType::Eye,
         scene.getCamera()->getOrigin(),
         Vector3(0.f), // not needed!
         -1.f,         // not needed!
@@ -177,6 +193,7 @@ Color BDPT::L(
     );
 
     PathPoint eyeBouncePoint(
+        PointType::Vertex,
         intersection.point,
         intersection.normal,
         1.f,
@@ -184,6 +201,7 @@ Color BDPT::L(
     );
 
     PathPoint lightBouncePoint(
+        PointType::Vertex,
         lightIntersection.point,
         lightIntersection.normal,
         UniformHemispherePdf(),
@@ -191,6 +209,7 @@ Color BDPT::L(
     );
 
     PathPoint lightPoint(
+        PointType::Light,
         lightSample.point,
         lightSample.normal,
         1.f / (lightSample.invPDF * scene.lights().size()),
@@ -198,16 +217,16 @@ Color BDPT::L(
     );
 
     std::vector<PathPoint> path3 = {
-        eyePoint,
-        eyeBouncePoint,
+        lightPoint,
         lightBouncePoint,
-        lightPoint
+        eyeBouncePoint,
+        eyePoint,
     };
 
     std::vector<PathPoint> path2 = {
-        eyePoint,
+        lightPoint,
         eyeBouncePoint,
-        lightPoint
+        eyePoint,
     };
 
     return pathRadiance(scene, path3) + pathRadiance(scene, path2);
