@@ -12,6 +12,13 @@
 #include <assert.h>
 #include <vector>
 
+// PointPaths start from the light source and go to the eye
+// Forward PDF is light -> eye, Reverse PDF is eye -> light
+// s = number of light vertices, t = number of eye vertices
+// i = number of light vertices during MIS
+
+
+
 struct PathPoint {
     Point3 point;
     Vector3 normal;
@@ -75,6 +82,33 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
     return throughput;
 }
 
+static Color pathPDF(const Scene &scene, const std::vector<PathPoint> &path, int i)
+{
+    Color throughput(1.f);
+    int s = i;
+    int t = path.size() - s;
+
+    // for (int i = 1; i < path.size() - 1; i++) {
+    //     const auto &previous = path[i - 1];
+    //     const auto &current = path[i];
+    //     const auto &next = path[i + 1];
+
+    //     const Vector3 wi = (previous.point - current.point).toVector();
+    //     const Vector3 wo = (next.point - current.point).toVector();
+
+    //     Color brdf = current.material->f(wo, wi, current.normal);
+    //     float geometry = geometryTerm(
+    //         scene,
+    //         current.point, current.normal,
+    //         next.point, next.normal
+    //     );
+
+    //     throughput *= brdf * geometry;
+    // }
+
+    return throughput;
+}
+
 static float pathPDF(const std::vector<PathPoint> &path)
 {
     float pdf = 1.f;
@@ -90,40 +124,20 @@ static float pathPDF(const std::vector<PathPoint> &path)
 
 static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path)
 {
-    Color emitted = path[path.size() - 1].material->emit();
-    return emitted * pathThroughput(scene, path) / pathPDF(path);
-}
+    const int minS = 1;
+    const int minT = 2;
 
-std::vector<PathPoint> createPath(const Scene &scene, const Intersection &intersection, int s, int t)
-{
-    std::vector<PathPoint> path;
+    int vertexCount = path.size();
 
-    assert(s >= 2);
-    assert(t >= 1);
+    int maxS = vertexCount - minT;
 
-    PathPoint eyePoint(
-        scene.getCamera()->getOrigin(),
-        Vector3(0.f), // not needed!
-        -1.f,         // not needed!
-        nullptr       // not needed!
-    );
-
-    PathPoint eyeBouncePoint(
-        intersection.point,
-        intersection.normal,
-        1.f,
-        intersection.material
-    );
-
-    path.push_back(eyePoint);
-    path.push_back(eyeBouncePoint);
-
-    Intersection lastIntersection = intersection;
-    for (int i = 2; i < s; i++) {
-
+    for (int s = minS; s < maxS; s++) {
+        int t = vertexCount - s;
+        assert(t >= minT);
     }
 
-    return path;
+    Color emitted = path[path.size() - 1].material->emit();
+    return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
 Color BDPT::L(
