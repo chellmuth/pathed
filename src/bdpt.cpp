@@ -42,16 +42,22 @@ static bool visibilityTerm(const Scene &scene, const Point3 &p0, const Point3 &p
 
 static float geometryTerm(
     const Scene &scene,
-    const Point3 &p0, const Vector3 &normal0,
-    const Point3 &p1, const Vector3 &normal1
+    const PathPoint &p0, const PathPoint &p1
 ) {
-    if (!visibilityTerm(scene, p0, p1)) { return 0.f; }
+    if (!visibilityTerm(scene, p0.point, p1.point)) { return 0.f; }
 
-    Vector3 direction = (p1 - p0).toVector();
+    Vector3 direction = (p1.point - p0.point).toVector();
     Vector3 p0Out = direction.normalized();
     Vector3 p1Out = direction * -1.f;
 
-    float numerator = fmaxf(0.f, normal0.dot(p0Out)) * fmaxf(0.f, normal1.dot(p1Out));
+    float numerator = 1.f;
+    if (!p0.normal.isZero()) {
+        numerator *= fmaxf(0.f, p0.normal.dot(p0Out));
+    }
+    if (!p1.normal.isZero()) {
+        numerator *= fmaxf(0.f, p1.normal.dot(p1Out));
+    }
+
     float denominator = powf(direction.length(), 2);
 
     return numerator / denominator;
@@ -70,11 +76,7 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
         const Vector3 wo = (next.point - current.point).toVector();
 
         Color brdf = current.material->f(wo, wi, current.normal);
-        float geometry = geometryTerm(
-            scene,
-            current.point, current.normal,
-            next.point, next.normal
-        );
+        float geometry = geometryTerm(scene, current, next);
 
         throughput *= brdf * geometry;
     }
