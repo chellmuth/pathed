@@ -60,6 +60,9 @@ static float geometryTerm(
     const Scene &scene,
     const PathPoint &p0, const PathPoint &p1
 ) {
+    //old
+    if (!visibilityTerm(scene, p0.point, p1.point)) { return 0.f; }
+
     Vector3 direction = (p1.point - p0.point).toVector();
     Vector3 p0Out = direction.normalized();
     Vector3 p1Out = direction * -1.f;
@@ -77,7 +80,7 @@ static float geometryTerm(
     return numerator / denominator;
 }
 
-static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &path)
+static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &path, bool debug = false)
 {
     for (int i = 0; i < path.size() - 1; i++) {
         const auto &current = path[i];
@@ -90,6 +93,10 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
 
     Color throughput(1.f);
 
+    if (debug) {
+        std::cout << "Throughput terms: ";
+    }
+
     for (int i = 1; i < path.size() - 1; i++) {
         const auto &previous = path[i - 1];
         const auto &current = path[i];
@@ -99,9 +106,17 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
         const Vector3 wo = (next.point - current.point).toVector();
 
         Color brdf = current.material->f(wo, wi, current.normal);
-        float geometry = geometryTerm(scene, current, next);
+        float geometry = geometryTerm(scene, previous, current);
+
+        if (debug) {
+            std::cout << "(" << brdf * geometry << ")" << std::endl;
+        }
 
         throughput *= brdf * geometry;
+    }
+
+    if (debug) {
+        std::cout << std::endl;
     }
 
     return throughput;
@@ -164,11 +179,70 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
     Color emitted = path[0].material->emit();
     if (debug) {
         std::cout << "Emitted: " << emitted << std::endl;
-        std::cout << "Throughput: " << pathThroughput(scene, path) << std::endl;
+        std::cout << "Throughput: " << pathThroughput(scene, path, true) << std::endl;
         std::cout << "PDF: " << pathPDF(path) << std::endl;
     }
 
     return emitted * pathThroughput(scene, path) / pathPDF(path);
+}
+
+static Color pathThroughputOld(const Scene &scene, const std::vector<PathPoint> &path, bool debug = false)
+{
+    Color throughput(1.f);
+
+    if (debug) {
+        std::cout << "Throughput terms: ";
+    }
+
+    for (int i = 1; i < path.size() - 1; i++) {
+        const auto &previous = path[i - 1];
+        const auto &current = path[i];
+        const auto &next = path[i + 1];
+
+        const Vector3 wi = (previous.point - current.point).toVector();
+        const Vector3 wo = (next.point - current.point).toVector();
+
+        Color brdf = current.material->f(wo, wi, current.normal);
+        float geometry = geometryTerm(scene, current, next);
+
+        if (debug) {
+            std::cout << "(" << brdf * geometry << ")" << std::endl;
+        }
+
+        throughput *= brdf * geometry;
+    }
+
+    if (debug) {
+        std::cout << std::endl;
+    }
+
+    return throughput;
+}
+
+static float pathPDFOld(const std::vector<PathPoint> &path)
+{
+    float pdf = 1.f;
+
+    for (int i = 1; i < path.size(); i++) {
+        const auto &current = path[i];
+
+        pdf *= current.pdf;
+    }
+
+    return pdf;
+}
+
+static Color pathRadianceOld(const Scene &scene, const std::vector<PathPoint> &path, bool debug = false)
+{
+    Color emitted = path[path.size() - 1].material->emit();
+
+    if (debug) {
+        std::cout << "Emitted: " << emitted << std::endl;
+        std::cout << "Throughput: " << pathThroughputOld(scene, path, true) << std::endl;
+        std::cout << "PDF: " << pathPDFOld(path) << std::endl;
+    }
+
+    return emitted * pathThroughputOld(scene, path) / pathPDFOld(path);
 }
 
 Color BDPT::L(
@@ -248,14 +322,30 @@ Color BDPT::L(
         eyePoint,
     };
 
+    std::vector<PathPoint> path3Old = {
+        eyePoint,
+        eyeBouncePoint,
+        lightBouncePoint,
+        lightPoint,
+    };
+
+    std::vector<PathPoint> path2Old = {
+        eyePoint,
+        eyeBouncePoint,
+        lightPoint,
+    };
+
     if (debug) {
         std::cout << "Points:" << std::endl;
-        for (auto &pp : path2) {
+        for (auto &pp : path3) {
             std::cout << pp.point << std::endl;
         }
-        std::cout << "Radiance: " << pathRadiance(scene, path2, false) << std::endl;
-        pathRadiance(scene, path2, debug);
+        std::cout << "Radiance New: " << pathRadiance(scene, path3) << std::endl;
+        pathRadiance(scene, path3, true);
+
+        std::cout << "Radiance Old: " << pathRadianceOld(scene, path3Old) << std::endl;
+        pathRadianceOld(scene, path3Old, true);
     }
 
-    return pathRadiance(scene, path2);
+    return pathRadiance(scene, path3);
 }
