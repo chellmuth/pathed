@@ -59,8 +59,6 @@ static float geometryTerm(
     const Scene &scene,
     const PathPoint &p0, const PathPoint &p1
 ) {
-    if (!visibilityTerm(scene, p0.point, p1.point)) { return 0.f; }
-
     Vector3 direction = (p1.point - p0.point).toVector();
     Vector3 p0Out = direction.normalized();
     Vector3 p1Out = direction * -1.f;
@@ -80,6 +78,15 @@ static float geometryTerm(
 
 static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &path)
 {
+    for (int i = 0; i < path.size() - 1; i++) {
+        const auto &current = path[i];
+        const auto &next = path[i + 1];
+
+        if (!visibilityTerm(scene, current.point, next.point)) {
+            return Color(0.f);
+        }
+    }
+
     Color throughput(1.f);
 
     for (int i = 1; i < path.size() - 1; i++) {
@@ -229,5 +236,6 @@ Color BDPT::L(
         eyePoint,
     };
 
-    return pathRadiance(scene, path3) + pathRadiance(scene, path2);
+    return pathRadiance(scene, path3) +
+        pathRadiance(scene, path2);
 }
