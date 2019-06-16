@@ -19,9 +19,10 @@ Image::Image(int width, int height)
 
 void Image::set(int row, int col, float r, float g, float b)
 {
-    m_raw[3 * (row * m_width + col) + 0] = r;
-    m_raw[3 * (row * m_width + col) + 1] = g;
-    m_raw[3 * (row * m_width + col) + 2] = b;
+    // tinyexr is bottom to top
+    m_raw[3 * ((m_height - row - 1) * m_width + col) + 0] = r;
+    m_raw[3 * ((m_height - row - 1) * m_width + col) + 1] = g;
+    m_raw[3 * ((m_height - row - 1) * m_width + col) + 2] = b;
 
     unsigned char byteR = fminf(powf(r, 1/2.2), 1.f) * 255;
     unsigned char byteG = fminf(powf(g, 1/2.2), 1.f) * 255;
