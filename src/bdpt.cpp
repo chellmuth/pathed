@@ -169,8 +169,10 @@ Color BDPT::L(
     const Scene &scene,
     RandomGenerator &random,
     int bounceCount,
-    Sample &sample
+    Sample &sample,
+    bool debug
 ) const {
+    if (debug) { printf("Debug Mode\n"); }
     sample.eyePoints.push_back(intersection.point);
 
     LightSample lightSample = scene.sampleLights(random);

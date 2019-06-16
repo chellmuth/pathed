@@ -40,7 +40,8 @@ void AppController::handlePathTraceClick(int x, int y)
         mScene,
         random,
         bounceCount,
-        sample
+        sample,
+        true
     );
 
     mSample = sample;

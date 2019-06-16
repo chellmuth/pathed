@@ -12,7 +12,8 @@ Color PathTracer::L(
     const Scene &scene,
     RandomGenerator &random,
     int bounceCount,
-    Sample &sample
+    Sample &sample,
+    bool debug
 ) const {
     sample.eyePoints.push_back(intersection.point);
 

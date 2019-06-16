@@ -9,7 +9,8 @@ public:
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
-        Sample &sample
+        Sample &sample,
+        bool debug = false
     ) const override;
 
 private:
