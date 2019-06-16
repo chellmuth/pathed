@@ -5,7 +5,9 @@
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
 
+#include <sstream>
 #include <stdlib.h>
+#include <string>
 
 Image::Image(int width, int height)
     : m_height(height),
@@ -54,7 +56,7 @@ std::mutex &Image::getLock()
     return m_lock;
 }
 
-void Image::save()
+void Image::save(char const *filestem, int spp)
 {
     EXRHeader header;
     InitEXRHeader(&header);
@@ -100,12 +102,27 @@ void Image::save()
     }
 
     const char* err;
-    int ret = SaveEXRImageToFile(&image, &header, "test.exr", &err);
+    std::ostringstream outputExrStream;
+    outputExrStream << filestem << ".exr";
+    std::string outputExr = outputExrStream.str();
+
+    std::ostringstream outputSppExrStream;
+    outputSppExrStream << filestem << "-" << spp << "spp.exr";
+    std::string outputSppExr = outputSppExrStream.str();
+
+    int ret = SaveEXRImageToFile(&image, &header, outputExr.c_str(), &err);
     if (ret != TINYEXR_SUCCESS) {
         fprintf(stderr, "Save EXR err: %s\n", err);
         return;
     }
-    printf("Saved exr file. [ %s ] \n", "test.exr");
+    printf("Saved exr file. [ %s ] \n", outputExr.c_str());
+
+    ret = SaveEXRImageToFile(&image, &header, outputSppExr.c_str(), &err);
+    if (ret != TINYEXR_SUCCESS) {
+        fprintf(stderr, "Save EXR err: %s\n", err);
+        return;
+    }
+    printf("Saved exr file. [ %s ] \n", outputSppExr.c_str());
 
     free(header.channels);
     free(header.pixel_types);

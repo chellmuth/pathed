@@ -147,7 +147,7 @@ public:
         }
 
         if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-            mCanvas->save();
+            mCanvas->save("output", 10);
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {

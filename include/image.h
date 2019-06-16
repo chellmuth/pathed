@@ -10,7 +10,7 @@ public:
     void set(int row, int col, float r, float g, float b);
     void debug();
 
-    void save();
+    void save(char const *filestem, int spp);
     void write(char const *filename);
 
     const std::vector<unsigned char> &data();
