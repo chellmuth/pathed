@@ -109,6 +109,7 @@ void run(Image &image, Scene &scene, bool *quit)
         std::mutex &lock = image.getLock();
         lock.lock();
 
+        image.setSpp(i + 1);
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 int index = 3 * (row * width + col);
@@ -149,6 +150,10 @@ public:
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
         if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
             return true;
+        }
+
+        if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+            mCanvas->save("output");
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
