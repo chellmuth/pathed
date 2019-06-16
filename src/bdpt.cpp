@@ -10,6 +10,7 @@
 #include "vector.h"
 
 #include <assert.h>
+#include <iostream>
 #include <vector>
 
 // PointPaths start from the light source and go to the eye
@@ -146,7 +147,7 @@ static float pathPDF(const std::vector<PathPoint> &path)
     return pdf;
 }
 
-static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path)
+static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path, bool debug = false)
 {
     const int minS = 1;
     const int minT = 2;
@@ -161,6 +162,12 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
     }
 
     Color emitted = path[0].material->emit();
+    if (debug) {
+        std::cout << "Emitted: " << emitted << std::endl;
+        std::cout << "Throughput: " << pathThroughput(scene, path) << std::endl;
+        std::cout << "PDF: " << pathPDF(path) << std::endl;
+    }
+
     return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
@@ -172,7 +179,10 @@ Color BDPT::L(
     Sample &sample,
     bool debug
 ) const {
-    if (debug) { printf("Debug Mode\n"); }
+    if (debug) {
+        std::cout << "<Debug Mode>" << std::endl;
+    }
+
     sample.eyePoints.push_back(intersection.point);
 
     LightSample lightSample = scene.sampleLights(random);
@@ -238,6 +248,14 @@ Color BDPT::L(
         eyePoint,
     };
 
-    return pathRadiance(scene, path3) +
-        pathRadiance(scene, path2);
+    if (debug) {
+        std::cout << "Points:" << std::endl;
+        for (auto &pp : path2) {
+            std::cout << pp.point << std::endl;
+        }
+        std::cout << "Radiance: " << pathRadiance(scene, path2, false) << std::endl;
+        pathRadiance(scene, path2, debug);
+    }
+
+    return pathRadiance(scene, path2);
 }

@@ -63,3 +63,8 @@ void Point3::debug() const
 {
     printf("<Point3> (%f %f %f)\n", m_x, m_y, m_z);
 }
+
+std::ostream &operator<<(std::ostream &os, const Point3 &p)
+{
+    return os << "Point3: " << p.x() << " " << p.y() << " " << p.z();
+}

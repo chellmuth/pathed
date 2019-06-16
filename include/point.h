@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 class Vector3;
 
 class Point3 {
@@ -24,3 +26,5 @@ public:
 private:
     float m_x, m_y, m_z;
 };
+
+std::ostream &operator<<(std::ostream &os, const Point3 &p);
