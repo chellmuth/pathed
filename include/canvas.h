@@ -16,7 +16,7 @@ public:
     Canvas(Widget *parent, std::shared_ptr<AppController> controller, Image &image, int width, int height);
 
     void init();
-    void save(char const *filestem, int spp);
+    void save(char const *filestem);
 
     virtual void drawGL() override;
 

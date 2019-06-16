@@ -129,9 +129,9 @@ void Canvas::drawGL()
     glDisableVertexAttribArray(0);
 }
 
-void Canvas::save(char const *filestem, int spp)
+void Canvas::save(char const *filestem)
 {
-    mImage.save(filestem, spp);
+    mImage.save(filestem);
 }
 
 bool Canvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)

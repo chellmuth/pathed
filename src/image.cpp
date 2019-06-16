@@ -12,6 +12,7 @@
 Image::Image(int width, int height)
     : m_height(height),
       m_width(width),
+      m_spp(0),
       m_data(3 * m_height * m_width),
       m_raw(3 * m_height * m_width)
 {}
@@ -56,7 +57,7 @@ std::mutex &Image::getLock()
     return m_lock;
 }
 
-void Image::save(char const *filestem, int spp)
+void Image::save(char const *filestem)
 {
     EXRHeader header;
     InitEXRHeader(&header);
@@ -107,7 +108,7 @@ void Image::save(char const *filestem, int spp)
     std::string outputExr = outputExrStream.str();
 
     std::ostringstream outputSppExrStream;
-    outputSppExrStream << filestem << "-" << spp << "spp.exr";
+    outputSppExrStream << filestem << "-" << m_spp << "spp.exr";
     std::string outputSppExr = outputSppExrStream.str();
 
     int ret = SaveEXRImageToFile(&image, &header, outputExr.c_str(), &err);
