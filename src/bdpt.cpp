@@ -171,8 +171,11 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
 
     int maxS = vertexCount - minT;
 
-    for (int s = minS; s < maxS; s++) {
+    for (int s = minS; s <= maxS; s++) {
         int t = vertexCount - s;
+        if (debug) {
+            std::cout << "s: " << s << " t: " << t << std::endl;
+        }
         assert(t >= minT);
     }
 
