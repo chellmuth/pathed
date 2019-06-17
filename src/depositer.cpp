@@ -7,11 +7,6 @@
 #include "transform.h"
 #include "vector.h"
 
-#include <iostream>
-
-using namespace std;
-using namespace nanoflann;
-
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     const int samples = 100;
@@ -41,7 +36,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         }
     }
 
-    mKDTree = new KDTree(3, mDataSource, KDTreeSingleIndexAdaptorParams(10));
+    mKDTree = new KDTree(3, mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 Color Depositer::L(
