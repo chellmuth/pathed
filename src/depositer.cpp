@@ -7,6 +7,43 @@
 #include "transform.h"
 #include "vector.h"
 
+#include <iostream>
+#include <vector>
+
+using namespace std;
+using namespace nanoflann;
+
+template <typename T>
+struct PointCloud
+{
+	struct Point
+	{
+		T  x,y,z;
+	};
+
+	std::vector<Point>  pts;
+
+	// Must return the number of data points
+	inline size_t kdtree_get_point_count() const { return pts.size(); }
+
+	// Returns the dim'th component of the idx'th point in the class:
+	// Since this is inlined and the "dim" argument is typically an immediate value, the
+	//  "if/else's" are actually solved at compile time.
+	inline T kdtree_get_pt(const size_t idx, const size_t dim) const
+	{
+		if (dim == 0) return pts[idx].x;
+		else if (dim == 1) return pts[idx].y;
+		else return pts[idx].z;
+	}
+
+	// Optional bounding-box computation: return false to default to a standard bbox computation loop.
+	//   Return true if the BBOX was already computed by the class and returned in "bb" so it can be avoided to redo it again.
+	//   Look at bb.size() to find out the expected dimensionality (e.g. 2 or 3 for point clouds)
+	template <class BBOX>
+	bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
+
+};
+
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     LightSample lightSample = scene.sampleLights(random);
@@ -18,6 +55,29 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 
     Intersection lightIntersection = scene.testIntersect(lightRay);
     printf("%i\n", lightIntersection.hit);
+
+	typedef KDTreeSingleIndexDynamicAdaptor<
+		L2_Simple_Adaptor<float, PointCloud<float> > ,
+		PointCloud<float>,
+		3 /* dim */
+		> my_kd_tree_t;
+
+    PointCloud<float> cloud;
+    cloud.pts.push_back({ lightSample.point.x(), lightSample.point.y(), lightSample.point.z() });
+
+	float queryPoint[3] = { 0.f, 0.f, 0.f };
+
+    my_kd_tree_t tree(3, cloud, KDTreeSingleIndexAdaptorParams(10));
+
+    std::cout << "Searching..." << std::endl;
+    const size_t numResults = 1;
+    size_t returnIndex;
+    float outDistanceSquared;
+    nanoflann::KNNResultSet<float> resultSet(numResults);
+    resultSet.init(&returnIndex, &outDistanceSquared);
+    tree.findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    std::cout << "return index=" << returnIndex << " outDistanceSquared=" << outDistanceSquared << std::endl;
+    std::cout << "point: " << cloud.pts[returnIndex].x << ", " << cloud.pts[returnIndex].y << ", " << cloud.pts[returnIndex].z << std::endl;
 }
 
 Color Depositer::L(

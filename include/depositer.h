@@ -2,6 +2,8 @@
 
 #include "integrator.h"
 
+#include "nanoflann.hpp"
+
 class Depositer : public Integrator {
 public:
     Color L(
