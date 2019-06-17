@@ -14,7 +14,9 @@ using namespace nanoflann;
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    for (int i = 0; i < 1; i++) {
+    const int samples = 100;
+    const int bounces = 5;
+    for (int i = 0; i < samples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
@@ -22,14 +24,21 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         Ray lightRay(lightSample.point, bounceDirection);
 
-        Intersection lightIntersection = scene.testIntersect(lightRay);
-        if (!lightIntersection.hit) { continue; }
+        for (int bounce = 0; bounce < bounces; bounce++) {
+            Intersection lightIntersection = scene.testIntersect(lightRay);
+            if (!lightIntersection.hit) { break; }
 
-        mDataSource.pts.push_back({
-            lightIntersection.point.x(),
-            lightIntersection.point.y(),
-            lightIntersection.point.z()
-        });
+            mDataSource.pts.push_back({
+                lightIntersection.point.x(),
+                lightIntersection.point.y(),
+                lightIntersection.point.z()
+            });
+
+            hemisphereSample = UniformSampleHemisphere(random);
+            hemisphereToWorld = normalToWorldSpace(lightIntersection.normal);
+            bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+            lightRay = Ray(lightIntersection.point, bounceDirection);
+        }
     }
 
     mKDTree = new KDTree(3, mDataSource, KDTreeSingleIndexAdaptorParams(10));
