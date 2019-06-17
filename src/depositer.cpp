@@ -8,76 +8,31 @@
 #include "vector.h"
 
 #include <iostream>
-#include <vector>
 
 using namespace std;
 using namespace nanoflann;
 
-template <typename T>
-struct PointCloud
-{
-	struct Point
-	{
-		T  x,y,z;
-	};
-
-	std::vector<Point>  pts;
-
-	// Must return the number of data points
-	inline size_t kdtree_get_point_count() const { return pts.size(); }
-
-	// Returns the dim'th component of the idx'th point in the class:
-	// Since this is inlined and the "dim" argument is typically an immediate value, the
-	//  "if/else's" are actually solved at compile time.
-	inline T kdtree_get_pt(const size_t idx, const size_t dim) const
-	{
-		if (dim == 0) return pts[idx].x;
-		else if (dim == 1) return pts[idx].y;
-		else return pts[idx].z;
-	}
-
-	// Optional bounding-box computation: return false to default to a standard bbox computation loop.
-	//   Return true if the BBOX was already computed by the class and returned in "bb" so it can be avoided to redo it again.
-	//   Look at bb.size() to find out the expected dimensionality (e.g. 2 or 3 for point clouds)
-	template <class BBOX>
-	bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
-
-};
-
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    LightSample lightSample = scene.sampleLights(random);
+    for (int i = 0; i < 1; i++) {
+        LightSample lightSample = scene.sampleLights(random);
 
-    Vector3 hemisphereSample = UniformSampleHemisphere(random);
-    Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
-    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-    Ray lightRay(lightSample.point, bounceDirection);
+        Vector3 hemisphereSample = UniformSampleHemisphere(random);
+        Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
+        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+        Ray lightRay(lightSample.point, bounceDirection);
 
-    Intersection lightIntersection = scene.testIntersect(lightRay);
-    printf("%i\n", lightIntersection.hit);
+        Intersection lightIntersection = scene.testIntersect(lightRay);
+        if (!lightIntersection.hit) { continue; }
 
-	typedef KDTreeSingleIndexDynamicAdaptor<
-		L2_Simple_Adaptor<float, PointCloud<float> > ,
-		PointCloud<float>,
-		3 /* dim */
-		> my_kd_tree_t;
+        mDataSource.pts.push_back({
+            lightIntersection.point.x(),
+            lightIntersection.point.y(),
+            lightIntersection.point.z()
+        });
+    }
 
-    PointCloud<float> cloud;
-    cloud.pts.push_back({ lightSample.point.x(), lightSample.point.y(), lightSample.point.z() });
-
-	float queryPoint[3] = { 0.f, 0.f, 0.f };
-
-    my_kd_tree_t tree(3, cloud, KDTreeSingleIndexAdaptorParams(10));
-
-    std::cout << "Searching..." << std::endl;
-    const size_t numResults = 1;
-    size_t returnIndex;
-    float outDistanceSquared;
-    nanoflann::KNNResultSet<float> resultSet(numResults);
-    resultSet.init(&returnIndex, &outDistanceSquared);
-    tree.findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-    std::cout << "return index=" << returnIndex << " outDistanceSquared=" << outDistanceSquared << std::endl;
-    std::cout << "point: " << cloud.pts[returnIndex].x << ", " << cloud.pts[returnIndex].y << ", " << cloud.pts[returnIndex].z << std::endl;
+    mKDTree = new KDTree(3, mDataSource, KDTreeSingleIndexAdaptorParams(10));
 }
 
 Color Depositer::L(
@@ -87,49 +42,62 @@ Color Depositer::L(
     int bounceCount,
     Sample &sample
 ) const {
-    sample.eyePoints.push_back(intersection.point);
+    Point3 intersectionPoint = intersection.point;
+	float queryPoint[3] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
 
-    Color result = direct(intersection, scene, random, sample);
+    const size_t numResults = 1;
+    size_t returnIndex;
+    float outDistanceSquared;
+    nanoflann::KNNResultSet<float> resultSet(numResults);
+    resultSet.init(&returnIndex, &outDistanceSquared);
 
-    Color modulation = Color(1.f, 1.f, 1.f);
-    Intersection lastIntersection = intersection;
+    mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    for (int bounce = 0; bounce < bounceCount; bounce++) {
-        Transform hemisphereToWorld = normalToWorldSpace(
-            lastIntersection.normal,
-            lastIntersection.wi
-        );
+    return Color(outDistanceSquared);
 
-        Vector3 hemisphereSample = UniformSampleHemisphere(random);
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-        Ray bounceRay(
-            lastIntersection.point,
-            bounceDirection
-        );
+    // sample.eyePoints.push_back(intersection.point);
 
-        Intersection bounceIntersection = scene.testIntersect(bounceRay);
-        if (!bounceIntersection.hit) { break; }
+    // Color result = direct(intersection, scene, random, sample);
 
-        sample.eyePoints.push_back(bounceIntersection.point);
+    // Color modulation = Color(1.f, 1.f, 1.f);
+    // Intersection lastIntersection = intersection;
 
-        float pdf;
-        Color f = lastIntersection.material->f(
-            lastIntersection.wi,
-            bounceDirection,
-            lastIntersection.normal,
-            &pdf
-        );
-        float invPDF = 1.f / pdf;
+    // for (int bounce = 0; bounce < bounceCount; bounce++) {
+    //     Transform hemisphereToWorld = normalToWorldSpace(
+    //         lastIntersection.normal,
+    //         lastIntersection.wi
+    //     );
 
-        modulation *= f
-            * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
-            * invPDF;
-        lastIntersection = bounceIntersection;
+    //     Vector3 hemisphereSample = UniformSampleHemisphere(random);
+    //     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    //     Ray bounceRay(
+    //         lastIntersection.point,
+    //         bounceDirection
+    //     );
 
-        result += direct(bounceIntersection, scene, random, sample) * modulation;
-    }
+    //     Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    //     if (!bounceIntersection.hit) { break; }
 
-    return result;
+    //     sample.eyePoints.push_back(bounceIntersection.point);
+
+    //     float pdf;
+    //     Color f = lastIntersection.material->f(
+    //         lastIntersection.wi,
+    //         bounceDirection,
+    //         lastIntersection.normal,
+    //         &pdf
+    //     );
+    //     float invPDF = 1.f / pdf;
+
+    //     modulation *= f
+    //         * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
+    //         * invPDF;
+    //     lastIntersection = bounceIntersection;
+
+    //     result += direct(bounceIntersection, scene, random, sample) * modulation;
+    // }
+
+    // return result;
 }
 
 Color Depositer::direct(
