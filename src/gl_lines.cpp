@@ -54,38 +54,107 @@ void gl::Lines::init()
 
 void gl::Lines::update(const Sample &sample)
 {
-    if (sample.bounceRays.size() == 0) { return; }
+    mLineCount = 0;
 
-    Point3 source = sample.origin;
-    Point3 target = sample.bounceRays[0];
+    if (sample.lightPoints.size() < 2 && sample.eyePoints.size() < 2) { return; }
 
-    std::vector<GLfloat> positionsGL = {
-        source.x(), source.y(), source.z(),
-        target.x(), target.y(), target.z()
-    };
+    std::vector<GLfloat> positionsGL = {};
+    std::vector<GLfloat> colorsGL = {};
 
-    std::vector<GLfloat> colorsGL = {
-        1.f, 1.f, 0.f,
-        1.f, 1.f, 0.f,
-    };
+    for (int i = 1; i < sample.eyePoints.size(); i++) {
+        Point3 bounceSource = sample.eyePoints[i - 1];
+        Point3 bounceTarget = sample.eyePoints[i];
 
-    for (int i = 1; i < sample.bounceRays.size(); i++) {
-        Point3 bounceSource = sample.bounceRays[i - 1];
-        Point3 bounceTarget = sample.bounceRays[i];
-        std::vector<GLfloat> firstBounce = {
+        std::vector<GLfloat> bounce = {
             bounceSource.x(), bounceSource.y(), bounceSource.z(),
             bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
         };
 
         positionsGL.insert(
             positionsGL.end(),
-            firstBounce.begin(),
-            firstBounce.end()
+            bounce.begin(),
+            bounce.end()
         );
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
             colorsGL.push_back(1.f);
         }
+
+        mLineCount += 1;
+    }
+
+    for (int i = 0; i < sample.shadowPoints.size(); i++) {
+        Point3 bounceSource = sample.eyePoints[i + 1];
+        Point3 bounceTarget = sample.shadowPoints[i];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(0.f);
+        }
+
+        mLineCount += 1;
+    }
+
+    for (int i = 1; i < sample.lightPoints.size(); i++) {
+        Point3 bounceSource = sample.lightPoints[i - 1];
+        Point3 bounceTarget = sample.lightPoints[i];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(0.f);
+        }
+
+        mLineCount += 1;
+    }
+
+    if (sample.connected) {
+        Point3 bounceSource = sample.eyePoints[sample.eyePoints.size() - 1];
+        Point3 bounceTarget = sample.lightPoints[sample.lightPoints.size() - 1];
+
+        std::vector<GLfloat> bounce = {
+            bounceSource.x(), bounceSource.y(), bounceSource.z(),
+            bounceTarget.x(), bounceTarget.y(), bounceTarget.z()
+        };
+
+        positionsGL.insert(
+            positionsGL.end(),
+            bounce.begin(),
+            bounce.end()
+        );
+
+        for (int i = 0; i < 2; i++) {
+            colorsGL.push_back(0.f);
+            colorsGL.push_back(1.f);
+            colorsGL.push_back(1.f);
+        }
+
+        mLineCount += 1;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
@@ -103,16 +172,13 @@ void gl::Lines::update(const Sample &sample)
         sizeof(GLfloat) * colorsGL.size(),
         (GLvoid *)&colorsGL[0]
     );
-
-    mLineCount = 1 + sample.bounceRays.size() - 1;
 }
 
 void gl::Lines::draw(
     GLfloat (&model)[4][4],
     GLfloat (&view)[4][4],
     GLfloat (&projection)[4][4]
-)
-{
+) {
     glUseProgram(mShader.programID);
 
     GLuint modelID = glGetUniformLocation(mShader.programID, "model");
@@ -127,7 +193,11 @@ void gl::Lines::draw(
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);

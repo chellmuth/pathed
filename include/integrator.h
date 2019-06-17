@@ -3,31 +3,28 @@
 #include "intersection.h"
 #include "random_generator.h"
 #include "scene.h"
-#include "vector.h"
+#include "point.h"
 
 #include <vector>
 
-typedef struct {
-    Point3 origin;
-    std::vector<Point3> bounceRays;
-    std::vector<Point3> shadowRays;
-} Sample;
+struct Sample {
+    std::vector<Point3> eyePoints;
+    std::vector<Point3> lightPoints;
+    std::vector<Point3> shadowPoints;
+    bool connected;
+
+    Sample()
+    : eyePoints(), lightPoints(), shadowPoints(), connected(false)
+    {}
+};
 
 class Integrator {
 public:
-    Color L(
+    virtual Color L(
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
         int bounceCount,
         Sample &sample
-    ) const;
-
-private:
-    Color direct(
-        const Intersection &intersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
+    ) const = 0;
 };

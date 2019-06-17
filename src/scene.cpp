@@ -25,12 +25,23 @@ std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
     return m_surfaces;
 }
 
-std::shared_ptr<Camera> Scene::getCamera()
-{
-    return m_camera;
-}
-
 Intersection Scene::testIntersect(const Ray &ray) const
 {
     return m_bvh->testIntersect(ray);
+}
+
+LightSample Scene::sampleLights(RandomGenerator &random) const
+{
+    int lightCount = m_lights.size();
+    int lightIndex = (int)floorf(random.next() * lightCount);
+
+    std::shared_ptr<Light> light = m_lights[lightIndex];
+    SurfaceSample surfaceSample = light->sample(random);
+    LightSample lightSample(
+        light,
+        surfaceSample.point,
+        surfaceSample.normal,
+        surfaceSample.invPDF
+    );
+    return lightSample;
 }

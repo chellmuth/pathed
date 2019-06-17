@@ -1,5 +1,6 @@
 #include "transform.h"
 
+#include <math.h>
 #include <stdio.h>
 
 #include "point.h"
@@ -96,5 +97,24 @@ Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection)
         { 0.f, 0.f, 0.f, 1.f }
     };
 
+    return Transform(matrix);
+}
+
+Transform normalToWorldSpace(const Vector3 &normal)
+{
+    Vector3 xAxis(0.f);
+    if (fabsf(normal.x()) > fabsf(normal.y())) {
+        xAxis = Vector3(-normal.z(), 0.f, normal.x()).normalized();
+    } else {
+        xAxis = Vector3(0.f, -normal.z(), normal.y()).normalized();
+    }
+    Vector3 zAxis = normal.cross(xAxis);
+
+    float matrix[4][4] {
+        { xAxis.x(), normal.x(), zAxis.x(), 0.f },
+        { xAxis.y(), normal.y(), zAxis.y(), 0.f },
+        { xAxis.z(), normal.z(), zAxis.z(), 0.f },
+        { 0.f, 0.f, 0.f, 1.f }
+    };
     return Transform(matrix);
 }
