@@ -10,7 +10,7 @@
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     const int samples = 100;
-    const int bounces = 5;
+    const int bounces = 10;
     for (int i = 0; i < samples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
@@ -39,6 +39,18 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     mKDTree = new KDTree(3, mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
+static float average(const float values[], size_t size)
+{
+    if (size == 0) { return 0.f; }
+
+    float sum = 0.f;
+    for (int i = 0; i < size; i++) {
+        sum += values[i] / size;
+    }
+
+    return sum;
+}
+
 Color Depositer::L(
     const Intersection &intersection,
     const Scene &scene,
@@ -49,15 +61,15 @@ Color Depositer::L(
     Point3 intersectionPoint = intersection.point;
 	float queryPoint[3] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
 
-    const size_t numResults = 1;
-    size_t returnIndex;
-    float outDistanceSquared;
+    const size_t numResults = 2;
+    size_t returnIndex[numResults];
+    float outDistanceSquared[numResults];
     nanoflann::KNNResultSet<float> resultSet(numResults);
-    resultSet.init(&returnIndex, &outDistanceSquared);
+    resultSet.init(returnIndex, outDistanceSquared);
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    return Color(outDistanceSquared);
+    return Color(average(outDistanceSquared, numResults));
 
     // sample.eyePoints.push_back(intersection.point);
 
