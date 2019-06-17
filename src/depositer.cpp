@@ -7,6 +7,19 @@
 #include "transform.h"
 #include "vector.h"
 
+void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
+{
+    LightSample lightSample = scene.sampleLights(random);
+
+    Vector3 hemisphereSample = UniformSampleHemisphere(random);
+    Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
+    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    Ray lightRay(lightSample.point, bounceDirection);
+
+    Intersection lightIntersection = scene.testIntersect(lightRay);
+    printf("%i\n", lightIntersection.hit);
+}
+
 Color Depositer::L(
     const Intersection &intersection,
     const Scene &scene,

@@ -90,6 +90,7 @@ void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
     Depositer integrator;
+    integrator.preprocess(scene, random);
 
     std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {

@@ -27,4 +27,6 @@ public:
         int bounceCount,
         Sample &sample
     ) const = 0;
+
+    virtual void preprocess(const Scene &scene, RandomGenerator &random) {};
 };

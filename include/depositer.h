@@ -12,6 +12,8 @@ public:
         Sample &sample
     ) const override;
 
+    void preprocess(const Scene &scene, RandomGenerator &random) override;
+
 private:
     Color direct(
         const Intersection &intersection,
