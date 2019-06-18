@@ -11,8 +11,10 @@
 #include <math.h>
 #include <utility>
 
-static int photonSamples = 10000;
+static int photonSamples = 1e6;
 static int maxBounces = 10;
+
+static const float searchRadius = 2e-3;
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
@@ -28,6 +30,8 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         for (int bounce = 0; bounce < maxBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
+
+            throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
 
             mDataSource.points.push_back({
                 intersection.point.x(),
@@ -118,9 +122,8 @@ Color Depositer::L(
     // }
 
     {
-		const float radius = 0.002f;
 		std::vector<std::pair<size_t, float> > indicesDistances;
-        nanoflann::RadiusResultSet<float, size_t> resultSet(radius, indicesDistances);
+        nanoflann::RadiusResultSet<float, size_t> resultSet(searchRadius, indicesDistances);
 
 		mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
         Color irradiance = average(mDataSource, indicesDistances);
