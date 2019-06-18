@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <math.h>
+#include <utility>
 
 static int photonSamples = 10000;
 static int maxBounces = 10;
@@ -64,6 +65,21 @@ static Color average(const DataSource &dataSource, const size_t indices[], size_
     return sum;
 }
 
+static Color average(const DataSource &dataSource, const std::vector<std::pair<size_t, float> > &indicesDistances)
+{
+    size_t size = indicesDistances.size();
+
+    if (size == 0) { return Color(0.f); }
+
+    Color sum(0.f);
+    for (int i = 0; i < size; i++) {
+        size_t index = indicesDistances[i].first;
+        sum += dataSource.points[index].throughput / size;
+    }
+
+    return sum;
+}
+
 static float max(const float values[], size_t size)
 {
     if (size == 0) { return 0.f; }
@@ -84,24 +100,36 @@ Color Depositer::L(
     Sample &sample
 ) const {
     Point3 intersectionPoint = intersection.point;
-	float queryPoint[3] = {
+    float queryPoint[3] = {
         intersectionPoint.x(),
         intersectionPoint.y(),
         intersectionPoint.z()
     };
 
-    const size_t numResults = 10;
-    size_t returnIndex[numResults];
-    float outDistanceSquared[numResults];
-    nanoflann::KNNResultSet<float> resultSet(numResults);
-    resultSet.init(returnIndex, outDistanceSquared);
+    // {
+    //     const size_t numResults = 10;
+    //     size_t returnIndex[numResults];
+    //     float outDistanceSquared[numResults];
 
-    mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    //     nanoflann::KNNResultSet<float> resultSet(numResults);
+    //     resultSet.init(returnIndex, outDistanceSquared);
 
-    Color irradiance = average(mDataSource, returnIndex, numResults);
-    return irradiance * intersection.material->f(
-        intersection.wi,
-        Vector3(0.f), // hack to get albedo since I know it's lambertian
-        intersection.normal
-    );
+    //     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    // }
+
+    {
+		const float radius = 0.002f;
+		std::vector<std::pair<size_t, float> > indicesDistances;
+        nanoflann::RadiusResultSet<float, size_t> resultSet(radius, indicesDistances);
+
+		mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+        Color irradiance = average(mDataSource, indicesDistances);
+
+        return irradiance * intersection.material->f(
+            intersection.wi,
+            Vector3(0.f), // hack to get albedo since I know it's lambertian
+            intersection.normal
+        );
+    }
+    return Color(0.f);
 }
