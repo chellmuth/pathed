@@ -12,6 +12,7 @@ struct DataSource
     struct Point
     {
         float x, y, z;
+        Point3 source;
         Color throughput;
     };
 

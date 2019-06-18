@@ -31,6 +31,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
                 intersection.point.x(),
                 intersection.point.y(),
                 intersection.point.z(),
+                lightRay.origin(),
                 throughput
             });
 
