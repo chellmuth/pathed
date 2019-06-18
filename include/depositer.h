@@ -49,13 +49,6 @@ public:
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
 private:
-    Color direct(
-        const Intersection &intersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
     DataSource mDataSource;
     KDTree *mKDTree;
 };

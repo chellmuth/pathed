@@ -12,7 +12,7 @@
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    const int samples = 1000;
+    const int samples = 10000;
     const int bounces = 10;
     for (int i = 0; i < samples; i++) {
         LightSample lightSample = scene.sampleLights(random);
@@ -22,34 +22,41 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         Ray lightRay(lightSample.point, bounceDirection);
 
+        Color throughput = lightSample.light->getMaterial()->emit();
         for (int bounce = 0; bounce < bounces; bounce++) {
-            Intersection lightIntersection = scene.testIntersect(lightRay);
-            if (!lightIntersection.hit) { break; }
+            Intersection intersection = scene.testIntersect(lightRay);
+            if (!intersection.hit) { break; }
 
             mDataSource.points.push_back({
-                lightIntersection.point.x(),
-                lightIntersection.point.y(),
-                lightIntersection.point.z(),
-                Color(1.f)
+                intersection.point.x(),
+                intersection.point.y(),
+                intersection.point.z(),
+                throughput
             });
 
             hemisphereSample = UniformSampleHemisphere(random);
-            hemisphereToWorld = normalToWorldSpace(lightIntersection.normal);
+            hemisphereToWorld = normalToWorldSpace(intersection.normal);
             bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-            lightRay = Ray(lightIntersection.point, bounceDirection);
+            lightRay = Ray(intersection.point, bounceDirection);
+
+            throughput *= intersection.material->f(
+                intersection.wi,
+                bounceDirection,
+                intersection.normal
+            );
         }
     }
 
     mKDTree = new KDTree(3, mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
-static float average(const float values[], size_t size)
+static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
 {
-    if (size == 0) { return 0.f; }
+    if (size == 0) { return Color(0.f); }
 
-    float sum = 0.f;
+    Color sum(0.f);
     for (int i = 0; i < size; i++) {
-        sum += values[i] / size;
+        sum += dataSource.points[indices[i]].throughput / size;
     }
 
     return sum;
@@ -81,7 +88,7 @@ Color Depositer::L(
         intersectionPoint.z()
     };
 
-    const size_t numResults = 100;
+    const size_t numResults = 10;
     size_t returnIndex[numResults];
     float outDistanceSquared[numResults];
     nanoflann::KNNResultSet<float> resultSet(numResults);
@@ -89,93 +96,10 @@ Color Depositer::L(
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    return Color(1.f - max(outDistanceSquared, numResults));
-
-    // sample.eyePoints.push_back(intersection.point);
-
-    // Color result = direct(intersection, scene, random, sample);
-
-    // Color modulation = Color(1.f, 1.f, 1.f);
-    // Intersection lastIntersection = intersection;
-
-    // for (int bounce = 0; bounce < bounceCount; bounce++) {
-    //     Transform hemisphereToWorld = normalToWorldSpace(
-    //         lastIntersection.normal,
-    //         lastIntersection.wi
-    //     );
-
-    //     Vector3 hemisphereSample = UniformSampleHemisphere(random);
-    //     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-    //     Ray bounceRay(
-    //         lastIntersection.point,
-    //         bounceDirection
-    //     );
-
-    //     Intersection bounceIntersection = scene.testIntersect(bounceRay);
-    //     if (!bounceIntersection.hit) { break; }
-
-    //     sample.eyePoints.push_back(bounceIntersection.point);
-
-    //     float pdf;
-    //     Color f = lastIntersection.material->f(
-    //         lastIntersection.wi,
-    //         bounceDirection,
-    //         lastIntersection.normal,
-    //         &pdf
-    //     );
-    //     float invPDF = 1.f / pdf;
-
-    //     modulation *= f
-    //         * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
-    //         * invPDF;
-    //     lastIntersection = bounceIntersection;
-
-    //     result += direct(bounceIntersection, scene, random, sample) * modulation;
-    // }
-
-    // return result;
-}
-
-Color Depositer::direct(
-    const Intersection &intersection,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        // part of my old logic - if you hit an emitter, don't do direct lighting?
-        // sample.shadowRays.push_back(intersection.point);
-        return Color(0.f, 0.f, 0.f);
-    }
-
-    int lightCount = scene.lights().size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
-
-    std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(random);
-
-    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    Vector3 wo = lightDirection.normalized();
-
-    sample.shadowPoints.push_back(lightSample.point);
-
-    if (lightSample.normal.dot(wo) >= 0.f) {
-        return Color(0.f, 0.f, 0.f);
-    }
-
-    Ray shadowRay = Ray(intersection.point, wo);
-    Intersection shadowIntersection = scene.testIntersect(shadowRay);
-    float lightDistance = lightDirection.length();
-
-    if (shadowIntersection.hit && shadowIntersection.t + 0.0001f < lightDistance) {
-        return Color(0.f, 0.f, 0.f);
-    }
-
-    float invPDF = lightSample.invPDF * lightCount;
-
-    return light->biradiance(lightSample, intersection.point)
-        * intersection.material->f(intersection.wi, wo, intersection.normal)
-        * fmaxf(0.f, wo.dot(intersection.normal))
-        * invPDF;
+    Color irradiance = average(mDataSource, returnIndex, numResults);
+    return irradiance * intersection.material->f(
+        intersection.wi,
+        Vector3(0.f), // hack to get albedo since I know it's lambertian
+        intersection.normal
+    );
 }
