@@ -7,9 +7,12 @@
 #include "transform.h"
 #include "vector.h"
 
+#include <limits>
+#include <math.h>
+
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    const int samples = 100;
+    const int samples = 1000;
     const int bounces = 10;
     for (int i = 0; i < samples; i++) {
         LightSample lightSample = scene.sampleLights(random);
@@ -23,10 +26,11 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
             Intersection lightIntersection = scene.testIntersect(lightRay);
             if (!lightIntersection.hit) { break; }
 
-            mDataSource.pts.push_back({
+            mDataSource.points.push_back({
                 lightIntersection.point.x(),
                 lightIntersection.point.y(),
-                lightIntersection.point.z()
+                lightIntersection.point.z(),
+                Color(1.f)
             });
 
             hemisphereSample = UniformSampleHemisphere(random);
@@ -51,6 +55,18 @@ static float average(const float values[], size_t size)
     return sum;
 }
 
+static float max(const float values[], size_t size)
+{
+    if (size == 0) { return 0.f; }
+
+    float max = std::numeric_limits<float>::lowest();
+    for (int i = 0; i < size; i++) {
+        max = fmaxf(max, values[i]);
+    }
+
+    return max;
+}
+
 Color Depositer::L(
     const Intersection &intersection,
     const Scene &scene,
@@ -59,9 +75,13 @@ Color Depositer::L(
     Sample &sample
 ) const {
     Point3 intersectionPoint = intersection.point;
-	float queryPoint[3] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
+	float queryPoint[3] = {
+        intersectionPoint.x(),
+        intersectionPoint.y(),
+        intersectionPoint.z()
+    };
 
-    const size_t numResults = 2;
+    const size_t numResults = 100;
     size_t returnIndex[numResults];
     float outDistanceSquared[numResults];
     nanoflann::KNNResultSet<float> resultSet(numResults);
@@ -69,7 +89,7 @@ Color Depositer::L(
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    return Color(average(outDistanceSquared, numResults));
+    return Color(1.f - max(outDistanceSquared, numResults));
 
     // sample.eyePoints.push_back(intersection.point);
 
