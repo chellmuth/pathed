@@ -32,18 +32,20 @@ void AppController::handlePathTraceClick(int x, int y)
     Intersection intersection = mScene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    RandomGenerator random;
-    int bounceCount = 10;
-    Sample sample;
-    sample.eyePoints.push_back(ray.origin());
+    mIntegrator->debug(intersection, mScene);
 
-    Color color = mIntegrator->L(
-        intersection,
-        mScene,
-        random,
-        bounceCount,
-        sample
-    );
+    // RandomGenerator random;
+    // int bounceCount = 10;
+    // Sample sample;
+    // sample.eyePoints.push_back(ray.origin());
 
-    mSample = sample;
+    // Color color = mIntegrator->L(
+    //     intersection,
+    //     mScene,
+    //     random,
+    //     bounceCount,
+    //     sample
+    // );
+
+    // mSample = sample;
 }

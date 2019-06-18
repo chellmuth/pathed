@@ -29,4 +29,5 @@ public:
     ) const = 0;
 
     virtual void preprocess(const Scene &scene, RandomGenerator &random) {};
+    virtual void debug(const Intersection &intersection, const Scene &scene) const {};
 };

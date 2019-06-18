@@ -8,13 +8,15 @@
 #include "vector.h"
 
 #include <limits>
+#include <iostream>
 #include <math.h>
 #include <utility>
 
-static int photonSamples = 1e6;
+static int photonSamples = 1e5;
 static int maxBounces = 10;
 
 static const float searchRadius = 2e-3;
+static const int debugSearchCount = 10;
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
@@ -135,4 +137,32 @@ Color Depositer::L(
         );
     }
     return Color(0.f);
+}
+
+void Depositer::debug(const Intersection &intersection, const Scene &scene) const
+{
+    Point3 intersectionPoint = intersection.point;
+    float queryPoint[3] = {
+        intersectionPoint.x(),
+        intersectionPoint.y(),
+        intersectionPoint.z()
+    };
+
+    size_t resultIndices[debugSearchCount];
+    float outDistanceSquared[debugSearchCount];
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices, outDistanceSquared);
+
+    mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    std::cout << "Query Point: " << intersectionPoint.x() << " " << intersectionPoint.y() << " " << intersectionPoint.z() << std::endl;
+
+    std::cout << "Result Set:" << std::endl;
+    for (int i = 0; i < debugSearchCount; i++) {
+        auto &point = mDataSource.points[resultIndices[i]];
+        std::cout << "  i = " << i << ":" << std::endl;
+        std::cout << "    Point: " << point.x << " " << point.y << " " << point.z << std::endl;
+        std::cout << "    Source: " << point.source.x() << " " << point.source.y() << " " << point.source.z() << std::endl;
+        std::cout << "    Throughput: " << point.throughput.r() << " " << point.throughput.g() << " " << point.throughput.b() << std::endl;
+    }
 }

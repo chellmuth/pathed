@@ -49,6 +49,8 @@ public:
 
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
+    void debug(const Intersection &intersection, const Scene &scene) const override;
+
 private:
     DataSource mDataSource;
     KDTree *mKDTree;
