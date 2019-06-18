@@ -2,9 +2,11 @@
 
 #include "integrator.h"
 #include "point.h"
+#include "random_generator.h"
 #include "scene.h"
 #include "vector.h"
 
+#include <memory>
 #include <vector>
 
 class AppController {
@@ -14,6 +16,8 @@ public:
     Sample getSample() { return mSample; }
 
 private:
+    std::unique_ptr<Integrator> mIntegrator;
+    RandomGenerator mRandom;
     Scene &mScene;
     int mWidth, mHeight;
     Sample mSample;

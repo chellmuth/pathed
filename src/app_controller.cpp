@@ -4,17 +4,20 @@
 
 #include "bdpt.h"
 #include "camera.h"
+#include "depositer.h"
 #include "path_tracer.h"
 #include "intersection.h"
-#include "random_generator.h"
 #include "ray.h"
 
 AppController::AppController(Scene &scene, int width, int height)
     : mScene(scene),
       mWidth(width),
       mHeight(height),
-      mSample()
-{}
+      mSample(),
+      mIntegrator(new Depositer())
+{
+    mIntegrator->preprocess(mScene, mRandom);
+}
 
 void AppController::handlePathTraceClick(int x, int y)
 {
@@ -29,13 +32,12 @@ void AppController::handlePathTraceClick(int x, int y)
     Intersection intersection = mScene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    BDPT integrator;
     RandomGenerator random;
     int bounceCount = 10;
     Sample sample;
     sample.eyePoints.push_back(ray.origin());
 
-    Color color = integrator.L(
+    Color color = mIntegrator->L(
         intersection,
         mScene,
         random,

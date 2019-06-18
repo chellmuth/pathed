@@ -90,7 +90,15 @@ void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
     Depositer integrator;
-    integrator.preprocess(scene, random);
+
+    {
+        printf("Beginning pre-process...\n");
+        std::clock_t begin = clock();
+        integrator.preprocess(scene, random);
+        std::clock_t end = clock();
+        double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
+        printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
+    }
 
     std::vector<float> radianceLookup(3 * width * height);
     for (int i = 0; i < 3 * width * height; i++) {
