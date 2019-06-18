@@ -10,11 +10,12 @@
 #include <limits>
 #include <math.h>
 
+static int photonSamples = 10000;
+static int maxBounces = 10;
+
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    const int samples = 10000;
-    const int bounces = 10;
-    for (int i = 0; i < samples; i++) {
+    for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
@@ -23,7 +24,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         Ray lightRay(lightSample.point, bounceDirection);
 
         Color throughput = lightSample.light->getMaterial()->emit();
-        for (int bounce = 0; bounce < bounces; bounce++) {
+        for (int bounce = 0; bounce < maxBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 
