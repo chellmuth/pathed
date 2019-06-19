@@ -11,6 +11,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <fstream>
 #include <iostream>
 
 Color PathTracer::L(
@@ -111,8 +112,8 @@ Color PathTracer::direct(
 
 void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 10;
-    const int thetaSteps = 10;
+    const int phiSteps = 100;
+    const int thetaSteps = 100;
 
     RandomGenerator random;
     Sample sample;
@@ -169,6 +170,6 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
         }
     }
 
-    std::cout << j.dump(4) << std::endl;
-
+    std::ofstream jsonFile("live.json");
+    jsonFile << j.dump(4) << std::endl;
 }

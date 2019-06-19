@@ -33,4 +33,4 @@ def run(gt):
 
 
 if __name__ == "__main__":
-    run(json.load(open("backwall-gt.json")))
+    run(json.load(open("../live.json")))
