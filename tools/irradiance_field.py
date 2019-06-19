@@ -17,6 +17,9 @@ def is_zero(color):
     r, g, b = color
     return r == 0 and g == 0 and b == 0
 
+def clip_color(color):
+    return np.clip(color, 0.0, 1.0)
+
 def location_plot(figure, sample):
     axes = figure.add_subplot(projection='3d')
     axes.set_title("Sample locations")
@@ -27,6 +30,7 @@ def location_plot(figure, sample):
     xs = []
     ys = []
     zs = []
+    colors = []
     for photon in sample["Results"]:
         x, y, z = photon["point"]
 
@@ -37,7 +41,9 @@ def location_plot(figure, sample):
         ys.append(y)
         zs.append(z)
 
-    axes.scatter(xs, zs, ys)
+        colors.append(clip_color(photon["throughput"]))
+
+    axes.scatter(xs, zs, ys, c=colors)
 
     axes.set_xlabel("X")
     axes.set_ylabel("Z")
@@ -54,6 +60,7 @@ def direction_plot(figure, sample):
     xs = []
     ys = []
     zs = []
+    colors = []
     for photon in sample["Results"]:
         x, y, z = photon["source"]
 
@@ -70,7 +77,9 @@ def direction_plot(figure, sample):
         ys.append(wi[1])
         zs.append(wi[2])
 
-    axes.scatter(xs, zs, ys)
+        colors.append(clip_color(photon["throughput"]))
+
+    axes.scatter(xs, zs, ys, c=colors)
 
     axes.set_xlabel("X")
     axes.set_ylabel("Z")
