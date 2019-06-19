@@ -85,6 +85,14 @@ def direction_plot(figure, sample):
     axes.set_ylabel("Z")
     axes.set_zlabel("Y")
 
+    axes.set_xlim([-1, 1])
+    axes.set_ylim([-1, 1])
+    axes.set_zlim([-1, 1])
+
+    axes.set_xticks(np.linspace(-1, 1, 5))
+    axes.set_yticks(np.linspace(-1, 1, 5))
+    axes.set_zticks(np.linspace(-1, 1, 5))
+
 
 def importance_plot(figure, sample):
     phi_steps = 100
