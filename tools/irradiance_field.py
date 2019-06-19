@@ -117,6 +117,8 @@ def importance_plot(figure, sample):
 
         grid[theta_step, phi_step, :] += throughput
 
+    grid = np.clip(grid, 0.0, 1.0)
+
     axes = figure.add_subplot()
 
     axes.imshow(grid)
