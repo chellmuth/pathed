@@ -13,6 +13,14 @@ public:
 
     bool isBlack() const;
 
+    float luminance() const {
+        return (
+            0.2126f * m_r +
+            0.7152f * m_g +
+            0.0722f * m_b
+        );
+    }
+
     Color& operator+= (const Color &c);
     Color operator+ (const Color c) const;
     Color operator* (const Color c) const;
@@ -25,4 +33,3 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &os, const Color &c);
-

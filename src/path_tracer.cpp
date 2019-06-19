@@ -8,6 +8,9 @@
 #include "util.h"
 #include "vector.h"
 
+#include "json.hpp"
+using json = nlohmann::json;
+
 #include <iostream>
 
 Color PathTracer::L(
@@ -110,18 +113,62 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
 {
     const int phiSteps = 100;
     const int thetaSteps = 100;
+
+    RandomGenerator random;
+    Sample sample;
+    int bounceCount = 5;
+
+    json j;
+    j["QueryPoint"] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    j["Steps"] = { { "phi", phiSteps }, { "theta", thetaSteps } };
+    j["Gt"] = json::array();
+
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             float phi = M_TWO_PI * phiStep / phiSteps;
             float theta = M_PI * thetaStep / thetaSteps;
 
-            std::cout << "phi: " << phi << " theta: " << theta << std::endl;
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
             float z = sinf(theta) * sinf(phi);
 
-            std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
+            Vector3 wi(x, y, z);
+
+            Ray ray = Ray(intersection.point, wi);
+            const Intersection fisheyeIntersection = scene.testIntersect(ray);
+            Color sampleL(0.f);
+            if (fisheyeIntersection.hit) {
+                sampleL = L(
+                    fisheyeIntersection,
+                    scene,
+                    random,
+                    bounceCount,
+                    sample
+                );
+
+                Color emit = intersection.material->emit();
+                sampleL += emit;
+            }
+
+            // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
+            // std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
+            // std::cout << sampleL << std::endl;
+
+            j["Gt"].push_back({
+                    { "wi", { x, y, z } },
+                    { "phi", phi },
+                    { "theta", theta },
+                    { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
+                    { "luminance", { sampleL.luminance() } }
+            });
         }
     }
+
+    std::cout << j.dump(4) << std::endl;
+
 }
