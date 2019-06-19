@@ -111,8 +111,8 @@ Color PathTracer::direct(
 
 void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 100;
-    const int thetaSteps = 100;
+    const int phiSteps = 10;
+    const int thetaSteps = 10;
 
     RandomGenerator random;
     Sample sample;
