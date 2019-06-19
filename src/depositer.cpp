@@ -7,6 +7,9 @@
 #include "transform.h"
 #include "vector.h"
 
+#include "json.hpp"
+using json = nlohmann::json;
+
 #include <limits>
 #include <iostream>
 #include <math.h>
@@ -155,14 +158,18 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
     resultSet.init(resultIndices, outDistanceSquared);
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-    std::cout << "Query Point: " << intersectionPoint.x() << " " << intersectionPoint.y() << " " << intersectionPoint.z() << std::endl;
 
-    std::cout << "Result Set:" << std::endl;
+    json j;
+    j["QueryPoint"] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
+    j["Results"] = json::array();
     for (int i = 0; i < debugSearchCount; i++) {
         auto &point = mDataSource.points[resultIndices[i]];
-        std::cout << "  i = " << i << ":" << std::endl;
-        std::cout << "    Point: " << point.x << " " << point.y << " " << point.z << std::endl;
-        std::cout << "    Source: " << point.source.x() << " " << point.source.y() << " " << point.source.z() << std::endl;
-        std::cout << "    Throughput: " << point.throughput.r() << " " << point.throughput.g() << " " << point.throughput.b() << std::endl;
+        j["Results"].push_back({
+            { "point", { point.x, point.y, point.z } },
+            { "source", { point.source.x(), point.source.y(), point.source.z() } },
+            { "throughput", { point.throughput.r(), point.throughput.g(), point.throughput.b() } },
+        });
     }
+
+    std::cout << j.dump(4) << std::endl;
 }
