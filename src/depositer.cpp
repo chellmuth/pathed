@@ -3,8 +3,10 @@
 #include "color.h"
 #include "light.h"
 #include "monte_carlo.h"
+#include "path_tracer.h"
 #include "ray.h"
 #include "transform.h"
+#include "util.h"
 #include "vector.h"
 
 #include "json.hpp"
@@ -177,4 +179,76 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
     std::cout << "Wrote to live-photons.json" << std::endl;
 
     // std::cout << j.dump(4) << std::endl;
+
+    debug2(intersection, scene);
+}
+
+void Depositer::debug2(const Intersection &intersection, const Scene &scene) const
+{
+    const int phiSteps = 300;
+    const int thetaSteps = 300;
+
+    PathTracer integrator;
+    RandomGenerator random;
+    Sample sample;
+    int bounceCount = 5;
+
+    Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
+
+    json j;
+    j["QueryPoint"] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    j["Steps"] = { { "phi", phiSteps }, { "theta", thetaSteps } };
+    j["Gt"] = json::array();
+
+    for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
+        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
+            float phi = M_TWO_PI * phiStep / phiSteps;
+            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+
+            float y = cosf(theta);
+            float x = sinf(theta) * cosf(phi);
+            float z = sinf(theta) * sinf(phi);
+
+            Vector3 wiHemisphere(x, y, z);
+            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+
+            Ray ray = Ray(intersection.point, wiWorld);
+            const Intersection fisheyeIntersection = scene.testIntersect(ray);
+            Color sampleL(0.f);
+            if (fisheyeIntersection.hit) {
+                sampleL = integrator.L(
+                    fisheyeIntersection,
+                    scene,
+                    random,
+                    bounceCount,
+                    sample
+                );
+
+                Color emit = fisheyeIntersection.material->emit();
+                sampleL += emit;
+            }
+
+            // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
+            // std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
+            // std::cout << sampleL << std::endl;
+
+            j["Gt"].push_back({
+                { "wi", { x, y, z } },
+                { "phiStep", phiStep },
+                { "thetaStep", thetaStep },
+                { "phi", phi },
+                { "theta", theta },
+                { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
+                { "luminance", { sampleL.luminance() } }
+            });
+        }
+    }
+
+    std::ofstream jsonFile("live-gt.json");
+    jsonFile << j.dump(4) << std::endl;
+    std::cout << "Wrote to live-gt.json" << std::endl;
 }

@@ -89,7 +89,7 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    Depositer integrator;
+    PathTracer integrator;
 
     {
         printf("Beginning pre-process...\n");

@@ -52,6 +52,8 @@ public:
     void debug(const Intersection &intersection, const Scene &scene) const override;
 
 private:
+    void debug2(const Intersection &intersection, const Scene &scene) const;
+
     DataSource mDataSource;
     KDTree *mKDTree;
 };

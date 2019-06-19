@@ -13,6 +13,10 @@ def normalized(x, y, z):
 
     return (x / length, y / length, z / length)
 
+def is_zero(color):
+    r, g, b = color
+    return r == 0 and g == 0 and b == 0
+
 def location_plot(figure, sample):
     axes = figure.add_subplot(projection='3d')
     axes.set_title("Sample locations")
@@ -25,6 +29,10 @@ def location_plot(figure, sample):
     zs = []
     for photon in sample["Results"]:
         x, y, z = photon["point"]
+
+        if is_zero(photon["throughput"]):
+            continue
+
         xs.append(x)
         ys.append(y)
         zs.append(z)
@@ -49,6 +57,9 @@ def direction_plot(figure, sample):
     for photon in sample["Results"]:
         x, y, z = photon["source"]
 
+        if is_zero(photon["throughput"]):
+            continue
+
         wi = normalized(
             x - query_x,
             y - query_y,
@@ -67,8 +78,8 @@ def direction_plot(figure, sample):
 
 
 def importance_plot(figure, sample):
-    phi_steps = 20
-    theta_steps = 20
+    phi_steps = 100
+    theta_steps = 100
     grid = np.zeros((theta_steps, phi_steps, 3))
 
     print(len(sample["Results"]))
