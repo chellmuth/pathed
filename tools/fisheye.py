@@ -7,13 +7,13 @@ def _make_grid(gt):
     phi_steps = gt["Steps"]["phi"]
     theta_steps = gt["Steps"]["theta"]
 
-    grid = np.zeros((phi_steps, theta_steps, 3))
+    grid = np.zeros((theta_steps, phi_steps, 3))
 
     for i, sample in enumerate(gt["Gt"]):
-        phi_step = i // phi_steps
-        theta_step = i % theta_steps
+        phi_step = sample["phiStep"]
+        theta_step = sample["thetaStep"]
 
-        grid[phi_step, theta_step, :] = sample["radiance"]
+        grid[theta_step, phi_step, :] = sample["radiance"]
 
     return grid
 

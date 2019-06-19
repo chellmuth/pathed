@@ -112,12 +112,14 @@ Color PathTracer::direct(
 
 void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 1000;
-    const int thetaSteps = 1000;
+    const int phiSteps = 300;
+    const int thetaSteps = 300;
 
     RandomGenerator random;
     Sample sample;
     int bounceCount = 5;
+
+    Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
 
     json j;
     j["QueryPoint"] = {
@@ -137,9 +139,10 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
             float x = sinf(theta) * cosf(phi);
             float z = sinf(theta) * sinf(phi);
 
-            Vector3 wi(x, y, z);
+            Vector3 wiHemisphere(x, y, z);
+            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
 
-            Ray ray = Ray(intersection.point, wi);
+            Ray ray = Ray(intersection.point, wiWorld);
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
             if (fisheyeIntersection.hit) {
@@ -160,11 +163,13 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
             // std::cout << sampleL << std::endl;
 
             j["Gt"].push_back({
-                    { "wi", { x, y, z } },
-                    { "phi", phi },
-                    { "theta", theta },
-                    { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
-                    { "luminance", { sampleL.luminance() } }
+                { "wi", { x, y, z } },
+                { "phiStep", phiStep },
+                { "thetaStep", thetaStep },
+                { "phi", phi },
+                { "theta", theta },
+                { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
+                { "luminance", { sampleL.luminance() } }
             });
         }
     }
