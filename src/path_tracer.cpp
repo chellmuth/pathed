@@ -112,8 +112,8 @@ Color PathTracer::direct(
 
 void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 100;
-    const int thetaSteps = 100;
+    const int phiSteps = 1000;
+    const int thetaSteps = 1000;
 
     RandomGenerator random;
     Sample sample;
@@ -131,8 +131,7 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = M_PI * thetaStep / thetaSteps;
-
+            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
@@ -172,4 +171,5 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
 
     std::ofstream jsonFile("live.json");
     jsonFile << j.dump(4) << std::endl;
+    std::cout << "Wrote to live.json" << std::endl;
 }
