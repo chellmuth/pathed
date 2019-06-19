@@ -10,6 +10,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <fstream>
 #include <limits>
 #include <iostream>
 #include <math.h>
@@ -19,7 +20,7 @@ static int photonSamples = 1e5;
 static int maxBounces = 10;
 
 static const float searchRadius = 2e-3;
-static const int debugSearchCount = 10;
+static const int debugSearchCount = 100;
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
@@ -171,5 +172,9 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
         });
     }
 
-    std::cout << j.dump(4) << std::endl;
+    std::ofstream jsonFile("live-photons.json");
+    jsonFile << j.dump(4) << std::endl;
+    std::cout << "Wrote to live-photons.json" << std::endl;
+
+    // std::cout << j.dump(4) << std::endl;
 }

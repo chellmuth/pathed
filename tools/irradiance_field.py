@@ -66,12 +66,54 @@ def direction_plot(figure, sample):
     axes.set_zlabel("Y")
 
 
+def importance_plot(figure, sample):
+    phi_steps = 20
+    theta_steps = 20
+    grid = np.zeros((theta_steps, phi_steps, 3))
+
+    print(len(sample["Results"]))
+    for photon in sample["Results"]:
+        origin_x, origin_y, origin_z = photon["point"]
+        direction_x, direction_y, direction_z = photon["source"]
+
+        wi_x, wi_y, wi_z = normalized(
+            direction_x - origin_x,
+            direction_y - origin_y,
+            direction_z - origin_z
+        )
+
+        phi = np.arctan2(wi_z, wi_x)
+        if phi < 0:
+            phi += 2 * math.pi
+        theta = np.arccos(wi_y)
+
+        assert 0 <= phi <= 2 * math.pi
+        assert 0 < theta <= math.pi
+
+        phi_step = int(phi // (2 * math.pi / phi_steps))
+        theta_step = int(theta // (math.pi / theta_steps))
+
+        throughput = photon["throughput"]
+
+        grid[theta_step, phi_step, :] += throughput
+
+    axes = figure.add_subplot()
+
+    axes.imshow(grid)
+    axes.set_title("Photons")
+
+    axes.set_xlabel("Phi")
+    axes.set_ylabel("Theta")
+
+    plt.show()
+
 def run(sample):
     location_plot(plt.figure(1), sample)
     direction_plot(plt.figure(2), sample)
+    importance_plot(plt.figure(3), sample)
 
     plt.show()
 
 
 if __name__ == "__main__":
-    run(json.load(open("left-cube-left-side.json")))
+    run(json.load(open("../live-photons.json")))
