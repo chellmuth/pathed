@@ -116,6 +116,12 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
             float theta = M_PI * thetaStep / thetaSteps;
 
             std::cout << "phi: " << phi << " theta: " << theta << std::endl;
+
+            float y = cosf(theta);
+            float x = sinf(theta) * cosf(phi);
+            float z = sinf(theta) * sinf(phi);
+
+            std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
         }
     }
 }
