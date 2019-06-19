@@ -65,6 +65,7 @@ def direction_plot(figure, sample):
     axes.set_ylabel("Z")
     axes.set_zlabel("Y")
 
+
 def run(sample):
     location_plot(plt.figure(1), sample)
     direction_plot(plt.figure(2), sample)

@@ -14,7 +14,7 @@ AppController::AppController(Scene &scene, int width, int height)
       mWidth(width),
       mHeight(height),
       mSample(),
-      mIntegrator(new Depositer())
+      mIntegrator(new PathTracer())
 {
     mIntegrator->preprocess(mScene, mRandom);
 }

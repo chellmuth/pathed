@@ -5,7 +5,10 @@
 #include "monte_carlo.h"
 #include "ray.h"
 #include "transform.h"
+#include "util.h"
 #include "vector.h"
+
+#include <iostream>
 
 Color PathTracer::L(
     const Intersection &intersection,
@@ -101,4 +104,18 @@ Color PathTracer::direct(
         * intersection.material->f(intersection.wi, wo, intersection.normal)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
+}
+
+void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
+{
+    const int phiSteps = 100;
+    const int thetaSteps = 100;
+    for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
+        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
+            float phi = M_TWO_PI * phiStep / phiSteps;
+            float theta = M_PI * thetaStep / thetaSteps;
+
+            std::cout << "phi: " << phi << " theta: " << theta << std::endl;
+        }
+    }
 }
