@@ -151,7 +151,7 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
                     sample
                 );
 
-                Color emit = intersection.material->emit();
+                Color emit = fisheyeIntersection.material->emit();
                 sampleL += emit;
             }
 
