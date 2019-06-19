@@ -15,6 +15,7 @@ def normalized(x, y, z):
 
 def location_plot(figure, sample):
     axes = figure.add_subplot(projection='3d')
+    axes.set_title("Sample locations")
 
     query_x, query_y, query_z = sample["QueryPoint"]
     axes.scatter(query_x, query_z, query_y, marker="^")
@@ -34,8 +35,10 @@ def location_plot(figure, sample):
     axes.set_ylabel("Z")
     axes.set_zlabel("Y")
 
+
 def direction_plot(figure, sample):
     axes = figure.add_subplot(projection='3d')
+    axes.set_title("Sample incoming directions")
 
     query_x, query_y, query_z = sample["QueryPoint"]
     axes.scatter(0, 0, 0, marker="^")
@@ -84,4 +87,4 @@ def run(sample):
 
 
 if __name__ == "__main__":
-    run(json.load(open("floor.json")))
+    run(json.load(open("left-cube-left-side.json")))
