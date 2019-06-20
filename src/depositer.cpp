@@ -190,7 +190,6 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
 
     PathTracer integrator;
     RandomGenerator random;
-    Sample sample;
     int bounceCount = 5;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
@@ -220,16 +219,21 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
             if (fisheyeIntersection.hit) {
-                sampleL = integrator.L(
-                    fisheyeIntersection,
-                    scene,
-                    random,
-                    bounceCount,
-                    sample
-                );
+                const int spp = 2000;
+                for (int i = 0; i < spp; i++) {
+                    Sample sample;
 
-                Color emit = fisheyeIntersection.material->emit();
-                sampleL += emit;
+                    sampleL += integrator.L(
+                        fisheyeIntersection,
+                        scene,
+                        random,
+                        bounceCount,
+                        sample
+                    ) / spp;
+
+                    Color emit = fisheyeIntersection.material->emit();
+                    sampleL += emit / spp;
+                }
             }
 
             // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
