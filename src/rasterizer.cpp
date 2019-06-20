@@ -31,6 +31,7 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
 
     mGLScene.init(scene);
     mGLLines.init();
+    mGLPoints.init();
 
     mArcball.setSize({width, height});
 }
@@ -105,6 +106,7 @@ void Rasterizer::drawGL()
     mGLScene.draw();
 
     mGLLines.draw(model, view, projection);
+    mGLPoints.draw(model, view, projection);
 
     glDisable(GL_DEPTH_TEST);
 }

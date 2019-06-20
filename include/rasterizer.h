@@ -7,6 +7,7 @@
 
 #include "integrator.h"
 #include "gl_lines.h"
+#include "gl_points.h"
 #include "gl_scene.h"
 #include "point.h"
 #include "scene.h"
@@ -38,6 +39,7 @@ private:
     nanogui::Arcball mArcball;
     gl::Scene mGLScene;
     gl::Lines mGLLines;
+    gl::Points mGLPoints;
 
     int mWidth, mHeight;
     Shader mShader;

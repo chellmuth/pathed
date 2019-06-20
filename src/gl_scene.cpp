@@ -50,7 +50,7 @@ void gl::Scene::init(::Scene &scene)
         );
     }
 
-    mTriangleCount = indicesGL.size() / 3; 
+    mTriangleCount = indicesGL.size() / 3;
 }
 
 void gl::Scene::draw()

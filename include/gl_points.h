@@ -1,19 +1,15 @@
 #pragma once
 
 #include "gl_scene.h"
-#include "integrator.h"
-#include "point.h"
 #include "shader.h"
-#include "vector.h"
 
 #include <nanogui/opengl.h>
-#include <vector>
 
 
 namespace gl {
-    class Lines {
+    class Points {
     public:
-        Lines();
+        Points();
 
         void init();
         void draw(
@@ -21,11 +17,9 @@ namespace gl {
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
         );
-        void update(const Sample &sample);
 
-    private:
+    protected:
         Shader mShader;
         EntityIDs mEntityIDs;
-        int mLineCount;
     };
 }
