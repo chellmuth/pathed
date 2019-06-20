@@ -9,6 +9,7 @@ ipython = "*"
 [packages]
 matplotlib = "*"
 numpy = "*"
+pyexr = "*"
 
 [requires]
 python_version = "3.7"
