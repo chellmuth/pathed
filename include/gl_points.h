@@ -21,7 +21,11 @@ namespace gl {
         void reload();
 
     protected:
+        std::vector<GLfloat> getPositions();
+
         Shader mShader;
         EntityIDs mEntityIDs;
+
+        int mPointCount;
     };
 }

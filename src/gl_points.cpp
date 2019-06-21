@@ -6,28 +6,41 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-gl::Points::Points() {
+static const int maxPoints = 1000;
+
+gl::Points::Points()
+    : mPointCount(0)
+{
     mShader = shader::createProgram(
         "shader/point.vs",
         "shader/point.fs"
     );
 }
 
-void gl::Points::init()
+std::vector<GLfloat> gl::Points::getPositions()
 {
     std::ifstream jsonScene("live-photons.json");
     json pointsJson = json::parse(jsonScene);
 
     std::vector<GLfloat> positionsGL;
-    std::vector<GLuint> indicesGL;
 
     positionsGL.push_back(pointsJson["QueryPoint"][0]);
     positionsGL.push_back(pointsJson["QueryPoint"][1]);
     positionsGL.push_back(pointsJson["QueryPoint"][2]);
 
-    indicesGL.push_back(0);
-    indicesGL.push_back(1);
-    indicesGL.push_back(2);
+    mPointCount = 1;
+
+    return positionsGL;
+}
+
+void gl::Points::init()
+{
+    std::vector<GLfloat> positionsGL = getPositions();
+    std::vector<GLfloat> indicesGL;
+
+    for (int i = 0; i < maxPoints; i++) {
+        indicesGL.push_back(i);
+    }
 
     {
         glGenVertexArrays(1, &mEntityIDs.vertexArrayID);
@@ -37,7 +50,7 @@ void gl::Points::init()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            sizeof(GLuint) * indicesGL.size(),
+            sizeof(GLuint) * maxPoints,
             (GLvoid *)&indicesGL[0],
             GL_STATIC_DRAW
         );
@@ -46,7 +59,7 @@ void gl::Points::init()
         glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * positionsGL.size(),
+            sizeof(GLfloat) * maxPoints,
             (GLvoid *)&positionsGL[0],
             GL_DYNAMIC_DRAW
         );
@@ -55,15 +68,7 @@ void gl::Points::init()
 
 void gl::Points::reload()
 {
-    std::ifstream jsonScene("live-photons.json");
-    json pointsJson = json::parse(jsonScene);
-
-    std::vector<GLfloat> positionsGL;
-    std::vector<GLuint> indicesGL;
-
-    positionsGL.push_back(pointsJson["QueryPoint"][0]);
-    positionsGL.push_back(pointsJson["QueryPoint"][1]);
-    positionsGL.push_back(pointsJson["QueryPoint"][2]);
+    std::vector<GLfloat> positionsGL = getPositions();
 
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
     glBufferSubData(
@@ -99,7 +104,7 @@ void gl::Points::draw(
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
-    glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_POINTS, mPointCount, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(0);
 
