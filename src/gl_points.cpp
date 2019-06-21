@@ -3,6 +3,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <assert.h>
 #include <fstream>
 #include <iostream>
 
@@ -29,6 +30,17 @@ std::vector<GLfloat> gl::Points::getPositions()
     positionsGL.push_back(pointsJson["QueryPoint"][2]);
 
     mPointCount = 1;
+
+    for (auto &resultJson : pointsJson["Results"]) {
+        auto &pointJson = resultJson["point"];
+        positionsGL.push_back(pointJson[0]);
+        positionsGL.push_back(pointJson[1]);
+        positionsGL.push_back(pointJson[2]);
+
+        mPointCount += 1;
+    }
+
+    assert(mPointCount <= maxPoints);
 
     return positionsGL;
 }
