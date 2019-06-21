@@ -36,24 +36,10 @@ std::vector<GLfloat> gl::Points::getPositions()
 void gl::Points::init()
 {
     std::vector<GLfloat> positionsGL = getPositions();
-    std::vector<GLfloat> indicesGL;
-
-    for (int i = 0; i < maxPoints; i++) {
-        indicesGL.push_back(i);
-    }
 
     {
         glGenVertexArrays(1, &mEntityIDs.vertexArrayID);
         glBindVertexArray(mEntityIDs.vertexArrayID);
-
-        glGenBuffers(1, &mEntityIDs.vertexIndexBufferID);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
-        glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            sizeof(GLuint) * maxPoints,
-            (GLvoid *)&indicesGL[0],
-            GL_STATIC_DRAW
-        );
 
         glGenBuffers(1, &mEntityIDs.vertexBufferID);
         glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
@@ -103,8 +89,7 @@ void gl::Points::draw(
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
-    glDrawElements(GL_POINTS, mPointCount, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_POINTS, 0, mPointCount);
 
     glDisableVertexAttribArray(0);
 
