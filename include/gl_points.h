@@ -22,6 +22,7 @@ namespace gl {
 
     protected:
         std::vector<GLfloat> getPositions();
+        std::vector<GLfloat> getColors();
 
         Shader mShader;
         EntityIDs mEntityIDs;
