@@ -18,6 +18,8 @@ namespace gl {
             GLfloat (&projection)[4][4]
         );
 
+        void reload();
+
     protected:
         Shader mShader;
         EntityIDs mEntityIDs;

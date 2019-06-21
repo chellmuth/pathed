@@ -14,9 +14,17 @@ AppController::AppController(Scene &scene, int width, int height)
       mWidth(width),
       mHeight(height),
       mSample(),
+      mHasUpdate(false),
       mIntegrator(new Depositer())
 {
     mIntegrator->preprocess(mScene, mRandom);
+}
+
+bool AppController::testAndClearUpdate()
+{
+    bool ret = mHasUpdate;
+    mHasUpdate = false; // race-condition
+    return ret;
 }
 
 void AppController::handlePathTraceClick(int x, int y)
@@ -33,6 +41,8 @@ void AppController::handlePathTraceClick(int x, int y)
     if (!intersection.hit) { return; }
 
     mIntegrator->debug(intersection, mScene);
+    printf("Queueing reload...\n");
+    mHasUpdate = true;
 
     // RandomGenerator random;
     // int bounceCount = 10;

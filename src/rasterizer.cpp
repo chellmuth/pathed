@@ -40,6 +40,11 @@ void Rasterizer::init()
 {
 }
 
+void Rasterizer::reload()
+{
+    mGLPoints.reload();
+}
+
 void Rasterizer::setState(const Sample &sample)
 {
     mGLLines.update(sample);
@@ -66,7 +71,6 @@ void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
 
     multiply(view, arcballRotationLocal, viewLocal);
 }
-
 
 void Rasterizer::drawGL()
 {

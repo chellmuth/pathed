@@ -1,18 +1,18 @@
 #pragma once
 
-#include <Eigen/Geometry>
-#include <nanogui/opengl.h>
-#include <nanogui/glcanvas.h>
-#include <vector>
-
-#include "integrator.h"
 #include "gl_lines.h"
 #include "gl_points.h"
 #include "gl_scene.h"
+#include "integrator.h"
 #include "point.h"
 #include "scene.h"
 #include "shader.h"
 #include "vector.h"
+
+#include <Eigen/Geometry>
+#include <nanogui/opengl.h>
+#include <nanogui/glcanvas.h>
+#include <vector>
 
 enum class Direction {
     Forward,
@@ -28,6 +28,7 @@ public:
     void init();
     virtual void drawGL() override;
 
+    void reload();
     void setState(const Sample &sample);
     void move(Direction direction);
 

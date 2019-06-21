@@ -12,6 +12,7 @@
 class AppController {
 public:
     AppController(Scene &scene, int width, int height);
+    bool testAndClearUpdate();
     void handlePathTraceClick(int x, int y);
     Sample getSample() { return mSample; }
 
@@ -21,4 +22,6 @@ private:
     Scene &mScene;
     int mWidth, mHeight;
     Sample mSample;
+
+    bool mHasUpdate;
 };

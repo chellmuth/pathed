@@ -25,8 +25,6 @@ void gl::Points::init()
     positionsGL.push_back(pointsJson["QueryPoint"][1]);
     positionsGL.push_back(pointsJson["QueryPoint"][2]);
 
-    std::cout << positionsGL[0] << " " << positionsGL[1] << " " << positionsGL[2] << " " << std::endl;
-
     indicesGL.push_back(0);
     indicesGL.push_back(1);
     indicesGL.push_back(2);
@@ -50,9 +48,30 @@ void gl::Points::init()
             GL_ARRAY_BUFFER,
             sizeof(GLfloat) * positionsGL.size(),
             (GLvoid *)&positionsGL[0],
-            GL_STATIC_DRAW
+            GL_DYNAMIC_DRAW
         );
     }
+}
+
+void gl::Points::reload()
+{
+    std::ifstream jsonScene("live-photons.json");
+    json pointsJson = json::parse(jsonScene);
+
+    std::vector<GLfloat> positionsGL;
+    std::vector<GLuint> indicesGL;
+
+    positionsGL.push_back(pointsJson["QueryPoint"][0]);
+    positionsGL.push_back(pointsJson["QueryPoint"][1]);
+    positionsGL.push_back(pointsJson["QueryPoint"][2]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(GLfloat) * positionsGL.size(),
+        (GLvoid *)&positionsGL[0]
+    );
 }
 
 void gl::Points::draw(

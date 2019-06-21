@@ -219,7 +219,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
             if (fisheyeIntersection.hit) {
-                const int spp = 2000;
+                const int spp = 2;
                 for (int i = 0; i < spp; i++) {
                     Sample sample;
 

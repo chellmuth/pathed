@@ -225,6 +225,10 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
+        if (mController->testAndClearUpdate()) {
+            mRasterizer->reload();
+        }
+
         mRasterizer->setState(mController->getSample());
         Screen::draw(ctx);
     }
