@@ -95,19 +95,21 @@ def direction_plot(figure, sample):
 
 
 def importance_plot(figure, sample):
-    phi_steps = 100
-    theta_steps = 100
+    phi_steps = 50
+    theta_steps = 50
     grid = np.zeros((theta_steps, phi_steps, 3))
+
+    query_x, query_y, query_z = sample["QueryPoint"]
 
     print(len(sample["Results"]))
     for photon in sample["Results"]:
-        origin_x, origin_y, origin_z = photon["point"]
+        # origin_x, origin_y, origin_z = photon["point"]
         direction_x, direction_y, direction_z = photon["source"]
 
         wi_x, wi_y, wi_z = normalized(
-            direction_x - origin_x,
-            direction_y - origin_y,
-            direction_z - origin_z
+            direction_x - query_x,
+            direction_y - query_y,
+            direction_z - query_z
         )
 
         phi = np.arctan2(wi_z, wi_x)
@@ -127,6 +129,8 @@ def importance_plot(figure, sample):
 
     grid = np.clip(grid, 0.0, 1.0)
 
+    grid = np.where(grid == 0, [1.0, 0.5, 1.0], grid)
+
     axes = figure.add_subplot()
 
     axes.imshow(grid)
@@ -138,8 +142,8 @@ def importance_plot(figure, sample):
     plt.show()
 
 def run(sample):
-    location_plot(plt.figure(1), sample)
-    direction_plot(plt.figure(2), sample)
+    # location_plot(plt.figure(1), sample)
+    # direction_plot(plt.figure(2), sample)
     importance_plot(plt.figure(3), sample)
 
     plt.show()

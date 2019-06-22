@@ -185,8 +185,9 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
 
 void Depositer::debug2(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 300;
-    const int thetaSteps = 300;
+    const int phiSteps = 100;
+    const int thetaSteps = 100;
+    const int spp = 64;
 
     PathTracer integrator;
     RandomGenerator random;
@@ -219,7 +220,6 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
             if (fisheyeIntersection.hit) {
-                const int spp = 0;
                 for (int i = 0; i < spp; i++) {
                     Sample sample;
 
