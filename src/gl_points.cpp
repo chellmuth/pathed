@@ -1,5 +1,8 @@
 #include "gl_points.h"
 
+#include "point.h"
+#include "vector.h"
+
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -27,11 +30,31 @@ std::vector<GLfloat> gl::Points::getPositions()
 
     std::vector<GLfloat> positionsGL;
 
+    Point3 queryPoint(
+        pointsJson["QueryPoint"][0],
+        pointsJson["QueryPoint"][1],
+        pointsJson["QueryPoint"][2]
+    );
+
     for (auto &resultJson : pointsJson["Results"]) {
         auto &pointJson = resultJson["point"];
-        positionsGL.push_back(pointJson[0]);
-        positionsGL.push_back(pointJson[1]);
-        positionsGL.push_back(pointJson[2]);
+        // positionsGL.push_back(pointJson[0]);
+        // positionsGL.push_back(pointJson[1]);
+        // positionsGL.push_back(pointJson[2]);
+
+        auto &sourceJson = resultJson["source"];
+        Point3 sourcePoint(sourceJson[0], sourceJson[1], sourceJson[2]);
+
+        // positionsGL.push_back(sourcePoint.x());
+        // positionsGL.push_back(sourcePoint.y());
+        // positionsGL.push_back(sourcePoint.z());
+
+        Vector3 wi = (sourcePoint - queryPoint).toVector().normalized() * 0.2f;
+        Point3 hemispherePoint = queryPoint + wi;
+
+        positionsGL.push_back(hemispherePoint.x());
+        positionsGL.push_back(hemispherePoint.y());
+        positionsGL.push_back(hemispherePoint.z());
 
         mPointCount += 1;
     }
