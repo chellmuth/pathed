@@ -1,5 +1,6 @@
 #include "app_controller.h"
 
+#include <ctime>
 #include <iostream>
 
 #include "bdpt.h"
@@ -17,7 +18,14 @@ AppController::AppController(Scene &scene, int width, int height)
       mHasUpdate(false),
       mIntegrator(new Depositer())
 {
+    printf("Beginning pre-process...\n");
+    std::clock_t begin = clock();
+
     mIntegrator->preprocess(mScene, mRandom);
+
+    std::clock_t end = clock();
+    double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
+    printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
 }
 
 bool AppController::testAndClearUpdate()

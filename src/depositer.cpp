@@ -19,7 +19,7 @@ using json = nlohmann::json;
 #include <utility>
 
 static int photonSamples = 1e5;
-static int maxBounces = 10;
+static int maxBounces = 5;
 
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
@@ -207,14 +207,16 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+            float theta = M_PI * thetaStep / thetaSteps;
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
             float z = sinf(theta) * sinf(phi);
 
-            Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+            // Vector3 wiHemisphere(x, y, z);
+            // Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+
+            Vector3 wiWorld = Vector3(x, y, z).normalized();
 
             Ray ray = Ray(intersection.point, wiWorld);
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
