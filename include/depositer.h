@@ -5,6 +5,7 @@
 
 #include "nanoflann.hpp"
 
+#include <memory>
 #include <vector>
 
 struct DataSource
@@ -39,6 +40,8 @@ typedef nanoflann::KDTreeSingleIndexDynamicAdaptor<
 
 class Depositer : public Integrator {
 public:
+    Depositer();
+
     Color L(
         const Intersection &intersection,
         const Scene &scene,
@@ -54,6 +57,6 @@ public:
 private:
     void debug2(const Intersection &intersection, const Scene &scene) const;
 
-    DataSource mDataSource;
+    std::shared_ptr<DataSource> mDataSource;
     KDTree *mKDTree;
 };

@@ -4,6 +4,7 @@
 #include "light.h"
 #include "monte_carlo.h"
 #include "path_tracer.h"
+#include "photon_pdf.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
@@ -13,9 +14,10 @@
 using json = nlohmann::json;
 
 #include <fstream>
-#include <limits>
 #include <iostream>
+#include <limits>
 #include <math.h>
+#include <vector>
 #include <utility>
 
 static int photonSamples = 1e5;
@@ -23,6 +25,11 @@ static int maxBounces = 5;
 
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
+
+Depositer::Depositer()
+{
+    mDataSource = std::make_shared<DataSource>();
+}
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
@@ -41,7 +48,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 
             throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
 
-            mDataSource.points.push_back({
+            mDataSource->points.push_back({
                 intersection.point.x(),
                 intersection.point.y(),
                 intersection.point.z(),
@@ -62,7 +69,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         }
     }
 
-    mKDTree = new KDTree(3, mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    mKDTree = new KDTree(3, *mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
@@ -134,7 +141,7 @@ Color Depositer::L(
         nanoflann::RadiusResultSet<float, size_t> resultSet(searchRadius, indicesDistances);
 
 		mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-        Color irradiance = average(mDataSource, indicesDistances);
+        Color irradiance = average(*mDataSource, indicesDistances);
 
         return irradiance * intersection.material->f(
             intersection.wi,
@@ -154,19 +161,24 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
         intersectionPoint.z()
     };
 
-    size_t resultIndices[debugSearchCount];
-    float outDistanceSquared[debugSearchCount];
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
 
     nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
-    resultSet.init(resultIndices, outDistanceSquared);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    RandomGenerator random;
+    PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
+    float pdf;
+    Vector3 wi = photonPDF.sample(random, &pdf);
 
     json j;
     j["QueryPoint"] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
     j["Results"] = json::array();
     for (int i = 0; i < debugSearchCount; i++) {
-        auto &point = mDataSource.points[resultIndices[i]];
+        auto &point = mDataSource->points[resultIndices->at(i)];
         j["Results"].push_back({
             { "point", { point.x, point.y, point.z } },
             { "source", { point.source.x(), point.source.y(), point.source.z() } },

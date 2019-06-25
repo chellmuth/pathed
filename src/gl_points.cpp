@@ -10,7 +10,7 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-static const int maxPoints = 1000;
+static const int maxPoints = 10000;
 
 gl::Points::Points()
     : mPointCount(0)
