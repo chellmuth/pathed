@@ -25,6 +25,8 @@ namespace gl {
 
         void reload();
 
+        void updateDebugMode();
+
     protected:
         std::vector<GLfloat> getPositions();
         std::vector<GLfloat> getColors();

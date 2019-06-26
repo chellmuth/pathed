@@ -157,6 +157,11 @@ void Rasterizer::move(Direction direction)
     );
 }
 
+void Rasterizer::updateDebugMode()
+{
+    mGLPoints.updateDebugMode();
+}
+
 bool Rasterizer::mouseButtonEvent(
     const Eigen::Vector2i &p, int button, bool down, int modifiers
 ) {

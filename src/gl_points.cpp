@@ -57,11 +57,13 @@ std::vector<GLfloat> gl::Points::getPositions()
             positionsGL.push_back(sourcePoint.x());
             positionsGL.push_back(sourcePoint.y());
             positionsGL.push_back(sourcePoint.z());
+            break;
         }
         case DebugMode::Local: {
             positionsGL.push_back(pointJson[0]);
             positionsGL.push_back(pointJson[1]);
             positionsGL.push_back(pointJson[2]);
+            break;
         }
         }
 
@@ -184,4 +186,24 @@ void gl::Points::draw(
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_PROGRAM_POINT_SIZE);
+}
+
+void gl::Points::updateDebugMode()
+{
+    switch(m_debugMode) {
+    case DebugMode::Hemisphere: {
+        m_debugMode = DebugMode::Source;
+        break;
+    }
+    case DebugMode::Source: {
+        m_debugMode = DebugMode::Local;
+        break;
+    }
+    case DebugMode::Local: {
+        m_debugMode = DebugMode::Hemisphere;
+        break;
+    }
+    }
+
+    reload();
 }

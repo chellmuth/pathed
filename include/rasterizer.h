@@ -30,7 +30,9 @@ public:
 
     void reload();
     void setState(const Sample &sample);
+
     void move(Direction direction);
+    void updateDebugMode();
 
 private:
     Scene &mScene;

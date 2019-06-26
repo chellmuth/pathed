@@ -224,6 +224,8 @@ public:
             mRasterizer->move(Direction::Left);
         } else if (key == GLFW_KEY_D) {
             mRasterizer->move(Direction::Right);
+        } else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+            mRasterizer->updateDebugMode();
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
