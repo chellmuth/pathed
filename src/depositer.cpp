@@ -118,38 +118,111 @@ Color Depositer::L(
     int bounceCount,
     Sample &sample
 ) const {
-    Point3 intersectionPoint = intersection.point;
-    float queryPoint[3] = {
-        intersectionPoint.x(),
-        intersectionPoint.y(),
-        intersectionPoint.z()
-    };
+    sample.eyePoints.push_back(intersection.point);
 
-    // {
-    //     const size_t numResults = 10;
-    //     size_t returnIndex[numResults];
-    //     float outDistanceSquared[numResults];
+    Color result = direct(intersection, scene, random, sample);
 
-    //     nanoflann::KNNResultSet<float> resultSet(numResults);
-    //     resultSet.init(returnIndex, outDistanceSquared);
+    Color modulation = Color(1.f, 1.f, 1.f);
+    Intersection lastIntersection = intersection;
 
-    //     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-    // }
-
-    {
-		std::vector<std::pair<size_t, float> > indicesDistances;
-        nanoflann::RadiusResultSet<float, size_t> resultSet(searchRadius, indicesDistances);
-
-		mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-        Color irradiance = average(*mDataSource, indicesDistances);
-
-        return irradiance * intersection.material->f(
-            intersection.wi,
-            Vector3(0.f), // hack to get albedo since I know it's lambertian
-            intersection.normal
+    for (int bounce = 0; bounce < bounceCount; bounce++) {
+        Transform hemisphereToWorld = normalToWorldSpace(
+            lastIntersection.normal,
+            lastIntersection.wi
         );
+
+        Point3 intersectionPoint = lastIntersection.point;
+        float queryPoint[3] = {
+            intersectionPoint.x(),
+            intersectionPoint.y(),
+            intersectionPoint.z()
+        };
+
+        auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+        std::vector<float> outDistanceSquared(debugSearchCount);
+
+        nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+        resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+        mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+        RandomGenerator random;
+        PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
+        float unusedPdf;
+        Vector3 bounceDirection = photonPDF.sample(random, &unusedPdf);
+
+        Ray bounceRay(
+            lastIntersection.point,
+            bounceDirection
+        );
+
+        Intersection bounceIntersection = scene.testIntersect(bounceRay);
+        if (!bounceIntersection.hit) { break; }
+
+        sample.eyePoints.push_back(bounceIntersection.point);
+
+        float pdf;
+        Color f = lastIntersection.material->f(
+            lastIntersection.wi,
+            bounceDirection,
+            lastIntersection.normal,
+            &pdf
+        );
+        float invPDF = 1.f / pdf;
+
+        modulation *= f
+            * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
+            * invPDF;
+        lastIntersection = bounceIntersection;
+
+        result += direct(bounceIntersection, scene, random, sample) * modulation;
     }
-    return Color(0.f);
+
+    return result;
+}
+
+Color Depositer::direct(
+    const Intersection &intersection,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    Color emit = intersection.material->emit();
+    if (!emit.isBlack()) {
+        // part of my old logic - if you hit an emitter, don't do direct lighting?
+        // sample.shadowRays.push_back(intersection.point);
+        return Color(0.f, 0.f, 0.f);
+    }
+
+    int lightCount = scene.lights().size();
+    int lightIndex = (int)floorf(random.next() * lightCount);
+
+    std::shared_ptr<Light> light = scene.lights()[lightIndex];
+    SurfaceSample lightSample = light->sample(random);
+
+    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
+    Vector3 wo = lightDirection.normalized();
+
+    sample.shadowPoints.push_back(lightSample.point);
+
+    if (lightSample.normal.dot(wo) >= 0.f) {
+        return Color(0.f, 0.f, 0.f);
+    }
+
+    Ray shadowRay = Ray(intersection.point, wo);
+    Intersection shadowIntersection = scene.testIntersect(shadowRay);
+    float lightDistance = lightDirection.length();
+
+    if (shadowIntersection.hit && shadowIntersection.t + 0.0001f < lightDistance) {
+        return Color(0.f, 0.f, 0.f);
+    }
+
+    float invPDF = lightSample.invPDF * lightCount;
+
+    return light->biradiance(lightSample, intersection.point)
+        * intersection.material->f(intersection.wi, wo, intersection.normal)
+        * fmaxf(0.f, wo.dot(intersection.normal))
+        * invPDF;
 }
 
 void Depositer::debug(const Intersection &intersection, const Scene &scene) const

@@ -35,17 +35,17 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
         const Point3 &source = point.source;
         const Vector3 wi = (source - mOrigin).toVector().normalized();
 
-        float phi = atan2(wi.z(), wi.x());
+        float phi = atan2f(wi.z(), wi.x());
         if (phi < 0.f) {
             phi += 2 * M_PI;
         }
-        const float theta = acos(wi.y());
+        const float theta = acosf(wi.y());
 
-        assert(0.f <= phi);
-        assert(phi <= M_TWO_PI);
+        // assert(0.f <= phi);
+        // assert(phi <= M_TWO_PI);
 
-        assert(0.f <= theta);
-        assert(theta <= M_PI);
+        // assert(0.f <= theta);
+        // assert(theta <= M_PI);
 
         const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
         const int thetaStep = (int)floorf(theta / (M_PI / thetaSteps));
@@ -92,6 +92,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
     const float z = sinf(theta) * sinf(phi);
 
     Vector3 result = Vector3(x, y, z);
-    assert(result.length() == 1.f);
+    assert(fabsf(result.length() - 1.f) < 1e-5);
     return result;
 }

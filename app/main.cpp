@@ -34,8 +34,8 @@
 
 using namespace std;
 
-static const int width = 768;
-static const int height = 512;
+static const int width = 400;
+static const int height = 400;
 static const int primarySamples = 5000;
 static const int bounceCount = 4;
 
@@ -89,7 +89,7 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    PathTracer integrator;
+    Depositer integrator;
 
     {
         printf("Beginning pre-process...\n");

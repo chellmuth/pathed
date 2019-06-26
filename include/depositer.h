@@ -55,6 +55,13 @@ public:
     void debug(const Intersection &intersection, const Scene &scene) const override;
 
 private:
+    Color direct(
+        const Intersection &intersection,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
     void debug2(const Intersection &intersection, const Scene &scene) const;
 
     std::shared_ptr<DataSource> mDataSource;
