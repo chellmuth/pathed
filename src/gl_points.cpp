@@ -13,9 +13,9 @@ using json = nlohmann::json;
 static const int maxPoints = 10000;
 
 gl::Points::Points()
-    : mPointCount(0)
+    : m_pointCount(0)
 {
-    mShader = shader::createProgram(
+    m_shader = shader::createProgram(
         "shader/point.vs",
         "shader/point.fs"
     );
@@ -23,7 +23,7 @@ gl::Points::Points()
 
 std::vector<GLfloat> gl::Points::getPositions()
 {
-    mPointCount = 0;
+    m_pointCount = 0;
 
     std::ifstream jsonScene("live-photons.json");
     json pointsJson = json::parse(jsonScene);
@@ -56,16 +56,16 @@ std::vector<GLfloat> gl::Points::getPositions()
         positionsGL.push_back(hemispherePoint.y());
         positionsGL.push_back(hemispherePoint.z());
 
-        mPointCount += 1;
+        m_pointCount += 1;
     }
 
     positionsGL.push_back(pointsJson["QueryPoint"][0]);
     positionsGL.push_back(pointsJson["QueryPoint"][1]);
     positionsGL.push_back(pointsJson["QueryPoint"][2]);
 
-    mPointCount += 1;
+    m_pointCount += 1;
 
-    assert(mPointCount <= maxPoints);
+    assert(m_pointCount <= maxPoints);
 
     return positionsGL;
 }
@@ -93,11 +93,11 @@ std::vector<GLfloat> gl::Points::getColors()
 void gl::Points::init()
 {
     {
-        glGenVertexArrays(1, &mEntityIDs.vertexArrayID);
-        glBindVertexArray(mEntityIDs.vertexArrayID);
+        glGenVertexArrays(1, &m_entityIDs.vertexArrayID);
+        glBindVertexArray(m_entityIDs.vertexArrayID);
 
-        glGenBuffers(1, &mEntityIDs.vertexBufferID);
-        glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+        glGenBuffers(1, &m_entityIDs.vertexBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
             sizeof(GLfloat) * maxPoints,
@@ -105,8 +105,8 @@ void gl::Points::init()
             GL_DYNAMIC_DRAW
         );
 
-        glGenBuffers(1, &mEntityIDs.colorBufferID);
-        glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+        glGenBuffers(1, &m_entityIDs.colorBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
             sizeof(GLfloat) * maxPoints,
@@ -123,7 +123,7 @@ void gl::Points::reload()
     std::vector<GLfloat> positionsGL = getPositions();
     std::vector<GLfloat> colorsGL = getColors();
 
-    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     glBufferSubData(
         GL_ARRAY_BUFFER,
         0,
@@ -131,7 +131,7 @@ void gl::Points::reload()
         (GLvoid *)&positionsGL[0]
     );
 
-    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     glBufferSubData(
         GL_ARRAY_BUFFER,
         0,
@@ -148,27 +148,27 @@ void gl::Points::draw(
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDisable(GL_DEPTH_TEST);
 
-    glUseProgram(mShader.programID);
+    glUseProgram(m_shader.programID);
 
-    GLuint modelID = glGetUniformLocation(mShader.programID, "model");
-    GLuint viewID = glGetUniformLocation(mShader.programID, "view");
-    GLuint projectionID = glGetUniformLocation(mShader.programID, "projection");
+    GLuint modelID = glGetUniformLocation(m_shader.programID, "model");
+    GLuint viewID = glGetUniformLocation(m_shader.programID, "view");
+    GLuint projectionID = glGetUniformLocation(m_shader.programID, "projection");
 
     glUniformMatrix4fv(modelID, 1, GL_TRUE, &model[0][0]);
     glUniformMatrix4fv(viewID, 1, GL_TRUE, &view[0][0]);
     glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
-    glBindVertexArray(mEntityIDs.vertexArrayID);
+    glBindVertexArray(m_entityIDs.vertexArrayID);
 
     glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glDrawArrays(GL_POINTS, 0, mPointCount);
+    glDrawArrays(GL_POINTS, 0, m_pointCount);
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);

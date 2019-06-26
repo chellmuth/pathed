@@ -5,7 +5,6 @@
 
 #include <nanogui/opengl.h>
 
-
 namespace gl {
     class Points {
     public:
@@ -24,9 +23,9 @@ namespace gl {
         std::vector<GLfloat> getPositions();
         std::vector<GLfloat> getColors();
 
-        Shader mShader;
-        EntityIDs mEntityIDs;
+        Shader m_shader;
+        EntityIDs m_entityIDs;
 
-        int mPointCount;
+        int m_pointCount;
     };
 }
