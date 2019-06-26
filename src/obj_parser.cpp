@@ -96,14 +96,14 @@ void ObjParser::processTriangle(int index0, int index1, int index2)
 
     Triangle *face;
     switch (m_handedness) {
-    case Right:
+    case Handedness::Right:
         face = new Triangle(
             m_vertices[index0],
             m_vertices[index1],
             m_vertices[index2]
         );
         break;
-    case Left:
+    case Handedness::Left:
         face = new Triangle(
             m_vertices[index1],
             m_vertices[index0],

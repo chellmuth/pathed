@@ -17,7 +17,7 @@
 // s = number of light vertices, t = number of eye vertices
 // i = number of light vertices during MIS
 
-enum PointType {
+enum class PointType {
     Eye,
     Light,
     Vertex,

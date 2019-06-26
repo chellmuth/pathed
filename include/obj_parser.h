@@ -10,7 +10,7 @@
 #include "scene.h"
 #include "surface.h"
 
-enum Handedness {
+enum class Handedness {
     Right,
     Left
 };
