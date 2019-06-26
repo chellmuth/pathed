@@ -132,6 +132,13 @@ void run(Image &image, Scene &scene, bool *quit)
             }
         }
 
+        int maxJ = log2f(primarySamples);
+        for (int j = 0; j <= maxJ; j++) {
+            if (1 << j == i + 1) {
+                image.save("auto");
+            }
+        }
+
         lock.unlock();
         double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
         printf("sample: %d/%d (%0.1fs elapsed)\n", i + 1, primarySamples, elapsedSeconds);

@@ -5,6 +5,7 @@
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
 
+#include <iomanip>
 #include <sstream>
 #include <stdlib.h>
 #include <string>
@@ -109,7 +110,9 @@ void Image::save(char const *filestem)
     std::string outputExr = outputExrStream.str();
 
     std::ostringstream outputSppExrStream;
-    outputSppExrStream << filestem << "-" << m_spp << "spp.exr";
+    outputSppExrStream << filestem << "-"
+                       << std::setfill('0') << std::setw(5) << m_spp
+                       << "spp.exr";
     std::string outputSppExr = outputSppExrStream.str();
 
     int ret = SaveEXRImageToFile(&image, &header, outputExr.c_str(), &err);
