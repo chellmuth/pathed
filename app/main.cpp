@@ -59,9 +59,8 @@ void samplePixel(
     Color color = integrator.L(intersection, scene, random, bounceCount, sample);
 
     Color emit = intersection.material->emit();
-    // Path = 1
     if (!emit.isBlack()) {
-        // color += emit;
+        color += emit;
     }
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
