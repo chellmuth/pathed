@@ -148,8 +148,8 @@ Color Depositer::L(
 
         RandomGenerator random;
         PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
-        float unusedPdf;
-        Vector3 bounceDirection = photonPDF.sample(random, &unusedPdf);
+        float pdf;
+        Vector3 bounceDirection = photonPDF.sample(random, &pdf);
 
         Ray bounceRay(
             lastIntersection.point,
@@ -161,12 +161,10 @@ Color Depositer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        float pdf;
         Color f = lastIntersection.material->f(
             lastIntersection.wi,
             bounceDirection,
-            lastIntersection.normal,
-            &pdf
+            lastIntersection.normal
         );
         float invPDF = 1.f / pdf;
 

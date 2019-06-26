@@ -72,6 +72,8 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
         if (xi <= CDF[i]) {
             phiStep = (int)floorf(i / phiSteps);
             thetaStep = i % phiSteps;
+            *pdf = CDF[i];
+            break;
         }
     }
 
