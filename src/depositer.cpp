@@ -48,13 +48,15 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 
             throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
 
-            mDataSource->points.push_back({
-                intersection.point.x(),
-                intersection.point.y(),
-                intersection.point.z(),
-                lightRay.origin(),
-                throughput
-            });
+            if (bounce > 0) {
+                mDataSource->points.push_back({
+                    intersection.point.x(),
+                    intersection.point.y(),
+                    intersection.point.z(),
+                    lightRay.origin(),
+                    throughput
+                });
+            }
 
             hemisphereSample = UniformSampleHemisphere(random);
             hemisphereToWorld = normalToWorldSpace(intersection.normal);
