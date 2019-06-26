@@ -6,6 +6,12 @@
 #include <nanogui/opengl.h>
 
 namespace gl {
+    enum class DebugMode {
+        Hemisphere,
+        Source,
+        Local,
+    };
+
     class Points {
     public:
         Points();
@@ -25,6 +31,8 @@ namespace gl {
 
         Shader m_shader;
         EntityIDs m_entityIDs;
+
+        DebugMode m_debugMode;
 
         int m_pointCount;
     };

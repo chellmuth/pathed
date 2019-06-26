@@ -13,7 +13,8 @@ using json = nlohmann::json;
 static const int maxPoints = 10000;
 
 gl::Points::Points()
-    : m_pointCount(0)
+    : m_pointCount(0),
+      m_debugMode(DebugMode::Local)
 {
     m_shader = shader::createProgram(
         "shader/point.vs",
@@ -38,23 +39,31 @@ std::vector<GLfloat> gl::Points::getPositions()
 
     for (auto &resultJson : pointsJson["Results"]) {
         auto &pointJson = resultJson["point"];
-        // positionsGL.push_back(pointJson[0]);
-        // positionsGL.push_back(pointJson[1]);
-        // positionsGL.push_back(pointJson[2]);
 
         auto &sourceJson = resultJson["source"];
         Point3 sourcePoint(sourceJson[0], sourceJson[1], sourceJson[2]);
 
-        // positionsGL.push_back(sourcePoint.x());
-        // positionsGL.push_back(sourcePoint.y());
-        // positionsGL.push_back(sourcePoint.z());
-
         Vector3 wi = (sourcePoint - queryPoint).toVector().normalized() * 0.2f;
         Point3 hemispherePoint = queryPoint + wi;
 
-        positionsGL.push_back(hemispherePoint.x());
-        positionsGL.push_back(hemispherePoint.y());
-        positionsGL.push_back(hemispherePoint.z());
+        switch(m_debugMode) {
+        case DebugMode::Hemisphere: {
+            positionsGL.push_back(hemispherePoint.x());
+            positionsGL.push_back(hemispherePoint.y());
+            positionsGL.push_back(hemispherePoint.z());
+            break;
+        }
+        case DebugMode::Source: {
+            positionsGL.push_back(sourcePoint.x());
+            positionsGL.push_back(sourcePoint.y());
+            positionsGL.push_back(sourcePoint.z());
+        }
+        case DebugMode::Local: {
+            positionsGL.push_back(pointJson[0]);
+            positionsGL.push_back(pointJson[1]);
+            positionsGL.push_back(pointJson[2]);
+        }
+        }
 
         m_pointCount += 1;
     }
