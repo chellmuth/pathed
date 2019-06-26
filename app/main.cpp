@@ -18,9 +18,11 @@
 #include "canvas.h"
 #include "color.h"
 #include "depositer.h"
+#include "globals.h"
 #include "image.h"
 #include "integrator.h"
 #include "intersection.h"
+#include "job.h"
 #include "monte_carlo.h"
 #include "obj_parser.h"
 #include "path_tracer.h"
@@ -38,6 +40,8 @@ static const int width = 400;
 static const int height = 400;
 static const int primarySamples = 99999;
 static const int bounceCount = 4;
+
+Job *g_job;
 
 void samplePixel(
     int row, int col,
@@ -88,7 +92,7 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    Depositer integrator;
+    PathTracer integrator;
 
     {
         printf("Beginning pre-process...\n");
@@ -247,6 +251,9 @@ private:
 int main() {
     printf("Hello, world!\n");
 
+    ifstream jsonJob("job.json");
+    g_job = new Job(jsonJob);
+
     Image image(width, height);
 
     ifstream jsonScene("cornell.json");
@@ -263,7 +270,7 @@ int main() {
     try {
         nanogui::init();
 
-        {
+        if (g_job->showUI()) {
             nanogui::ref<PathApplication> app = new PathApplication(image, controller, width, height);
             app->drawAll();
             app->setVisible(true);
@@ -273,11 +280,10 @@ int main() {
             debug->setVisible(true);
 
             nanogui::mainloop();
+
+            nanogui::shutdown();
+            quit = true;
         }
-
-        nanogui::shutdown();
-        quit = true;
-
     } catch (const std::runtime_error &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(_WIN32)
