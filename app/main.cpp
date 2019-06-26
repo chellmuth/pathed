@@ -36,7 +36,7 @@ using namespace std;
 
 static const int width = 400;
 static const int height = 400;
-static const int primarySamples = 5000;
+static const int primarySamples = 99999;
 static const int bounceCount = 4;
 
 void samplePixel(
