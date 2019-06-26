@@ -4,6 +4,7 @@
 
 class PathTracer : public Integrator {
 public:
+
     Color L(
         const Intersection &intersection,
         const Scene &scene,

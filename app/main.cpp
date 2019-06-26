@@ -46,7 +46,7 @@ Job *g_job;
 void samplePixel(
     int row, int col,
     std::vector<float> &radianceLookup,
-    Scene &scene, Integrator &integrator,
+    const Scene &scene, const Integrator &integrator,
     RandomGenerator &random)
 {
     Ray ray = scene.getCamera()->generateRay(
@@ -92,12 +92,12 @@ void sampleImage(
 void run(Image &image, Scene &scene, bool *quit)
 {
     RandomGenerator random;
-    PathTracer integrator;
+    std::unique_ptr<Integrator> integrator = g_job->integrator();
 
     {
         printf("Beginning pre-process...\n");
         std::clock_t begin = clock();
-        integrator.preprocess(scene, random);
+        integrator->preprocess(scene, random);
         std::clock_t end = clock();
         double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
@@ -113,7 +113,7 @@ void run(Image &image, Scene &scene, bool *quit)
 
         sampleImage(
             radianceLookup,
-            scene, integrator,
+            scene, *integrator,
             random
         );
 
