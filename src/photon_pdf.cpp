@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <math.h>
 
-static const int phiSteps = 50;
-static const int thetaSteps = 50;
+static const int phiSteps = 1;
+static const int thetaSteps = 1;
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,
@@ -58,8 +58,8 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
 
     float CDF[phiSteps * thetaSteps];
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
-        const int phiStep = (int)floorf(i / phiSteps);
-        const int thetaStep = i % phiSteps;
+        const int phiStep = (int)floorf(i / thetaSteps);
+        const int thetaStep = i % thetaSteps;
         CDF[i] = massLookup[phiStep][thetaStep] / totalMass;
         if (i > 0) {
             CDF[i] += CDF[i - 1];
