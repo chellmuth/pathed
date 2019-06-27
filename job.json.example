@@ -1,5 +1,6 @@
 {
   "output_directory": "default-output",
+  "output_name": "Default"
   "integrator": "PathTracer",
   "showUI": false
 }

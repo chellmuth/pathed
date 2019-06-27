@@ -11,7 +11,6 @@
 #include <sstream>
 #include <stdlib.h>
 #include <string>
-#include <sys/stat.h>
 
 Image::Image(int width, int height)
     : m_height(height),
@@ -107,10 +106,9 @@ void Image::save(char const *filestem)
         header.requested_pixel_types[i] = TINYEXR_PIXELTYPE_HALF; // pixel type of output image to be stored in .EXR
     }
 
-    std::string outputDirectory = g_job->outputDirectory();
-    mkdir(outputDirectory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    const char *err;
 
-    const char* err;
+    std::string outputDirectory = g_job->outputDirectory();
     std::ostringstream outputExrStream;
     outputExrStream << outputDirectory << "/" << filestem << ".exr";
     std::string outputExr = outputExrStream.str();

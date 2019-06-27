@@ -255,6 +255,7 @@ int main() {
 
     ifstream jsonJob("job.json");
     g_job = new Job(jsonJob);
+    g_job->init();
 
     Image image(width, height);
 
