@@ -1,3 +1,5 @@
+import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -12,12 +14,12 @@ def calculate_mse(test, gt):
 def calculate_ae(test, gt):
     return np.sum(np.abs(gt - test))
 
-def build_dataset(error_fn, gt, data_directory):
+def build_dataset(error_fn, gt, data_path):
     mses = []
 
     i = 0
     while True:
-        exr_path = Path(f"../{data_directory}/auto-{2**i:05d}spp.exr")
+        exr_path = data_path / f"auto-{2**i:05d}spp.exr"
         if not exr_path.exists():
             break
 
@@ -31,18 +33,18 @@ def build_dataset(error_fn, gt, data_directory):
 
     return mses
 
-def build_datasets(error_fn, gt, plots):
+def build_datasets(error_fn, gt, data_sources):
     return [
-        build_dataset(error_fn, gt, data_directory)
-        for _, data_directory
-        in plots
+        build_dataset(error_fn, gt, data_path)
+        for _, data_path
+        in data_sources
     ]
 
 @ticker.FuncFormatter
 def power_of_two_formatter(x, pos):
     return int(2 ** x)
 
-def run(gt, plots):
+def run(gt, data_sources):
     errors = [ ("MSE", calculate_mse), ("AE", calculate_ae) ]
 
     fig, axs = plt.subplots(nrows=len(errors))
@@ -51,10 +53,10 @@ def run(gt, plots):
     for error, ax in zip(errors, axs):
         error_name, error_fn = error
 
-        ys_list = build_datasets(error_fn, gt, plots)
+        ys_list = build_datasets(error_fn, gt, data_sources)
         for i, ys in enumerate(ys_list):
             xs = list(range(len(ys)))
-            ax.plot(xs, ys, label=plots[i][0])
+            ax.plot(xs, ys, label=data_sources[i][0])
 
             ax.set(xlabel='spp (log)', ylabel=error_name)
             ax.xaxis.set_major_formatter(power_of_two_formatter)
@@ -64,7 +66,20 @@ def run(gt, plots):
     plt.tight_layout(rect=[0, 0, 1, 0.95]) # rect fixes suptitle clipping
     plt.show()
 
+def find_data_sources(root_path):
+    data_sources = []
+    for json_path in root_path.glob("*/report.json"):
+        report_json = json.load(open(json_path))
+        data_sources.append((report_json["name"], json_path.parent))
+
+    return data_sources
+
 if __name__ == "__main__":
     gt = pyexr.read("cornell-gt.exr")
 
-    run(gt, [("Path Traced", "default-output")])
+    data_sources = find_data_sources(Path(".."))
+    if not data_sources:
+        print("No data sources found!")
+        sys.exit(1)
+
+    run(gt, data_sources)

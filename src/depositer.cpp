@@ -153,6 +153,8 @@ Color Depositer::L(
         float pdf;
         Vector3 bounceDirection = photonPDF.sample(random, &pdf);
 
+        if (bounceDirection.dot(lastIntersection.normal) < 0.f) { break; }
+
         Ray bounceRay(
             lastIntersection.point,
             bounceDirection
