@@ -149,7 +149,7 @@ Color Depositer::L(
         mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
         RandomGenerator random;
-        PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
+        PhotonPDF photonPDF(lastIntersection.point, mDataSource, resultIndices);
         float pdf;
         Vector3 bounceDirection = photonPDF.sample(random, &pdf);
 
