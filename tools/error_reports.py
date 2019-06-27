@@ -65,6 +65,6 @@ def run(gt, plots):
     plt.show()
 
 if __name__ == "__main__":
-    gt = pyexr.read("../path-traced/auto-16384spp.exr")
+    gt = pyexr.read("cornell-gt.exr")
 
-    run(gt, [("Path Traced", "path-traced"), ("Ours", "pdf-test"), ("Ours-Sanity", "default-output")])
+    run(gt, [("Path Traced", "default-output")])
