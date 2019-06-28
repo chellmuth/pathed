@@ -18,7 +18,7 @@ PhotonPDF::PhotonPDF(
       mIndices(indices)
 {}
 
-Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf)
+Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
 {
     float massLookup[phiSteps][thetaSteps];
     float totalMass = 0;
@@ -58,6 +58,15 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         totalMass += mass;
     }
 
+    // if (debug) {
+    //     for (int phi = 0; phi < phiSteps; phi++) {
+    //         for (int theta = 0; theta < thetaSteps; theta++) {
+    //             printf("%f ", massLookup[phi][theta]);
+    //         }
+    //         printf("\n");
+    //     }
+    // }
+
     float CDF[phiSteps * thetaSteps];
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
         const int phiStep = (int)floorf(i / thetaSteps);
@@ -84,10 +93,10 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     assert(thetaStep != -1);
 
     const float xiPhi = random.next();
-    const float phiSample = (1.f - xiPhi) * phiStep + xiPhi * (phiStep + 1);
+    const float phiSample = ((1.f - xiPhi) * phiStep + xiPhi * (phiStep + 1)) / phiSteps;
 
     const float xiTheta = random.next();
-    const float thetaSample = (1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1);
+    const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
 
     const float phi = M_TWO_PI * phiSample;
     const float theta = (M_PI / 2.f) * thetaSample;
@@ -97,6 +106,11 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     const float z = sinf(theta) * sinf(phi);
 
     Vector3 result = Vector3(x, y, z);
+    if (debug) {
+        printf("steps: %i %i %f\n", phiStep, thetaStep, massLookup[phiStep][thetaStep]);
+        printf("phi/theta: %f %f\n", phi, theta);
+        result.debug();
+    }
     assert(fabsf(result.length() - 1.f) < 1e-5);
 
     return result;

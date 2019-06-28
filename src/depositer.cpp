@@ -130,10 +130,7 @@ Color Depositer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 0; bounce < bounceCount; bounce++) {
-        Transform hemisphereToWorld = normalToWorldSpace(
-            lastIntersection.normal,
-            lastIntersection.wi
-        );
+        Transform hemisphereToWorld = normalToWorldSpace(lastIntersection.normal);
 
         Point3 intersectionPoint = lastIntersection.point;
         float queryPoint[3] = {
@@ -257,7 +254,9 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
     RandomGenerator random;
     PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
     float pdf;
-    Vector3 wi = photonPDF.sample(random, worldToNormal, &pdf);
+    Vector3 wi = photonPDF.sample(random, worldToNormal, &pdf, true);
+    Vector3 bounceDirection = wi;
+    bounceDirection.debug();
 
     json j;
     j["QueryPoint"] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };

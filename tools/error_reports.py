@@ -66,18 +66,19 @@ def run(gt, data_sources):
     plt.tight_layout(rect=[0, 0, 1, 0.95]) # rect fixes suptitle clipping
     plt.show()
 
-def find_data_sources(root_path):
+def find_data_sources(root_path, scene):
     data_sources = []
     for json_path in root_path.glob("*/report.json"):
         report_json = json.load(open(json_path))
-        data_sources.append((report_json["name"], json_path.parent))
+        if report_json["scene"] == scene + ".json":
+            data_sources.append((report_json["name"], json_path.parent))
 
     return data_sources
 
 if __name__ == "__main__":
-    gt = pyexr.read("cornell-gt.exr")
+    gt = pyexr.read("green-bounce-gt.exr")
 
-    data_sources = find_data_sources(Path(".."))
+    data_sources = find_data_sources(Path(".."), "green-bounce")
     if not data_sources:
         print("No data sources found!")
         sys.exit(1)
