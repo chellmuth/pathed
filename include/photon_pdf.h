@@ -2,6 +2,7 @@
 
 #include "depositer.h"
 #include "point.h"
+#include "transform.h"
 #include "vector.h"
 
 #include <memory>
@@ -14,7 +15,7 @@ public:
         std::shared_ptr<DataSource> dataSource,
         std::shared_ptr<std::vector<size_t> > indices
     );
-    Vector3 sample(RandomGenerator &random, float *pdf);
+    Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf);
 
 private:
     Point3 mOrigin;

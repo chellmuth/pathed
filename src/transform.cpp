@@ -27,6 +27,18 @@ Transform::Transform(const float matrix[4][4])
     }
 }
 
+Transform Transform::transposed() const
+{
+    float transpose[4][4] = {
+        { m_matrix[0][0], m_matrix[1][0], m_matrix[2][0], m_matrix[3][0] },
+        { m_matrix[0][1], m_matrix[1][1], m_matrix[2][1], m_matrix[3][1] },
+        { m_matrix[0][2], m_matrix[1][2], m_matrix[2][2], m_matrix[3][2] },
+        { m_matrix[0][3], m_matrix[1][3], m_matrix[2][3], m_matrix[3][3] },
+    };
+
+    return Transform(transpose);
+}
+
 Point3 Transform::apply(const Point3 &point) const
 {
     float x = point.x();
@@ -116,5 +128,12 @@ Transform normalToWorldSpace(const Vector3 &normal)
         { xAxis.z(), normal.z(), zAxis.z(), 0.f },
         { 0.f, 0.f, 0.f, 1.f }
     };
+
     return Transform(matrix);
+}
+
+Transform worldSpaceToNormal(const Vector3 &normal)
+{
+    Transform normalToWorld(normalToWorldSpace(normal));
+    return normalToWorld.transposed();
 }

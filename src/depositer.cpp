@@ -148,12 +148,20 @@ Color Depositer::L(
 
         mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
+        Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
+
         RandomGenerator random;
         PhotonPDF photonPDF(lastIntersection.point, mDataSource, resultIndices);
         float pdf;
-        Vector3 bounceDirection = photonPDF.sample(random, &pdf);
+        Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
+        pdf = INV_TWO_PI;
 
-        if (bounceDirection.dot(lastIntersection.normal) < 0.f) { break; }
+        Vector3 bounceDirection = hemisphereToWorld.apply(pdfSample);
+
+        if (bounceDirection.dot(lastIntersection.normal) < 0.f) { 
+            printf("WE HAVE A PROBLEM!\n");
+            break;
+        }
 
         Ray bounceRay(
             lastIntersection.point,
@@ -244,10 +252,11 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
 
     mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
+    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
     RandomGenerator random;
     PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
     float pdf;
-    Vector3 wi = photonPDF.sample(random, &pdf);
+    Vector3 wi = photonPDF.sample(random, worldToNormal, &pdf);
 
     json j;
     j["QueryPoint"] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };

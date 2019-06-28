@@ -18,7 +18,7 @@ PhotonPDF::PhotonPDF(
       mIndices(indices)
 {}
 
-Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
+Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf)
 {
     float massLookup[phiSteps][thetaSteps];
     float totalMass = 0;
@@ -95,5 +95,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, float *pdf)
 
     Vector3 result = Vector3(x, y, z);
     assert(fabsf(result.length() - 1.f) < 1e-5);
+
     return result;
 }
