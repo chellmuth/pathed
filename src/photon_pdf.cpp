@@ -33,7 +33,9 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         const DataSource::Point &point = mDataSource->points[index];
 
         const Point3 &source = point.source;
-        const Vector3 wi = (source - mOrigin).toVector().normalized();
+        const Vector3 wi = worldToNormal.apply(
+            (source - mOrigin).toVector()
+        ).normalized();
 
         float phi = atan2f(wi.z(), wi.x());
         if (phi < 0.f) {
@@ -48,7 +50,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         // assert(theta <= M_PI);
 
         const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
-        const int thetaStep = (int)floorf(theta / (M_PI / thetaSteps));
+        const int thetaStep = (int)floorf(theta / (M_PI / 2.f / thetaSteps));
 
         const Color &throughput = point.throughput;
         float mass = throughput.r() + throughput.g() + throughput.b();
@@ -87,7 +89,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     const float thetaSample = (1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1);
 
     const float phi = M_TWO_PI * phiSample;
-    const float theta = M_PI * thetaSample;
+    const float theta = (M_PI / 2.f) * thetaSample;
 
     const float y = cosf(theta);
     const float x = sinf(theta) * cosf(phi);
