@@ -1,4 +1,4 @@
-mtllib CornellBox-Original.mtl
+mtllib green-bounce.mtl
 
 ## Object floor
 v  -1.01  0.00   0.99
@@ -17,7 +17,7 @@ v   0.5  0.6  -1.04
 v   0.5  0.6   0.99
 
 g ceiling
-usemtl leftWall
+usemtl ceiling
 f -4 -3 -2 -1
 
 ## Reflector
@@ -27,7 +27,7 @@ v	1.15  0.78   0.16
 v	1.00  0.98   0.16
 
 g reflector
-usemtl rightWall
+usemtl reflector
 f -4 -3 -2 -1
 
 ## Object light
