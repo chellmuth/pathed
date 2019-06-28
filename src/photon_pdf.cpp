@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <math.h>
 
-static const int phiSteps = 20;
-static const int thetaSteps = 20;
+static const int phiSteps = 100;
+static const int thetaSteps = 100;
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,

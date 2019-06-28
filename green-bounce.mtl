@@ -17,6 +17,7 @@ newmtl reflector
   Ks 0 0 0
   Ke 0 0 0
 
+
 newmtl floor
   Ns 10.0000
   Ni 1.0000
@@ -26,6 +27,7 @@ newmtl floor
   Ks 0 0 0
   Ke 0 0 0
 
+
 newmtl light
   Ns 10.0000
   Ni 1.0000
@@ -33,4 +35,4 @@ newmtl light
   Ka 0.78 0.78 0.78 # White
   Kd 0.78 0.78 0.78
   Ks 0 0 0
-  Ke 20 20 20
+  Ke 2000 2000 2000
