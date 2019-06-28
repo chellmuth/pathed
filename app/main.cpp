@@ -259,7 +259,7 @@ int main() {
 
     Image image(width, height);
 
-    ifstream jsonScene("green-bounce.json");
+    ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
     bool quit = false;

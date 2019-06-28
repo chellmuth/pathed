@@ -2,5 +2,6 @@
   "output_directory": "default-output",
   "output_name": "Default"
   "integrator": "PathTracer",
+  "scene": "green-bounce.json",
   "showUI": false
 }

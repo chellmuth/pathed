@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 
+import click
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -71,16 +72,25 @@ def find_data_sources(root_path, scene):
     for json_path in root_path.glob("*/report.json"):
         report_json = json.load(open(json_path))
         if report_json["scene"] == scene + ".json":
-            data_sources.append((report_json["name"], json_path.parent))
+            data_sources.append((report_json["output_name"], json_path.parent))
 
     return data_sources
 
-if __name__ == "__main__":
-    gt = pyexr.read("green-bounce-gt.exr")
+@click.command()
+@click.argument("scene")
+def init(scene):
+    gt = pyexr.read(f"{scene}-gt.exr")
 
-    data_sources = find_data_sources(Path(".."), "green-bounce")
+    data_sources = find_data_sources(Path(".."), scene)
     if not data_sources:
         print("No data sources found!")
         sys.exit(1)
 
+    for data_source in data_sources:
+        print(data_source)
+
     run(gt, data_sources)
+
+
+if __name__ == "__main__":
+    init()

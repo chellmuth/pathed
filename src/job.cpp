@@ -20,15 +20,12 @@ void Job::init()
 
     mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-    json jsonReport;
-    jsonReport["name"] = outputName();
-
     std::ostringstream outputFilenameStream;
     outputFilenameStream << directory << "/" << "report.json";
     std::string outputFilename = outputFilenameStream.str();
 
     std::ofstream outputStream(outputFilename);
-    outputStream << std::setw(4) << jsonReport << std::endl;
+    outputStream << std::setw(4) << m_json << std::endl;
 }
 
 std::unique_ptr<Integrator> Job::integrator() const
