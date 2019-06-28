@@ -23,7 +23,8 @@ Color PathTracer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
-    Color result = direct(intersection, scene, random, sample);
+    Color result(0.f);
+    // Color result = direct(intersection, scene, random, sample);
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;

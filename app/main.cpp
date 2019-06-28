@@ -64,7 +64,7 @@ void samplePixel(
 
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
-        color += emit;
+        // color += emit;
     }
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
