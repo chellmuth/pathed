@@ -155,7 +155,6 @@ Color Depositer::L(
         PhotonPDF photonPDF(lastIntersection.point, mDataSource, resultIndices);
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
-        pdf = INV_TWO_PI;
 
         Vector3 bounceDirection = hemisphereToWorld.apply(pdfSample);
 
