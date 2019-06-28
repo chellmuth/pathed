@@ -13,6 +13,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <assert.h>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -159,7 +160,7 @@ Color Depositer::L(
         Vector3 bounceDirection = hemisphereToWorld.apply(pdfSample);
 
         if (bounceDirection.dot(lastIntersection.normal) < 0.f) { 
-            printf("WE HAVE A PROBLEM!\n");
+            assert(false);
             break;
         }
 
