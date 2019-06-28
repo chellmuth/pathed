@@ -142,8 +142,8 @@ def importance_plot(figure, sample):
     plt.show()
 
 def run(sample):
-    # location_plot(plt.figure(1), sample)
-    # direction_plot(plt.figure(2), sample)
+    location_plot(plt.figure(1), sample)
+    direction_plot(plt.figure(2), sample)
     importance_plot(plt.figure(3), sample)
 
     plt.show()

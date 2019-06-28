@@ -22,7 +22,7 @@ using json = nlohmann::json;
 #include <utility>
 
 static int photonSamples = 1e5;
-static int maxBounces = 5;
+static int maxBounces = 2;
 
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
@@ -48,8 +48,9 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
             if (!intersection.hit) { break; }
 
             throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
+            if (throughput.isBlack()) { break; }
 
-            if (bounce > 0) {
+            if (bounce > 0) { // don't guide towards direct lights
                 mDataSource->points.push_back({
                     intersection.point.x(),
                     intersection.point.y(),
