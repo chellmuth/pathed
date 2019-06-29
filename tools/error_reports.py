@@ -67,9 +67,17 @@ def run(gt, data_sources):
     plt.tight_layout(rect=[0, 0, 1, 0.95]) # rect fixes suptitle clipping
     plt.show()
 
-def find_data_sources(root_path, scene):
+def find_data_sources(root_path, includes, scene):
+    if includes:
+        json_paths = [
+            Path(p) / "report.json"
+            for p in includes
+        ]
+    else:
+        json_paths = root_path.glob("*/report.json")
+
     data_sources = []
-    for json_path in root_path.glob("*/report.json"):
+    for json_path in json_paths:
         report_json = json.load(open(json_path))
         if report_json["scene"] == scene + ".json":
             data_sources.append((report_json["output_name"], json_path.parent))
@@ -78,10 +86,11 @@ def find_data_sources(root_path, scene):
 
 @click.command()
 @click.argument("scene")
-def init(scene):
+@click.option("--includes", multiple=True)
+def init(scene, includes):
     gt = pyexr.read(f"{scene}-gt.exr")
 
-    data_sources = find_data_sources(Path(".."), scene)
+    data_sources = find_data_sources(Path(".."), includes, scene)
     if not data_sources:
         print("No data sources found!")
         sys.exit(1)

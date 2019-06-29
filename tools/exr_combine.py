@@ -64,7 +64,7 @@ def combine(data_sources):
         for bounce in spp_set[1:]:
             combined += bounce
 
-        exr_path = out_path / f"auto-{2**i:04d}.exr"
+        exr_path = out_path / f"auto-{2**i:05d}spp.exr"
         print(f"Writing: {exr_path}")
         pyexr.write(str(exr_path), combined)
 
