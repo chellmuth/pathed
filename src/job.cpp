@@ -3,6 +3,7 @@
 #include "depositer.h"
 #include "path_tracer.h"
 
+#include <errno.h>
 #include <iomanip>
 #include <sstream>
 #include <stdlib.h>
@@ -22,7 +23,15 @@ void Job::init()
 {
     std::string directory = outputDirectory();
 
-    mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    int result = mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (result == -1) {
+        if (errno == EEXIST) {
+            std::cout << "Output directory already exists: " << directory << std::endl;
+        } else {
+            std::cout << "Failed to create: " << directory << std::endl;
+        }
+        exit(1);
+    }
 
     std::ostringstream outputFilenameStream;
     outputFilenameStream << directory << "/" << "report.json";
