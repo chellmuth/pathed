@@ -81,8 +81,8 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     int phiStep = -1, thetaStep = -1;
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
         if (xi <= CDF[i]) {
-            phiStep = (int)floorf(i / phiSteps);
-            thetaStep = i % phiSteps;
+            phiStep = (int)floorf(i / thetaSteps);
+            thetaStep = i % thetaSteps;
             float massRatio = massLookup[phiStep][thetaStep] / totalMass;
             *pdf = massRatio * phiSteps * thetaSteps * INV_TWO_PI;
             break;
