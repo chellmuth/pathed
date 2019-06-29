@@ -1,6 +1,9 @@
 #include "depositer.h"
 
+#include "bounce_controller.h"
 #include "color.h"
+#include "globals.h"
+#include "job.h"
 #include "light.h"
 #include "monte_carlo.h"
 #include "path_tracer.h"
@@ -18,12 +21,11 @@ using json = nlohmann::json;
 #include <iostream>
 #include <limits>
 #include <math.h>
-#include <vector>
 #include <utility>
+#include <vector>
 
-static int photonSamples = 1e5;
+static int photonSamples = 1e6;
 static int maxBounces = 2;
-static int bounceCount = 4;
 
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
@@ -124,13 +126,16 @@ Color Depositer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
+    const BounceController &bounceController = g_job->bounceController();
     Color result(0.f);
-    // Color result = direct(intersection, scene, random, sample);
+    if (bounceController.checkCounts(1)) {
+        result = direct(intersection, scene, random, sample);
+    }
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
-    for (int bounce = 0; bounce < bounceCount; bounce++) {
+    for (int bounce = 2; !bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(lastIntersection.normal);
 
         Point3 intersectionPoint = lastIntersection.point;
@@ -288,7 +293,6 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
 
     PathTracer integrator;
     RandomGenerator random;
-    int bounceCount = 5;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
 
