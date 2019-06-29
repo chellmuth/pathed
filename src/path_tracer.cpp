@@ -1,6 +1,9 @@
 #include "path_tracer.h"
 
+#include "bounce_controller.h"
 #include "color.h"
+#include "globals.h"
+#include "job.h"
 #include "light.h"
 #include "monte_carlo.h"
 #include "ray.h"
@@ -18,18 +21,20 @@ Color PathTracer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
-    int bounceCount,
     Sample &sample
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
+    const BounceController &bounceController = g_job->bounceController();
     Color result(0.f);
-    // Color result = direct(intersection, scene, random, sample);
+    if (bounceController.checkCounts(1)) {
+        result = direct(intersection, scene, random, sample);
+    }
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
-    for (int bounce = 0; bounce < bounceCount; bounce++) {
+    for (int bounce = 2; !bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(
             lastIntersection.normal,
             lastIntersection.wi
@@ -61,7 +66,9 @@ Color PathTracer::L(
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        result += direct(bounceIntersection, scene, random, sample) * modulation;
+        if (bounceController.checkCounts(bounce)) {
+            result += direct(bounceIntersection, scene, random, sample) * modulation;
+        }
     }
 
     return result;
@@ -151,7 +158,6 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
                     fisheyeIntersection,
                     scene,
                     random,
-                    bounceCount,
                     sample
                 );
 

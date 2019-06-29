@@ -23,6 +23,7 @@ using json = nlohmann::json;
 
 static int photonSamples = 1e5;
 static int maxBounces = 2;
+static int bounceCount = 4;
 
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
@@ -119,7 +120,6 @@ Color Depositer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
-    int bounceCount,
     Sample &sample
 ) const {
     sample.eyePoints.push_back(intersection.point);
@@ -326,7 +326,6 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
                         fisheyeIntersection,
                         scene,
                         random,
-                        bounceCount,
                         sample
                     ) / spp;
 

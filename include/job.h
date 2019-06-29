@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bounce_controller.h"
 #include "integrator.h"
 
 #include "json.hpp"
@@ -28,8 +29,13 @@ public:
         return m_json["scene"].get<std::string>();
     }
 
+    int startBounce() const { return m_bounceController.startBounce(); }
+    int lastBounce() const { return m_bounceController.lastBounce(); }
+    BounceController bounceController() const { return m_bounceController; }
+
     std::unique_ptr<Integrator> integrator() const;
 
 private:
     nlohmann::json m_json;
+    BounceController m_bounceController;
 };

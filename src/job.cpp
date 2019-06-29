@@ -11,7 +11,11 @@
 using json = nlohmann::json;
 
 Job::Job(std::ifstream &jobFile)
-    : m_json(json::parse(jobFile))
+    : m_json(json::parse(jobFile)),
+      m_bounceController(
+          m_json["startBounce"].get<int>(),
+          m_json["lastBounce"].get<int>()
+      )
 {}
 
 void Job::init()

@@ -46,7 +46,6 @@ public:
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
-        int bounceCount,
         Sample &sample
     ) const override;
 

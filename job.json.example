@@ -3,5 +3,8 @@
   "output_name": "Default"
   "integrator": "PathTracer",
   "scene": "green-bounce.json",
-  "showUI": false
+  "showUI": false,
+
+  "startBounce": 0,
+  "lastBounce": -1
 }

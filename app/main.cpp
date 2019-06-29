@@ -39,7 +39,6 @@ using namespace std;
 static const int width = 400;
 static const int height = 400;
 static const int primarySamples = 99999;
-static const int bounceCount = 4;
 
 Job *g_job;
 
@@ -60,11 +59,13 @@ void samplePixel(
     Sample sample;
     sample.eyePoints.push_back(ray.origin());
 
-    Color color = integrator.L(intersection, scene, random, bounceCount, sample);
+    Color color = integrator.L(intersection, scene, random, sample);
 
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        // color += emit;
+    if (g_job->bounceController().checkCounts(0)) {
+        Color emit = intersection.material->emit();
+        if (!emit.isBlack()) {
+            color += emit;
+        }
     }
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
