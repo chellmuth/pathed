@@ -86,9 +86,13 @@ def find_data_sources(root_path, includes, scene):
 
 @click.command()
 @click.argument("scene")
+@click.option("--gt", type=click.Path(exists=True))
 @click.option("--includes", multiple=True)
-def init(scene, includes):
-    gt = pyexr.read(f"{scene}-gt.exr")
+def init(scene, gt, includes):
+    if gt:
+        gt = pyexr.read(gt)
+    else:
+        gt = pyexr.read(f"{scene}-gt.exr")
 
     data_sources = find_data_sources(Path(".."), includes, scene)
     if not data_sources:
