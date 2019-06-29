@@ -1,17 +1,5 @@
 #define  GL_SILENCE_DEPRECATION 1
 
-#include <ctime>
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <mutex>
-#include <thread>
-#include <vector>
-
-#include <nanogui/opengl.h>
-#include <nanogui/screen.h>
-#include <nanogui/glcanvas.h>
-
 #include "app_controller.h"
 #include "bdpt.h"
 #include "camera.h"
@@ -23,6 +11,7 @@
 #include "integrator.h"
 #include "intersection.h"
 #include "job.h"
+#include "logger.h"
 #include "monte_carlo.h"
 #include "obj_parser.h"
 #include "path_tracer.h"
@@ -33,6 +22,19 @@
 #include "scene_parser.h"
 #include "transform.h"
 #include "vector.h"
+
+#include <nanogui/glcanvas.h>
+#include <nanogui/opengl.h>
+#include <nanogui/screen.h>
+
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <vector>
 
 using namespace std;
 
@@ -146,7 +148,13 @@ void run(Image &image, Scene &scene, bool *quit)
 
         lock.unlock();
         double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
-        printf("sample: %d/%d (%0.1fs elapsed)\n", i + 1, primarySamples, elapsedSeconds);
+
+        std::ostringstream sampleStream;
+        sampleStream << "sample: " << i + 1 << "/" << primarySamples
+                     << std::fixed << std::setprecision(1)
+                     << " (" << elapsedSeconds << "s elapsed)";
+
+        Logger::line(sampleStream.str());
 
         if (*quit) { return; }
     }
