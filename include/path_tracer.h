@@ -1,9 +1,14 @@
 #pragma once
 
+#include "bounce_controller.h"
 #include "integrator.h"
 
 class PathTracer : public Integrator {
 public:
+    PathTracer(BounceController bounceController)
+        : m_bounceController(bounceController)
+    {}
+
     Color L(
         const Intersection &intersection,
         const Scene &scene,
@@ -20,4 +25,6 @@ private:
         RandomGenerator &random,
         Sample &sample
     ) const;
+
+    BounceController m_bounceController;
 };

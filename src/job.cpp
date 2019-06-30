@@ -46,9 +46,9 @@ std::unique_ptr<Integrator> Job::integrator() const
     std::string integrator(m_json["integrator"].get<std::string>());
 
     if (integrator == "PathTracer") {
-        return std::make_unique<PathTracer>();
+        return std::make_unique<PathTracer>(m_bounceController);
     } else if (integrator == "Depositer") {
-        return std::make_unique<Depositer>();
+        return std::make_unique<Depositer>(m_bounceController);
     }
     throw "Unimplemented";
 }

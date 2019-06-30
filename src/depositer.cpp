@@ -30,7 +30,8 @@ static int maxBounces = 2;
 static const float searchRadius = 2e-3;
 static const int debugSearchCount = 100;
 
-Depositer::Depositer()
+Depositer::Depositer(BounceController bounceController)
+    : mBounceController(bounceController)
 {
     mDataSource = std::make_shared<DataSource>();
 }
@@ -126,16 +127,15 @@ Color Depositer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
-    const BounceController &bounceController = g_job->bounceController();
     Color result(0.f);
-    if (bounceController.checkCounts(1)) {
+    if (mBounceController.checkCounts(1)) {
         result = direct(intersection, scene, random, sample);
     }
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
-    for (int bounce = 2; !bounceController.checkDone(bounce); bounce++) {
+    for (int bounce = 2; !mBounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(lastIntersection.normal);
 
         Point3 intersectionPoint = lastIntersection.point;
@@ -291,7 +291,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
     const int thetaSteps = 20;
     const int spp = 256;
 
-    PathTracer integrator;
+    PathTracer integrator(g_job->bounceController());
     RandomGenerator random;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
@@ -333,7 +333,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
                         sample
                     ) / spp;
 
-                    if (g_job->bounceController().checkCounts(0)) {
+                    if (mBounceController.checkCounts(0)) {
                         Color emit = fisheyeIntersection.material->emit();
                         sampleL += emit / spp;
                     }

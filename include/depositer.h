@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bounce_controller.h"
 #include "color.h"
 #include "integrator.h"
 
@@ -40,7 +41,7 @@ typedef nanoflann::KDTreeSingleIndexDynamicAdaptor<
 
 class Depositer : public Integrator {
 public:
-    Depositer();
+    Depositer(BounceController bounceController);
 
     Color L(
         const Intersection &intersection,
@@ -63,6 +64,7 @@ private:
 
     void debug2(const Intersection &intersection, const Scene &scene) const;
 
+    BounceController mBounceController;
     std::shared_ptr<DataSource> mDataSource;
     KDTree *mKDTree;
 };

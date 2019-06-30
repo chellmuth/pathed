@@ -25,16 +25,15 @@ Color PathTracer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
-    const BounceController &bounceController = g_job->bounceController();
     Color result(0.f);
-    if (bounceController.checkCounts(1)) {
+    if (m_bounceController.checkCounts(1)) {
         result = direct(intersection, scene, random, sample);
     }
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
-    for (int bounce = 2; !bounceController.checkDone(bounce); bounce++) {
+    for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(
             lastIntersection.normal,
             lastIntersection.wi
@@ -66,7 +65,7 @@ Color PathTracer::L(
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        if (bounceController.checkCounts(bounce)) {
+        if (m_bounceController.checkCounts(bounce)) {
             result += direct(bounceIntersection, scene, random, sample) * modulation;
         }
     }
