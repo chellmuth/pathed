@@ -287,9 +287,9 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
 
 void Depositer::debug2(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 100;
-    const int thetaSteps = 100;
-    const int spp = 64;
+    const int phiSteps = 20;
+    const int thetaSteps = 20;
+    const int spp = 256;
 
     PathTracer integrator;
     RandomGenerator random;
@@ -333,8 +333,10 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
                         sample
                     ) / spp;
 
-                    Color emit = fisheyeIntersection.material->emit();
-                    sampleL += emit / spp;
+                    if (g_job->bounceController().checkCounts(0)) {
+                        Color emit = fisheyeIntersection.material->emit();
+                        sampleL += emit / spp;
+                    }
                 }
             }
 

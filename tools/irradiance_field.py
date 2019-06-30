@@ -95,8 +95,8 @@ def direction_plot(figure, sample):
 
 
 def importance_plot(figure, sample):
-    phi_steps = 50
-    theta_steps = 50
+    phi_steps = 20
+    theta_steps = 20
     grid = np.zeros((theta_steps, phi_steps, 3))
 
     query_x, query_y, query_z = sample["QueryPoint"]
