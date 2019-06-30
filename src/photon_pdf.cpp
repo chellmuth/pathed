@@ -84,7 +84,15 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             phiStep = (int)floorf(i / thetaSteps);
             thetaStep = i % thetaSteps;
             float massRatio = massLookup[phiStep][thetaStep] / totalMass;
-            *pdf = massRatio * phiSteps * thetaSteps * INV_TWO_PI;
+            // *pdf = massRatio * phiSteps * thetaSteps * INV_TWO_PI / sinf((M_PI / 2.f) * (thetaStep + 0.5f) / thetaSteps);
+
+            float phi1 = M_TWO_PI * (1.f * phiStep / phiSteps);
+            float phi2 = M_TWO_PI * (1.f * (phiStep + 1) / phiSteps);
+
+            float theta1 = (M_PI / 2.f) * (1.f * thetaStep / thetaSteps);
+            float theta2 = (M_PI / 2.f) * (1.f * (thetaStep + 1) / thetaSteps);
+
+            *pdf = massRatio / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
             break;
         }
     }
