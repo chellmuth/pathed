@@ -84,7 +84,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             phiStep = (int)floorf(i / thetaSteps);
             thetaStep = i % thetaSteps;
             float massRatio = massLookup[phiStep][thetaStep] / totalMass;
-            // *pdf = massRatio * phiSteps * thetaSteps * INV_TWO_PI / sinf((M_PI / 2.f) * (thetaStep + 0.5f) / thetaSteps);
 
             float phi1 = M_TWO_PI * (1.f * phiStep / phiSteps);
             float phi2 = M_TWO_PI * (1.f * (phiStep + 1) / phiSteps);
@@ -92,34 +91,34 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             float theta1 = (M_PI / 2.f) * (1.f * thetaStep / thetaSteps);
             float theta2 = (M_PI / 2.f) * (1.f * (thetaStep + 1) / thetaSteps);
 
-            *pdf = massRatio / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
+            assert(phiStep != -1);
+            assert(thetaStep != -1);
+
+            const float xiPhi = random.next();
+            const float phiSample = ((1.f - xiPhi) * phiStep + xiPhi * (phiStep + 1)) / phiSteps;
+
+            const float xiTheta = random.next();
+            const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
+
+            const float phi = M_TWO_PI * phiSample;
+            const float theta = (M_PI / 2.f) * thetaSample;
+
+            *pdf = massRatio * sinf(theta) / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
+
+            const float y = cosf(theta);
+            const float x = sinf(theta) * cosf(phi);
+            const float z = sinf(theta) * sinf(phi);
+
+            Vector3 result = Vector3(x, y, z);
+            if (debug) {
+                printf("steps: %i %i %f\n", phiStep, thetaStep, massLookup[phiStep][thetaStep]);
+                printf("phi/theta: %f %f\n", phi, theta);
+                result.debug();
+            }
+            assert(fabsf(result.length() - 1.f) < 1e-5);
+
+            return result;
             break;
         }
     }
-
-    assert(phiStep != -1);
-    assert(thetaStep != -1);
-
-    const float xiPhi = random.next();
-    const float phiSample = ((1.f - xiPhi) * phiStep + xiPhi * (phiStep + 1)) / phiSteps;
-
-    const float xiTheta = random.next();
-    const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
-
-    const float phi = M_TWO_PI * phiSample;
-    const float theta = (M_PI / 2.f) * thetaSample;
-
-    const float y = cosf(theta);
-    const float x = sinf(theta) * cosf(phi);
-    const float z = sinf(theta) * sinf(phi);
-
-    Vector3 result = Vector3(x, y, z);
-    if (debug) {
-        printf("steps: %i %i %f\n", phiStep, thetaStep, massLookup[phiStep][thetaStep]);
-        printf("phi/theta: %f %f\n", phi, theta);
-        result.debug();
-    }
-    assert(fabsf(result.length() - 1.f) < 1e-5);
-
-    return result;
 }
