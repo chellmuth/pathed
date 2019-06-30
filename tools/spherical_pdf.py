@@ -2,11 +2,11 @@ import math
 
 import numpy as np
 
-phi_cells = 1
-theta_cells = 1
+phi_cells = 20
+theta_cells = 20
 
-phi_steps = 2
-theta_steps = 2
+phi_steps = 100
+theta_steps = 100
 
 def run():
     grid = np.random.rand(phi_cells, theta_cells)
@@ -23,23 +23,17 @@ def run():
 
             mass = grid[phi_cell][theta_cell]
 
-            phi1 = (2 * math.pi) * phi_step / phi_steps
-            phi2 = (2 * math.pi) * (phi_step + 1) / phi_steps
+            phi1 = (2 * math.pi) * phi_cell / phi_cells
+            phi2 = (2 * math.pi) * (phi_cell + 1) / phi_cells
 
-            theta1 = (math.pi / 2) * theta_step / theta_steps
-            theta2 = (math.pi / 2) * (theta_step + 1) / theta_steps
+            theta1 = (math.pi / 2) * theta_cell / theta_cells
+            theta2 = (math.pi / 2) * (theta_cell + 1) / theta_cells
 
             pdf = mass / ((math.cos(theta1) - math.cos(theta2)) * (phi2 - phi1))
 
-            print(phi1, phi2)
-            print(theta1, theta2)
-            print(math.sin((theta2 + theta1) / 2))
-            print(math.sin((math.pi / 2) * (theta_step + 0.5) / theta_steps))
-            print(pdf)
-            print("==========")
+            step_theta = (math.pi / 2) * (theta_step + 0.5) / theta_steps
 
-            estimator += pdf * math.sin((theta2 + theta1) / 2) * d_phi * d_theta
-            # estimator += math.sin((theta2 + theta1) / 2) * d_phi * d_theta
+            estimator += pdf * math.sin(step_theta) * d_phi * d_theta
 
     print(estimator)
 
