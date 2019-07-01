@@ -287,11 +287,12 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
 
 void Depositer::debug2(const Intersection &intersection, const Scene &scene) const
 {
-    const int phiSteps = 20;
-    const int thetaSteps = 20;
+    const int phiSteps = 200;
+    const int thetaSteps = 200;
     const int spp = 256;
 
-    PathTracer integrator(g_job->bounceController());
+    BounceController bounceController = g_job->bounceController().copyAfterBounce();
+    PathTracer integrator(bounceController);
     RandomGenerator random;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
@@ -333,7 +334,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
                         sample
                     ) / spp;
 
-                    if (mBounceController.checkCounts(0)) {
+                    if (bounceController.checkCounts(0)) {
                         Color emit = fisheyeIntersection.material->emit();
                         sampleL += emit / spp;
                     }

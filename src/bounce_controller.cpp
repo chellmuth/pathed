@@ -1,5 +1,6 @@
 #include "bounce_controller.h"
 
+#include <algorithm>
 #include <assert.h>
 
 BounceController::BounceController(int startBounce, int lastBounce)
@@ -21,4 +22,17 @@ bool BounceController::checkDone(int bounce) const
     if (m_lastBounce == -1) { return false; }
 
     return bounce > m_lastBounce;
+}
+
+BounceController BounceController::copyAfterBounce() const
+{
+    int startBounce = std::max(0, m_startBounce - 1);
+    int lastBounce;
+    if (m_lastBounce == -1) {
+        lastBounce = -1;
+    } else {
+        lastBounce = std::max(0, m_lastBounce - 1);
+    }
+
+    return BounceController(startBounce, lastBounce);
 }

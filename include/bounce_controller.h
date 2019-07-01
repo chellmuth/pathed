@@ -10,6 +10,8 @@ public:
     int startBounce() const { return m_startBounce; }
     int lastBounce() const { return m_lastBounce; }
 
+    BounceController copyAfterBounce() const;
+
 private:
     int m_startBounce;
     int m_lastBounce;
