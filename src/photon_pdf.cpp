@@ -97,13 +97,21 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             const float xiPhi = random.next();
             const float phiSample = ((1.f - xiPhi) * phiStep + xiPhi * (phiStep + 1)) / phiSteps;
 
-            const float xiTheta = random.next();
-            const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
+            const float xiY = random.next();
+            const float y1 = cosf(theta1);
+            const float y2 = cosf(theta2);
+            const float ySample = (1.f - xiY) * y1 + xiY * y2;
+            const float theta = acosf(ySample);
+
+            // const float xiTheta = random.next();
+            // const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
 
             const float phi = M_TWO_PI * phiSample;
-            const float theta = (M_PI / 2.f) * thetaSample;
+            // const float theta = (M_PI / 2.f) * thetaSample;
 
-            *pdf = massRatio * sinf(theta) / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
+            // *pdf = massRatio * sinf(theta) / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
+            // *pdf = massRatio / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
+            *pdf = massRatio / ((y1 - y2) * (phi2 - phi1));
 
             const float y = cosf(theta);
             const float x = sinf(theta) * cosf(phi);
@@ -118,7 +126,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             assert(fabsf(result.length() - 1.f) < 1e-5);
 
             return result;
-            break;
         }
     }
 }
