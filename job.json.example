@@ -6,5 +6,8 @@
   "showUI": false,
 
   "startBounce": 0,
-  "lastBounce": -1
+  "lastBounce": -1,
+
+  "phiSteps": 1,
+  "thetaSteps": 1
 }

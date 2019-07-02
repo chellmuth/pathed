@@ -29,6 +29,9 @@ public:
         return m_json["scene"].get<std::string>();
     }
 
+    int phiSteps() const { return m_json["phiSteps"].get<int>(); }
+    int thetaSteps() const { return m_json["thetaSteps"].get<int>(); }
+
     int startBounce() const { return m_bounceController.startBounce(); }
     int lastBounce() const { return m_bounceController.lastBounce(); }
     BounceController bounceController() const { return m_bounceController; }

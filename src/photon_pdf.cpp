@@ -1,12 +1,11 @@
 #include "photon_pdf.h"
 
+#include "globals.h"
+#include "job.h"
 #include "util.h"
 
 #include <assert.h>
 #include <math.h>
-
-static const int phiSteps = 20;
-static const int thetaSteps = 20;
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,
@@ -20,6 +19,9 @@ PhotonPDF::PhotonPDF(
 
 Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
 {
+    const int phiSteps = g_job->phiSteps();
+    const int thetaSteps = g_job->thetaSteps();
+
     float massLookup[phiSteps][thetaSteps];
     float totalMass = 0.f;
 
