@@ -41,6 +41,10 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         if (phi < 0.f) {
             phi += 2 * M_PI;
         }
+        if (phi == M_TWO_PI) {
+            phi = 0;
+        }
+
         const float theta = acosf(wi.y());
         if (theta > M_PI / 2.f) { continue; }
 
@@ -52,6 +56,9 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
 
         const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
         const int thetaStep = (int)floorf(theta / (M_PI / 2.f / thetaSteps));
+
+        assert(phiStep <= phiSteps);
+        assert(thetaSteps <= thetaSteps);
 
         const Color &throughput = point.throughput;
         float mass = throughput.r() + throughput.g() + throughput.b();

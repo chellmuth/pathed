@@ -1,7 +1,7 @@
 #pragma once
 
 #define INV_TWO_PI 0.15915494309189533577f
-#define M_TWO_PI 6.283185307179586
+#define M_TWO_PI 6.283185307179586f
 
 typedef struct {
     bool hasRealSolutions;
