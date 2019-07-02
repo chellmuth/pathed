@@ -27,9 +27,6 @@ using json = nlohmann::json;
 static int photonSamples = 1e6;
 static int maxBounces = 2;
 
-static const float searchRadius = 2e-3;
-static const int debugSearchCount = 100;
-
 Depositer::Depositer(BounceController bounceController)
     : mBounceController(bounceController)
 {
@@ -145,6 +142,7 @@ Color Depositer::L(
             intersectionPoint.z()
         };
 
+        const int debugSearchCount = g_job->debugSearchCount();
         auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
         std::vector<float> outDistanceSquared(debugSearchCount);
 
@@ -248,6 +246,7 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
         intersectionPoint.z()
     };
 
+    const int debugSearchCount = g_job->debugSearchCount();
     auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
     std::vector<float> outDistanceSquared(debugSearchCount);
 

@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "job.h"
+#include "monte_carlo.h"
 #include "util.h"
 
 #include <assert.h>
@@ -68,14 +69,14 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         totalMass += mass;
     }
 
-    // if (debug) {
-    //     for (int phi = 0; phi < phiSteps; phi++) {
-    //         for (int theta = 0; theta < thetaSteps; theta++) {
-    //             printf("%f ", massLookup[phi][theta]);
-    //         }
-    //         printf("\n");
+    // const float addedMass = totalMass * 0.3f;
+    // const float addedMassPerCell = addedMass / (thetaSteps * phiSteps);
+    // for (int phi = 0; phi < phiSteps; phi++) {
+    //     for (int theta = 0; theta < thetaSteps; theta++) {
+    //         massLookup[phi][theta] += addedMassPerCell;
     //     }
     // }
+    // totalMass += addedMass;
 
     float CDF[phiSteps * thetaSteps];
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
@@ -140,4 +141,8 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             return result;
         }
     }
+
+    printf("0 Mass? %f %f\n", totalMass, CDF[phiSteps * thetaSteps -1]);
+    *pdf = INV_TWO_PI;
+    return UniformSampleHemisphere(random);
 }

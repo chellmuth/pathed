@@ -9,5 +9,6 @@
   "lastBounce": -1,
 
   "phiSteps": 1,
-  "thetaSteps": 1
+  "thetaSteps": 1,
+  "debugSearchCount": 100
 }

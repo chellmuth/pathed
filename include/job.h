@@ -31,6 +31,7 @@ public:
 
     int phiSteps() const { return m_json["phiSteps"].get<int>(); }
     int thetaSteps() const { return m_json["thetaSteps"].get<int>(); }
+    int debugSearchCount() const { return m_json["debugSearchCount"].get<int>(); }
 
     int startBounce() const { return m_bounceController.startBounce(); }
     int lastBounce() const { return m_bounceController.lastBounce(); }
