@@ -8,7 +8,7 @@ BounceController::BounceController(int startBounce, int lastBounce)
       m_lastBounce(lastBounce)
 {
     assert(m_startBounce >= 0);
-    assert(m_lastBounce == -1 || m_startBounce <= m_endBounce);
+    assert(m_lastBounce == -1 || m_startBounce <= m_lastBounce);
 }
 
 bool BounceController::checkCounts(int bounce) const
