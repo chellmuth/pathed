@@ -1,4 +1,5 @@
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -47,7 +48,7 @@ def build_datasets(error_fn, gt, data_sources):
 def power_of_two_formatter(x, pos):
     return int(2 ** x)
 
-def run(gt, data_sources):
+def run(gt, data_sources, max_spp):
     errors = [ ("MSE", calculate_mse), ("AE", calculate_ae) ]
 
     fig, axs = plt.subplots(nrows=len(errors))
@@ -59,6 +60,12 @@ def run(gt, data_sources):
         ys_list = build_datasets(error_fn, gt, data_sources)
         for i, ys in enumerate(ys_list):
             xs = list(range(len(ys)))
+
+            if max_spp:
+                max_index = int(math.log2(max_spp)) + 1
+                xs = xs[:max_index]
+                ys = ys[:max_index]
+
             ax.plot(xs, ys, label=data_sources[i][0])
 
             ax.set(xlabel='spp (log)', ylabel=error_name)
@@ -90,7 +97,8 @@ def find_data_sources(root_path, includes, scene):
 @click.argument("scene")
 @click.option("--gt", type=click.Path(exists=True))
 @click.option("--includes", multiple=True)
-def init(scene, gt, includes):
+@click.option("--max-spp", default=None, type=int)
+def init(scene, gt, includes, max_spp):
     if gt:
         gt = pyexr.read(gt)
     else:
@@ -104,7 +112,7 @@ def init(scene, gt, includes):
     for data_source in data_sources:
         print(data_source)
 
-    run(gt, data_sources)
+    run(gt, data_sources, max_spp)
 
 
 if __name__ == "__main__":
