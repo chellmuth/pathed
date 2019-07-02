@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <math.h>
 
-static const int phiSteps = 20;
-static const int thetaSteps = 20;
+static const int phiSteps = 1;
+static const int thetaSteps = 2;
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,
@@ -21,7 +21,7 @@ PhotonPDF::PhotonPDF(
 Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
 {
     float massLookup[phiSteps][thetaSteps];
-    float totalMass = 0;
+    float totalMass = 0.f;
 
     for (int phi = 0; phi < phiSteps; phi++) {
         for (int theta = 0; theta < thetaSteps; theta++) {
@@ -42,6 +42,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             phi += 2 * M_PI;
         }
         const float theta = acosf(wi.y());
+        if (theta > M_PI / 2.f) { continue; }
 
         // assert(0.f <= phi);
         // assert(phi <= M_TWO_PI);
@@ -76,6 +77,8 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             CDF[i] += CDF[i - 1];
         }
     }
+
+    assert(fabsf(CDF[phiSteps * thetaSteps - 1] - 1.f) < 1e-5);
 
     const float xi = random.next();
     int phiStep = -1, thetaStep = -1;
