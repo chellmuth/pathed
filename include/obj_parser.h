@@ -29,6 +29,7 @@ private:
     std::string m_currentMaterialName;
 
     std::vector<Point3> m_vertices;
+    std::vector<Vector3> m_normals;
     std::vector<std::shared_ptr<Surface>> m_surfaces;
     std::vector<std::shared_ptr<Light>> m_lights;
 
@@ -36,6 +37,7 @@ private:
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
+    void processNormal(std::string &vertexArgs);
     void processGroup(std::string &groupArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);

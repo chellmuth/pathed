@@ -5,6 +5,7 @@
 #include "lambertian.h"
 #include "string_util.h"
 #include "triangle.h"
+#include "vector.h"
 
 #include <iostream>
 #include <regex>
@@ -40,6 +41,8 @@ void ObjParser::parseLine(string &line)
 
     if (command == "v") {
         processVertex(rest);
+    } else if (command == "vn") {
+        processNormal(rest);
     } else if (command == "g") {
         processGroup(rest);
     } else if (command == "f") {
@@ -66,6 +69,23 @@ void ObjParser::processVertex(string &vertexArgs)
 
     Point3 vertex(x, y, z);
     m_vertices.push_back(vertex);
+}
+
+void ObjParser::processNormal(string &normalArgs)
+{
+    string::size_type index = 0;
+    string rest = normalArgs;
+
+    float x = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float y = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float z = std::stof(rest, &index);
+
+    Vector3 normal(x, y, z);
+    m_normals.push_back(normal);
 }
 
 void ObjParser::processGroup(string &groupArgs)
