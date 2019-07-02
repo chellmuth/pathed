@@ -10,10 +10,12 @@ import numpy as np
 import pyexr
 
 def calculate_mse(test, gt):
-    return np.sum((gt - test) ** 2)
+    h, w, _ = gt.shape
+    return np.sum((gt - test) ** 2) / (h * w)
 
 def calculate_ae(test, gt):
-    return np.sum(np.abs(gt - test))
+    h, w, _ = gt.shape
+    return np.sum(np.abs(gt - test)) / (h * w)
 
 def build_dataset(error_fn, gt, data_path):
     mses = []
