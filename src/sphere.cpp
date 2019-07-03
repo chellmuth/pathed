@@ -77,3 +77,8 @@ void Sphere::updateAABB(AABB *aabb)
     aabb->update(m_center + bottomLeftFront);
     aabb->update(m_center + topRightBack);
 }
+
+std::shared_ptr<Shape> Sphere::transform(const Transform &transform) const
+{
+    throw "Sphere transform unimplemented";
+}

@@ -158,6 +158,15 @@ void Triangle::updateAABB(AABB *aabb)
     aabb->update(m_p2);
 }
 
+std::shared_ptr<Shape> Triangle::transform(const Transform &transform) const
+{
+    return std::make_shared<Triangle>(
+        transform.apply(m_p0),
+        transform.apply(m_p1),
+        transform.apply(m_p2)
+    );
+}
+
 void Triangle::debug() const
 {
     printf("<Triangle>\n");

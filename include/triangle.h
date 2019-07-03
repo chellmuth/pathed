@@ -4,6 +4,8 @@
 #include "point.h"
 #include "shape.h"
 
+#include <memory>
+
 class Ray;
 
 class Triangle : public Shape {
@@ -24,7 +26,9 @@ public:
     void pushIndices(std::vector<uint> &indices, int offset) override;
     void pushNormals(std::vector<float> &normals) override;
 
-    void debug() const;
+    std::shared_ptr<Shape> transform(const Transform &transform) const override;
+
+    void debug() const override;
 
 private:
     float area() const;

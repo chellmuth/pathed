@@ -93,10 +93,10 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
         auto transformJson = objJson["transform"];
         if (transformJson.is_object()) {
             Transform transform = parseTransform(transformJson);
-            // shape = shape.transform(transform);
+            shape = shape->transform(transform);
         }
         if (jsonMaterial) {
-            auto surface = std::make_shared<Surface>(surfacePtr->getShape(), jsonMaterial);
+            auto surface = std::make_shared<Surface>(shape, jsonMaterial);
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
