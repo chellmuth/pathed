@@ -85,8 +85,7 @@ void Rasterizer::drawGL()
     GLfloat view[4][4];
     calculateViewMatrix(view);
 
-    float fovDegrees = 28.f;
-    float fovRadians = fovDegrees / 180.f * M_PI;
+    float fovRadians = mScene.getCamera()->getVerticalFOV();
     float aspectRatio = 1.f * mWidth / mHeight;
 
     GLfloat projection[4][4];
