@@ -25,7 +25,11 @@ static Color parseColor(json colorJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
-static void parseObjects(json objectsJson, NestedSurfaceVector &nestedSurfaces);
+static void parseObjects(
+    json objectsJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::shared_ptr<BVH> > &bvhs
+);
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 
@@ -44,36 +48,22 @@ Scene parseScene(std::ifstream &sceneFile)
         fov / 180.f * M_PI
     );
 
-    NestedSurfaceVector nestedSurfaces;
     auto objects = sceneJson["models"];
-    parseObjects(objects, nestedSurfaces);
+    std::vector<std::shared_ptr<Surface> > surfaces;
+    std::vector<std::shared_ptr<BVH> > bvhs;
+    parseObjects(objects, surfaces, bvhs);
 
     std::vector<std::shared_ptr<Light>> lights;
-    for (auto &surfaces : nestedSurfaces) {
-        for (auto &surfacePtr : surfaces) {
-            if (surfacePtr->getMaterial()->emit().isBlack()) {
-                continue;
-            }
-
-            auto light = std::make_shared<Light>(surfacePtr);
-            lights.push_back(light);
+    for (auto &surfacePtr : surfaces) {
+        if (surfacePtr->getMaterial()->emit().isBlack()) {
+            continue;
         }
+
+        auto light = std::make_shared<Light>(surfacePtr);
+        lights.push_back(light);
     }
 
-    std::vector<std::shared_ptr<Primitive>> primitives;
-    std::vector<std::shared_ptr<Surface>> surfaces;
-    for (auto &surfacesLocal : nestedSurfaces) {
-        std::vector<std::shared_ptr<Primitive>> primitivesLocal(
-            surfacesLocal.begin(), surfacesLocal.end()
-        );
-        auto bvh = std::make_shared<BVH>();
-        bvh->bake(primitivesLocal);
-        primitives.push_back(bvh);
-        for (auto &surfacePtr : surfacesLocal) {
-            surfaces.push_back(surfacePtr);
-        }
-    }
-
+    std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
     Scene scene(
         primitives,
         surfaces,
@@ -84,16 +74,33 @@ Scene parseScene(std::ifstream &sceneFile)
     return scene;
 }
 
-static void parseObjects(json objectsJson, NestedSurfaceVector &nestedSurfaces)
-{
+static void parseObjects(
+    json objectsJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::shared_ptr<BVH> > &bvhs
+) {
     for (auto objectJson : objectsJson) {
-        std::vector<std::shared_ptr<Surface>> surfaces;
+        std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
-            parseObj(objectJson, surfaces);
+            parseObj(objectJson, localSurfaces);
         } else if (objectJson["type"] == "sphere") {
-            parseSphere(objectJson, surfaces);
+            parseSphere(objectJson, localSurfaces);
         }
-        nestedSurfaces.push_back(surfaces);
+
+        auto bvh = std::make_shared<BVH>();
+
+        std::vector<std::shared_ptr<Primitive> > primitives(
+            localSurfaces.begin(), localSurfaces.end()
+        );
+
+        bvh->bake(primitives);
+        bvhs.push_back(bvh);
+
+        surfaces.insert(
+            surfaces.end(),
+            localSurfaces.begin(),
+            localSurfaces.end()
+        );
     }
 }
 
