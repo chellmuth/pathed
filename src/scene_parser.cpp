@@ -137,12 +137,23 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
             1000,
             Color(0.f, 0.f, 0.f)
         );
-    } else {
+    } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
-        return std::make_shared<Lambertian>(
-            diffuse,
-            Color(0.f, 0.f, 0.f)
-        );
+
+        if (bsdfJson["texture"].is_string()) {
+            std::string texturePath = bsdfJson["texture"].get<std::string>();
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(texturePath);
+            texture->load();
+
+            return std::make_shared<Lambertian>(texture, Color(0.f));
+        } else {
+            return std::make_shared<Lambertian>(
+                diffuse,
+                Color(0.f, 0.f, 0.f)
+            );
+        }
+    } else {
+        throw "Unimplemented";
     }
 }
 

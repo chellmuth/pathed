@@ -90,10 +90,11 @@ static Color pathThroughput(const Scene &scene, const std::vector<PathPoint> &pa
         const Vector3 wi = (previous.point - current.point).toVector();
         const Vector3 wo = (next.point - current.point).toVector();
 
-        Color brdf = current.material->f(wo, wi, current.normal);
-        float geometry = geometryTerm(scene, current, next);
+        // BROKEN: I changed f's signature
+        // Color brdf = current.material->f(wo, wi, current.normal);
+        // float geometry = geometryTerm(scene, current, next);
 
-        throughput *= brdf * geometry;
+        // throughput *= brdf * geometry;
     }
 
     return throughput;

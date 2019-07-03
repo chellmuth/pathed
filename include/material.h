@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color.h"
+#include "intersection.h"
 #include "vector.h"
 
 class Scene;
@@ -9,10 +10,15 @@ class Material {
 public:
     Material(Color emit);
 
-    virtual Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal, float *pdf) const = 0;
-    Color f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal) {
+    virtual Color f(
+        const Intersection &intersection,
+        const Vector3 &wo,
+        float *pdf
+    ) const = 0;
+
+    Color f(const Intersection &intersection, const Vector3 &wo) {
         float pdf;
-        return f(wo, wi, normal, &pdf);
+        return f(intersection, wo, &pdf);
     }
 
     Color emit() const;

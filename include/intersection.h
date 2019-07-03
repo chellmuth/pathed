@@ -1,11 +1,12 @@
 #pragma once
 
-#include "material.h"
 #include "point.h"
 #include "uv.h"
 #include "vector.h"
 
 #include <limits>
+
+class Material;
 
 struct Intersection {
     bool hit;

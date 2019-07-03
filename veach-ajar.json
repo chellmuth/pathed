@@ -139,6 +139,7 @@
       "filename": "veach-ajar/models/Mesh006.obj",
       "bsdf": {
         "type": "lambertian",
+        "texture": "veach-ajar/textures/cherry-wood-texture.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }

@@ -66,11 +66,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
             bounceDirection = hemisphereToWorld.apply(hemisphereSample);
             lightRay = Ray(intersection.point, bounceDirection);
 
-            throughput *= intersection.material->f(
-                intersection.wi,
-                bounceDirection,
-                intersection.normal
-            );
+            throughput *= intersection.material->f(intersection, bounceDirection);
         }
     }
 
@@ -175,11 +171,7 @@ Color Depositer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        Color f = lastIntersection.material->f(
-            lastIntersection.wi,
-            bounceDirection,
-            lastIntersection.normal
-        );
+        Color f = lastIntersection.material->f(lastIntersection, bounceDirection);
         float invPDF = 1.f / pdf;
 
         modulation *= f
@@ -232,7 +224,7 @@ Color Depositer::direct(
     float invPDF = lightSample.invPDF * lightCount;
 
     return light->biradiance(lightSample, intersection.point)
-        * intersection.material->f(intersection.wi, wo, intersection.normal)
+        * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
 }
