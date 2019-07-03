@@ -53,7 +53,7 @@ Intersection Sphere::testIntersect(const Ray &ray)
         };
         return result;
     } else {
-        Intersection result = IntersectionHelper::miss;
+        return IntersectionHelper::miss;
     }
 }
 

@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "color.h"
+#include "intersection.h"
 #include "ray.h"
 #include "util.h"
 
@@ -27,6 +28,17 @@ std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
 
 Intersection Scene::testIntersect(const Ray &ray) const
 {
+    // Intersection result = IntersectionHelper::miss;
+
+    // for (std::shared_ptr<Surface> surfacePtr : m_surfaces) {
+    //     Intersection intersection = surfacePtr->testIntersect(ray);
+    //     if (intersection.hit && intersection.t < result.t) {
+    //         result = intersection;
+    //     }
+    // }
+
+    // return result;
+
     return m_bvh->testIntersect(ray);
 }
 

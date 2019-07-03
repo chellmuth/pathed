@@ -71,7 +71,6 @@ static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>>
         } else if (objectJson["type"] == "sphere") {
             parseSphere(objectJson, surfaces);
         }
-
     }
 }
 

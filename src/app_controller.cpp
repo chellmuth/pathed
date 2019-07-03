@@ -19,7 +19,7 @@ AppController::AppController(Scene &scene, int width, int height)
       mHeight(height),
       mSample(),
       mHasUpdate(false),
-      mIntegrator(new Depositer(g_job->bounceController()))
+      mIntegrator(new PathTracer(g_job->bounceController()))
 {
     printf("Beginning pre-process...\n");
     std::clock_t begin = clock();
