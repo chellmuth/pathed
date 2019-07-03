@@ -161,6 +161,16 @@ static Transform parseTransform(json transformJson)
         );
     }
 
+    auto translate = transformJson["translate"];
+    if (translate.is_array()) {
+        matrix::translate(
+            matrix,
+            parseFloat(translate[0]),
+            parseFloat(translate[1]),
+            parseFloat(translate[2])
+        );
+    }
+
     return Transform(matrix);
 }
 
