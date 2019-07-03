@@ -120,6 +120,19 @@
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh000.obj",
+      "transform": {
+        "translate": [ "-1.95645", "0.651268", "-3.57687" ],
+        "scale": [ "0.0891049", "0.0891049", "0.0891049" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
     }
   ]
 }
