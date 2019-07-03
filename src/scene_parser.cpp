@@ -3,12 +3,14 @@
 #include "camera.h"
 #include "lambertian.h"
 #include "light.h"
+#include "matrix.h"
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
+#include "transform.h"
 #include "vector.h"
 
 #include "json.hpp"
@@ -18,6 +20,7 @@ static float parseFloat(json floatJson);
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson);
+static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
 static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces);
@@ -86,6 +89,12 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     }
 
     for (auto surfacePtr : objScene.getSurfaces()) {
+        auto shape = surfacePtr->getShape();
+        auto transformJson = objJson["transform"];
+        if (transformJson.is_object()) {
+            Transform transform = parseTransform(transformJson);
+            // shape = shape.transform(transform);
+        }
         if (jsonMaterial) {
             auto surface = std::make_shared<Surface>(surfacePtr->getShape(), jsonMaterial);
             surfaces.push_back(surface);
@@ -137,6 +146,24 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
     }
 }
 
+static Transform parseTransform(json transformJson)
+{
+    float matrix[4][4];
+    matrix::makeIdentity(matrix);
+
+    auto scale = transformJson["scale"];
+    if (scale.is_array()) {
+        matrix::scale(
+            matrix,
+            parseFloat(scale[0]),
+            parseFloat(scale[1]),
+            parseFloat(scale[2])
+        );
+    }
+
+    return Transform(matrix);
+}
+
 static float parseFloat(json floatJson)
 {
     return stof(floatJson.get<std::string>());
@@ -168,65 +195,3 @@ static Color parseColor(json colorJson)
         stof(colorJson[2].get<std::string>())
     );
 }
-
-
-// #include <iostream>
-// #include <vector>
-
-// #include "color.h"
-// #include "point.h"
-// #include "sphere.h"
-// #include "triangle.h"
-
-// static Sphere *parseSphere(json sphereJson);
-// static Triangle *parseTriangle(json triangleJson);
-
-// static Point3 parsePoint(json pointJson);
-
-// Scene parseScene(json sceneJson)
-// {
-//     std::vector<Shape *> objects;
-
-//     auto jsonObjects = sceneJson["objects"];
-//     for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
-//         auto jsonObject = *it;
-//         if (jsonObject["type"] == "sphere") {
-//             objects.push_back(parseSphere(jsonObject["parameters"]));
-//         } else if (jsonObject["type"] == "triangle") {
-//             objects.push_back(parseTriangle(jsonObject["parameters"]));
-//         } else {
-//             std::cout << "No support for type: " << jsonObject["type"].dump() << std::endl;
-//         }
-//     }
-
-//     Point3 light = parsePoint(sceneJson["light"]);
-
-//     return Scene(objects, light);
-// }
-
-// static Sphere *parseSphere(json sphereJson)
-// {
-//     return new Sphere(
-//         parsePoint(sphereJson["center"]),
-//         sphereJson["radius"],
-//         parseColor(sphereJson["color"])
-//     );
-// }
-
-// static Triangle *parseTriangle(json triangleJson)
-// {
-//     return new Triangle(
-//         parsePoint(triangleJson["v0"]),
-//         parsePoint(triangleJson["v1"]),
-//         parsePoint(triangleJson["v2"])
-//     );
-// }
-
-// static Point3 parsePoint(json pointJson)
-// {
-//     return Point3(
-//         pointJson["x"],
-//         pointJson["y"],
-//         pointJson["z"]
-//     );
-// }

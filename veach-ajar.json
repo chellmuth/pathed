@@ -36,6 +36,9 @@
     {
       "type": "obj",
       "filename": "veach-ajar/models/Mesh011.obj",
+      "transform": {
+        "scale": [ "1.8", "1", "1" ]
+      },
       "bsdf": {
         "type": "lambertian",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
