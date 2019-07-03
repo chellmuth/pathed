@@ -16,7 +16,7 @@
   "models": [
     {
       "type": "sphere",
-      "center": [ "-4.4391", "1.50656", "-4.44377" ],
+      "center": [ "4.05402", "1.61647", "-2.30652" ],
       "radius": "0.5",
       "radiance": [ "1000", "1000", "1000" ],
       "bsdf": {
@@ -40,6 +40,15 @@
         "translate": [ "2.3", "0", "0" ],
         "scale": [ "1.8", "1", "1" ]
       },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh005.obj",
       "bsdf": {
         "type": "lambertian",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],

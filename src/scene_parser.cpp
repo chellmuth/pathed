@@ -79,7 +79,7 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 {
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
-    ObjParser objParser(objFile, false, Handedness::Right);
+    ObjParser objParser(objFile, false, Handedness::Left);
     Scene objScene = objParser.parseScene();
 
     std::shared_ptr<Material> jsonMaterial;
