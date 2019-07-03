@@ -12,8 +12,11 @@
 
 using string = std::string;
 
-ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
-    : m_objFile(objFile), m_handedness(handedness), m_currentGroup("")
+ObjParser::ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness)
+    : m_objFile(objFile),
+      m_useFaceNormals(useFaceNormals),
+      m_handedness(handedness),
+      m_currentGroup("")
 {}
 
 Scene ObjParser::parseScene()

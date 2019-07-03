@@ -17,13 +17,15 @@ enum class Handedness {
 
 class ObjParser {
 public:
-    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Handedness::Right) {};
-    ObjParser(std::ifstream &objFile, Handedness handedness);
+    ObjParser(std::ifstream &objFile) : ObjParser(objFile, false, Handedness::Right) {};
+    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, useFaceNormals, Handedness::Right) {};
+    ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness);
     Scene parseScene();
 
 private:
     std::ifstream &m_objFile;
     Handedness m_handedness;
+    bool m_useFaceNormals;
 
     std::string m_currentGroup;
     std::string m_currentMaterialName;
