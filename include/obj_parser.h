@@ -48,8 +48,13 @@ private:
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
 
-    void processTriangle(int index0, int index1, int index2);
+    void processFace(Triangle *face);
+    void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
+    void processTriangle(
+        int vertexIndex0, int vertexIndex1, int vertexIndex2,
+        int UVIndex0, int UVIndex1, int UVIndex2
+    );
+
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
     bool processSingleFaceTriplets(std::string &faceArgs);
 };
-

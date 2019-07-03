@@ -113,44 +113,29 @@ void ObjParser::processGroup(string &groupArgs)
     m_currentGroup = name;
 }
 
-void ObjParser::processTriangle(int index0, int index1, int index2)
+template <class T>
+static void correctIndex(const std::vector<T> &indices, int *index) {
+    if (*index < 0) {
+        *index += indices.size();
+    } else {
+        *index -= 1;
+    }
+}
+
+template <class T>
+static void correctIndices(
+    const std::vector<T> &indices,
+    int *index0,
+    int *index1,
+    int *index2
+) {
+    correctIndex(indices, index0);
+    correctIndex(indices, index1);
+    correctIndex(indices, index2);
+}
+
+void ObjParser::processFace(Triangle *face)
 {
-    if (index0 < 0) {
-        index0 = m_vertices.size() + index0;
-    } else {
-        index0 -= 1;
-    }
-
-    if (index1 < 0) {
-        index1 = m_vertices.size() + index1;
-    } else {
-        index1 -= 1;
-    }
-
-    if (index2 < 0) {
-        index2 = m_vertices.size() + index2;
-    } else {
-        index2 -= 1;
-    }
-
-    Triangle *face;
-    switch (m_handedness) {
-    case Handedness::Right:
-        face = new Triangle(
-            m_vertices[index0],
-            m_vertices[index1],
-            m_vertices[index2]
-        );
-        break;
-    case Handedness::Left:
-        face = new Triangle(
-            m_vertices[index1],
-            m_vertices[index0],
-            m_vertices[index2]
-        );
-        break;
-    }
-
     Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
     Color emit = m_materialLookup[m_currentMaterialName].emit;
     auto material = std::make_shared<Lambertian>(diffuse, emit);
@@ -165,6 +150,66 @@ void ObjParser::processTriangle(int index0, int index1, int index2)
     std::shared_ptr<Light> light(new Light(surface));
 
     m_lights.push_back(light);
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int UVIndex0, int UVIndex1, int UVIndex2
+) {
+
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+    correctIndices(m_vertices, &UVIndex0, &UVIndex1, &UVIndex2);
+
+    Triangle *face;
+    switch (m_handedness) {
+    case Handedness::Right:
+        face = new Triangle(
+            m_vertices[vertexIndex0],
+            m_vertices[vertexIndex1],
+            m_vertices[vertexIndex2],
+            m_uvs[UVIndex0],
+            m_uvs[UVIndex1],
+            m_uvs[UVIndex2]
+        );
+        break;
+    case Handedness::Left:
+        face = new Triangle(
+            m_vertices[vertexIndex1],
+            m_vertices[vertexIndex0],
+            m_vertices[vertexIndex2],
+            m_uvs[UVIndex1],
+            m_uvs[UVIndex0],
+            m_uvs[UVIndex2]
+        );
+        break;
+    }
+
+    processFace(face);
+}
+
+void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
+{
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+
+    Triangle *face;
+    switch (m_handedness) {
+    case Handedness::Right:
+        face = new Triangle(
+            m_vertices[vertexIndex0],
+            m_vertices[vertexIndex1],
+            m_vertices[vertexIndex2]
+        );
+        break;
+    case Handedness::Left:
+        face = new Triangle(
+            m_vertices[vertexIndex1],
+            m_vertices[vertexIndex0],
+            m_vertices[vertexIndex2]
+        );
+        break;
+    }
+
+    processFace(face);
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
@@ -198,11 +243,18 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
         return false;
     }
 
-    int index0 = std::stoi(match[1]);
-    int index1 = std::stoi(match[4]);
-    int index2 = std::stoi(match[7]);
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[4]);
+    int vertexIndex2 = std::stoi(match[7]);
 
-    processTriangle(index0, index1, index2);
+    int UVIndex0 = std::stoi(match[3]);
+    int UVIndex1 = std::stoi(match[6]);
+    int UVIndex2 = std::stoi(match[9]);
+
+    processTriangle(
+        vertexIndex0, vertexIndex1, vertexIndex2,
+        UVIndex0, UVIndex1, UVIndex2
+    );
 
     return true;
 }

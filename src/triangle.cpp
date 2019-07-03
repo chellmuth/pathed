@@ -8,8 +8,18 @@
 #include <math.h>
 #include <stdio.h>
 
+Triangle::Triangle(
+    Point3 p0, Point3 p1, Point3 p2,
+    UV uv0, UV uv1, UV uv2
+)
+    : m_p0(p0), m_p1(p1), m_p2(p2),
+      m_hasUVs(true),
+      m_uv0(uv0), m_uv1(uv1), m_uv2(uv2)
+{}
+
 Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
-    : m_p0(p0), m_p1(p1), m_p2(p2)
+    : m_p0(p0), m_p1(p1), m_p2(p2),
+      m_hasUVs(false)
 {}
 
 SurfaceSample Triangle::sample(RandomGenerator &random) const
@@ -37,14 +47,7 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
 
 Intersection Triangle::testIntersect(const Ray &ray)
 {
-    Intersection miss = {
-        .hit = false,
-        .t = std::numeric_limits<float>::max(),
-        .point = Point3(0.f, 0.f, 0.f),
-        .wi = Vector3(0.f),
-        .normal = Vector3(0.f),
-        .material = nullptr
-    };
+    Intersection miss = IntersectionHelper::miss;
 
     Vector3 e1 = (m_p1 - m_p0).toVector();
     Vector3 e2 = (m_p2 - m_p0).toVector();
@@ -69,7 +72,15 @@ Intersection Triangle::testIntersect(const Ray &ray)
     float t = e2.dot(s2) * inverseDivisor;
     if (t <= 0.001f) { return miss; }
 
-    Point3 hitPoint = m_p0 * (1 - b1 - b2)  + (m_p1 * b1) + (m_p2 * b2);
+    Point3 hitPoint = m_p0 * (1.f - b1 - b2)  + (m_p1 * b1) + (m_p2 * b2);
+
+    UV uv = { 0.f, 0.f };
+    if (m_hasUVs) {
+        uv = {
+            .u = m_uv0.u * (1.f - b1 - b2) + (m_uv1.u * b1) + (m_uv2.u * b2),
+            .v = m_uv0.v * (1.f - b1 - b2) + (m_uv1.v * b1) + (m_uv2.v * b2),
+        };
+    }
 
     Intersection hit = {
         .hit = true,
@@ -77,6 +88,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .point = hitPoint,
         .wi = ray.direction(),
         .normal = e2.cross(e1).normalized(),
+        .uv = uv,
         .material = nullptr
     };
 
