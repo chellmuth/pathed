@@ -25,11 +25,13 @@ gl::Points::Points()
 std::vector<GLfloat> gl::Points::getPositions()
 {
     m_pointCount = 0;
+    std::vector<GLfloat> positionsGL;
 
     std::ifstream jsonScene("live-photons.json");
+    if (!jsonScene.is_open()) {
+        return positionsGL;
+    }
     json pointsJson = json::parse(jsonScene);
-
-    std::vector<GLfloat> positionsGL;
 
     Point3 queryPoint(
         pointsJson["QueryPoint"][0],
@@ -83,10 +85,14 @@ std::vector<GLfloat> gl::Points::getPositions()
 
 std::vector<GLfloat> gl::Points::getColors()
 {
-    std::ifstream jsonScene("live-photons.json");
-    json pointsJson = json::parse(jsonScene);
-
     std::vector<GLfloat> colorsGL;
+
+    std::ifstream jsonScene("live-photons.json");
+    if (!jsonScene.is_open()) {
+        return colorsGL;
+    }
+
+    json pointsJson = json::parse(jsonScene);
 
     for (auto &resultJson : pointsJson["Results"]) {
         colorsGL.push_back(0.7f);
