@@ -1,9 +1,10 @@
 #pragma once
 
-#include <nanogui/opengl.h>
-
 #include "obj_parser.h"
+#include "scene.h"
 #include "shader.h"
+
+#include <nanogui/opengl.h>
 
 typedef struct {
     GLuint vertexArrayID;

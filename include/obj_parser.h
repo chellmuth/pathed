@@ -7,7 +7,6 @@
 #include "mtl_parser.h"
 #include "light.h"
 #include "point.h"
-#include "scene.h"
 #include "surface.h"
 #include "uv.h"
 
@@ -21,7 +20,8 @@ public:
     ObjParser(std::ifstream &objFile) : ObjParser(objFile, false, Handedness::Right) {};
     ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, useFaceNormals, Handedness::Right) {};
     ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness);
-    Scene parseScene();
+
+    std::vector<std::shared_ptr<Surface> > parse();
 
 private:
     std::ifstream &m_objFile;

@@ -22,16 +22,14 @@ ObjParser::ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness han
       m_currentGroup("")
 {}
 
-Scene ObjParser::parseScene()
+std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {
     string line;
     while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
 
-    std::shared_ptr<Camera> camera;
-    std::vector<std::shared_ptr<Primitive>> primitives;
-    return Scene(primitives, m_surfaces, m_lights, camera);
+    return m_surfaces;
 }
 
 void ObjParser::parseLine(string &line)
