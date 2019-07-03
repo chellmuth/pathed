@@ -34,10 +34,6 @@ Scene parseScene(std::ifstream &sceneFile)
 {
     json sceneJson = json::parse(sceneFile);
 
-    NestedSurfaceVector nestedSurfaces;
-    auto objects = sceneJson["models"];
-    parseObjects(objects, nestedSurfaces);
-
     auto sensor = sceneJson["sensor"];
 
     float fov = parseFloat(sensor["fov"]);
@@ -47,6 +43,10 @@ Scene parseScene(std::ifstream &sceneFile)
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI
     );
+
+    NestedSurfaceVector nestedSurfaces;
+    auto objects = sceneJson["models"];
+    parseObjects(objects, nestedSurfaces);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaces : nestedSurfaces) {
