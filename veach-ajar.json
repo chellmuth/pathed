@@ -49,6 +49,51 @@
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh007.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh003.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh002.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh001.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Mesh004.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
     }
   ]
 }
