@@ -8,11 +8,6 @@
     "fov": "60"
   },
 
-  "film": {
-    "width": "160",
-    "height": "90"
-  },
-
   "models": [
     {
       "type": "sphere",

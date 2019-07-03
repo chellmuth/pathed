@@ -17,6 +17,9 @@ public:
 
     bool showUI() const { return m_json["showUI"].get<bool>(); }
 
+    int width() const { return m_json["width"].get<int>(); }
+    int height() const { return m_json["height"].get<int>(); }
+
     std::string outputDirectory() const {
         return m_json["output_directory"].get<std::string>();
     }

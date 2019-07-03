@@ -38,14 +38,13 @@
 
 using namespace std;
 
-static const int width = 400;
-static const int height = 400;
 static const int primarySamples = 99999;
 
 Job *g_job;
 
 void samplePixel(
     int row, int col,
+    int width, int height,
     std::vector<float> &radianceLookup,
     const Scene &scene, const Integrator &integrator,
     RandomGenerator &random)
@@ -85,15 +84,21 @@ void sampleImage(
     Scene &scene, Integrator &integrator,
     RandomGenerator &random)
 {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            samplePixel(row, col, radianceLookup, scene, integrator, random);
+            samplePixel(row, col, width, height, radianceLookup, scene, integrator, random);
         }
     }
 }
 
 void run(Image &image, Scene &scene, bool *quit)
 {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
     RandomGenerator random;
     std::unique_ptr<Integrator> integrator = g_job->integrator();
 
@@ -266,6 +271,8 @@ int main() {
     g_job = new Job(jsonJob);
     g_job->init();
 
+    const int width = g_job->width();
+    const int height = g_job->height();
     Image image(width, height);
 
     ifstream jsonScene(g_job->scene());
