@@ -9,6 +9,7 @@
 #include "point.h"
 #include "scene.h"
 #include "surface.h"
+#include "uv.h"
 
 enum class Handedness {
     Right,
@@ -32,6 +33,7 @@ private:
 
     std::vector<Point3> m_vertices;
     std::vector<Vector3> m_normals;
+    std::vector<UV> m_uvs;
     std::vector<std::shared_ptr<Surface>> m_surfaces;
     std::vector<std::shared_ptr<Light>> m_lights;
 
@@ -40,6 +42,7 @@ private:
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
     void processNormal(std::string &vertexArgs);
+    void processUV(std::string &UVArgs);
     void processGroup(std::string &groupArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);

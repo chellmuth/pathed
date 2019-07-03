@@ -46,6 +46,8 @@ void ObjParser::parseLine(string &line)
         processVertex(rest);
     } else if (command == "vn") {
         processNormal(rest);
+    } else if (command == "vt") {
+        processUV(rest);
     } else if (command == "g") {
         processGroup(rest);
     } else if (command == "f") {
@@ -89,6 +91,20 @@ void ObjParser::processNormal(string &normalArgs)
 
     Vector3 normal(x, y, z);
     m_normals.push_back(normal);
+}
+
+void ObjParser::processUV(string &uvArgs)
+{
+    string::size_type index = 0;
+    string rest = uvArgs;
+
+    float u = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float v = std::stof(rest, &index);
+
+    UV uv = { u, v };
+    m_uvs.push_back(uv);
 }
 
 void ObjParser::processGroup(string &groupArgs)

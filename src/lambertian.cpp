@@ -8,7 +8,12 @@ Lambertian::Lambertian(Color diffuse, Color emit)
     : Material(emit), m_diffuse(diffuse)
 {}
 
-Color Lambertian::f(const Vector3 &wo, const Vector3 &wi, const Vector3 &normal, float *pdf) const
+Color Lambertian::f(
+    const Vector3 &wo,
+    const Vector3 &wi,
+    const Vector3 &normal,
+    float *pdf
+) const
 {
     *pdf = UniformHemispherePdf();
 
