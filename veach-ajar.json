@@ -12,7 +12,7 @@
     {
       "type": "sphere",
       "center": [ "4.05402", "1.61647", "-2.30652" ],
-      "radius": "0.5",
+      "radius": "0.25",
       "radiance": [ "100", "100", "100" ],
       "bsdf": {
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
@@ -123,23 +123,20 @@
     },
     {
       "type": "obj",
-      "filename": "veach-ajar/models/Mesh000.obj",
-      "transform": {
-        "translate": [ "-1.95645", "0.651268", "-3.57687" ],
-        "scale": [ "0.0891049", "0.0891049", "0.0891049" ]
-      },
+      "filename": "veach-ajar/models/Mesh006.obj",
       "bsdf": {
         "type": "lambertian",
+        "texture": "veach-ajar/textures/cherry-wood-texture.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }
     },
     {
       "type": "obj",
-      "filename": "veach-ajar/models/Mesh006.obj",
+      "filename": "veach-ajar/models/Mesh008.obj",
       "bsdf": {
         "type": "lambertian",
-        "texture": "veach-ajar/textures/cherry-wood-texture.jpg",
+        "texture": "veach-ajar/textures/landscape-with-a-lake.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }

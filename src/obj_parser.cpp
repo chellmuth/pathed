@@ -3,12 +3,15 @@
 #include "camera.h"
 #include "color.h"
 #include "lambertian.h"
+#include "primitive.h"
 #include "string_util.h"
 #include "triangle.h"
 #include "vector.h"
 
 #include <iostream>
+#include <memory>
 #include <regex>
+#include <vector>
 
 using string = std::string;
 
@@ -27,7 +30,8 @@ Scene ObjParser::parseScene()
     }
 
     std::shared_ptr<Camera> camera;
-    return Scene(m_surfaces, m_lights, camera);
+    std::vector<std::shared_ptr<Primitive>> primitives;
+    return Scene(primitives, m_surfaces, m_lights, camera);
 }
 
 void ObjParser::parseLine(string &line)
