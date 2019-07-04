@@ -21,15 +21,6 @@
     },
     {
       "type": "obj",
-      "filename": "veach-ajar/models/Mesh008.obj",
-      "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
-        "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
-    },
-    {
-      "type": "obj",
       "filename": "veach-ajar/models/Mesh011.obj",
       "transform": {
         "translate": [ "2.3", "0", "0" ],
