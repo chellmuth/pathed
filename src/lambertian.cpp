@@ -5,11 +5,11 @@
 #include <math.h>
 
 Lambertian::Lambertian(Color diffuse, Color emit)
-    : Material(emit), m_diffuse(diffuse), m_texture(nullptr)
+    : Material(emit), m_diffuse(diffuse), m_albedo(nullptr)
 {}
 
-Lambertian::Lambertian(std::shared_ptr<Texture> texture, Color emit)
-    : Material(emit), m_diffuse(0.f), m_texture(texture)
+Lambertian::Lambertian(std::shared_ptr<Albedo> albedo, Color emit)
+    : Material(emit), m_diffuse(0.f), m_albedo(albedo)
 {}
 
 Color Lambertian::f(
@@ -20,8 +20,8 @@ Color Lambertian::f(
 {
     *pdf = UniformHemispherePdf();
 
-    if (m_texture) {
-        return m_texture->lookup(intersection.uv) / M_PI;
+    if (m_albedo) {
+        return m_albedo->lookup(intersection.uv) / M_PI;
     } else {
         return m_diffuse / M_PI;
     }

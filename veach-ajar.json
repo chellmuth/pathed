@@ -32,6 +32,12 @@
       },
       "bsdf": {
         "type": "lambertian",
+        "albedo": {
+          "type": "checkerboard",
+          "on_color": [ "0.8", "0.8", "0.8" ],
+          "off_color": [ "0.2", "0.2", "0.2" ],
+          "resolution": { "u": 40, "v": 160 }
+        },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
        }

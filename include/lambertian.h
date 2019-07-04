@@ -11,7 +11,7 @@
 class Lambertian : public Material {
 public:
     Lambertian(Color diffuse, Color emit);
-    Lambertian(std::shared_ptr<Texture> texture, Color emit);
+    Lambertian(std::shared_ptr<Albedo> albedo, Color emit);
 
     Color f(
         const Intersection &intersection,
@@ -21,5 +21,5 @@ public:
 
 private:
     Color m_diffuse;
-    std::shared_ptr<Texture> m_texture;
+    std::shared_ptr<Albedo> m_albedo;
 };

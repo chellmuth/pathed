@@ -30,7 +30,7 @@ void Texture::load()
     }
 }
 
-Color Texture::lookup(UV uv)
+Color Texture::lookup(UV uv) const
 {
     // Handle wrapping
     float u = uv.u - (int)floorf(uv.u);
