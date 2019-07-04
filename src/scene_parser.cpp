@@ -21,7 +21,7 @@ typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 static float parseFloat(json floatJson);
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
-static Color parseColor(json colorJson);
+static Color parseColor(json colorJson, bool required = false);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
@@ -168,18 +168,16 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         );
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        Color emit = parseColor(bsdfJson["emit"], false);
 
         if (bsdfJson["texture"].is_string()) {
             std::string texturePath = bsdfJson["texture"].get<std::string>();
             std::shared_ptr<Texture> texture = std::make_shared<Texture>(texturePath);
             texture->load();
 
-            return std::make_shared<Lambertian>(texture, Color(0.f));
+            return std::make_shared<Lambertian>(texture, emit);
         } else {
-            return std::make_shared<Lambertian>(
-                diffuse,
-                Color(0.f, 0.f, 0.f)
-            );
+            return std::make_shared<Lambertian>(diffuse, emit);
         }
     } else {
         throw "Unimplemented";
@@ -237,11 +235,17 @@ static Vector3 parseVector(json vectorJson)
     );
 }
 
-static Color parseColor(json colorJson)
+static Color parseColor(json colorJson, bool required)
 {
-    return Color(
-        stof(colorJson[0].get<std::string>()),
-        stof(colorJson[1].get<std::string>()),
-        stof(colorJson[2].get<std::string>())
-    );
+    if (colorJson.is_array()) {
+        return Color(
+            stof(colorJson[0].get<std::string>()),
+            stof(colorJson[1].get<std::string>()),
+            stof(colorJson[2].get<std::string>())
+        );
+    } else if (required) {
+        throw "Color required!";
+    } else {
+        return Color(0.f);
+    }
 }
