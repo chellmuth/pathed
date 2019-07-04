@@ -1,6 +1,7 @@
 #include "scene_parser.h"
 
 #include "camera.h"
+#include "checkerboard.h"
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
@@ -172,10 +173,16 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 
         if (bsdfJson["texture"].is_string()) {
             std::string texturePath = bsdfJson["texture"].get<std::string>();
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>(texturePath);
+            auto texture = std::make_shared<Texture>(texturePath);
             texture->load();
 
             return std::make_shared<Lambertian>(texture, emit);
+        } else if (
+            bsdfJson["albedo"].is_object()
+            && bsdfJson["albedo"]["type"] == "checkerboard"
+        ) {
+            auto checkerboard = std::make_shared<Checkerboard>();
+            return std::make_shared<Lambertian>(checkerboard, emit);
         } else {
             return std::make_shared<Lambertian>(diffuse, emit);
         }

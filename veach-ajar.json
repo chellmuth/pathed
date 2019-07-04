@@ -10,6 +10,16 @@
 
   "models": [
     {
+      "type": "sphere",
+      "center": [ "4.05402", "2.61647", "-2.30652" ],
+      "radius": "0.25",
+      "radiance": [ "100", "100", "100" ],
+      "bsdf": {
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
+        "specularReflectance": "0"
+      }
+    },
+    {
       "type": "obj",
       "filename": "veach-ajar/models/Light.obj",
       "transform": {

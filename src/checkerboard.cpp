@@ -3,9 +3,13 @@
 #include <math.h>
 
 Color Checkerboard::lookup(UV uv) const {
-    if ((int)floorf(uv.u * 10) % 2 == 0) {
+    int uColumn = (int)floorf(uv.u * 40);
+    int vColumn = (int)floorf(uv.v * 160);
+    printf("%i %i %f %f\n", uColumn, vColumn, uv.u, uv.v);
+    if (uColumn % 2 == vColumn % 2) {
         return Color(1.f);
+    } else {
+        return Color(0.f);
     }
-    return Color(0.f);
 }
 
