@@ -10,7 +10,6 @@ static void checkError(const char *identifier)
     while((err = glGetError()) != GL_NO_ERROR)
     {
         printf("THERES AN ERROR: %s, %d\n", identifier, err);
-
     }
 }
 
