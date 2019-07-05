@@ -25,7 +25,7 @@ using json = nlohmann::json;
 #include <vector>
 
 static int photonSamples = 1e6;
-static int maxBounces = 2;
+static int maxBounces = 6;
 
 Depositer::Depositer(BounceController bounceController)
     : mBounceController(bounceController)
