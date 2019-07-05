@@ -39,6 +39,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <unistd.h>
 #include <vector>
 
 using namespace std;
@@ -271,6 +272,8 @@ private:
 
 int main() {
     printf("Hello, world!\n");
+
+    chdir("..");
 
     ifstream jsonJob("job.json");
     g_job = new Job(jsonJob);
