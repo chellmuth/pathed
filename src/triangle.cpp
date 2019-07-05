@@ -172,11 +172,22 @@ void Triangle::updateAABB(AABB *aabb)
 
 std::shared_ptr<Shape> Triangle::transform(const Transform &transform) const
 {
-    return std::make_shared<Triangle>(
-        transform.apply(m_p0),
-        transform.apply(m_p1),
-        transform.apply(m_p2)
-    );
+    if (m_hasUVs) {
+        return std::make_shared<Triangle>(
+            transform.apply(m_p0),
+            transform.apply(m_p1),
+            transform.apply(m_p2),
+            m_uv0,
+            m_uv1,
+            m_uv2
+        );
+    } else {
+        return std::make_shared<Triangle>(
+            transform.apply(m_p0),
+            transform.apply(m_p1),
+            transform.apply(m_p2)
+        );
+    }
 }
 
 void Triangle::debug() const
