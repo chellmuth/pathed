@@ -2,14 +2,18 @@
 
 #include <math.h>
 
+Checkerboard::Checkerboard(Color onColor, Color offColor, UV resolution)
+    : m_onColor(onColor), m_offColor(offColor), m_resolution(resolution)
+{}
+
 Color Checkerboard::lookup(UV uv) const {
-    int uIndex = (int)floorf(uv.u * 40);
-    int vIndex = (int)floorf(uv.v * 160);
+    int uIndex = (int)floorf(uv.u * m_resolution.u);
+    int vIndex = (int)floorf(uv.v * m_resolution.v);
 
     if (uIndex % 2 == vIndex % 2) {
-        return Color(0.f);
+        return m_offColor;
     } else {
-        return Color(1.f);
+        return m_onColor;
     }
 }
 

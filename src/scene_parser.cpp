@@ -12,6 +12,7 @@
 #include "sphere.h"
 #include "surface.h"
 #include "transform.h"
+#include "uv.h"
 #include "vector.h"
 
 #include "json.hpp"
@@ -23,6 +24,7 @@ static float parseFloat(json floatJson);
 static Point3 parsePoint(json pointJson);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
+static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
@@ -181,7 +183,14 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
             bsdfJson["albedo"].is_object()
             && bsdfJson["albedo"]["type"] == "checkerboard"
         ) {
-            auto checkerboard = std::make_shared<Checkerboard>();
+            auto albedoJson = bsdfJson["albedo"];
+            Color onColor = parseColor(albedoJson["onColor"]);
+            Color offColor = parseColor(albedoJson["offColor"]);
+            UV resolution = parseUV(albedoJson["resolution"]);
+
+            auto checkerboard = std::make_shared<Checkerboard>(
+                onColor, offColor, resolution
+            );
             return std::make_shared<Lambertian>(checkerboard, emit);
         } else {
             return std::make_shared<Lambertian>(diffuse, emit);
@@ -255,4 +264,12 @@ static Color parseColor(json colorJson, bool required)
     } else {
         return Color(0.f);
     }
+}
+
+static UV parseUV(json UVJson)
+{
+    return UV {
+        stof(UVJson["u"].get<std::string>()),
+        stof(UVJson["v"].get<std::string>())
+    };
 }

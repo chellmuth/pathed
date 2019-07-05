@@ -10,16 +10,6 @@
 
   "models": [
     {
-      "type": "sphere",
-      "center": [ "4.05402", "2.61647", "-2.30652" ],
-      "radius": "0.25",
-      "radiance": [ "100", "100", "100" ],
-      "bsdf": {
-        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
-        "specularReflectance": "0"
-      }
-    },
-    {
       "type": "obj",
       "filename": "veach-ajar/models/Light.obj",
       "transform": {
@@ -44,9 +34,9 @@
         "type": "lambertian",
         "albedo": {
           "type": "checkerboard",
-          "on_color": [ "0.8", "0.8", "0.8" ],
-          "off_color": [ "0.2", "0.2", "0.2" ],
-          "resolution": { "u": 40, "v": 160 }
+          "onColor": [ "0.8", "0.8", "0.8" ],
+          "offColor": [ "0.2", "0.2", "0.2" ],
+          "resolution": { "u": "40", "v": "160" }
         },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
