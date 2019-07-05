@@ -7,6 +7,8 @@
 #include "random_generator.h"
 #include "scene.h"
 
+#include "nanoflann.hpp"
+
 #include <memory>
 
 class NearestPhoton : public Integrator {
@@ -21,6 +23,8 @@ public:
         RandomGenerator &random,
         Sample &sample
     ) const override;
+
+    void debug(const Intersection &intersection, const Scene &scene) const override;
 
 private:
     std::shared_ptr<DataSource> m_dataSource;

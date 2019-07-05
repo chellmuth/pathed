@@ -1,13 +1,14 @@
 #include "app_controller.h"
 
-#include "bounce_controller.h"
 #include "bdpt.h"
+#include "bounce_controller.h"
 #include "camera.h"
 #include "depositer.h"
 #include "globals.h"
-#include "job.h"
-#include "path_tracer.h"
 #include "intersection.h"
+#include "job.h"
+#include "nearest_photon.h"
+#include "path_tracer.h"
 #include "ray.h"
 
 #include <ctime>
@@ -19,7 +20,7 @@ AppController::AppController(Scene &scene, int width, int height)
       mHeight(height),
       mSample(),
       mHasUpdate(false),
-      mIntegrator(new PathTracer(g_job->bounceController()))
+      mIntegrator(std::make_unique<NearestPhoton>())
 {
     printf("Beginning pre-process...\n");
     std::clock_t begin = clock();
