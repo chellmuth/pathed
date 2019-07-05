@@ -32,6 +32,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
+#include <assert.h>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -273,7 +274,8 @@ private:
 int main() {
     printf("Hello, world!\n");
 
-    chdir("..");
+    int success = chdir("..");
+    assert(success == 0);
 
     ifstream jsonJob("job.json");
     g_job = new Job(jsonJob);
