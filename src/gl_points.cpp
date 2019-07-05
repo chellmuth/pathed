@@ -1,5 +1,7 @@
 #include "gl_points.h"
 
+#include "globals.h"
+#include "job.h"
 #include "point.h"
 #include "vector.h"
 
@@ -10,8 +12,6 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-static const int maxPoints = 1e5;
-
 gl::Points::Points()
     : m_pointCount(0),
       m_debugMode(DebugMode::Local)
@@ -20,6 +20,9 @@ gl::Points::Points()
         "shader/point.vs",
         "shader/point.fs"
     );
+
+    const int photonBounces = 6;
+    m_maxPoints = g_job->photonSamples() * photonBounces;
 }
 
 std::vector<GLfloat> gl::Points::getPositions()
@@ -78,7 +81,7 @@ std::vector<GLfloat> gl::Points::getPositions()
 
     m_pointCount += 1;
 
-    assert(m_pointCount <= maxPoints);
+    assert(m_pointCount <= m_maxPoints);
 
     return positionsGL;
 }
@@ -117,7 +120,7 @@ void gl::Points::init()
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * maxPoints,
+            sizeof(GLfloat) * 3 * m_maxPoints,
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -126,7 +129,7 @@ void gl::Points::init()
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * maxPoints,
+            sizeof(GLfloat) * 3 * m_maxPoints,
             NULL,
             GL_DYNAMIC_DRAW
         );

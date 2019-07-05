@@ -24,7 +24,6 @@ using json = nlohmann::json;
 #include <utility>
 #include <vector>
 
-static int photonSamples = 1e6;
 static int maxBounces = 6;
 
 Depositer::Depositer(BounceController bounceController)
@@ -35,6 +34,7 @@ Depositer::Depositer(BounceController bounceController)
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
+    const int photonSamples = g_job->photonSamples();
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 

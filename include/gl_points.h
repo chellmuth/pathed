@@ -37,5 +37,6 @@ namespace gl {
         DebugMode m_debugMode;
 
         int m_pointCount;
+        int m_maxPoints;
     };
 }

@@ -1,5 +1,7 @@
 #include "nearest_photon.h"
 
+#include "globals.h"
+#include "job.h"
 #include "light.h"
 #include "monte_carlo.h"
 #include "point.h"
@@ -13,7 +15,6 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-static const int photonSamples = 1e4;
 static const int photonMaxBounces = 6;
 
 NearestPhoton::NearestPhoton()
@@ -22,6 +23,7 @@ NearestPhoton::NearestPhoton()
 
 void NearestPhoton::preprocess(const Scene &scene, RandomGenerator &random)
 {
+    const int photonSamples = g_job->photonSamples();
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
