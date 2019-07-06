@@ -21,7 +21,7 @@ using json = nlohmann::json;
 typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 
 static float parseFloat(json floatJson);
-static Point3 parsePoint(json pointJson);
+static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
 static UV parseUV(json UVJson);
@@ -45,8 +45,8 @@ Scene parseScene(std::ifstream &sceneFile)
 
     float fov = parseFloat(sensor["fov"]);
     auto camera = std::make_shared<Camera>(
-        parsePoint(sensor["lookAt"]["origin"]),
-        parsePoint(sensor["lookAt"]["target"]),
+        parsePoint(sensor["lookAt"]["origin"], true),
+        parsePoint(sensor["lookAt"]["target"], true),
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI
     );
@@ -237,7 +237,7 @@ static Transform parseTransform(json transformJson)
     if (translate.is_array()) {
         matrix::translate(
             matrix,
-            parseFloat(translate[0]),
+            -parseFloat(translate[0]),
             parseFloat(translate[1]),
             parseFloat(translate[2])
         );
@@ -251,13 +251,17 @@ static float parseFloat(json floatJson)
     return stof(floatJson.get<std::string>());
 }
 
-static Point3 parsePoint(json pointJson)
+static Point3 parsePoint(json pointJson, bool flipHandedness)
 {
-    return Point3(
-        stof(pointJson[0].get<std::string>()),
-        stof(pointJson[1].get<std::string>()),
-        stof(pointJson[2].get<std::string>())
-    );
+    const float x = stof(pointJson[0].get<std::string>());
+    const float y = stof(pointJson[1].get<std::string>());
+    const float z = stof(pointJson[2].get<std::string>());
+
+    if (flipHandedness) {
+        return Point3(-x, y, z);
+    } else {
+        return Point3(x, y, z);
+    }
 }
 
 static Vector3 parseVector(json vectorJson)

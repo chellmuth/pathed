@@ -67,6 +67,9 @@ void ObjParser::processVertex(string &vertexArgs)
     string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
+    if (m_handedness == Handedness::Left) {
+        x *= -1.f;
+    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -104,6 +107,9 @@ void ObjParser::processUV(string &uvArgs)
 
     rest = rest.substr(index);
     float v = std::stof(rest, &index);
+    if (m_handedness == Handedness::Left) {
+        v = 1 - v;
+    }
 
     UV uv = { u, v };
     m_uvs.push_back(uv);
@@ -162,29 +168,14 @@ void ObjParser::processTriangle(
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
     correctIndices(m_vertices, &UVIndex0, &UVIndex1, &UVIndex2);
 
-    Triangle *face;
-    switch (m_handedness) {
-    case Handedness::Right:
-        face = new Triangle(
-            m_vertices[vertexIndex0],
-            m_vertices[vertexIndex1],
-            m_vertices[vertexIndex2],
-            m_uvs[UVIndex0],
-            m_uvs[UVIndex1],
-            m_uvs[UVIndex2]
-        );
-        break;
-    case Handedness::Left:
-        face = new Triangle(
-            m_vertices[vertexIndex1],
-            m_vertices[vertexIndex0],
-            m_vertices[vertexIndex2],
-            m_uvs[UVIndex1],
-            m_uvs[UVIndex0],
-            m_uvs[UVIndex2]
-        );
-        break;
-    }
+    Triangle *face = new Triangle(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2],
+        m_uvs[UVIndex0],
+        m_uvs[UVIndex1],
+        m_uvs[UVIndex2]
+    );
 
     processFace(face);
 }
@@ -193,23 +184,11 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
 
-    Triangle *face;
-    switch (m_handedness) {
-    case Handedness::Right:
-        face = new Triangle(
-            m_vertices[vertexIndex0],
-            m_vertices[vertexIndex1],
-            m_vertices[vertexIndex2]
-        );
-        break;
-    case Handedness::Left:
-        face = new Triangle(
-            m_vertices[vertexIndex1],
-            m_vertices[vertexIndex0],
-            m_vertices[vertexIndex2]
-        );
-        break;
-    }
+    Triangle *face = new Triangle(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
 
     processFace(face);
 }
