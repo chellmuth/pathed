@@ -35,6 +35,8 @@ Depositer::Depositer(BounceController bounceController)
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     const int photonSamples = g_job->photonSamples();
+    const int photonBounces = g_job->photonBounces();
+
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
@@ -44,7 +46,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         Ray lightRay(lightSample.point, bounceDirection);
 
         Color throughput = lightSample.light->getMaterial()->emit();
-        for (int bounce = 0; bounce < maxBounces; bounce++) {
+        for (int bounce = 0; bounce < photonBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 

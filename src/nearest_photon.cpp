@@ -15,8 +15,6 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-static const int photonMaxBounces = 6;
-
 NearestPhoton::NearestPhoton()
     : m_dataSource(std::make_shared<DataSource>())
 {}
@@ -24,6 +22,8 @@ NearestPhoton::NearestPhoton()
 void NearestPhoton::preprocess(const Scene &scene, RandomGenerator &random)
 {
     const int photonSamples = g_job->photonSamples();
+    const int photonBounces = g_job->photonBounces();
+
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
@@ -33,22 +33,21 @@ void NearestPhoton::preprocess(const Scene &scene, RandomGenerator &random)
         Ray lightRay(lightSample.point, bounceDirection);
 
         Color throughput = lightSample.light->getMaterial()->emit();
-        for (int bounce = 0; bounce < photonMaxBounces; bounce++) {
+        for (int bounce = 0; bounce < photonBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 
+            // This means hitting the back of a triangle kills the photon
             throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
             if (throughput.isBlack()) { break; }
 
-            if (bounce > 0) { // don't guide towards direct lights
-                m_dataSource->points.push_back({
-                    intersection.point.x(),
-                    intersection.point.y(),
-                    intersection.point.z(),
-                    lightRay.origin(),
-                    throughput
-                });
-            }
+            m_dataSource->points.push_back({
+                intersection.point.x(),
+                intersection.point.y(),
+                intersection.point.z(),
+                lightRay.origin(),
+                throughput
+            });
 
             hemisphereSample = UniformSampleHemisphere(random);
             hemisphereToWorld = normalToWorldSpace(intersection.normal);

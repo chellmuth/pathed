@@ -21,8 +21,7 @@ gl::Points::Points()
         "shader/point.fs"
     );
 
-    const int photonBounces = 6;
-    m_maxPoints = g_job->photonSamples() * photonBounces;
+    m_maxPoints = g_job->photonSamples() * g_job->photonBounces() + 1;
 }
 
 std::vector<GLfloat> gl::Points::getPositions()

@@ -12,6 +12,9 @@
   "thetaSteps": 1,
   "debugSearchCount": 100,
   
+  "photonSamples": 10000,
+  "photonBounces": 6,
+
   "width": 400,
   "height": 400
 }
