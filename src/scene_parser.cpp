@@ -215,6 +215,24 @@ static Transform parseTransform(json transformJson)
         );
     }
 
+    auto rotate = transformJson["rotate"];
+    if (rotate.is_array()) {
+        matrix::rotateX(
+            matrix,
+            parseFloat(rotate[0]) * M_PI / 180.f
+        );
+
+        matrix::rotateY(
+            matrix,
+            parseFloat(rotate[1]) * M_PI / 180.f
+        );
+
+        matrix::rotateZ(
+            matrix,
+            parseFloat(rotate[2]) * M_PI / 180.f
+        );
+    }
+
     auto translate = transformJson["translate"];
     if (translate.is_array()) {
         matrix::translate(
