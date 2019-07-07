@@ -11,9 +11,9 @@ Color Checkerboard::lookup(UV uv) const {
     int vIndex = (int)floorf(uv.v * m_resolution.v);
 
     if (uIndex % 2 == vIndex % 2) {
-        return m_offColor;
-    } else {
         return m_onColor;
+    } else {
+        return m_offColor;
     }
 }
 

@@ -116,6 +116,7 @@
       "filename": "veach-ajar/models/Mesh009.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "148.272", "0" ],
         "translate": [ "-1.95645", "0.648205", "-1.77687" ]
       },
       "bsdf": {
@@ -129,6 +130,7 @@
       "filename": "veach-ajar/models/Mesh000.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "148.272", "0" ],
         "translate": [ "-1.95645", "0.648205", "-1.77687" ]
       },
       "bsdf": {
@@ -142,6 +144,7 @@
       "filename": "veach-ajar/models/Mesh009.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "180", "0" ],
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
       },
       "bsdf": {
@@ -155,6 +158,7 @@
       "filename": "veach-ajar/models/Mesh000.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "180", "0" ],
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
       },
       "bsdf": {
@@ -168,6 +172,7 @@
       "filename": "veach-ajar/models/Mesh009.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "-160.056", "0" ],
         "translate": [ "-1.95645", "0.651268", "-3.57687" ]
       },
       "bsdf": {
@@ -181,6 +186,7 @@
       "filename": "veach-ajar/models/Mesh000.obj",
       "transform": {
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
+        "rotate": [ "0", "-160.056", "0" ],
         "translate": [ "-1.95645", "0.651268", "-3.57687" ]
       },
       "bsdf": {
