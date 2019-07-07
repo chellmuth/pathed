@@ -40,8 +40,8 @@ Color Texture::lookup(UV uv) const
     int y = (int)roundf(v * (m_height - 1));
 
     return Color(
-        m_data[3 * (y * m_width + x) + 0] / 255.f,
-        m_data[3 * (y * m_width + x) + 1] / 255.f,
-        m_data[3 * (y * m_width + x) + 2] / 255.f
+        powf(m_data[3 * (y * m_width + x) + 0] / 255.f, 2.2f),
+        powf(m_data[3 * (y * m_width + x) + 1] / 255.f, 2.2f),
+        powf(m_data[3 * (y * m_width + x) + 2] / 255.f, 2.2f)
     );
 }
