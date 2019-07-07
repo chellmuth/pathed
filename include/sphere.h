@@ -23,9 +23,9 @@ public:
 
     std::shared_ptr<Shape> transform(const Transform &transform) const override;
 
-private:
-    float area() const;
+    float area() const override;
 
+private:
     Point3 m_center;
     float m_radius;
     Color m_color;

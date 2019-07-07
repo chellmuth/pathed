@@ -1,8 +1,8 @@
 {
   "output_directory": "default-output",
-  "output_name": "Default"
+  "output_name": "Default",
   "integrator": "PathTracer",
-  "scene": "green-bounce.json",
+  "scene": "veach-ajar.json",
   "showUI": false,
 
   "startBounce": 0,

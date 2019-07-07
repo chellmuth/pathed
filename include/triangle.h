@@ -35,9 +35,9 @@ public:
 
     void debug() const override;
 
-private:
-    float area() const;
+    float area() const override;
 
+private:
     Point3 m_p0, m_p1, m_p2;
 
     bool m_hasUVs;
