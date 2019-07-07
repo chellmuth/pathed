@@ -33,5 +33,5 @@ std::shared_ptr<Material> Surface::getMaterial() const
 
 Color Surface::getRadiance() const
 {
-    return m_material->emit() / (M_PI * m_shape->area());
+    return m_material->emit();
 }
