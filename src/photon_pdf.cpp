@@ -142,7 +142,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         }
     }
 
-    printf("0 Mass? %f %f\n", totalMass, CDF[phiSteps * thetaSteps -1]);
+    // printf("0 Mass? %f %f\n", totalMass, CDF[phiSteps * thetaSteps -1]);
     *pdf = INV_TWO_PI;
     return UniformSampleHemisphere(random);
 }

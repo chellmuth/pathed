@@ -65,6 +65,10 @@ private:
     void debug2(const Intersection &intersection, const Scene &scene) const;
 
     BounceController m_bounceController;
+
     std::shared_ptr<DataSource> m_dataSource;
     KDTree *m_KDTree;
+
+    std::shared_ptr<DataSource> m_eyeDataSource;
+    KDTree *m_eyeTree;
 };
