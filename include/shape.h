@@ -4,8 +4,10 @@
 #include "intersection.h"
 #include "point.h"
 #include "random_generator.h"
+#include "transform.h"
 #include "vector.h"
 
+#include <memory>
 #include <vector>
 
 class Ray;
@@ -25,6 +27,12 @@ public:
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
     virtual Intersection testIntersect(const Ray &ray) = 0;
 
+    virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;
+
     virtual Point3 centroid() const = 0;
     virtual void updateAABB(AABB *aabb) = 0;
+
+    virtual float area() const = 0;
+
+    virtual void debug() const { printf("Debug not implemented!\n"); };
 };

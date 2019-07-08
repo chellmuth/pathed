@@ -24,17 +24,19 @@ using json = nlohmann::json;
 #include <utility>
 #include <vector>
 
-static int photonSamples = 1e6;
-static int maxBounces = 2;
+static int maxBounces = 6;
 
 Depositer::Depositer(BounceController bounceController)
-    : mBounceController(bounceController)
+    : m_bounceController(bounceController)
 {
-    mDataSource = std::make_shared<DataSource>();
+    m_dataSource = std::make_shared<DataSource>();
 }
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
+    const int photonSamples = g_job->photonSamples();
+    const int photonBounces = g_job->photonBounces();
+
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
@@ -44,7 +46,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
         Ray lightRay(lightSample.point, bounceDirection);
 
         Color throughput = lightSample.light->getMaterial()->emit();
-        for (int bounce = 0; bounce < maxBounces; bounce++) {
+        for (int bounce = 0; bounce < photonBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 
@@ -52,7 +54,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
             if (throughput.isBlack()) { break; }
 
             if (bounce > 0) { // don't guide towards direct lights
-                mDataSource->points.push_back({
+                m_dataSource->points.push_back({
                     intersection.point.x(),
                     intersection.point.y(),
                     intersection.point.z(),
@@ -66,15 +68,11 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
             bounceDirection = hemisphereToWorld.apply(hemisphereSample);
             lightRay = Ray(intersection.point, bounceDirection);
 
-            throughput *= intersection.material->f(
-                intersection.wi,
-                bounceDirection,
-                intersection.normal
-            );
+            throughput *= intersection.material->f(intersection, bounceDirection);
         }
     }
 
-    mKDTree = new KDTree(3, *mDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
@@ -125,14 +123,14 @@ Color Depositer::L(
     sample.eyePoints.push_back(intersection.point);
 
     Color result(0.f);
-    if (mBounceController.checkCounts(1)) {
+    if (m_bounceController.checkCounts(1)) {
         result = direct(intersection, scene, random, sample);
     }
 
     Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
-    for (int bounce = 2; !mBounceController.checkDone(bounce); bounce++) {
+    for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(lastIntersection.normal);
 
         Point3 intersectionPoint = lastIntersection.point;
@@ -149,12 +147,12 @@ Color Depositer::L(
         nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
         resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
-        mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+        m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
         Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
 
         RandomGenerator random;
-        PhotonPDF photonPDF(lastIntersection.point, mDataSource, resultIndices);
+        PhotonPDF photonPDF(lastIntersection.point, m_dataSource, resultIndices);
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
 
@@ -175,11 +173,7 @@ Color Depositer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        Color f = lastIntersection.material->f(
-            lastIntersection.wi,
-            bounceDirection,
-            lastIntersection.normal
-        );
+        Color f = lastIntersection.material->f(lastIntersection, bounceDirection);
         float invPDF = 1.f / pdf;
 
         modulation *= f
@@ -232,7 +226,7 @@ Color Depositer::direct(
     float invPDF = lightSample.invPDF * lightCount;
 
     return light->biradiance(lightSample, intersection.point)
-        * intersection.material->f(intersection.wi, wo, intersection.normal)
+        * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;
 }
@@ -253,11 +247,11 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
     nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
     resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
-    mKDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
     Transform worldToNormal = worldSpaceToNormal(intersection.normal);
     RandomGenerator random;
-    PhotonPDF photonPDF(intersection.point, mDataSource, resultIndices);
+    PhotonPDF photonPDF(intersection.point, m_dataSource, resultIndices);
     float pdf;
     Vector3 wi = photonPDF.sample(random, worldToNormal, &pdf, true);
     Vector3 bounceDirection = wi;
@@ -267,7 +261,7 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
     j["QueryPoint"] = { intersectionPoint.x(), intersectionPoint.y(), intersectionPoint.z() };
     j["Results"] = json::array();
     for (int i = 0; i < debugSearchCount; i++) {
-        auto &point = mDataSource->points[resultIndices->at(i)];
+        auto &point = m_dataSource->points[resultIndices->at(i)];
         j["Results"].push_back({
             { "point", { point.x, point.y, point.z } },
             { "source", { point.source.x(), point.source.y(), point.source.z() } },

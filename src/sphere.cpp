@@ -48,19 +48,12 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .point = hitPoint,
             .wi = ray.direction(),
             .normal = (hitPoint - m_center).toVector().normalized(),
+            .uv = { 0.f, 0.f },
             .material = nullptr
         };
         return result;
     } else {
-        Intersection result = {
-            .hit = false,
-            .t = std::numeric_limits<float>::max(),
-            .point = Point3(0.f, 0.f, 0.f),
-            .wi = Vector3(0.f),
-            .normal = Vector3(0.f),
-            .material = nullptr
-        };
-        return result;
+        return IntersectionHelper::miss;
     }
 }
 
@@ -76,4 +69,9 @@ void Sphere::updateAABB(AABB *aabb)
 
     aabb->update(m_center + bottomLeftFront);
     aabb->update(m_center + topRightBack);
+}
+
+std::shared_ptr<Shape> Sphere::transform(const Transform &transform) const
+{
+    throw "Sphere transform unimplemented";
 }

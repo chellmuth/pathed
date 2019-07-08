@@ -3,27 +3,33 @@
 #include "camera.h"
 #include "color.h"
 #include "lambertian.h"
+#include "primitive.h"
 #include "string_util.h"
 #include "triangle.h"
+#include "vector.h"
 
 #include <iostream>
+#include <memory>
 #include <regex>
+#include <vector>
 
 using string = std::string;
 
-ObjParser::ObjParser(std::ifstream &objFile, Handedness handedness)
-    : m_objFile(objFile), m_handedness(handedness), m_currentGroup("")
+ObjParser::ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness)
+    : m_objFile(objFile),
+      m_useFaceNormals(useFaceNormals),
+      m_handedness(handedness),
+      m_currentGroup("")
 {}
 
-Scene ObjParser::parseScene()
+std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {
     string line;
     while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
 
-    std::shared_ptr<Camera> camera;
-    return Scene(m_surfaces, m_lights, camera);
+    return m_surfaces;
 }
 
 void ObjParser::parseLine(string &line)
@@ -40,6 +46,10 @@ void ObjParser::parseLine(string &line)
 
     if (command == "v") {
         processVertex(rest);
+    } else if (command == "vn") {
+        processNormal(rest);
+    } else if (command == "vt") {
+        processUV(rest);
     } else if (command == "g") {
         processGroup(rest);
     } else if (command == "f") {
@@ -57,6 +67,9 @@ void ObjParser::processVertex(string &vertexArgs)
     string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
+    if (m_handedness == Handedness::Left) {
+        x *= -1.f;
+    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -68,50 +81,69 @@ void ObjParser::processVertex(string &vertexArgs)
     m_vertices.push_back(vertex);
 }
 
+void ObjParser::processNormal(string &normalArgs)
+{
+    string::size_type index = 0;
+    string rest = normalArgs;
+
+    float x = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float y = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float z = std::stof(rest, &index);
+
+    Vector3 normal(x, y, z);
+    m_normals.push_back(normal);
+}
+
+void ObjParser::processUV(string &uvArgs)
+{
+    string::size_type index = 0;
+    string rest = uvArgs;
+
+    float u = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float v = std::stof(rest, &index);
+    if (m_handedness == Handedness::Left) {
+        v = 1 - v;
+    }
+
+    UV uv = { u, v };
+    m_uvs.push_back(uv);
+}
+
 void ObjParser::processGroup(string &groupArgs)
 {
     string name = lTrim(groupArgs);
     m_currentGroup = name;
 }
 
-void ObjParser::processTriangle(int index0, int index1, int index2)
+template <class T>
+static void correctIndex(const std::vector<T> &indices, int *index) {
+    if (*index < 0) {
+        *index += indices.size();
+    } else {
+        *index -= 1;
+    }
+}
+
+template <class T>
+static void correctIndices(
+    const std::vector<T> &indices,
+    int *index0,
+    int *index1,
+    int *index2
+) {
+    correctIndex(indices, index0);
+    correctIndex(indices, index1);
+    correctIndex(indices, index2);
+}
+
+void ObjParser::processFace(Triangle *face)
 {
-    if (index0 < 0) {
-        index0 = m_vertices.size() + index0;
-    } else {
-        index0 -= 1;
-    }
-
-    if (index1 < 0) {
-        index1 = m_vertices.size() + index1;
-    } else {
-        index1 -= 1;
-    }
-
-    if (index2 < 0) {
-        index2 = m_vertices.size() + index2;
-    } else {
-        index2 -= 1;
-    }
-
-    Triangle *face;
-    switch (m_handedness) {
-    case Handedness::Right:
-        face = new Triangle(
-            m_vertices[index0],
-            m_vertices[index1],
-            m_vertices[index2]
-        );
-        break;
-    case Handedness::Left:
-        face = new Triangle(
-            m_vertices[index1],
-            m_vertices[index0],
-            m_vertices[index2]
-        );
-        break;
-    }
-
     Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
     Color emit = m_materialLookup[m_currentMaterialName].emit;
     auto material = std::make_shared<Lambertian>(diffuse, emit);
@@ -126,6 +158,39 @@ void ObjParser::processTriangle(int index0, int index1, int index2)
     std::shared_ptr<Light> light(new Light(surface));
 
     m_lights.push_back(light);
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int UVIndex0, int UVIndex1, int UVIndex2
+) {
+
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+    correctIndices(m_vertices, &UVIndex0, &UVIndex1, &UVIndex2);
+
+    Triangle *face = new Triangle(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2],
+        m_uvs[UVIndex0],
+        m_uvs[UVIndex1],
+        m_uvs[UVIndex2]
+    );
+
+    processFace(face);
+}
+
+void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
+{
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+
+    Triangle *face = new Triangle(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
+
+    processFace(face);
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
@@ -159,11 +224,18 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
         return false;
     }
 
-    int index0 = std::stoi(match[1]);
-    int index1 = std::stoi(match[4]);
-    int index2 = std::stoi(match[7]);
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[4]);
+    int vertexIndex2 = std::stoi(match[7]);
 
-    processTriangle(index0, index1, index2);
+    int UVIndex0 = std::stoi(match[3]);
+    int UVIndex1 = std::stoi(match[6]);
+    int UVIndex2 = std::stoi(match[9]);
+
+    processTriangle(
+        vertexIndex0, vertexIndex1, vertexIndex2,
+        UVIndex0, UVIndex1, UVIndex2
+    );
 
     return true;
 }

@@ -23,10 +23,16 @@
 #include "transform.h"
 #include "vector.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <nanogui/glcanvas.h>
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
+#include <assert.h>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -34,18 +40,18 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <unistd.h>
 #include <vector>
 
 using namespace std;
 
-static const int width = 400;
-static const int height = 400;
 static const int primarySamples = 99999;
 
 Job *g_job;
 
 void samplePixel(
     int row, int col,
+    int width, int height,
     std::vector<float> &radianceLookup,
     const Scene &scene, const Integrator &integrator,
     RandomGenerator &random)
@@ -85,15 +91,21 @@ void sampleImage(
     Scene &scene, Integrator &integrator,
     RandomGenerator &random)
 {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            samplePixel(row, col, radianceLookup, scene, integrator, random);
+            samplePixel(row, col, width, height, radianceLookup, scene, integrator, random);
         }
     }
 }
 
 void run(Image &image, Scene &scene, bool *quit)
 {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
     RandomGenerator random;
     std::unique_ptr<Integrator> integrator = g_job->integrator();
 
@@ -262,10 +274,15 @@ private:
 int main() {
     printf("Hello, world!\n");
 
+    int success = chdir("..");
+    assert(success == 0);
+
     ifstream jsonJob("job.json");
     g_job = new Job(jsonJob);
     g_job->init();
 
+    const int width = g_job->width();
+    const int height = g_job->height();
     Image image(width, height);
 
     ifstream jsonScene(g_job->scene());

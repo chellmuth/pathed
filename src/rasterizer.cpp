@@ -10,7 +10,6 @@ static void checkError(const char *identifier)
     while((err = glGetError()) != GL_NO_ERROR)
     {
         printf("THERES AN ERROR: %s, %d\n", identifier, err);
-
     }
 }
 
@@ -61,15 +60,15 @@ void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
     }
 
     GLfloat viewLocal[4][4];
-    makeIdentity(viewLocal);
+    matrix::makeIdentity(viewLocal);
     Point3 lookAt = mOrigin + mInitialDirection;
-    buildView(
+    matrix::buildView(
         viewLocal,
         mOrigin.x(), mOrigin.y(), mOrigin.z(),
         lookAt.x(), lookAt.y(), lookAt.z()
     );
 
-    multiply(view, arcballRotationLocal, viewLocal);
+    matrix::multiply(view, arcballRotationLocal, viewLocal);
 }
 
 void Rasterizer::drawGL()
@@ -80,17 +79,16 @@ void Rasterizer::drawGL()
     glClear(GL_COLOR_BUFFER_BIT);
 
     GLfloat model[4][4];
-    makeIdentity(model);
+    matrix::makeIdentity(model);
 
     GLfloat view[4][4];
     calculateViewMatrix(view);
 
-    float fovDegrees = 28.f;
-    float fovRadians = fovDegrees / 180.f * M_PI;
+    float fovRadians = mScene.getCamera()->getVerticalFOV();
     float aspectRatio = 1.f * mWidth / mHeight;
 
     GLfloat projection[4][4];
-    buildPerspectiveProjection(
+    matrix::buildPerspectiveProjection(
         projection,
         fovRadians, aspectRatio,
         100.f,

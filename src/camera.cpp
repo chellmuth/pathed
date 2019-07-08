@@ -24,8 +24,8 @@ Ray Camera::generateRay(int row, int col, int resolutionX, int resolutionY)
 
     Point3 origin = Point3(0.f, 0.f, 0.f);
 
-    float jitterX = 2.f * (1.f * std::rand() / RAND_MAX) - 1.f;
-    float jitterY = 2.f * (1.f * std::rand() / RAND_MAX) - 1.f;
+    float jitterX = (1.f * std::rand() / RAND_MAX) - 0.5f;
+    float jitterY = (1.f * std::rand() / RAND_MAX) - 0.5f;
 
     Vector3 direction = Vector3(
         width * (col + 0.5f + jitterX) / resolutionX - width / 2.f,

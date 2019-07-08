@@ -1,5 +1,7 @@
 #include "gl_points.h"
 
+#include "globals.h"
+#include "job.h"
 #include "point.h"
 #include "vector.h"
 
@@ -10,8 +12,6 @@ using json = nlohmann::json;
 #include <fstream>
 #include <iostream>
 
-static const int maxPoints = 10000;
-
 gl::Points::Points()
     : m_pointCount(0),
       m_debugMode(DebugMode::Local)
@@ -20,16 +20,20 @@ gl::Points::Points()
         "shader/point.vs",
         "shader/point.fs"
     );
+
+    m_maxPoints = g_job->photonSamples() * g_job->photonBounces() + 1;
 }
 
 std::vector<GLfloat> gl::Points::getPositions()
 {
     m_pointCount = 0;
+    std::vector<GLfloat> positionsGL;
 
     std::ifstream jsonScene("live-photons.json");
+    if (!jsonScene.is_open()) {
+        return positionsGL;
+    }
     json pointsJson = json::parse(jsonScene);
-
-    std::vector<GLfloat> positionsGL;
 
     Point3 queryPoint(
         pointsJson["QueryPoint"][0],
@@ -76,17 +80,21 @@ std::vector<GLfloat> gl::Points::getPositions()
 
     m_pointCount += 1;
 
-    assert(m_pointCount <= maxPoints);
+    assert(m_pointCount <= m_maxPoints);
 
     return positionsGL;
 }
 
 std::vector<GLfloat> gl::Points::getColors()
 {
-    std::ifstream jsonScene("live-photons.json");
-    json pointsJson = json::parse(jsonScene);
-
     std::vector<GLfloat> colorsGL;
+
+    std::ifstream jsonScene("live-photons.json");
+    if (!jsonScene.is_open()) {
+        return colorsGL;
+    }
+
+    json pointsJson = json::parse(jsonScene);
 
     for (auto &resultJson : pointsJson["Results"]) {
         colorsGL.push_back(0.7f);
@@ -111,7 +119,7 @@ void gl::Points::init()
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * maxPoints,
+            sizeof(GLfloat) * 3 * m_maxPoints,
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -120,7 +128,7 @@ void gl::Points::init()
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * maxPoints,
+            sizeof(GLfloat) * 3 * m_maxPoints,
             NULL,
             GL_DYNAMIC_DRAW
         );

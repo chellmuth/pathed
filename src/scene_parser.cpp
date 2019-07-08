@@ -1,57 +1,74 @@
 #include "scene_parser.h"
 
 #include "camera.h"
+#include "checkerboard.h"
 #include "lambertian.h"
 #include "light.h"
+#include "matrix.h"
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
+#include "transform.h"
+#include "uv.h"
 #include "vector.h"
 
 #include "json.hpp"
 using json = nlohmann::json;
 
+typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
+
 static float parseFloat(json floatJson);
-static Point3 parsePoint(json pointJson);
+static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
-static Color parseColor(json colorJson);
+static Color parseColor(json colorJson, bool required = false);
+static UV parseUV(json UVJson);
+static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
-static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseObjects(
+    json objectsJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::shared_ptr<BVH> > &bvhs
+);
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+
 
 Scene parseScene(std::ifstream &sceneFile)
 {
     json sceneJson = json::parse(sceneFile);
 
-    std::vector<std::shared_ptr<Surface>> surfaces;
-    auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces);
-
     auto sensor = sceneJson["sensor"];
 
     float fov = parseFloat(sensor["fov"]);
     auto camera = std::make_shared<Camera>(
-        parsePoint(sensor["lookAt"]["origin"]),
-        parsePoint(sensor["lookAt"]["target"]),
+        parsePoint(sensor["lookAt"]["origin"], true),
+        parsePoint(sensor["lookAt"]["target"], true),
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI
     );
 
+    auto objects = sceneJson["models"];
+    std::vector<std::shared_ptr<Surface> > surfaces;
+    std::vector<std::shared_ptr<BVH> > bvhs;
+    parseObjects(objects, surfaces, bvhs);
+
     std::vector<std::shared_ptr<Light>> lights;
-    for (auto surfacePtr : surfaces) {
+    for (auto &surfacePtr : surfaces) {
         if (surfacePtr->getMaterial()->emit().isBlack()) {
             continue;
         }
+
         auto light = std::make_shared<Light>(surfacePtr);
         lights.push_back(light);
     }
 
+    std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
     Scene scene(
+        primitives,
         surfaces,
         lights,
         camera
@@ -60,15 +77,33 @@ Scene parseScene(std::ifstream &sceneFile)
     return scene;
 }
 
-static void parseObjects(json objectsJson, std::vector<std::shared_ptr<Surface>> &surfaces)
-{
+static void parseObjects(
+    json objectsJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::shared_ptr<BVH> > &bvhs
+) {
     for (auto objectJson : objectsJson) {
+        std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
-            parseObj(objectJson, surfaces);
+            parseObj(objectJson, localSurfaces);
         } else if (objectJson["type"] == "sphere") {
-            parseSphere(objectJson, surfaces);
+            parseSphere(objectJson, localSurfaces);
         }
 
+        auto bvh = std::make_shared<BVH>();
+
+        std::vector<std::shared_ptr<Primitive> > primitives(
+            localSurfaces.begin(), localSurfaces.end()
+        );
+
+        bvh->bake(primitives);
+        bvhs.push_back(bvh);
+
+        surfaces.insert(
+            surfaces.end(),
+            localSurfaces.begin(),
+            localSurfaces.end()
+        );
     }
 }
 
@@ -76,8 +111,8 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 {
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
-    ObjParser objParser(objFile, Handedness::Left);
-    Scene objScene = objParser.parseScene();
+    ObjParser objParser(objFile, false, Handedness::Left);
+    auto objSurfaces = objParser.parse();
 
     std::shared_ptr<Material> jsonMaterial;
     auto bsdf = objJson["bsdf"];
@@ -85,9 +120,15 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
         jsonMaterial = parseMaterial(bsdf);
     }
 
-    for (auto surfacePtr : objScene.getSurfaces()) {
+    for (auto surfacePtr : objSurfaces) {
+        auto shape = surfacePtr->getShape();
+        auto transformJson = objJson["transform"];
+        if (transformJson.is_object()) {
+            Transform transform = parseTransform(transformJson);
+            shape = shape->transform(transform);
+        }
         if (jsonMaterial) {
-            auto surface = std::make_shared<Surface>(surfacePtr->getShape(), jsonMaterial);
+            auto surface = std::make_shared<Surface>(shape, jsonMaterial);
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -128,13 +169,81 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
             1000,
             Color(0.f, 0.f, 0.f)
         );
-    } else {
+    } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
-        return std::make_shared<Lambertian>(
-            diffuse,
-            Color(0.f, 0.f, 0.f)
+        Color emit = parseColor(bsdfJson["emit"], false);
+
+        if (bsdfJson["texture"].is_string()) {
+            std::string texturePath = bsdfJson["texture"].get<std::string>();
+            auto texture = std::make_shared<Texture>(texturePath);
+            texture->load();
+
+            return std::make_shared<Lambertian>(texture, emit);
+        } else if (
+            bsdfJson["albedo"].is_object()
+            && bsdfJson["albedo"]["type"] == "checkerboard"
+        ) {
+            auto albedoJson = bsdfJson["albedo"];
+            Color onColor = parseColor(albedoJson["onColor"]);
+            Color offColor = parseColor(albedoJson["offColor"]);
+            UV resolution = parseUV(albedoJson["resolution"]);
+
+            auto checkerboard = std::make_shared<Checkerboard>(
+                onColor, offColor, resolution
+            );
+            return std::make_shared<Lambertian>(checkerboard, emit);
+        } else {
+            return std::make_shared<Lambertian>(diffuse, emit);
+        }
+    } else {
+        throw "Unimplemented";
+    }
+}
+
+static Transform parseTransform(json transformJson)
+{
+    float matrix[4][4];
+    matrix::makeIdentity(matrix);
+
+    auto scale = transformJson["scale"];
+    if (scale.is_array()) {
+        matrix::scale(
+            matrix,
+            parseFloat(scale[0]),
+            parseFloat(scale[1]),
+            parseFloat(scale[2])
         );
     }
+
+    auto rotate = transformJson["rotate"];
+    if (rotate.is_array()) {
+        matrix::rotateX(
+            matrix,
+            parseFloat(rotate[0]) * M_PI / 180.f
+        );
+
+        matrix::rotateY(
+            matrix,
+            parseFloat(rotate[1]) * M_PI / 180.f
+        );
+
+        matrix::rotateZ(
+            matrix,
+            parseFloat(rotate[2]) * M_PI / 180.f
+        );
+    }
+
+    auto translate = transformJson["translate"];
+    if (translate.is_array()) {
+        matrix::translate(
+            matrix,
+            -parseFloat(translate[0]),
+            parseFloat(translate[1]),
+            parseFloat(translate[2])
+        );
+    }
+
+    return Transform(matrix);
 }
 
 static float parseFloat(json floatJson)
@@ -142,13 +251,17 @@ static float parseFloat(json floatJson)
     return stof(floatJson.get<std::string>());
 }
 
-static Point3 parsePoint(json pointJson)
+static Point3 parsePoint(json pointJson, bool flipHandedness)
 {
-    return Point3(
-        stof(pointJson[0].get<std::string>()),
-        stof(pointJson[1].get<std::string>()),
-        stof(pointJson[2].get<std::string>())
-    );
+    const float x = stof(pointJson[0].get<std::string>());
+    const float y = stof(pointJson[1].get<std::string>());
+    const float z = stof(pointJson[2].get<std::string>());
+
+    if (flipHandedness) {
+        return Point3(-x, y, z);
+    } else {
+        return Point3(x, y, z);
+    }
 }
 
 static Vector3 parseVector(json vectorJson)
@@ -160,73 +273,25 @@ static Vector3 parseVector(json vectorJson)
     );
 }
 
-static Color parseColor(json colorJson)
+static Color parseColor(json colorJson, bool required)
 {
-    return Color(
-        stof(colorJson[0].get<std::string>()),
-        stof(colorJson[1].get<std::string>()),
-        stof(colorJson[2].get<std::string>())
-    );
+    if (colorJson.is_array()) {
+        return Color(
+            stof(colorJson[0].get<std::string>()),
+            stof(colorJson[1].get<std::string>()),
+            stof(colorJson[2].get<std::string>())
+        );
+    } else if (required) {
+        throw "Color required!";
+    } else {
+        return Color(0.f);
+    }
 }
 
-
-// #include <iostream>
-// #include <vector>
-
-// #include "color.h"
-// #include "point.h"
-// #include "sphere.h"
-// #include "triangle.h"
-
-// static Sphere *parseSphere(json sphereJson);
-// static Triangle *parseTriangle(json triangleJson);
-
-// static Point3 parsePoint(json pointJson);
-
-// Scene parseScene(json sceneJson)
-// {
-//     std::vector<Shape *> objects;
-
-//     auto jsonObjects = sceneJson["objects"];
-//     for (json::iterator it = jsonObjects.begin(); it != jsonObjects.end(); ++it) {
-//         auto jsonObject = *it;
-//         if (jsonObject["type"] == "sphere") {
-//             objects.push_back(parseSphere(jsonObject["parameters"]));
-//         } else if (jsonObject["type"] == "triangle") {
-//             objects.push_back(parseTriangle(jsonObject["parameters"]));
-//         } else {
-//             std::cout << "No support for type: " << jsonObject["type"].dump() << std::endl;
-//         }
-//     }
-
-//     Point3 light = parsePoint(sceneJson["light"]);
-
-//     return Scene(objects, light);
-// }
-
-// static Sphere *parseSphere(json sphereJson)
-// {
-//     return new Sphere(
-//         parsePoint(sphereJson["center"]),
-//         sphereJson["radius"],
-//         parseColor(sphereJson["color"])
-//     );
-// }
-
-// static Triangle *parseTriangle(json triangleJson)
-// {
-//     return new Triangle(
-//         parsePoint(triangleJson["v0"]),
-//         parsePoint(triangleJson["v1"]),
-//         parsePoint(triangleJson["v2"])
-//     );
-// }
-
-// static Point3 parsePoint(json pointJson)
-// {
-//     return Point3(
-//         pointJson["x"],
-//         pointJson["y"],
-//         pointJson["z"]
-//     );
-// }
+static UV parseUV(json UVJson)
+{
+    return UV {
+        stof(UVJson["u"].get<std::string>()),
+        stof(UVJson["v"].get<std::string>())
+    };
+}

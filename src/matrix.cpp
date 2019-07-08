@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-void debugMatrix(GLfloat (&matrix)[4][4])
+void matrix::debugMatrix(GLfloat (&matrix)[4][4])
 {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -14,7 +14,7 @@ void debugMatrix(GLfloat (&matrix)[4][4])
     }
 }
 
-void debugMatrix(GLfloat (&matrix)[4][1])
+void matrix::debugMatrix(GLfloat (&matrix)[4][1])
 {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 1; j++) {
@@ -24,7 +24,7 @@ void debugMatrix(GLfloat (&matrix)[4][1])
     }
 }
 
-void copyMatrix(GLfloat (&source)[4][4], GLfloat (&target)[4][4])
+void matrix::copyMatrix(GLfloat (&source)[4][4], GLfloat (&target)[4][4])
 {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -33,7 +33,7 @@ void copyMatrix(GLfloat (&source)[4][4], GLfloat (&target)[4][4])
     }
 }
 
-void scale(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
+void matrix::scale(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
 {
     GLfloat scaled[4][4];
     makeIdentity(scaled);
@@ -47,7 +47,7 @@ void scale(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
     multiply(result, scaled, original);
 }
 
-void translate(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
+void matrix::translate(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
 {
     GLfloat translation[4][4];
     makeIdentity(translation);
@@ -61,7 +61,7 @@ void translate(GLfloat (&result)[4][4], GLfloat x, GLfloat y, GLfloat z)
     multiply(result, translation, original);
 }
 
-void multiply(GLfloat (&result)[4][4], GLfloat (&A)[4][4], GLfloat (&B)[4][4])
+void matrix::multiply(GLfloat (&result)[4][4], GLfloat (&A)[4][4], GLfloat (&B)[4][4])
 {
     for (int row = 0; row < 4; row++) {
         for (int col = 0; col < 4; col++) {
@@ -74,7 +74,7 @@ void multiply(GLfloat (&result)[4][4], GLfloat (&A)[4][4], GLfloat (&B)[4][4])
     }
 }
 
-void multiply(GLfloat (&result)[4][1], GLfloat (&A)[4][4], GLfloat (&x)[4][1])
+void matrix::multiply(GLfloat (&result)[4][1], GLfloat (&A)[4][4], GLfloat (&x)[4][1])
 {
     for (int row = 0; row < 4; row++) {
         for (int col = 0; col < 1; col++) {
@@ -87,7 +87,7 @@ void multiply(GLfloat (&result)[4][1], GLfloat (&A)[4][4], GLfloat (&x)[4][1])
     }
 }
 
-void rotateX(GLfloat (&result)[4][4], GLfloat theta)
+void matrix::rotateX(GLfloat (&result)[4][4], GLfloat theta)
 {
     GLfloat rotation[4][4];
     makeIdentity(rotation);
@@ -102,7 +102,7 @@ void rotateX(GLfloat (&result)[4][4], GLfloat theta)
     multiply(result, rotation, original);
 }
 
-void rotateY(GLfloat (&result)[4][4], GLfloat theta)
+void matrix::rotateY(GLfloat (&result)[4][4], GLfloat theta)
 {
     GLfloat rotation[4][4];
     makeIdentity(rotation);
@@ -117,7 +117,7 @@ void rotateY(GLfloat (&result)[4][4], GLfloat theta)
     multiply(result, rotation, original);
 }
 
-void rotateZ(GLfloat (&result)[4][4], GLfloat theta)
+void matrix::rotateZ(GLfloat (&result)[4][4], GLfloat theta)
 {
     GLfloat rotation[4][4];
     makeIdentity(rotation);
@@ -132,7 +132,7 @@ void rotateZ(GLfloat (&result)[4][4], GLfloat theta)
     multiply(result, rotation, original);
 }
 
-void makeIdentity(GLfloat (&m)[4][4])
+void matrix::makeIdentity(GLfloat (&m)[4][4])
 {
     for (int row = 0; row < 4; row++) {
         for (int col = 0; col < 4; col++) {
@@ -141,7 +141,7 @@ void makeIdentity(GLfloat (&m)[4][4])
     }
 }
 
-void buildView(
+void matrix::buildView(
     GLfloat (&view)[4][4],
     float originX, float originY, float originZ,
     float targetX, float targetY, float targetZ
@@ -170,7 +170,7 @@ void buildView(
     multiply(view, basis, translation);
 }
 
-void buildOrthographicProjection(
+void matrix::buildOrthographicProjection(
     GLfloat (&projection)[4][4],
     float left, float right, float bottom, float top,
     float zFar, float zNear
@@ -187,7 +187,7 @@ void buildOrthographicProjection(
     projection[2][3] = -(zFar + zNear) / (zFar - zNear);
 }
 
-void buildPerspectiveProjection(
+void matrix::buildPerspectiveProjection(
     GLfloat (&projection)[4][4],
     float fovY, float aspectRatio, float zFar, float zNear
 ) {

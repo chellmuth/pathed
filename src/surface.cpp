@@ -14,7 +14,9 @@ SurfaceSample Surface::sample(RandomGenerator &random) const
 Intersection Surface::testIntersect(const Ray &ray) const
 {
     Intersection intersection = m_shape->testIntersect(ray);
-    intersection.material = m_material.get();
+    if (intersection.hit) {
+        intersection.material = m_material.get();
+    }
 
     return intersection;
 }

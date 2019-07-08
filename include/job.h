@@ -17,6 +17,9 @@ public:
 
     bool showUI() const { return m_json["showUI"].get<bool>(); }
 
+    int width() const { return m_json["width"].get<int>(); }
+    int height() const { return m_json["height"].get<int>(); }
+
     std::string outputDirectory() const {
         return m_json["output_directory"].get<std::string>();
     }
@@ -31,6 +34,8 @@ public:
 
     int phiSteps() const { return m_json["phiSteps"].get<int>(); }
     int thetaSteps() const { return m_json["thetaSteps"].get<int>(); }
+    int photonSamples() const { return m_json["photonSamples"].get<int>(); }
+    int photonBounces() const { return m_json["photonBounces"].get<int>(); }
     int debugSearchCount() const { return m_json["debugSearchCount"].get<int>(); }
 
     int startBounce() const { return m_bounceController.startBounce(); }

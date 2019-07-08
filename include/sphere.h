@@ -5,6 +5,9 @@
 #include "intersection.h"
 #include "point.h"
 #include "shape.h"
+#include "transform.h"
+
+#include <memory>
 
 class Ray;
 
@@ -18,9 +21,11 @@ public:
     Point3 centroid() const override { return m_center; }
     void updateAABB(AABB *aabb) override;
 
-private:
-    float area() const;
+    std::shared_ptr<Shape> transform(const Transform &transform) const override;
 
+    float area() const override;
+
+private:
     Point3 m_center;
     float m_radius;
     Color m_color;

@@ -34,6 +34,7 @@ class Scene {
 public:
     Scene(
         // old
+        std::vector<std::shared_ptr<Primitive>> primitives,
         std::vector<std::shared_ptr<Surface>> surfaces,
         std::vector<std::shared_ptr<Light>> lights,
 

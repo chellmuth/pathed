@@ -10,6 +10,7 @@ class Camera {
 public:
     Camera(Point3 origin, Point3 target, Vector3 up, float verticalFOV);
 
+    float getVerticalFOV() const { return m_verticalFOV; }
     Point3 getOrigin() const { return m_origin; }
     Point3 getTarget() const { return m_target; }
 

@@ -1,10 +1,12 @@
 #pragma once
 
-#include "material.h"
 #include "point.h"
+#include "uv.h"
 #include "vector.h"
 
 #include <limits>
+
+class Material;
 
 struct Intersection {
     bool hit;
@@ -12,6 +14,7 @@ struct Intersection {
     Point3 point;
     Vector3 wi;
     Vector3 normal;
+    UV uv;
     Material *material;
 };
 
@@ -22,6 +25,7 @@ namespace IntersectionHelper {
         Point3(0.f, 0.f, 0.f),
         Vector3(0.f),
         Vector3(0.f),
+        { 0.f, 0.f },
         nullptr
     };
 }
