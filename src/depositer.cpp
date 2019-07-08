@@ -30,6 +30,7 @@ Depositer::Depositer(BounceController bounceController)
     : m_bounceController(bounceController)
 {
     m_dataSource = std::make_shared<DataSource>();
+    m_eyeDataSource = std::make_shared<DataSource>();
 }
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
@@ -73,6 +74,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     }
 
     m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
@@ -170,6 +172,15 @@ Color Depositer::L(
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
+
+        DataSource::Point eyeVertex = {
+            bounceIntersection.point.x(),
+            bounceIntersection.point.y(),
+            bounceIntersection.point.z(),
+            lastIntersection.point,
+            modulation
+        };
+        m_eyeDataSource->points.push_back(eyeVertex);
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
