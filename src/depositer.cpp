@@ -8,6 +8,7 @@
 #include "monte_carlo.h"
 #include "path_tracer.h"
 #include "photon_pdf.h"
+#include "photon_visualization.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
@@ -75,6 +76,11 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 
     m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+}
+
+void Depositer::postwave()
+{
+    PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource);
 }
 
 static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
@@ -160,7 +166,7 @@ Color Depositer::L(
 
         Vector3 bounceDirection = hemisphereToWorld.apply(pdfSample);
 
-        if (bounceDirection.dot(lastIntersection.normal) < 0.f) { 
+        if (bounceDirection.dot(lastIntersection.normal) < 0.f) {
             assert(false);
             break;
         }
@@ -173,14 +179,16 @@ Color Depositer::L(
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        DataSource::Point eyeVertex = {
-            bounceIntersection.point.x(),
-            bounceIntersection.point.y(),
-            bounceIntersection.point.z(),
-            lastIntersection.point,
-            modulation
-        };
-        m_eyeDataSource->points.push_back(eyeVertex);
+        if (bounce > 2) {
+            DataSource::Point eyeVertex = {
+                bounceIntersection.point.x(),
+                bounceIntersection.point.y(),
+                bounceIntersection.point.z(),
+                lastIntersection.point,
+                modulation
+            };
+            m_eyeDataSource->points.push_back(eyeVertex);
+        }
 
         sample.eyePoints.push_back(bounceIntersection.point);
 

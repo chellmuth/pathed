@@ -51,6 +51,7 @@ public:
     ) const override;
 
     void preprocess(const Scene &scene, RandomGenerator &random) override;
+    void postwave() override;
 
     void debug(const Intersection &intersection, const Scene &scene) const override;
 
