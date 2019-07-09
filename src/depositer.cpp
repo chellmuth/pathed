@@ -78,9 +78,84 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
-void Depositer::postwave()
+void Depositer::postwave(const Scene &scene, RandomGenerator &random)
 {
+    free(m_KDTree);
+    m_dataSource->points.clear();
+    printf("%i\n", m_eyeDataSource->points.size());
+    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+
+    const int photonSamples = g_job->photonSamples();
+    const int photonBounces = g_job->photonBounces();
+
+    for (int i = 0; i < photonSamples; i++) {
+        LightSample lightSample = scene.sampleLights(random);
+
+        Vector3 bounceDirection(0.f);
+        Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
+
+        float queryPoint[3] = {
+            lightSample.point.x(),
+            lightSample.point.y(),
+            lightSample.point.z()
+        };
+
+        const int debugSearchCount = g_job->debugSearchCount();
+        auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+        std::vector<float> outDistanceSquared(debugSearchCount);
+
+        nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+        resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+        m_eyeTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+        Transform worldToNormal = worldSpaceToNormal(lightSample.normal);
+
+        PhotonPDF photonPDF(lightSample.point, m_eyeDataSource, resultIndices);
+        float pdf;
+        Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
+
+        bounceDirection = hemisphereToWorld.apply(pdfSample);
+
+        if (bounceDirection.dot(lightSample.normal) < 0.f) {
+            assert(false);
+            break;
+        }
+
+        Ray lightRay(lightSample.point, bounceDirection);
+
+        Color throughput = lightSample.light->getMaterial()->emit();
+        for (int bounce = 0; bounce < photonBounces; bounce++) {
+            Intersection intersection = scene.testIntersect(lightRay);
+            if (!intersection.hit) { break; }
+
+            throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
+            if (throughput.isBlack()) { break; }
+
+            if (bounce > 0) { // don't guide towards direct lights
+                m_dataSource->points.push_back({
+                    intersection.point.x(),
+                    intersection.point.y(),
+                    intersection.point.z(),
+                    lightRay.origin(),
+                    throughput
+                });
+            }
+
+            Vector3 hemisphereSample = UniformSampleHemisphere(random);
+            Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
+            bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+            lightRay = Ray(intersection.point, bounceDirection);
+
+            throughput *= intersection.material->f(intersection, bounceDirection);
+        }
+    }
+
     PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource);
+
+    free(m_eyeTree);
+    m_eyeDataSource->points.clear();
+    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
@@ -159,7 +234,6 @@ Color Depositer::L(
 
         Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
 
-        RandomGenerator random;
         PhotonPDF photonPDF(lastIntersection.point, m_dataSource, resultIndices);
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);

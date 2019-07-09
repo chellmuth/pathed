@@ -134,7 +134,7 @@ void run(Image &image, Scene &scene, bool *quit)
 
         std::clock_t end = clock();
 
-        integrator->postwave();
+        integrator->postwave(scene, random);
 
         std::mutex &lock = image.getLock();
         lock.lock();
