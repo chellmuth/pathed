@@ -35,17 +35,17 @@ public:
     void updateDebugMode();
 
 private:
-    Scene &mScene;
-    Point3 mOrigin;
-    Point3 mInitialDirection;
+    Scene &m_scene;
+    Point3 m_origin;
+    Point3 m_initialDirection;
 
-    nanogui::Arcball mArcball;
-    gl::Scene mGLScene;
-    gl::Lines mGLLines;
-    gl::Points mGLPoints;
+    nanogui::Arcball m_arcball;
+    gl::Scene m_GLScene;
+    gl::Lines m_GLLines;
+    gl::Points m_GLPoints;
 
-    int mWidth, mHeight;
-    Shader mShader;
+    int m_width, m_height;
+    Shader m_shader;
 
     void calculateViewMatrix(GLfloat (&view)[4][4]);
 

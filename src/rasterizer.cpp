@@ -14,25 +14,25 @@ static void checkError(const char *identifier)
 }
 
 Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
-    : mScene(scene), mOrigin(0.f, 0.f, 0.f), mInitialDirection(0.f, 0.f, 0.f),
+    : m_scene(scene), m_origin(0.f, 0.f, 0.f), m_initialDirection(0.f, 0.f, 0.f),
       nanogui::GLCanvas(parent)
 {
-    mOrigin = scene.getCamera()->getOrigin();
-    mInitialDirection = scene.getCamera()->getTarget() - mOrigin;
+    m_origin = scene.getCamera()->getOrigin();
+    m_initialDirection = scene.getCamera()->getTarget() - m_origin;
 
-    mWidth = width;
-    mHeight = height;
+    m_width = width;
+    m_height = height;
 
-    mShader = shader::createProgram(
+    m_shader = shader::createProgram(
         "shader/geometry.vs",
         "shader/normal.fs"
     );
 
-    mGLScene.init(scene);
-    mGLLines.init();
-    mGLPoints.init();
+    m_GLScene.init(scene);
+    m_GLLines.init();
+    m_GLPoints.init();
 
-    mArcball.setSize({width, height});
+    m_arcball.setSize({width, height});
 }
 
 void Rasterizer::init()
@@ -41,17 +41,17 @@ void Rasterizer::init()
 
 void Rasterizer::reload()
 {
-    mGLPoints.reload();
+    m_GLPoints.reload();
 }
 
 void Rasterizer::setState(const Sample &sample)
 {
-    mGLLines.update(sample);
+    m_GLLines.update(sample);
 }
 
 void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
 {
-    auto arcballRotation = mArcball.matrix();
+    auto arcballRotation = m_arcball.matrix();
     GLfloat arcballRotationLocal[4][4];
     for (int row = 0; row < 4; row++) {
         for (int col = 0; col < 4; col++) {
@@ -61,10 +61,10 @@ void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
 
     GLfloat viewLocal[4][4];
     matrix::makeIdentity(viewLocal);
-    Point3 lookAt = mOrigin + mInitialDirection;
+    Point3 lookAt = m_origin + m_initialDirection;
     matrix::buildView(
         viewLocal,
-        mOrigin.x(), mOrigin.y(), mOrigin.z(),
+        m_origin.x(), m_origin.y(), m_origin.z(),
         lookAt.x(), lookAt.y(), lookAt.z()
     );
 
@@ -84,8 +84,8 @@ void Rasterizer::drawGL()
     GLfloat view[4][4];
     calculateViewMatrix(view);
 
-    float fovRadians = mScene.getCamera()->getVerticalFOV();
-    float aspectRatio = 1.f * mWidth / mHeight;
+    float fovRadians = m_scene.getCamera()->getVerticalFOV();
+    float aspectRatio = 1.f * m_width / m_height;
 
     GLfloat projection[4][4];
     matrix::buildPerspectiveProjection(
@@ -95,20 +95,20 @@ void Rasterizer::drawGL()
         0.1f
     );
 
-    glUseProgram(mShader.programID);
+    glUseProgram(m_shader.programID);
 
-    GLuint modelID = glGetUniformLocation(mShader.programID, "model");
-    GLuint viewID = glGetUniformLocation(mShader.programID, "view");
-    GLuint projectionID = glGetUniformLocation(mShader.programID, "projection");
+    GLuint modelID = glGetUniformLocation(m_shader.programID, "model");
+    GLuint viewID = glGetUniformLocation(m_shader.programID, "view");
+    GLuint projectionID = glGetUniformLocation(m_shader.programID, "projection");
 
     glUniformMatrix4fv(modelID, 1, GL_TRUE, &model[0][0]);
     glUniformMatrix4fv(viewID, 1, GL_TRUE, &view[0][0]);
     glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
-    mGLScene.draw();
+    m_GLScene.draw();
 
-    mGLLines.draw(model, view, projection);
-    mGLPoints.draw(model, view, projection);
+    m_GLLines.draw(model, view, projection);
+    m_GLPoints.draw(model, view, projection);
 
     glDisable(GL_DEPTH_TEST);
 }
@@ -148,7 +148,7 @@ void Rasterizer::move(Direction direction)
     }
 
     auto inverseView = eigenView.inverse();
-    mOrigin = Point3(
+    m_origin = Point3(
         inverseView(0, 3),
         inverseView(1, 3),
         inverseView(2, 3)
@@ -157,14 +157,14 @@ void Rasterizer::move(Direction direction)
 
 void Rasterizer::updateDebugMode()
 {
-    mGLPoints.updateDebugMode();
+    m_GLPoints.updateDebugMode();
 }
 
 bool Rasterizer::mouseButtonEvent(
     const Eigen::Vector2i &p, int button, bool down, int modifiers
 ) {
     if (button == GLFW_MOUSE_BUTTON_1) {
-        mArcball.button(p, down);
+        m_arcball.button(p, down);
         return true;
     }
     return false;
@@ -173,7 +173,7 @@ bool Rasterizer::mouseButtonEvent(
 bool Rasterizer::mouseMotionEvent(
     const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers
 ) {
-    mArcball.motion(p);
+    m_arcball.motion(p);
 
     return true;
 }
