@@ -178,14 +178,14 @@ class PathApplication : public nanogui::Screen {
 public:
     PathApplication(Image &image, std::shared_ptr<AppController> controller, int width, int height)
         : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
-          mController(controller)
+          m_controller(controller)
     {
         using namespace nanogui;
 
-        mCanvas = new Canvas(this, controller, image, width, height);
-        mCanvas->setSize({width, height});
-        mCanvas->init();
-        mCanvas->setBackgroundColor({100, 100, 100, 255});
+        m_canvas = new Canvas(this, controller, image, width, height);
+        m_canvas->setSize({width, height});
+        m_canvas->init();
+        m_canvas->setBackgroundColor({100, 100, 100, 255});
 
         performLayout();
     }
@@ -196,7 +196,7 @@ public:
         }
 
         if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-            mCanvas->save("output");
+            m_canvas->save("output");
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -208,28 +208,28 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
-        mCanvas->syncTextureBuffer();
+        m_canvas->syncTextureBuffer();
 
         Screen::draw(ctx);
     }
 
 private:
-    Canvas *mCanvas;
-    std::shared_ptr<AppController> mController;
+    Canvas *m_canvas;
+    std::shared_ptr<AppController> m_controller;
 };
 
 class GLApplication : public nanogui::Screen {
 public:
     GLApplication(Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
         : nanogui::Screen(Eigen::Vector2i(width, height), "Rasterizer", false),
-          mController(controller)
+          m_controller(controller)
     {
         using namespace nanogui;
 
-        mRasterizer = new Rasterizer(this, scene, width, height);
-        mRasterizer->setSize({width, height});
-        mRasterizer->init();
-        mRasterizer->setBackgroundColor({100, 100, 100, 255});
+        m_rasterizer = new Rasterizer(this, scene, width, height);
+        m_rasterizer->setSize({width, height});
+        m_rasterizer->init();
+        m_rasterizer->setBackgroundColor({100, 100, 100, 255});
 
         performLayout();
     }
@@ -240,15 +240,15 @@ public:
         }
 
         if (key == GLFW_KEY_W) {
-            mRasterizer->move(Direction::Forward);
+            m_rasterizer->move(Direction::Forward);
         } else if (key == GLFW_KEY_S) {
-            mRasterizer->move(Direction::Backward);
+            m_rasterizer->move(Direction::Backward);
         } else if (key == GLFW_KEY_A) {
-            mRasterizer->move(Direction::Left);
+            m_rasterizer->move(Direction::Left);
         } else if (key == GLFW_KEY_D) {
-            mRasterizer->move(Direction::Right);
+            m_rasterizer->move(Direction::Right);
         } else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
-            mRasterizer->updateDebugMode();
+            m_rasterizer->updateDebugMode();
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -260,17 +260,17 @@ public:
     }
 
     virtual void draw(NVGcontext *ctx) {
-        if (mController->testAndClearUpdate()) {
-            mRasterizer->reload();
+        if (m_controller->testAndClearUpdate()) {
+            m_rasterizer->reload();
         }
 
-        mRasterizer->setState(mController->getSample());
+        m_rasterizer->setState(m_controller->getSample());
         Screen::draw(ctx);
     }
 
 private:
-    Rasterizer *mRasterizer;
-    std::shared_ptr<AppController> mController;
+    Rasterizer *m_rasterizer;
+    std::shared_ptr<AppController> m_controller;
 };
 
 int main() {
