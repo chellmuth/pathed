@@ -32,6 +32,12 @@
 #include <nanogui/opengl.h>
 #include <nanogui/screen.h>
 
+
+#include <nanogui/formhelper.h>
+#include <nanogui/object.h>
+#include <nanogui/layout.h>
+
+
 #include <assert.h>
 #include <ctime>
 #include <fstream>
@@ -174,9 +180,9 @@ void run(Image &image, Scene &scene, bool *quit)
     }
 }
 
-class PathApplication : public nanogui::Screen {
+class RenderScreen : public nanogui::Screen {
 public:
-    PathApplication(Image &image, std::shared_ptr<AppController> controller, int width, int height)
+    RenderScreen(Image &image, std::shared_ptr<AppController> controller, int width, int height)
         : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
           m_controller(controller)
     {
@@ -218,10 +224,10 @@ private:
     std::shared_ptr<AppController> m_controller;
 };
 
-class GLApplication : public nanogui::Screen {
+class GLApplication : public nanogui::Widget {
 public:
-    GLApplication(Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
-        : nanogui::Screen(Eigen::Vector2i(width, height), "Rasterizer", false),
+    GLApplication(Widget *parent, Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
+        : nanogui::Widget(parent),
           m_controller(controller)
     {
         using namespace nanogui;
@@ -230,12 +236,10 @@ public:
         m_rasterizer->setSize({width, height});
         m_rasterizer->init();
         m_rasterizer->setBackgroundColor({100, 100, 100, 255});
-
-        performLayout();
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
-        if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
+        if (Widget::keyboardEvent(key, scancode, action, modifiers)) {
             return true;
         }
 
@@ -265,13 +269,43 @@ public:
         }
 
         m_rasterizer->setState(m_controller->getSample());
-        Screen::draw(ctx);
+        Widget::draw(ctx);
     }
 
 private:
     Rasterizer *m_rasterizer;
     std::shared_ptr<AppController> m_controller;
 };
+
+class DebugScreen : public nanogui::Screen {
+public:
+    DebugScreen(Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
+        : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Parent", false)
+    {
+        using namespace nanogui;
+
+        setLayout(new BoxLayout(Orientation::Horizontal));
+
+        Widget *leftPanel = new Widget(this);
+        leftPanel->setLayout(new GroupLayout());
+        leftPanel->setFixedSize(Eigen::Vector2i(300, height));
+
+        Button *b = new Button(leftPanel, "Plain button");
+        b->setCallback([] { cout << "pushed!" << endl; });
+        b->setTooltip("short tooltip");
+
+        Widget *rightPanel = new Widget(this);
+        rightPanel->setSize(Eigen::Vector2i(width, height));
+
+        m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
+
+        performLayout();
+    }
+
+private:
+    GLApplication *m_glApplication;
+};
+
 
 int main() {
     printf("Hello, world!\n");
@@ -302,11 +336,11 @@ int main() {
         nanogui::init();
 
         if (g_job->showUI()) {
-            nanogui::ref<PathApplication> app = new PathApplication(image, controller, width, height);
+            nanogui::ref<RenderScreen> app = new RenderScreen(image, controller, width, height);
             app->drawAll();
             app->setVisible(true);
 
-            nanogui::ref<GLApplication> debug = new GLApplication(scene, controller, width, height);
+            nanogui::ref<DebugScreen> debug = new DebugScreen(scene, controller, width, height);
             debug->drawAll();
             debug->setVisible(true);
 
