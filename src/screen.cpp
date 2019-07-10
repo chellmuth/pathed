@@ -19,6 +19,8 @@ public:
     {
         using namespace nanogui;
 
+        setSize({width, height});
+
         m_rasterizer = new Rasterizer(this, scene, width, height);
         m_rasterizer->setSize({width, height});
         m_rasterizer->init();
