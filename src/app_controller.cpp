@@ -15,17 +15,17 @@
 #include <iostream>
 
 AppController::AppController(Scene &scene, int width, int height)
-    : mScene(scene),
-      mWidth(width),
-      mHeight(height),
-      mSample(),
-      mHasUpdate(false),
-      mIntegrator(std::make_unique<NearestPhoton>())
+    : m_scene(scene),
+      m_width(width),
+      m_height(height),
+      m_sample(),
+      m_hasUpdate(false),
+      m_integrator(std::make_unique<NearestPhoton>())
 {
     printf("Beginning pre-process...\n");
     std::clock_t begin = clock();
 
-    mIntegrator->preprocess(mScene, mRandom);
+    m_integrator->preprocess(m_scene, m_random);
 
     std::clock_t end = clock();
     double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
@@ -34,40 +34,40 @@ AppController::AppController(Scene &scene, int width, int height)
 
 bool AppController::testAndClearUpdate()
 {
-    bool ret = mHasUpdate;
-    mHasUpdate = false; // race-condition
+    bool ret = m_hasUpdate;
+    m_hasUpdate = false; // race-condition
     return ret;
 }
 
 void AppController::handlePathTraceClick(int x, int y)
 {
-    int row = (mHeight - 1) - y;
+    int row = (m_height - 1) - y;
     int col = x;
 
-    Ray ray = mScene.getCamera()->generateRay(
+    Ray ray = m_scene.getCamera()->generateRay(
         row, col,
-        mWidth, mHeight
+        m_width, m_height
     );
 
-    Intersection intersection = mScene.testIntersect(ray);
+    Intersection intersection = m_scene.testIntersect(ray);
     if (!intersection.hit) { return; }
 
-    mIntegrator->debug(intersection, mScene);
+    m_integrator->debug(intersection, m_scene);
     printf("Queueing reload...\n");
-    mHasUpdate = true;
+    m_hasUpdate = true;
 
     // RandomGenerator random;
     // int bounceCount = 10;
     // Sample sample;
     // sample.eyePoints.push_back(ray.origin());
 
-    // Color color = mIntegrator->L(
+    // Color color = m_integrator->L(
     //     intersection,
-    //     mScene,
+    //     m_scene,
     //     random,
     //     bounceCount,
     //     sample
     // );
 
-    // mSample = sample;
+    // m_sample = sample;
 }

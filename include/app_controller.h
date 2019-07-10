@@ -14,14 +14,14 @@ public:
     AppController(Scene &scene, int width, int height);
     bool testAndClearUpdate();
     void handlePathTraceClick(int x, int y);
-    Sample getSample() { return mSample; }
+    Sample getSample() { return m_sample; }
 
 private:
-    std::unique_ptr<Integrator> mIntegrator;
-    RandomGenerator mRandom;
-    Scene &mScene;
-    int mWidth, mHeight;
-    Sample mSample;
+    std::unique_ptr<Integrator> m_integrator;
+    RandomGenerator m_random;
+    Scene &m_scene;
+    int m_width, m_height;
+    Sample m_sample;
 
-    bool mHasUpdate;
+    bool m_hasUpdate;
 };
