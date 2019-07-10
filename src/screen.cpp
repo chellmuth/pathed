@@ -110,7 +110,8 @@ DebugScreen::DebugScreen(
     int width,
     int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Debug", false)
+    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Debug", false),
+      m_controller(controller)
 {
     using namespace nanogui;
 

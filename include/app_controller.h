@@ -7,6 +7,7 @@
 #include "vector.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 class AppController {
@@ -16,7 +17,11 @@ public:
     void handlePathTraceClick(int x, int y);
     Sample getSample() { return m_sample; }
 
+    std::vector<std::string> visualizationFiles() { return m_visualizationFiles; }
+
 private:
+    std::vector<std::string> m_visualizationFiles;
+
     std::unique_ptr<Integrator> m_integrator;
     RandomGenerator m_random;
     Scene &m_scene;

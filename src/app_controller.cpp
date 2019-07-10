@@ -10,6 +10,7 @@
 #include "nearest_photon.h"
 #include "path_tracer.h"
 #include "ray.h"
+#include "visualization.h"
 
 #include <ctime>
 #include <iostream>
@@ -22,6 +23,8 @@ AppController::AppController(Scene &scene, int width, int height)
       m_hasUpdate(false),
       m_integrator(std::make_unique<NearestPhoton>())
 {
+    m_visualizationFiles = visualization::files();
+
     printf("Beginning pre-process...\n");
     std::clock_t begin = clock();
 
@@ -53,7 +56,9 @@ void AppController::handlePathTraceClick(int x, int y)
     if (!intersection.hit) { return; }
 
     m_integrator->debug(intersection, m_scene);
+
     printf("Queueing reload...\n");
+    m_visualizationFiles = visualization::files();
     m_hasUpdate = true;
 
     // RandomGenerator random;

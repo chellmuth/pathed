@@ -31,4 +31,5 @@ public:
 
 private:
     GLApplication *m_glApplication;
+    std::shared_ptr<AppController> m_controller;
 };
