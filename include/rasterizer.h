@@ -12,6 +12,7 @@
 #include <Eigen/Geometry>
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
+
 #include <vector>
 
 enum class Direction {
@@ -34,7 +35,11 @@ public:
     void move(Direction direction);
     void updateDebugMode();
 
+    void setShowVisualization(bool showVisualization) { m_showVisualization = showVisualization; }
+
 private:
+    bool m_showVisualization;
+
     Scene &m_scene;
     Point3 m_origin;
     Point3 m_initialDirection;

@@ -14,8 +14,11 @@ static void checkError(const char *identifier)
 }
 
 Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
-    : m_scene(scene), m_origin(0.f, 0.f, 0.f), m_initialDirection(0.f, 0.f, 0.f),
-      nanogui::GLCanvas(parent)
+    : nanogui::GLCanvas(parent),
+      m_scene(scene),
+      m_origin(0.f, 0.f, 0.f),
+      m_initialDirection(0.f, 0.f, 0.f),
+      m_showVisualization(false)
 {
     m_origin = scene.getCamera()->getOrigin();
     m_initialDirection = scene.getCamera()->getTarget() - m_origin;
@@ -107,8 +110,10 @@ void Rasterizer::drawGL()
 
     m_GLScene.draw();
 
-    m_GLLines.draw(model, view, projection);
-    m_GLPoints.draw(model, view, projection);
+    if (m_showVisualization) {
+        m_GLLines.draw(model, view, projection);
+        m_GLPoints.draw(model, view, projection);
+    }
 
     glDisable(GL_DEPTH_TEST);
 }

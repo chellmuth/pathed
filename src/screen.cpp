@@ -2,6 +2,7 @@
 
 #include "rasterizer.h"
 
+#include <nanogui/checkbox.h>
 #include <nanogui/button.h>
 #include <nanogui/glcanvas.h>
 #include <nanogui/layout.h>
@@ -25,6 +26,10 @@ public:
         m_rasterizer->setSize({width, height});
         m_rasterizer->init();
         m_rasterizer->setBackgroundColor({100, 100, 100, 255});
+    }
+
+    void setShowVisualization(bool showVisualization) {
+        m_rasterizer->setShowVisualization(showVisualization);
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -115,14 +120,19 @@ DebugScreen::DebugScreen(
     leftPanel->setLayout(new GroupLayout());
     leftPanel->setFixedSize(Eigen::Vector2i(300, height));
 
-    Button *b = new Button(leftPanel, "Plain button");
-    b->setCallback([] { cout << "pushed!" << endl; });
-    b->setTooltip("short tooltip");
-
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
     m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
+
+    auto visualizationToggle = new CheckBox(leftPanel, "Show Photons");
+    visualizationToggle->setCallback([this](bool isChecked) {
+        m_glApplication->setShowVisualization(isChecked);
+    });
+
+    Button *b = new Button(leftPanel, "Plain button");
+    b->setCallback([] { cout << "pushed!" << endl; });
+    b->setTooltip("short tooltip");
 
     performLayout();
 }
