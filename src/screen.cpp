@@ -153,6 +153,9 @@ DebugScreen::DebugScreen(
         for (auto &file : files) {
             Button *fileButton = new Button(m_buttonsGroup, file);
             fileButton->setFlags(Button::RadioButton);
+            fileButton->setCallback([this](void) {
+                m_glApplication->setShowVisualization(true);
+            });
         }
 
         performLayout();
