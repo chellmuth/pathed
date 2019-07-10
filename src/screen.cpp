@@ -121,13 +121,6 @@ DebugScreen::DebugScreen(
 {
     using namespace nanogui;
 
-    m_controller->addSubscriber([] {
-        std::cout << "DEBUG OBSERVED!" << std::endl;
-        for (auto &path : visualization::files()) {
-            std::cout << path << std::endl;
-        }
-    });
-
     setLayout(new BoxLayout(Orientation::Horizontal));
 
     Widget *leftPanel = new Widget(this);
@@ -144,11 +137,26 @@ DebugScreen::DebugScreen(
         m_glApplication->setShowVisualization(isChecked);
     });
 
-    Button *b = new Button(leftPanel, "Plain button");
-    b->setCallback([] { cout << "pushed!" << endl; });
-    b->setTooltip("short tooltip");
+    m_buttonsGroup = new Widget(leftPanel);
+    m_buttonsGroup->setLayout(new GroupLayout());
 
     performLayout();
+
+    m_controller->addSubscriber([this] {
+        std::cout << "DEBUG OBSERVED!" << std::endl;
+        for (auto &path : visualization::files()) {
+            std::cout << path << std::endl;
+        }
+
+        std::vector<std::string> files = visualization::files();
+
+        for (auto &file : files) {
+            Button *fileButton = new Button(m_buttonsGroup, file);
+            fileButton->setFlags(Button::RadioButton);
+        }
+
+        performLayout();
+    });
 }
 
 bool DebugScreen::keyboardEvent(int key, int scancode, int action, int modifiers)

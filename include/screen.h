@@ -5,6 +5,7 @@
 #include "image.h"
 
 #include <nanogui/screen.h>
+#include <nanogui/widget.h>
 
 #include <memory>
 
@@ -32,4 +33,5 @@ public:
 private:
     GLApplication *m_glApplication;
     std::shared_ptr<AppController> m_controller;
+    nanogui::Widget *m_buttonsGroup;
 };
