@@ -1,5 +1,6 @@
 #include "screen.h"
 
+#include "photon_renderer.h"
 #include "rasterizer.h"
 #include "visualization.h"
 
@@ -11,6 +12,7 @@
 
 #include <iostream>
 
+using namespace nanogui;
 using namespace std;
 
 class GLApplication : public nanogui::Widget {
@@ -36,6 +38,10 @@ public:
 
     void setShowVisualization(bool showVisualization) {
         m_rasterizer->setShowVisualization(showVisualization);
+    }
+
+    void setVisualization(gl::PhotonRenderer *renderer) {
+        m_rasterizer->setVisualization(renderer);
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -119,8 +125,6 @@ DebugScreen::DebugScreen(
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Debug", false),
       m_controller(controller)
 {
-    using namespace nanogui;
-
     setLayout(new BoxLayout(Orientation::Horizontal));
 
     Widget *leftPanel = new Widget(this);
@@ -140,26 +144,36 @@ DebugScreen::DebugScreen(
     m_buttonsGroup = new Widget(leftPanel);
     m_buttonsGroup->setLayout(new GroupLayout());
 
+    reloadRadioButtons();
+
     performLayout();
 
     m_controller->addSubscriber([this] {
-        std::vector<std::string> files = visualization::files();
-
-        int childCount = m_buttonsGroup->childCount();
-        for (int i = childCount - 1; i >= 0; i--) {
-            m_buttonsGroup->removeChild(i);
-        }
-
-        for (auto &file : files) {
-            Button *fileButton = new Button(m_buttonsGroup, file);
-            fileButton->setFlags(Button::RadioButton);
-            fileButton->setCallback([this](void) {
-                m_glApplication->setShowVisualization(true);
-            });
-        }
-
-        performLayout();
+        reloadRadioButtons();
     });
+}
+
+void DebugScreen::reloadRadioButtons()
+{
+    std::vector<std::string> files = visualization::files();
+
+    int childCount = m_buttonsGroup->childCount();
+    for (int i = childCount - 1; i >= 0; i--) {
+        m_buttonsGroup->removeChild(i);
+    }
+
+    for (auto &file : files) {
+        Button *fileButton = new Button(m_buttonsGroup, file);
+        fileButton->setFlags(Button::RadioButton);
+        fileButton->setCallback([this, file](void) {
+            auto renderer = new gl::PhotonRenderer();
+            renderer->init(file);
+            m_glApplication->setVisualization(renderer);
+            // m_glApplication->setShowVisualization(true);
+        });
+    }
+
+    performLayout();
 }
 
 bool DebugScreen::keyboardEvent(int key, int scancode, int action, int modifiers)

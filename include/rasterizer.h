@@ -5,6 +5,7 @@
 #include "gl_scene.h"
 #include "integrator.h"
 #include "point.h"
+#include "photon_renderer.h"
 #include "scene.h"
 #include "shader.h"
 #include "vector.h"
@@ -36,6 +37,7 @@ public:
     void updateDebugMode();
 
     void setShowVisualization(bool showVisualization) { m_showVisualization = showVisualization; }
+    void setVisualization(gl::PhotonRenderer *visualization) { m_visualization = visualization; }
 
 private:
     bool m_showVisualization;
@@ -48,6 +50,7 @@ private:
     gl::Scene m_GLScene;
     gl::Lines m_GLLines;
     gl::Points m_GLPoints;
+    gl::PhotonRenderer *m_visualization;
 
     int m_width, m_height;
     Shader m_shader;

@@ -78,7 +78,7 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
-void Depositer::postwave(const Scene &scene, RandomGenerator &random)
+void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
 {
     free(m_KDTree);
     m_dataSource->points.clear();

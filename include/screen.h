@@ -31,6 +31,8 @@ public:
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 
 private:
+    void reloadRadioButtons();
+
     GLApplication *m_glApplication;
     std::shared_ptr<AppController> m_controller;
     nanogui::Widget *m_buttonsGroup;

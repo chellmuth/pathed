@@ -16,6 +16,7 @@ static void checkError(const char *identifier)
 
 Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
     : nanogui::GLCanvas(parent),
+      m_visualization(nullptr),
       m_scene(scene),
       m_origin(0.f, 0.f, 0.f),
       m_initialDirection(0.f, 0.f, 0.f),
@@ -112,9 +113,10 @@ void Rasterizer::drawGL()
 
     m_GLScene.draw();
 
-    if (m_showVisualization) {
-        m_GLLines.draw(model, view, projection);
-        m_GLPoints.draw(model, view, projection);
+    if (m_visualization) {
+        m_visualization->draw(model, view, projection);
+        // m_GLLines.draw(model, view, projection);
+        // m_GLPoints.draw(model, view, projection);
     }
 
     glDisable(GL_DEPTH_TEST);
