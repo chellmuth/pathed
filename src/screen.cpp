@@ -143,12 +143,12 @@ DebugScreen::DebugScreen(
     performLayout();
 
     m_controller->addSubscriber([this] {
-        std::cout << "DEBUG OBSERVED!" << std::endl;
-        for (auto &path : visualization::files()) {
-            std::cout << path << std::endl;
-        }
-
         std::vector<std::string> files = visualization::files();
+
+        int childCount = m_buttonsGroup->childCount();
+        for (int i = childCount - 1; i >= 0; i--) {
+            m_buttonsGroup->removeChild(i);
+        }
 
         for (auto &file : files) {
             Button *fileButton = new Button(m_buttonsGroup, file);
