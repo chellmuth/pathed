@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "matrix.h"
 #include "rasterizer.h"
+#include "visualization.h"
 
 static void checkError(const char *identifier)
 {
@@ -44,6 +45,7 @@ void Rasterizer::init()
 
 void Rasterizer::reload()
 {
+    std::vector<std::string> files = visualization::files();
     m_GLPoints.reload();
 }
 
