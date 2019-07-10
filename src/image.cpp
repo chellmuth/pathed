@@ -109,7 +109,7 @@ void Image::save(char const *filestem)
 
     std::string outputDirectory = g_job->outputDirectory();
     std::ostringstream outputExrStream;
-    outputExrStream << outputDirectory << "/" << filestem << ".exr";
+    outputExrStream << outputDirectory << filestem << ".exr";
     std::string outputExr = outputExrStream.str();
 
     std::ostringstream outputSppExrStream;

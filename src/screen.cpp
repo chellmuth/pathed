@@ -1,6 +1,7 @@
 #include "screen.h"
 
 #include "rasterizer.h"
+#include "visualization.h"
 
 #include <nanogui/checkbox.h>
 #include <nanogui/button.h>
@@ -26,6 +27,11 @@ public:
         m_rasterizer->setSize({width, height});
         m_rasterizer->init();
         m_rasterizer->setBackgroundColor({100, 100, 100, 255});
+
+        m_controller->addSubscriber([this] {
+            m_rasterizer->reload();
+            std::cout << "GL OBSERVED!" << std::endl;
+        });
     }
 
     void setShowVisualization(bool showVisualization) {
@@ -114,6 +120,13 @@ DebugScreen::DebugScreen(
       m_controller(controller)
 {
     using namespace nanogui;
+
+    m_controller->addSubscriber([] {
+        std::cout << "DEBUG OBSERVED!" << std::endl;
+        for (auto &path : visualization::files()) {
+            std::cout << path << std::endl;
+        }
+    });
 
     setLayout(new BoxLayout(Orientation::Horizontal));
 

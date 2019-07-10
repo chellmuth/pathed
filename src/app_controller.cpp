@@ -61,6 +61,10 @@ void AppController::handlePathTraceClick(int x, int y)
     m_visualizationFiles = visualization::files();
     m_hasUpdate = true;
 
+    for (auto &lambda : m_subscribers) {
+        lambda();
+    }
+
     // RandomGenerator random;
     // int bounceCount = 10;
     // Sample sample;

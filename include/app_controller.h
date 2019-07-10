@@ -6,6 +6,7 @@
 #include "scene.h"
 #include "vector.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,7 +20,10 @@ public:
 
     std::vector<std::string> visualizationFiles() { return m_visualizationFiles; }
 
+    void addSubscriber(std::function<void()> subscriber) { m_subscribers.push_back(subscriber); }
+
 private:
+    std::vector<std::function<void()> > m_subscribers;
     std::vector<std::string> m_visualizationFiles;
 
     std::unique_ptr<Integrator> m_integrator;
