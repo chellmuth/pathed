@@ -4,5 +4,9 @@
 #include "intersection.h"
 
 namespace PhotonVisualization {
-    void all(const Intersection &intersection, const DataSource &dataSource);
+    void all(
+        const Intersection &intersection,
+        const DataSource &dataSource,
+        int waveCount = 0
+    );
 };

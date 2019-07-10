@@ -1,5 +1,7 @@
 #include "screen.h"
 
+#include "globals.h"
+#include "job.h"
 #include "photon_renderer.h"
 #include "rasterizer.h"
 #include "visualization.h"
@@ -167,7 +169,7 @@ void DebugScreen::reloadRadioButtons()
         fileButton->setFlags(Button::RadioButton);
         fileButton->setCallback([this, file](void) {
             auto renderer = new gl::PhotonRenderer();
-            renderer->init(file);
+            renderer->init(g_job->visualizationPath(file));
             m_glApplication->setVisualization(renderer);
             // m_glApplication->setShowVisualization(true);
         });
