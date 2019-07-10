@@ -26,10 +26,6 @@ public:
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
-        if (Widget::keyboardEvent(key, scancode, action, modifiers)) {
-            return true;
-        }
-
         if (key == GLFW_KEY_W) {
             m_rasterizer->move(Direction::Forward);
         } else if (key == GLFW_KEY_S) {
@@ -40,11 +36,6 @@ public:
             m_rasterizer->move(Direction::Right);
         } else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
             m_rasterizer->updateDebugMode();
-        }
-
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            setVisible(false);
-            return true;
         }
 
         return false;
@@ -67,7 +58,8 @@ private:
 
 RenderScreen::RenderScreen(
     Image &image, std::shared_ptr<AppController> controller, int width, int height
-) : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
+)
+    : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
     m_controller(controller)
 {
     using namespace nanogui;
@@ -106,8 +98,12 @@ void RenderScreen::draw(NVGcontext *ctx)
 }
 
 DebugScreen::DebugScreen(
-    Scene &scene, std::shared_ptr<AppController> controller, int width, int height
-) : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Parent", false)
+    Scene &scene,
+    std::shared_ptr<AppController> controller,
+    int width,
+    int height
+)
+    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Debug", false)
 {
     using namespace nanogui;
 
@@ -127,4 +123,14 @@ DebugScreen::DebugScreen(
     m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
 
     performLayout();
+}
+
+bool DebugScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        setVisible(false);
+        return true;
+    }
+
+    return m_glApplication->keyboardEvent(key, scancode, action, modifiers);
 }

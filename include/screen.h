@@ -27,6 +27,8 @@ class DebugScreen : public nanogui::Screen {
 public:
     DebugScreen(Scene &scene, std::shared_ptr<AppController> controller, int width, int height);
 
+    bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
+
 private:
     GLApplication *m_glApplication;
 };
