@@ -21,7 +21,7 @@ public:
     int height() const { return m_json["height"].get<int>(); }
 
     std::string outputDirectory() const {
-        return m_json["output_directory"].get<std::string>();
+        return m_json["output_directory"].get<std::string>() + "/";
     }
 
     std::string outputName() const {
@@ -30,6 +30,14 @@ public:
 
     std::string scene() const {
         return m_json["scene"].get<std::string>();
+    }
+
+    std::string visualizationDirectory() {
+        return outputDirectory() + "visualization/";
+    }
+
+    std::string visualizationPath(const std::string &filename) {
+        return visualizationDirectory() + filename;
     }
 
     int phiSteps() const { return m_json["phiSteps"].get<int>(); }

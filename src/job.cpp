@@ -34,6 +34,12 @@ void Job::init()
         exit(1);
     }
 
+    result = mkdir(visualizationDirectory().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (result == -1) {
+        std::cout << "Failed to create: " << visualizationDirectory() << std::endl;
+        exit(1);
+    }
+
     std::ostringstream outputFilenameStream;
     outputFilenameStream << directory << "/" << "report.json";
     std::string outputFilename = outputFilenameStream.str();

@@ -1,5 +1,8 @@
 #include "photon_visualization.h"
 
+#include "globals.h"
+#include "job.h"
+
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -21,7 +24,8 @@ void PhotonVisualization::all(const Intersection &intersection, const DataSource
         });
     }
 
-    std::ofstream jsonFile("live-photons.json");
+    std::string jsonPath = g_job->visualizationPath("live-photons.json");
+    std::ofstream jsonFile(jsonPath);
     jsonFile << j.dump(4) << std::endl;
     std::cout << "Wrote to live-photons.json" << std::endl;
 }
