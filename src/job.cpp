@@ -31,13 +31,17 @@ void Job::init()
         } else {
             std::cout << "Failed to create: " << directory << std::endl;
         }
-        exit(1);
+        if (!force()) {
+            exit(1);
+        }
     }
 
     result = mkdir(visualizationDirectory().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (result == -1) {
         std::cout << "Failed to create: " << visualizationDirectory() << std::endl;
-        exit(1);
+        if (!force()) {
+            exit(1);
+        }
     }
 
     std::ostringstream outputFilenameStream;

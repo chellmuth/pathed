@@ -16,6 +16,10 @@ public:
     void init();
 
     bool showUI() const { return m_json["showUI"].get<bool>(); }
+    bool force() const {
+        return m_json["force"].is_boolean()
+            && m_json["force"].get<bool>();
+    }
 
     int width() const { return m_json["width"].get<int>(); }
     int height() const { return m_json["height"].get<int>(); }
