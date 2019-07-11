@@ -69,19 +69,34 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         totalMass += mass;
     }
 
-    // const float addedMass = totalMass * 0.3f;
-    // const float addedMassPerCell = addedMass / (thetaSteps * phiSteps);
-    // for (int phi = 0; phi < phiSteps; phi++) {
-    //     for (int theta = 0; theta < thetaSteps; theta++) {
-    //         massLookup[phi][theta] += addedMassPerCell;
-    //     }
-    // }
-    // totalMass += addedMass;
-
     if (totalMass == 0) {
         // printf("0 Mass!\n");
         *pdf = INV_TWO_PI;
         return UniformSampleHemisphere(random);
+    }
+
+    int emptyCells = 0;
+    for (int phi = 0; phi < phiSteps; phi++) {
+        for (int theta = 0; theta < thetaSteps; theta++) {
+            if (massLookup[phi][theta] == 0.f) {
+                emptyCells += 1;
+            }
+        }
+    }
+
+    if (emptyCells > 0) {
+        const float addedMass = totalMass * 0.2f;
+        const float addedMassPerCell = addedMass / (emptyCells);
+
+        for (int phi = 0; phi < phiSteps; phi++) {
+            for (int theta = 0; theta < thetaSteps; theta++) {
+                if (massLookup[phi][theta] == 0.f) {
+                    massLookup[phi][theta] = addedMassPerCell;
+                }
+            }
+        }
+
+        totalMass += addedMass;
     }
 
     float CDF[phiSteps * thetaSteps];
@@ -147,4 +162,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             return result;
         }
     }
+
+    assert(false);
 }
