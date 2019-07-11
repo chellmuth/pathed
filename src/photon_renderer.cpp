@@ -24,7 +24,9 @@ gl::PhotonRenderer::PhotonRenderer()
 
 gl::PhotonRenderer::~PhotonRenderer()
 {
-    printf("BYE BYE\n");
+    glDeleteVertexArrays(1, &m_entityIDs.vertexArrayID);
+    glDeleteBuffers(1, &m_entityIDs.vertexBufferID);
+    glDeleteBuffers(1, &m_entityIDs.colorBufferID);
 }
 
 void gl::PhotonRenderer::init(const std::string &jsonFile)
