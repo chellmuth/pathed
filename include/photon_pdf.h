@@ -18,7 +18,7 @@ public:
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
 
 private:
-    Point3 mOrigin;
-    std::shared_ptr<DataSource> mDataSource;
-    std::shared_ptr<std::vector<size_t> > mIndices;
+    Point3 m_origin;
+    std::shared_ptr<DataSource> m_dataSource;
+    std::shared_ptr<std::vector<size_t> > m_indices;
 };

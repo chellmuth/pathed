@@ -13,9 +13,9 @@ PhotonPDF::PhotonPDF(
     std::shared_ptr<DataSource> dataSource,
     std::shared_ptr<std::vector<size_t> > indices
 )
-    : mOrigin(origin),
-      mDataSource(dataSource),
-      mIndices(indices)
+    : m_origin(origin),
+      m_dataSource(dataSource),
+      m_indices(indices)
 {}
 
 Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
@@ -32,12 +32,12 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         }
     }
 
-    for (size_t index : *mIndices) {
-        const DataSource::Point &point = mDataSource->points[index];
+    for (size_t index : *m_indices) {
+        const DataSource::Point &point = m_dataSource->points[index];
 
         const Point3 &source = point.source;
         const Vector3 wi = worldToNormal.apply(
-            (source - mOrigin).toVector()
+            (source - m_origin).toVector()
         ).normalized();
 
         float phi = atan2f(wi.z(), wi.x());
