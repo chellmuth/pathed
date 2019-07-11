@@ -15,10 +15,11 @@ PhotonPDF::PhotonPDF(
 )
     : m_origin(origin),
       m_dataSource(dataSource),
-      m_indices(indices)
+      m_indices(indices),
+      m_emptyCDF(false)
 {}
 
-Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
+void PhotonPDF::buildCDF(const Transform &worldToNormal)
 {
     const int phiSteps = g_job->phiSteps();
     const int thetaSteps = g_job->thetaSteps();
@@ -51,12 +52,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         const float theta = acosf(wi.y());
         if (theta > M_PI / 2.f) { continue; }
 
-        // assert(0.f <= phi);
-        // assert(phi <= M_TWO_PI);
-
-        // assert(0.f <= theta);
-        // assert(theta <= M_PI);
-
         const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
         const int thetaStep = (int)floorf(theta / (M_PI / 2.f / thetaSteps));
 
@@ -69,55 +64,72 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
         totalMass += mass;
     }
 
-    if (totalMass == 0) {
+    if (totalMass == 0.f) {
+        m_emptyCDF = true;
         // printf("0 Mass!\n");
+        return;
+    }
+
+    // int emptyCells = 0;
+    // for (int phi = 0; phi < phiSteps; phi++) {
+    //     for (int theta = 0; theta < thetaSteps; theta++) {
+    //         if (massLookup[phi][theta] == 0.f) {
+    //             emptyCells += 1;
+    //         }
+    //     }
+    // }
+
+    // if (emptyCells > 0) {
+    //     const float addedMass = totalMass * 0.2f;
+    //     const float addedMassPerCell = addedMass / (emptyCells);
+
+    //     for (int phi = 0; phi < phiSteps; phi++) {
+    //         for (int theta = 0; theta < thetaSteps; theta++) {
+    //             if (massLookup[phi][theta] == 0.f) {
+    //                 massLookup[phi][theta] = addedMassPerCell;
+    //             }
+    //         }
+    //     }
+
+    //     totalMass += addedMass;
+    // }
+
+    m_CDF.reserve(phiSteps * thetaSteps);
+    for (int i = 0; i < phiSteps * thetaSteps; i++) {
+        const int phiStep = (int)floorf(i / thetaSteps);
+        const int thetaStep = i % thetaSteps;
+        m_CDF[i] = massLookup[phiStep][thetaStep] / totalMass;
+        if (i > 0) {
+            m_CDF[i] += m_CDF[i - 1];
+        }
+    }
+
+    assert(fabsf(m_CDF[phiSteps * thetaSteps - 1] - 1.f) < 1e-5);
+}
+
+Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
+{
+    const int phiSteps = g_job->phiSteps();
+    const int thetaSteps = g_job->thetaSteps();
+
+    buildCDF(worldToNormal);
+
+    if (m_emptyCDF) {
         *pdf = INV_TWO_PI;
         return UniformSampleHemisphere(random);
     }
 
-    int emptyCells = 0;
-    for (int phi = 0; phi < phiSteps; phi++) {
-        for (int theta = 0; theta < thetaSteps; theta++) {
-            if (massLookup[phi][theta] == 0.f) {
-                emptyCells += 1;
-            }
-        }
-    }
-
-    if (emptyCells > 0) {
-        const float addedMass = totalMass * 0.2f;
-        const float addedMassPerCell = addedMass / (emptyCells);
-
-        for (int phi = 0; phi < phiSteps; phi++) {
-            for (int theta = 0; theta < thetaSteps; theta++) {
-                if (massLookup[phi][theta] == 0.f) {
-                    massLookup[phi][theta] = addedMassPerCell;
-                }
-            }
-        }
-
-        totalMass += addedMass;
-    }
-
-    float CDF[phiSteps * thetaSteps];
-    for (int i = 0; i < phiSteps * thetaSteps; i++) {
-        const int phiStep = (int)floorf(i / thetaSteps);
-        const int thetaStep = i % thetaSteps;
-        CDF[i] = massLookup[phiStep][thetaStep] / totalMass;
-        if (i > 0) {
-            CDF[i] += CDF[i - 1];
-        }
-    }
-
-    assert(fabsf(CDF[phiSteps * thetaSteps - 1] - 1.f) < 1e-5);
-
     const float xi = random.next();
     int phiStep = -1, thetaStep = -1;
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
-        if (xi <= CDF[i]) {
+        if (xi <= m_CDF[i]) {
             phiStep = (int)floorf(i / thetaSteps);
             thetaStep = i % thetaSteps;
-            float massRatio = massLookup[phiStep][thetaStep] / totalMass;
+
+            float massRatio = m_CDF[i];
+            if (i > 0) {
+                massRatio -= m_CDF[i - 1];
+            }
 
             float phi1 = M_TWO_PI * (1.f * phiStep / phiSteps);
             float phi2 = M_TWO_PI * (1.f * (phiStep + 1) / phiSteps);
@@ -145,11 +157,6 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             const float z = sinf(theta) * sinf(phi);
 
             Vector3 result = Vector3(x, y, z);
-            if (debug) {
-                printf("steps: %i %i %f\n", phiStep, thetaStep, massLookup[phiStep][thetaStep]);
-                printf("phi/theta: %f %f\n", phi, theta);
-                result.debug();
-            }
             assert(fabsf(result.length() - 1.f) < 1e-5);
 
             return result;
