@@ -114,6 +114,8 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
         PhotonPDF photonPDF(lightSample.point, m_eyeDataSource, resultIndices);
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
+        float pdfCheck = photonPDF.pdf(pdfSample, worldToNormal);
+        assert(fabsf(pdfCheck - pdf) < 1e-5);
 
         bounceDirection = hemisphereToWorld.apply(pdfSample);
 

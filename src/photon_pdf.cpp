@@ -19,6 +19,19 @@ PhotonPDF::PhotonPDF(
       m_emptyCDF(false)
 {}
 
+void cartesianToSpherical(Vector3 cartesian, float *phi, float *theta)
+{
+    *phi = atan2f(cartesian.z(), cartesian.x());
+    if (*phi < 0.f) {
+        *phi += 2 * M_PI;
+    }
+    if (*phi == M_TWO_PI) {
+        *phi = 0;
+    }
+
+    *theta = acosf(cartesian.y());
+}
+
 void PhotonPDF::buildCDF(const Transform &worldToNormal)
 {
     const int phiSteps = g_job->phiSteps();
@@ -41,22 +54,16 @@ void PhotonPDF::buildCDF(const Transform &worldToNormal)
             (source - m_origin).toVector()
         ).normalized();
 
-        float phi = atan2f(wi.z(), wi.x());
-        if (phi < 0.f) {
-            phi += 2 * M_PI;
-        }
-        if (phi == M_TWO_PI) {
-            phi = 0;
-        }
+        float phi, theta;
+        cartesianToSpherical(wi, &phi, &theta);
 
-        const float theta = acosf(wi.y());
         if (theta > M_PI / 2.f) { continue; }
 
         const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
         const int thetaStep = (int)floorf(theta / (M_PI / 2.f / thetaSteps));
 
-        assert(phiStep <= phiSteps);
-        assert(thetaSteps <= thetaSteps);
+        assert(phiStep < phiSteps);
+        assert(thetaStep < thetaSteps);
 
         const Color &throughput = point.throughput;
         float mass = throughput.r() + throughput.g() + throughput.b();
@@ -109,9 +116,6 @@ void PhotonPDF::buildCDF(const Transform &worldToNormal)
 
 Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug)
 {
-    const int phiSteps = g_job->phiSteps();
-    const int thetaSteps = g_job->thetaSteps();
-
     buildCDF(worldToNormal);
 
     if (m_emptyCDF) {
@@ -120,7 +124,11 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     }
 
     const float xi = random.next();
+
+    const int phiSteps = g_job->phiSteps();
+    const int thetaSteps = g_job->thetaSteps();
     int phiStep = -1, thetaStep = -1;
+
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
         if (xi <= m_CDF[i]) {
             phiStep = (int)floorf(i / thetaSteps);
@@ -164,4 +172,49 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     }
 
     assert(false);
+}
+
+float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
+{
+    if (m_emptyCDF) {
+        return INV_TWO_PI;
+    }
+
+    Vector3 wi(worldToNormal.apply(wiWorld));
+
+    float phi, theta;
+    cartesianToSpherical(wi, &phi, &theta);
+
+    assert(0.f <= phi);
+    assert(phi <= M_TWO_PI);
+
+    assert(0.f <= theta);
+    assert(theta <= M_PI);
+
+    const int phiSteps = g_job->phiSteps();
+    const int thetaSteps = g_job->thetaSteps();
+
+    const int phiStep = (int)floorf(phi / (M_TWO_PI / phiSteps));
+    const int thetaStep = (int)floorf(theta / (M_PI / 2.f / thetaSteps));
+
+    assert(phiStep < phiSteps);
+    assert(thetaStep < thetaSteps);
+
+    const float phi1 = M_TWO_PI * (1.f * phiStep / phiSteps);
+    const float phi2 = M_TWO_PI * (1.f * (phiStep + 1) / phiSteps);
+
+    const float theta1 = (M_PI / 2.f) * (1.f * thetaStep / thetaSteps);
+    const float theta2 = (M_PI / 2.f) * (1.f * (thetaStep + 1) / thetaSteps);
+
+    const float y1 = cosf(theta1);
+    const float y2 = cosf(theta2);
+
+
+    const int cdfIndex = phiStep * thetaSteps + thetaStep;
+    float massRatio = m_CDF[cdfIndex];
+    if (cdfIndex > 0) {
+        massRatio -= m_CDF[cdfIndex - 1];
+    }
+    const float pdf = massRatio / ((y1 - y2) * (phi2 - phi1));
+    return pdf;
 }

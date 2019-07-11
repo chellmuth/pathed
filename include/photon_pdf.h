@@ -16,6 +16,7 @@ public:
         std::shared_ptr<std::vector<size_t> > indices
     );
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
+    float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
 
 private:
     void buildCDF(const Transform &worldToNormal);
