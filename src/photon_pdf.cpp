@@ -137,16 +137,9 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             const float ySample = (1.f - xiY) * y1 + xiY * y2;
             const float theta = acosf(ySample);
 
-            // const float xiTheta = random.next();
-            // const float thetaSample = ((1.f - xiTheta) * thetaStep + xiTheta * (thetaStep + 1)) / thetaSteps;
-
-            const float phi = M_TWO_PI * phiSample;
-            // const float theta = (M_PI / 2.f) * thetaSample;
-
-            // *pdf = massRatio * sinf(theta) / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
-            // *pdf = massRatio / ((cosf(theta1) - cosf(theta2)) * (phi2 - phi1));
             *pdf = massRatio / ((y1 - y2) * (phi2 - phi1));
 
+            const float phi = M_TWO_PI * phiSample;
             const float y = cosf(theta);
             const float x = sinf(theta) * cosf(phi);
             const float z = sinf(theta) * sinf(phi);
