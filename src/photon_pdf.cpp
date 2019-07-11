@@ -78,6 +78,12 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     // }
     // totalMass += addedMass;
 
+    if (totalMass == 0) {
+        // printf("0 Mass!\n");
+        *pdf = INV_TWO_PI;
+        return UniformSampleHemisphere(random);
+    }
+
     float CDF[phiSteps * thetaSteps];
     for (int i = 0; i < phiSteps * thetaSteps; i++) {
         const int phiStep = (int)floorf(i / thetaSteps);
@@ -141,8 +147,4 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
             return result;
         }
     }
-
-    // printf("0 Mass? %f %f\n", totalMass, CDF[phiSteps * thetaSteps -1]);
-    *pdf = INV_TWO_PI;
-    return UniformSampleHemisphere(random);
 }

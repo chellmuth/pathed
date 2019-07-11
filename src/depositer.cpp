@@ -151,7 +151,9 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
         }
     }
 
-    PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);
+    if (waveCount <= 5) {
+        PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);
+    }
 
     free(m_eyeTree);
     m_eyeDataSource->points.clear();

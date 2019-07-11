@@ -35,7 +35,7 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
 
     m_GLScene.init(scene);
     m_GLLines.init();
-    m_GLPoints.init();
+    // m_GLPoints.init();
 
     m_arcball.setSize({width, height});
 }
@@ -47,7 +47,7 @@ void Rasterizer::init()
 void Rasterizer::reload()
 {
     std::vector<std::string> files = visualization::files();
-    m_GLPoints.reload();
+    // m_GLPoints.reload();
 }
 
 void Rasterizer::setState(const Sample &sample)
@@ -166,7 +166,7 @@ void Rasterizer::move(Direction direction)
 
 void Rasterizer::updateDebugMode()
 {
-    m_GLPoints.updateDebugMode();
+    // m_GLPoints.updateDebugMode();
 }
 
 bool Rasterizer::mouseButtonEvent(

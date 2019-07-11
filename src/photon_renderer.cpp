@@ -22,6 +22,11 @@ gl::PhotonRenderer::PhotonRenderer()
     );
 }
 
+gl::PhotonRenderer::~PhotonRenderer()
+{
+    printf("BYE BYE\n");
+}
+
 void gl::PhotonRenderer::init(const std::string &jsonFile)
 {
     std::ifstream jsonScene(jsonFile);

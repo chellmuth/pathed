@@ -14,6 +14,7 @@
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 
+#include <memory>
 #include <vector>
 
 enum class Direction {
@@ -37,10 +38,11 @@ public:
     void updateDebugMode();
 
     void setShowVisualization(bool showVisualization) { m_showVisualization = showVisualization; }
-    void setVisualization(gl::PhotonRenderer *visualization) { m_visualization = visualization; }
+    void setVisualization(std::unique_ptr<gl::PhotonRenderer> visualization) { m_visualization = std::move(visualization); }
 
 private:
     bool m_showVisualization;
+    std::unique_ptr<gl::PhotonRenderer> m_visualization;
 
     Scene &m_scene;
     Point3 m_origin;
@@ -50,7 +52,6 @@ private:
     gl::Scene m_GLScene;
     gl::Lines m_GLLines;
     gl::Points m_GLPoints;
-    gl::PhotonRenderer *m_visualization;
 
     int m_width, m_height;
     Shader m_shader;

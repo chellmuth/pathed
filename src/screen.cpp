@@ -42,8 +42,8 @@ public:
         m_rasterizer->setShowVisualization(showVisualization);
     }
 
-    void setVisualization(gl::PhotonRenderer *renderer) {
-        m_rasterizer->setVisualization(renderer);
+    void setVisualization(std::unique_ptr<gl::PhotonRenderer> renderer) {
+        m_rasterizer->setVisualization(std::move(renderer));
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -168,9 +168,9 @@ void DebugScreen::reloadRadioButtons()
         Button *fileButton = new Button(m_buttonsGroup, file);
         fileButton->setFlags(Button::RadioButton);
         fileButton->setCallback([this, file](void) {
-            auto renderer = new gl::PhotonRenderer();
+            auto renderer = std::make_unique<gl::PhotonRenderer>();
             renderer->init(g_job->visualizationPath(file));
-            m_glApplication->setVisualization(renderer);
+            m_glApplication->setVisualization(std::move(renderer));
             // m_glApplication->setShowVisualization(true);
         });
     }

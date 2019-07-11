@@ -14,6 +14,7 @@ namespace gl {
     class PhotonRenderer {
     public:
         PhotonRenderer();
+        ~PhotonRenderer();
 
         void init(const std::string &jsonFile);
         void draw(
