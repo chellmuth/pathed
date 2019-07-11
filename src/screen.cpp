@@ -33,7 +33,6 @@ public:
         m_rasterizer->setBackgroundColor({100, 100, 100, 255});
 
         m_controller->addSubscriber([this] {
-            m_rasterizer->reload();
             std::cout << "GL OBSERVED!" << std::endl;
         });
     }
@@ -64,7 +63,7 @@ public:
 
     virtual void draw(NVGcontext *ctx) {
         if (m_controller->testAndClearUpdate()) {
-            m_rasterizer->reload();
+            // m_rasterizer->reload();
         }
 
         m_rasterizer->setState(m_controller->getSample());

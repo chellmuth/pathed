@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gl_lines.h"
-#include "gl_points.h"
 #include "gl_scene.h"
 #include "integrator.h"
 #include "point.h"
@@ -31,7 +30,6 @@ public:
     void init();
     virtual void drawGL() override;
 
-    void reload();
     void setState(const Sample &sample);
 
     void move(Direction direction);
@@ -51,7 +49,6 @@ private:
     nanogui::Arcball m_arcball;
     gl::Scene m_GLScene;
     gl::Lines m_GLLines;
-    gl::Points m_GLPoints;
 
     int m_width, m_height;
     Shader m_shader;
