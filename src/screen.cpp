@@ -128,7 +128,7 @@ PathedScreen::PathedScreen(
     int width,
     int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Debug", false),
+    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
       m_controller(controller)
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
