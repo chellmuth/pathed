@@ -52,6 +52,7 @@ Vector3 Depositer::sample(
     if (tree == nullptr) {
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
         Transform hemisphereToWorld = normalToWorldSpace(normal);
+        *pdf = INV_TWO_PI;
         return hemisphereToWorld.apply(hemisphereSample);
     }
 
