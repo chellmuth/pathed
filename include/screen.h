@@ -37,14 +37,14 @@ public:
     PathedScreen(
         Image &image,
         Scene &scene,
-        std::shared_ptr<RenderStatus> renderStatus,
         std::shared_ptr<AppController> controller,
         int width,
         int height
     );
 
+    void updateRenderStatus(const RenderStatus &renderStatus);
+
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
-    void draw(NVGcontext *ctx) override;
 
 private:
     void reloadRadioButtons();
@@ -55,5 +55,4 @@ private:
     nanogui::ref<nanogui::Label> m_sampleLabel;
 
     std::shared_ptr<AppController> m_controller;
-    std::shared_ptr<RenderStatus> m_renderStatus;
 };

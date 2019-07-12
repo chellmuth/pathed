@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <ctime>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -98,7 +99,7 @@ void sampleImage(
     }
 }
 
-void run(Image &image, Scene &scene, std::shared_ptr<RenderStatus> status, bool *quit)
+void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
 {
     const int width = g_job->width();
     const int height = g_job->height();
@@ -132,7 +133,10 @@ void run(Image &image, Scene &scene, std::shared_ptr<RenderStatus> status, bool 
         std::clock_t end = clock();
 
         integrator->postwave(scene, random, i + 1);
-        status->setSample(i + 1);
+
+        RenderStatus renderStatus;
+        renderStatus.setSample(i + 1);
+        callback(renderStatus);
 
         std::mutex &lock = image.getLock();
         lock.lock();
@@ -190,28 +194,26 @@ int main() {
     ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
-    std::shared_ptr<RenderStatus> status = std::make_shared<RenderStatus>();
-
-    bool quit = false;
-    std::thread renderThread(run, std::ref(image), std::ref(scene), status, &quit);
-
-    // image.debug();
-    // image.write("test.bmp");
-
     auto controller = std::make_shared<AppController>(scene, width, height);
 
-    try {
-        nanogui::init();
+    nanogui::init();
+    nanogui::ref<PathedScreen> screen = new PathedScreen(
+        image,
+        scene,
+        controller,
+        width,
+        height
+    );
 
-        if (g_job->showUI()) {
-            nanogui::ref<PathedScreen> screen = new PathedScreen(
-                image,
-                scene,
-                status,
-                controller,
-                width,
-                height
-            );
+    std::function<void(RenderStatus)> callback([&screen](RenderStatus rs) {
+        screen->updateRenderStatus(rs);
+    });
+
+    bool quit = false;
+    std::thread renderThread(run, std::ref(image), std::ref(scene), callback, &quit);
+
+    try {
+       if (g_job->showUI()) {
             screen->drawAll();
             screen->setVisible(true);
 

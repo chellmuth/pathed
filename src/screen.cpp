@@ -123,14 +123,12 @@ void RenderWidget::draw(NVGcontext *ctx)
 PathedScreen::PathedScreen(
     Image &image,
     Scene &scene,
-    std::shared_ptr<RenderStatus> renderStatus,
     std::shared_ptr<AppController> controller,
     int width,
     int height
 )
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
-      m_controller(controller),
-      m_renderStatus(renderStatus)
+      m_controller(controller)
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -200,6 +198,14 @@ void PathedScreen::reloadRadioButtons()
     performLayout();
 }
 
+void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
+{
+    std::ostringstream sampleStream;
+    sampleStream << "Sample: " << renderStatus.sample();
+
+    m_sampleLabel->setCaption(sampleStream.str());
+}
+
 bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -208,13 +214,4 @@ bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifier
     }
 
     return m_glWidget->keyboardEvent(key, scancode, action, modifiers);
-}
-
-void PathedScreen::draw(NVGcontext *ctx) {
-    std::ostringstream sampleStream;
-    sampleStream << "Sample: " << m_renderStatus->sample();
-
-    m_sampleLabel->setCaption(sampleStream.str());
-
-    Screen::draw(ctx);
 }
