@@ -38,8 +38,8 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     createLightPaths(scene, random);
 
-    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 }
 
 Vector3 Depositer::sample(
@@ -95,7 +95,7 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
         LightSample lightSample = scene.sampleLights(random);
 
         float pdf;
-        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree, random, &pdf);
+        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree.get(), random, &pdf);
 
         if (bounceDirection.dot(lightSample.normal) < 0.f) {
             assert(false);
@@ -135,24 +135,22 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
 {
     // Create eye tree from previous L calls populating datasource
-    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
     if (waveCount <= 5) {
         PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);
     }
 
     // Clear light tree
-    free(m_KDTree);
     m_dataSource->points.clear();
     printf("%i\n", m_eyeDataSource->points.size());
 
     // Build new light tree from eye tree
     createLightPaths(scene, random);
 
-    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
-    // Free eye tree to rebuild in L
-    free(m_eyeTree);
+    // Clear eye source to rebuild in L
     m_eyeDataSource->points.clear();
 }
 

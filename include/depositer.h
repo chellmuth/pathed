@@ -77,8 +77,8 @@ private:
     BounceController m_bounceController;
 
     std::shared_ptr<DataSource> m_dataSource;
-    KDTree *m_KDTree;
+    std::unique_ptr<KDTree> m_KDTree;
 
     std::shared_ptr<DataSource> m_eyeDataSource;
-    KDTree *m_eyeTree;
+    std::unique_ptr<KDTree> m_eyeTree;
 };
