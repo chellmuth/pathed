@@ -17,6 +17,7 @@
 #include "path_tracer.h"
 #include "random_generator.h"
 #include "ray.h"
+#include "render_status.h"
 #include "scene.h"
 #include "scene_parser.h"
 #include "screen.h"
@@ -97,7 +98,7 @@ void sampleImage(
     }
 }
 
-void run(Image &image, Scene &scene, bool *quit)
+void run(Image &image, Scene &scene, std::shared_ptr<RenderStatus> status, bool *quit)
 {
     const int width = g_job->width();
     const int height = g_job->height();
@@ -131,6 +132,7 @@ void run(Image &image, Scene &scene, bool *quit)
         std::clock_t end = clock();
 
         integrator->postwave(scene, random, i + 1);
+        status->setSample(i + 1);
 
         std::mutex &lock = image.getLock();
         lock.lock();
@@ -188,8 +190,10 @@ int main() {
     ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
+    std::shared_ptr<RenderStatus> status = std::make_shared<RenderStatus>();
+
     bool quit = false;
-    std::thread renderThread(run, std::ref(image), std::ref(scene), &quit);
+    std::thread renderThread(run, std::ref(image), std::ref(scene), status, &quit);
 
     // image.debug();
     // image.write("test.bmp");
@@ -200,15 +204,16 @@ int main() {
         nanogui::init();
 
         if (g_job->showUI()) {
-            nanogui::ref<PathedScreen> debug = new PathedScreen(
+            nanogui::ref<PathedScreen> screen = new PathedScreen(
                 image,
                 scene,
+                status,
                 controller,
                 width,
                 height
             );
-            debug->drawAll();
-            debug->setVisible(true);
+            screen->drawAll();
+            screen->setVisible(true);
 
             nanogui::mainloop();
 

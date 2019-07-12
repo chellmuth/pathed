@@ -13,6 +13,7 @@
 #include <nanogui/opengl.h>
 
 #include <iostream>
+#include <sstream>
 
 using namespace nanogui;
 using namespace std;
@@ -92,8 +93,6 @@ RenderWidget::RenderWidget(
     m_canvas->setSize({width, height});
     m_canvas->init();
     m_canvas->setBackgroundColor({100, 100, 100, 255});
-
-    // performLayout();
 }
 
 bool RenderWidget::keyboardEvent(int key, int scancode, int action, int modifiers)
@@ -124,12 +123,14 @@ void RenderWidget::draw(NVGcontext *ctx)
 PathedScreen::PathedScreen(
     Image &image,
     Scene &scene,
+    std::shared_ptr<RenderStatus> renderStatus,
     std::shared_ptr<AppController> controller,
     int width,
     int height
 )
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
-      m_controller(controller)
+      m_controller(controller),
+      m_renderStatus(renderStatus)
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -155,6 +156,13 @@ PathedScreen::PathedScreen(
             m_renderWidget->setVisible(true);
             m_glWidget->setVisible(false);
         }
+    });
+
+    m_sampleLabel = new Label(leftPanel, "Sample: 0");
+
+    auto reloadButton = new Button(leftPanel, "Reload json");
+    reloadButton->setCallback([this]() {
+        reloadRadioButtons();
     });
 
     m_buttonsGroup = new Widget(leftPanel);
@@ -200,4 +208,13 @@ bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifier
     }
 
     return m_glWidget->keyboardEvent(key, scancode, action, modifiers);
+}
+
+void PathedScreen::draw(NVGcontext *ctx) {
+    std::ostringstream sampleStream;
+    sampleStream << "Sample: " << m_renderStatus->sample();
+
+    m_sampleLabel->setCaption(sampleStream.str());
+
+    Screen::draw(ctx);
 }
