@@ -140,13 +140,21 @@ DebugScreen::DebugScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    nanogui::ref<RenderScreen> app = new RenderScreen(rightPanel, image, controller, width, height);
+    m_renderApplication = new RenderScreen(rightPanel, image, controller, width, height);
     m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
+
+    m_renderApplication->setVisible(true);
     m_glApplication->setVisible(false);
 
-    auto visualizationToggle = new CheckBox(leftPanel, "Show Photons");
+    auto visualizationToggle = new CheckBox(leftPanel, "Debug Mode");
     visualizationToggle->setCallback([this](bool isChecked) {
-        m_glApplication->setShowVisualization(isChecked);
+        if (isChecked) {
+            m_renderApplication->setVisible(false);
+            m_glApplication->setVisible(true);
+        } else {
+            m_renderApplication->setVisible(true);
+            m_glApplication->setVisible(false);
+        }
     });
 
     m_buttonsGroup = new Widget(leftPanel);

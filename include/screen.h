@@ -46,6 +46,8 @@ private:
     void reloadRadioButtons();
 
     GLApplication *m_glApplication;
+    nanogui::ref<RenderScreen> m_renderApplication;
+
     std::shared_ptr<AppController> m_controller;
     nanogui::Widget *m_buttonsGroup;
 };
