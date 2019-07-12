@@ -79,7 +79,7 @@ private:
 RenderScreen::RenderScreen(
     Image &image, std::shared_ptr<AppController> controller, int width, int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width, height), "Path Tracer", false),
+    : nanogui::Screen(Eigen::Vector2i(width, height), g_job->outputDirectory(), false),
       m_controller(controller)
 {
     using namespace nanogui;
