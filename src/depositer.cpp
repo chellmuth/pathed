@@ -133,59 +133,26 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 
 void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
 {
-    free(m_KDTree);
-    m_dataSource->points.clear();
-    printf("%i\n", m_eyeDataSource->points.size());
-    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-
-    createLightPaths(scene, random);
+    // Create eye tree from previous L calls populating datasource
+    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
     if (waveCount <= 5) {
         PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);
     }
 
+    // Clear light tree
+    free(m_KDTree);
+    m_dataSource->points.clear();
+    printf("%i\n", m_eyeDataSource->points.size());
+
+    // Build new light tree from eye tree
+    createLightPaths(scene, random);
+
+    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+
+    // Free eye tree to rebuild in L
     free(m_eyeTree);
     m_eyeDataSource->points.clear();
-    m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-}
-
-static Color average(const DataSource &dataSource, const size_t indices[], size_t size)
-{
-    if (size == 0) { return Color(0.f); }
-
-    Color sum(0.f);
-    for (int i = 0; i < size; i++) {
-        sum += dataSource.points[indices[i]].throughput / size;
-    }
-
-    return sum;
-}
-
-static Color average(const DataSource &dataSource, const std::vector<std::pair<size_t, float> > &indicesDistances)
-{
-    size_t size = indicesDistances.size();
-
-    if (size == 0) { return Color(0.f); }
-
-    Color sum(0.f);
-    for (int i = 0; i < size; i++) {
-        size_t index = indicesDistances[i].first;
-        sum += dataSource.points[index].throughput / size;
-    }
-
-    return sum;
-}
-
-static float max(const float values[], size_t size)
-{
-    if (size == 0) { return 0.f; }
-
-    float max = std::numeric_limits<float>::lowest();
-    for (int i = 0; i < size; i++) {
-        max = fmaxf(max, values[i]);
-    }
-
-    return max;
 }
 
 Color Depositer::L(
