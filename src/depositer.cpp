@@ -40,7 +40,10 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     PhotonVisualization::all(IntersectionHelper::miss, *m_dataSource, "light-photons", 0);
 
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree->buildIndex();
+
     m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_eyeTree->buildIndex();
 }
 
 Vector3 Depositer::sample(
@@ -150,6 +153,7 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
 {
     // Create eye tree from previous L calls populating datasource
     m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_eyeTree->buildIndex();
 
     if (waveCount <= 3) {
         PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, "eye-photons", waveCount);
@@ -166,6 +170,7 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
     }
 
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree->buildIndex();
 
     // Clear eye source to rebuild in L
     m_eyeDataSource->points.clear();

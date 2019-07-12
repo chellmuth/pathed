@@ -33,7 +33,7 @@ struct DataSource
     bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
 };
 
-typedef nanoflann::KDTreeSingleIndexDynamicAdaptor<
+typedef nanoflann::KDTreeSingleIndexAdaptor<
     nanoflann::L2_Simple_Adaptor<float, DataSource>,
     DataSource,
     3
