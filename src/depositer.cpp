@@ -42,9 +42,9 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
-        Vector3 hemisphereSample = UniformSampleHemisphere(random);
-        Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+        float pdf;
+        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree, random, &pdf);
+
         Ray lightRay(lightSample.point, bounceDirection);
 
         Color throughput = lightSample.light->getMaterial()->emit();
@@ -65,8 +65,8 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
                 });
             }
 
-            hemisphereSample = UniformSampleHemisphere(random);
-            hemisphereToWorld = normalToWorldSpace(intersection.normal);
+            Vector3 hemisphereSample = UniformSampleHemisphere(random);
+            Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
             bounceDirection = hemisphereToWorld.apply(hemisphereSample);
             lightRay = Ray(intersection.point, bounceDirection);
 
@@ -76,6 +76,49 @@ void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 
     m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+}
+
+Vector3 Depositer::sample(
+    const Point3 &point,
+    const Vector3 &normal,
+    const KDTree *tree,
+    RandomGenerator &random,
+    float *pdf
+) {
+    if (tree == nullptr) {
+        Vector3 hemisphereSample = UniformSampleHemisphere(random);
+        Transform hemisphereToWorld = normalToWorldSpace(normal);
+        return hemisphereToWorld.apply(hemisphereSample);
+    }
+
+    float queryPoint[3] = {
+        point.x(),
+        point.y(),
+        point.z()
+    };
+
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+    tree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices);
+
+    Transform worldToNormal = worldSpaceToNormal(normal);
+    Vector3 pdfSample = photonPDF.sample(random, worldToNormal, pdf);
+
+    Transform hemisphereToWorld = normalToWorldSpace(normal);
+    return hemisphereToWorld.apply(pdfSample);
+
+    // float pdfCheck = photonPDF.pdf(bounceDirection, worldToNormal);
+    // assert(fabsf(pdfCheck - pdf) < 1e-5);
+    // if (pdf != INV_TWO_PI) {
+    //     printf("%f %f\n", pdf, pdfCheck);
+    // }
 }
 
 void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
@@ -91,33 +134,8 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
-        Vector3 bounceDirection(0.f);
-        Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
-
-        float queryPoint[3] = {
-            lightSample.point.x(),
-            lightSample.point.y(),
-            lightSample.point.z()
-        };
-
-        const int debugSearchCount = g_job->debugSearchCount();
-        auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
-        std::vector<float> outDistanceSquared(debugSearchCount);
-
-        nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
-        resultSet.init(resultIndices->data(), outDistanceSquared.data());
-
-        m_eyeTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-
-        Transform worldToNormal = worldSpaceToNormal(lightSample.normal);
-
-        PhotonPDF photonPDF(lightSample.point, m_eyeDataSource, resultIndices);
         float pdf;
-        Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
-        float pdfCheck = photonPDF.pdf(pdfSample, worldToNormal);
-        assert(fabsf(pdfCheck - pdf) < 1e-5);
-
-        bounceDirection = hemisphereToWorld.apply(pdfSample);
+        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree, random, &pdf);
 
         if (bounceDirection.dot(lightSample.normal) < 0.f) {
             assert(false);

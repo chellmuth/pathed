@@ -189,7 +189,7 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     assert(phi <= M_TWO_PI);
 
     assert(0.f <= theta);
-    assert(theta <= M_PI);
+    assert(theta < M_PI/2.f);
 
     const int phiSteps = g_job->phiSteps();
     const int thetaSteps = g_job->thetaSteps();
@@ -209,12 +209,12 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     const float y1 = cosf(theta1);
     const float y2 = cosf(theta2);
 
-
     const int cdfIndex = phiStep * thetaSteps + thetaStep;
     float massRatio = m_CDF[cdfIndex];
     if (cdfIndex > 0) {
         massRatio -= m_CDF[cdfIndex - 1];
     }
     const float pdf = massRatio / ((y1 - y2) * (phi2 - phi1));
+    assert(pdf != 0.f);
     return pdf;
 }

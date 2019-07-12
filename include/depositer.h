@@ -63,6 +63,14 @@ private:
         Sample &sample
     ) const;
 
+    Vector3 sample(
+        const Point3 &point,
+        const Vector3 &normal,
+        const KDTree *tree,
+        RandomGenerator &random,
+        float *pdf
+    );
+
     void debug2(const Intersection &intersection, const Scene &scene) const;
 
     BounceController m_bounceController;
