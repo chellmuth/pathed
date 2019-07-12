@@ -44,6 +44,8 @@ public:
         return visualizationDirectory() + filename;
     }
 
+    int lightPhiSteps() const { return m_json["lightPhiSteps"].get<int>(); }
+    int lightThetaSteps() const { return m_json["lightThetaSteps"].get<int>(); }
     int phiSteps() const { return m_json["phiSteps"].get<int>(); }
     int thetaSteps() const { return m_json["thetaSteps"].get<int>(); }
     int photonSamples() const { return m_json["photonSamples"].get<int>(); }

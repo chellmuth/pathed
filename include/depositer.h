@@ -68,6 +68,8 @@ private:
         const Point3 &point,
         const Vector3 &normal,
         const KDTree *tree,
+        int phiSteps,
+        int thetaSteps,
         RandomGenerator &random,
         float *pdf
     );

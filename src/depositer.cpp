@@ -47,6 +47,8 @@ Vector3 Depositer::sample(
     const Point3 &point,
     const Vector3 &normal,
     const KDTree *tree,
+    int phiSteps,
+    int thetaSteps,
     RandomGenerator &random,
     float *pdf
 ) {
@@ -72,7 +74,7 @@ Vector3 Depositer::sample(
 
     tree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices, g_job->phiSteps(), g_job->thetaSteps());
+    PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices, phiSteps, thetaSteps);
 
     Transform worldToNormal = worldSpaceToNormal(normal);
     Vector3 pdfSample = photonPDF.sample(random, worldToNormal, pdf);
@@ -92,11 +94,22 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
     const int photonSamples = g_job->photonSamples();
     const int photonBounces = g_job->photonBounces();
 
+    const int phiSteps = g_job->lightPhiSteps();
+    const int thetaSteps = g_job->lightThetaSteps();
+
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
         float pdf;
-        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree.get(), random, &pdf);
+        Vector3 bounceDirection = sample(
+            lightSample.point,
+            lightSample.normal,
+            m_eyeTree.get(),
+            phiSteps,
+            thetaSteps,
+            random,
+            &pdf
+        );
 
         if (bounceDirection.dot(lightSample.normal) < 0.f) {
             assert(false);
@@ -135,7 +148,6 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 
 void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
 {
-    printf("WAVE: %i\n", waveCount);
     // Create eye tree from previous L calls populating datasource
     m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
@@ -145,7 +157,6 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
 
     // Clear light tree
     m_dataSource->points.clear();
-    printf("%i\n", m_eyeDataSource->points.size());
 
     // Build new light tree from eye tree
     createLightPaths(scene, random);
@@ -197,7 +208,13 @@ Color Depositer::L(
 
         Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
 
-        PhotonPDF photonPDF(lastIntersection.point, m_dataSource, resultIndices, g_job->phiSteps(), g_job->thetaSteps());
+        PhotonPDF photonPDF(
+            lastIntersection.point,
+            m_dataSource,
+            resultIndices,
+            g_job->phiSteps(),
+            g_job->thetaSteps()
+        );
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
 
