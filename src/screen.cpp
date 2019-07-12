@@ -76,7 +76,7 @@ private:
 };
 
 
-RenderScreen::RenderScreen(
+RenderWidget::RenderWidget(
     Widget *parent,
     Image &image,
     std::shared_ptr<AppController> controller,
@@ -96,7 +96,7 @@ RenderScreen::RenderScreen(
     // performLayout();
 }
 
-bool RenderScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
+bool RenderWidget::keyboardEvent(int key, int scancode, int action, int modifiers)
 {
     if (Widget::keyboardEvent(key, scancode, action, modifiers)) {
         return true;
@@ -114,7 +114,7 @@ bool RenderScreen::keyboardEvent(int key, int scancode, int action, int modifier
     return false;
 }
 
-void RenderScreen::draw(NVGcontext *ctx)
+void RenderWidget::draw(NVGcontext *ctx)
 {
     m_canvas->syncTextureBuffer();
 
@@ -140,19 +140,19 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    m_renderApplication = new RenderScreen(rightPanel, image, controller, width, height);
+    m_renderWidget = new RenderWidget(rightPanel, image, controller, width, height);
     m_glWidget = new GLWidget(rightPanel, scene, controller, width, height);
 
-    m_renderApplication->setVisible(true);
+    m_renderWidget->setVisible(true);
     m_glWidget->setVisible(false);
 
     auto visualizationToggle = new CheckBox(leftPanel, "Debug Mode");
     visualizationToggle->setCallback([this](bool isChecked) {
         if (isChecked) {
-            m_renderApplication->setVisible(false);
+            m_renderWidget->setVisible(false);
             m_glWidget->setVisible(true);
         } else {
-            m_renderApplication->setVisible(true);
+            m_renderWidget->setVisible(true);
             m_glWidget->setVisible(false);
         }
     });

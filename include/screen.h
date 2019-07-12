@@ -11,9 +11,9 @@
 
 class GLWidget;
 
-class RenderScreen : public nanogui::Widget {
+class RenderWidget : public nanogui::Widget {
 public:
-    RenderScreen(
+    RenderWidget(
         Widget *parent,
         Image &image,
         std::shared_ptr<AppController> controller,
@@ -46,7 +46,7 @@ private:
     void reloadRadioButtons();
 
     GLWidget *m_glWidget;
-    nanogui::ref<RenderScreen> m_renderApplication;
+    nanogui::ref<RenderWidget> m_renderWidget;
 
     std::shared_ptr<AppController> m_controller;
     nanogui::Widget *m_buttonsGroup;
