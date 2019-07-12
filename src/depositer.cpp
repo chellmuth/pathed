@@ -36,43 +36,7 @@ Depositer::Depositer(BounceController bounceController)
 
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    const int photonSamples = g_job->photonSamples();
-    const int photonBounces = g_job->photonBounces();
-
-    for (int i = 0; i < photonSamples; i++) {
-        LightSample lightSample = scene.sampleLights(random);
-
-        float pdf;
-        Vector3 bounceDirection = sample(lightSample.point, lightSample.normal, m_eyeTree, random, &pdf);
-
-        Ray lightRay(lightSample.point, bounceDirection);
-
-        Color throughput = lightSample.light->getMaterial()->emit();
-        for (int bounce = 0; bounce < photonBounces; bounce++) {
-            Intersection intersection = scene.testIntersect(lightRay);
-            if (!intersection.hit) { break; }
-
-            throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
-            if (throughput.isBlack()) { break; }
-
-            if (bounce > 0) { // don't guide towards direct lights
-                m_dataSource->points.push_back({
-                    intersection.point.x(),
-                    intersection.point.y(),
-                    intersection.point.z(),
-                    lightRay.origin(),
-                    throughput
-                });
-            }
-
-            Vector3 hemisphereSample = UniformSampleHemisphere(random);
-            Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
-            bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-            lightRay = Ray(intersection.point, bounceDirection);
-
-            throughput *= intersection.material->f(intersection, bounceDirection);
-        }
-    }
+    createLightPaths(scene, random);
 
     m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_eyeTree = new KDTree(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
@@ -121,13 +85,8 @@ Vector3 Depositer::sample(
     // }
 }
 
-void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
+void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 {
-    free(m_KDTree);
-    m_dataSource->points.clear();
-    printf("%i\n", m_eyeDataSource->points.size());
-    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-
     const int photonSamples = g_job->photonSamples();
     const int photonBounces = g_job->photonBounces();
 
@@ -170,6 +129,16 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
             throughput *= intersection.material->f(intersection, bounceDirection);
         }
     }
+}
+
+void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
+{
+    free(m_KDTree);
+    m_dataSource->points.clear();
+    printf("%i\n", m_eyeDataSource->points.size());
+    m_KDTree = new KDTree(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+
+    createLightPaths(scene, random);
 
     if (waveCount <= 5) {
         PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);

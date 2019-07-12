@@ -63,6 +63,7 @@ private:
         Sample &sample
     ) const;
 
+    void createLightPaths(const Scene &scene, RandomGenerator &random);
     Vector3 sample(
         const Point3 &point,
         const Vector3 &normal,
