@@ -37,6 +37,7 @@ Depositer::Depositer(BounceController bounceController)
 void Depositer::preprocess(const Scene &scene, RandomGenerator &random)
 {
     createLightPaths(scene, random);
+    PhotonVisualization::all(IntersectionHelper::miss, *m_dataSource, "light-photons", 0);
 
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
@@ -134,11 +135,12 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 
 void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCount)
 {
+    printf("WAVE: %i\n", waveCount);
     // Create eye tree from previous L calls populating datasource
     m_eyeTree = std::make_unique<KDTree>(3, *m_eyeDataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
     if (waveCount <= 5) {
-        PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, waveCount);
+        PhotonVisualization::all(IntersectionHelper::miss, *m_eyeDataSource, "eye-photons", waveCount);
     }
 
     // Clear light tree
@@ -147,6 +149,10 @@ void Depositer::postwave(const Scene &scene, RandomGenerator &random, int waveCo
 
     // Build new light tree from eye tree
     createLightPaths(scene, random);
+
+    if (waveCount <= 5) {
+        PhotonVisualization::all(IntersectionHelper::miss, *m_dataSource, "light-photons", waveCount);
+    }
 
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 

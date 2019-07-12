@@ -89,5 +89,5 @@ Color NearestPhoton::L(
 
 void NearestPhoton::debug(const Intersection &intersection, const Scene &scene) const
 {
-    PhotonVisualization::all(intersection, *m_dataSource);
+    PhotonVisualization::all(intersection, *m_dataSource, "live-photons");
 }

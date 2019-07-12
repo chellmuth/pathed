@@ -13,6 +13,7 @@ using json = nlohmann::json;
 void PhotonVisualization::all(
     const Intersection &intersection,
     const DataSource &dataSource,
+    const std::string &filename,
     int waveCount
 ) {
     Point3 intersectionPoint = intersection.point;
@@ -29,10 +30,10 @@ void PhotonVisualization::all(
     }
 
     std::ostringstream filenameStream;
-    filenameStream << "live-photons-" << waveCount << ".json";
+    filenameStream << filename << "-" << waveCount << ".json";
 
     std::string jsonPath = g_job->visualizationPath(filenameStream.str());
     std::ofstream jsonFile(jsonPath);
     jsonFile << j.dump(4) << std::endl;
-    std::cout << "Wrote to live-photons.json" << std::endl;
+    std::cout << "Wrote to " << filenameStream.str() << std::endl;
 }
