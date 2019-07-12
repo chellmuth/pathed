@@ -121,7 +121,7 @@ void RenderScreen::draw(NVGcontext *ctx)
     Widget::draw(ctx);
 }
 
-DebugScreen::DebugScreen(
+PathedScreen::PathedScreen(
     Image &image,
     Scene &scene,
     std::shared_ptr<AppController> controller,
@@ -169,7 +169,7 @@ DebugScreen::DebugScreen(
     });
 }
 
-void DebugScreen::reloadRadioButtons()
+void PathedScreen::reloadRadioButtons()
 {
     std::vector<std::string> files = visualization::files();
 
@@ -192,7 +192,7 @@ void DebugScreen::reloadRadioButtons()
     performLayout();
 }
 
-bool DebugScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
+bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         setVisible(false);

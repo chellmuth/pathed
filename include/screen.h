@@ -30,9 +30,9 @@ private:
     std::shared_ptr<AppController> m_controller;
 };
 
-class DebugScreen : public nanogui::Screen {
+class PathedScreen : public nanogui::Screen {
 public:
-    DebugScreen(
+    PathedScreen(
         Image &image,
         Scene &scene,
         std::shared_ptr<AppController> controller,

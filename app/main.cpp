@@ -200,7 +200,13 @@ int main() {
         nanogui::init();
 
         if (g_job->showUI()) {
-            nanogui::ref<DebugScreen> debug = new DebugScreen(image, scene, controller, width, height);
+            nanogui::ref<PathedScreen> debug = new PathedScreen(
+                image,
+                scene,
+                controller,
+                width,
+                height
+            );
             debug->drawAll();
             debug->setVisible(true);
 
