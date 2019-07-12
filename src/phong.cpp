@@ -20,7 +20,7 @@ Color Phong::f(const Intersection &intersection, const Vector3 &wo, float *pdf) 
     float cosAlpha = fmaxf(0.f, wo.dot(reflected));
     Color specular = m_ks * (m_n + 2) / M_TWO_PI * powf(cosAlpha, m_n);
 
-    *pdf = UniformHemispherePdf();
+    *pdf = UniformHemispherePdf(wo);
 
     return diffuse + specular;
 }

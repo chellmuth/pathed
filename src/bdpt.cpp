@@ -204,7 +204,7 @@ Color BDPT::L(
         PointType::Vertex,
         lightIntersection.point,
         lightIntersection.normal,
-        UniformHemispherePdf(),
+        UniformHemispherePdf(bounceDirection),
         lightIntersection.material
     );
 
