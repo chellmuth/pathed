@@ -26,7 +26,7 @@ public:
     void draw(NVGcontext *ctx) override;
 
 private:
-    Canvas *m_canvas;
+    nanogui::ref<Canvas> m_canvas;
     std::shared_ptr<AppController> m_controller;
 };
 
@@ -45,9 +45,9 @@ public:
 private:
     void reloadRadioButtons();
 
-    GLWidget *m_glWidget;
+    nanogui::ref<GLWidget> m_glWidget;
     nanogui::ref<RenderWidget> m_renderWidget;
+    nanogui::ref<nanogui::Widget> m_buttonsGroup;
 
     std::shared_ptr<AppController> m_controller;
-    nanogui::Widget *m_buttonsGroup;
 };
