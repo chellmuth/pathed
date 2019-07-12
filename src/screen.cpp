@@ -17,9 +17,9 @@
 using namespace nanogui;
 using namespace std;
 
-class GLApplication : public nanogui::Widget {
+class GLWidget : public nanogui::Widget {
 public:
-    GLApplication(Widget *parent, Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
+    GLWidget(Widget *parent, Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
         : nanogui::Widget(parent),
           m_controller(controller)
     {
@@ -141,19 +141,19 @@ PathedScreen::PathedScreen(
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
     m_renderApplication = new RenderScreen(rightPanel, image, controller, width, height);
-    m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
+    m_glWidget = new GLWidget(rightPanel, scene, controller, width, height);
 
     m_renderApplication->setVisible(true);
-    m_glApplication->setVisible(false);
+    m_glWidget->setVisible(false);
 
     auto visualizationToggle = new CheckBox(leftPanel, "Debug Mode");
     visualizationToggle->setCallback([this](bool isChecked) {
         if (isChecked) {
             m_renderApplication->setVisible(false);
-            m_glApplication->setVisible(true);
+            m_glWidget->setVisible(true);
         } else {
             m_renderApplication->setVisible(true);
-            m_glApplication->setVisible(false);
+            m_glWidget->setVisible(false);
         }
     });
 
@@ -184,8 +184,8 @@ void PathedScreen::reloadRadioButtons()
         fileButton->setCallback([this, file](void) {
             auto renderer = std::make_unique<gl::PhotonRenderer>();
             renderer->init(g_job->visualizationPath(file));
-            m_glApplication->setVisualization(std::move(renderer));
-            // m_glApplication->setShowVisualization(true);
+            m_glWidget->setVisualization(std::move(renderer));
+            // m_glWidget->setShowVisualization(true);
         });
     }
 
@@ -199,5 +199,5 @@ bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifier
         return true;
     }
 
-    return m_glApplication->keyboardEvent(key, scancode, action, modifiers);
+    return m_glWidget->keyboardEvent(key, scancode, action, modifiers);
 }

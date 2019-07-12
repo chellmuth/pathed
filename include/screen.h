@@ -9,7 +9,7 @@
 
 #include <memory>
 
-class GLApplication;
+class GLWidget;
 
 class RenderScreen : public nanogui::Widget {
 public:
@@ -45,7 +45,7 @@ public:
 private:
     void reloadRadioButtons();
 
-    GLApplication *m_glApplication;
+    GLWidget *m_glWidget;
     nanogui::ref<RenderScreen> m_renderApplication;
 
     std::shared_ptr<AppController> m_controller;
