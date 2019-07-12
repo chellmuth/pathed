@@ -11,9 +11,15 @@
 
 class GLApplication;
 
-class RenderScreen : public nanogui::Screen {
+class RenderScreen : public nanogui::Widget {
 public:
-    RenderScreen(Image &image, std::shared_ptr<AppController> controller, int width, int height);
+    RenderScreen(
+        Widget *parent,
+        Image &image,
+        std::shared_ptr<AppController> controller,
+        int width,
+        int height
+    );
 
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 
@@ -26,7 +32,13 @@ private:
 
 class DebugScreen : public nanogui::Screen {
 public:
-    DebugScreen(Scene &scene, std::shared_ptr<AppController> controller, int width, int height);
+    DebugScreen(
+        Image &image,
+        Scene &scene,
+        std::shared_ptr<AppController> controller,
+        int width,
+        int height
+    );
 
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 

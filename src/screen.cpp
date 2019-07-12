@@ -77,9 +77,13 @@ private:
 
 
 RenderScreen::RenderScreen(
-    Image &image, std::shared_ptr<AppController> controller, int width, int height
+    Widget *parent,
+    Image &image,
+    std::shared_ptr<AppController> controller,
+    int width,
+    int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width, height), g_job->outputDirectory(), false),
+    : nanogui::Widget(parent),
       m_controller(controller)
 {
     using namespace nanogui;
@@ -89,12 +93,12 @@ RenderScreen::RenderScreen(
     m_canvas->init();
     m_canvas->setBackgroundColor({100, 100, 100, 255});
 
-    performLayout();
+    // performLayout();
 }
 
 bool RenderScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
 {
-    if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
+    if (Widget::keyboardEvent(key, scancode, action, modifiers)) {
         return true;
     }
 
@@ -114,10 +118,11 @@ void RenderScreen::draw(NVGcontext *ctx)
 {
     m_canvas->syncTextureBuffer();
 
-    Screen::draw(ctx);
+    Widget::draw(ctx);
 }
 
 DebugScreen::DebugScreen(
+    Image &image,
     Scene &scene,
     std::shared_ptr<AppController> controller,
     int width,
@@ -135,7 +140,9 @@ DebugScreen::DebugScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
+    nanogui::ref<RenderScreen> app = new RenderScreen(rightPanel, image, controller, width, height);
     m_glApplication = new GLApplication(rightPanel, scene, controller, width, height);
+    m_glApplication->setVisible(false);
 
     auto visualizationToggle = new CheckBox(leftPanel, "Show Photons");
     visualizationToggle->setCallback([this](bool isChecked) {
