@@ -13,7 +13,9 @@ public:
     PhotonPDF(
         const Point3 &origin,
         std::shared_ptr<DataSource> dataSource,
-        std::shared_ptr<std::vector<size_t> > indices
+        std::shared_ptr<std::vector<size_t> > indices,
+        int phiSteps,
+        int thetaSteps
     );
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
     float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
@@ -27,4 +29,7 @@ private:
     Point3 m_origin;
     std::shared_ptr<DataSource> m_dataSource;
     std::shared_ptr<std::vector<size_t> > m_indices;
+
+    const int m_phiSteps;
+    const int m_thetaSteps;
 };

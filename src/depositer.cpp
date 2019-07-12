@@ -72,7 +72,7 @@ Vector3 Depositer::sample(
 
     tree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
-    PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices);
+    PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices, g_job->phiSteps(), g_job->thetaSteps());
 
     Transform worldToNormal = worldSpaceToNormal(normal);
     Vector3 pdfSample = photonPDF.sample(random, worldToNormal, pdf);
@@ -197,7 +197,7 @@ Color Depositer::L(
 
         Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
 
-        PhotonPDF photonPDF(lastIntersection.point, m_dataSource, resultIndices);
+        PhotonPDF photonPDF(lastIntersection.point, m_dataSource, resultIndices, g_job->phiSteps(), g_job->thetaSteps());
         float pdf;
         Vector3 pdfSample = photonPDF.sample(random, worldToNormal, &pdf);
 
@@ -307,7 +307,7 @@ void Depositer::debug(const Intersection &intersection, const Scene &scene) cons
 
     Transform worldToNormal = worldSpaceToNormal(intersection.normal);
     RandomGenerator random;
-    PhotonPDF photonPDF(intersection.point, m_dataSource, resultIndices);
+    PhotonPDF photonPDF(intersection.point, m_dataSource, resultIndices, g_job->phiSteps(), g_job->thetaSteps());
     float pdf;
     Vector3 wi = photonPDF.sample(random, worldToNormal, &pdf, true);
     Vector3 bounceDirection = wi;
