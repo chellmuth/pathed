@@ -16,8 +16,14 @@
 
 using string = std::string;
 
-ObjParser::ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness)
+ObjParser::ObjParser(
+    std::ifstream &objFile,
+    const Transform &transform,
+    bool useFaceNormals,
+    Handedness handedness
+)
     : m_objFile(objFile),
+      m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
       m_currentGroup("")
@@ -120,7 +126,7 @@ void ObjParser::processVertex(string &vertexArgs)
     float z = std::stof(rest, &index);
 
     Point3 vertex(x, y, z);
-    m_vertices.push_back(vertex);
+    m_vertices.push_back(m_transform.apply(vertex));
 }
 
 void ObjParser::processNormal(string &normalArgs)

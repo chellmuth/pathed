@@ -109,7 +109,13 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 {
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
-    ObjParser objParser(objFile, false, Handedness::Left);
+    auto transformJson = objJson["transform"];
+    Transform transform;
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    ObjParser objParser(objFile, transform, false, Handedness::Left);
     auto objSurfaces = objParser.parse();
 
     std::shared_ptr<Material> jsonMaterial;
@@ -120,11 +126,6 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 
     for (auto surfacePtr : objSurfaces) {
         auto shape = surfacePtr->getShape();
-        auto transformJson = objJson["transform"];
-        if (transformJson.is_object()) {
-            Transform transform = parseTransform(transformJson);
-            shape = shape->transform(transform);
-        }
         if (jsonMaterial) {
             auto surface = std::make_shared<Surface>(shape, jsonMaterial);
             surfaces.push_back(surface);
