@@ -20,7 +20,7 @@
 #define RTC_VERSION 30502
 #define RTC_VERSION_STRING "3.5.2"
 
-/* #undef EMBREE_STATIC_LIB */
+#define EMBREE_STATIC_LIB
 /* #undef EMBREE_API_NAMESPACE */
 
 #if defined(EMBREE_API_NAMESPACE)
