@@ -71,41 +71,6 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
     rtcReleaseGeometry(rtcMesh);
 
-    rtcCommitScene(g_rtcScene);
-
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
-
-    RTCRayHit rayHit;
-    rayHit.ray.org_x = 0.f;
-    rayHit.ray.org_y = 1.f;
-    rayHit.ray.org_z = 6.8f;
-
-    rayHit.ray.dir_x = 0.f;
-    rayHit.ray.dir_y = 0.f;
-    rayHit.ray.dir_z = -1.f;
-
-    rayHit.ray.tnear = 1e-5f;
-    rayHit.ray.tfar = 1e5f;
-    rayHit.ray.time = 0.f;
-
-    rayHit.ray.flags = 0;
-
-    rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-    rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
-
-    rtcIntersect1(
-        g_rtcScene,
-        &context,
-        &rayHit
-    );
-
-    RTCHit hit = rayHit.hit;
-    printf("far: %f\n", rayHit.ray.tfar);
-    printf("normal: %f %f %f\n", hit.Ng_x, hit.Ng_y, hit.Ng_z);
-    printf("u,v: %f %f\n", hit.u, hit.v);
-    printf("prim, geom, inst: %i %i %i\n", hit.primID, hit.geomID, hit.instID[0]);
-
     return m_surfaces;
 }
 

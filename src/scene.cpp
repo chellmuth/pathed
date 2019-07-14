@@ -12,9 +12,9 @@
 #include <limits>
 
 Scene::Scene(
-    std::vector<std::shared_ptr<Primitive>> primitives,
-    std::vector<std::shared_ptr<Surface>> surfaces,
-    std::vector<std::shared_ptr<Light>> lights,
+    std::vector<std::shared_ptr<Primitive> > primitives,
+    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+    std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<Camera> camera
 )
     : m_surfaces(surfaces), m_lights(lights), m_camera(camera), m_bvh(new BVH())
@@ -22,9 +22,11 @@ Scene::Scene(
     printf("BAKING...\n");
     m_bvh->bake(primitives);
     printf("BAKED...\n");
+
+    rtcCommitScene(g_rtcScene);
 }
 
-std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
+std::vector<std::vector<std::shared_ptr<Surface> > > Scene::getSurfaces()
 {
     return m_surfaces;
 }
@@ -71,7 +73,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.Ng_z
             ).normalized() * -1.f,
             .uv = { 0.f, 0.f },
-            .material = m_surfaces[rayHit.hit.primID]->getMaterial().get()
+            .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
         };
         return hit;
     } else {
