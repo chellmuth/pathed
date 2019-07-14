@@ -2,9 +2,12 @@
 
 #include "camera.h"
 #include "color.h"
+#include "globals.h"
 #include "intersection.h"
 #include "ray.h"
 #include "util.h"
+
+#include <embree3/rtcore.h>
 
 #include <limits>
 
@@ -28,18 +31,54 @@ std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
 
 Intersection Scene::testIntersect(const Ray &ray) const
 {
-    // Intersection result = IntersectionHelper::miss;
+    RTCRayHit rayHit;
+    rayHit.ray.org_x = ray.origin().x();
+    rayHit.ray.org_y = ray.origin().y();
+    rayHit.ray.org_z = ray.origin().z();
 
-    // for (std::shared_ptr<Surface> surfacePtr : m_surfaces) {
-    //     Intersection intersection = surfacePtr->testIntersect(ray);
-    //     if (intersection.hit && intersection.t < result.t) {
-    //         result = intersection;
-    //     }
-    // }
+    rayHit.ray.dir_x = ray.direction().x();
+    rayHit.ray.dir_y = ray.direction().y();
+    rayHit.ray.dir_z = ray.direction().z();
 
-    // return result;
+    rayHit.ray.tnear = 1e-5f;
+    rayHit.ray.tfar = 1e5f;
+    rayHit.ray.time = 0.f;
 
-    return m_bvh->testIntersect(ray);
+    rayHit.ray.flags = 0;
+
+    rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+    rtcIntersect1(
+        g_rtcScene,
+        &context,
+        &rayHit
+    );
+
+    // need parallel arrays of geometry and materials
+    if (rayHit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+        Intersection hit = {
+            .hit = true,
+            .t = rayHit.ray.tfar,
+            .point = ray.at(rayHit.ray.tfar),
+            .wi = ray.direction(),
+            .normal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f,
+            .uv = { 0.f, 0.f },
+            .material = m_surfaces[0]->getMaterial().get()
+        };
+        return hit;
+    } else {
+        return IntersectionHelper::miss;
+    }
+
+    // return m_bvh->testIntersect(ray);
 }
 
 LightSample Scene::sampleLights(RandomGenerator &random) const

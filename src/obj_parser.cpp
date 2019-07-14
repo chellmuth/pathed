@@ -103,7 +103,7 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     RTCHit hit = rayHit.hit;
     printf("far: %f\n", rayHit.ray.tfar);
     printf("normal: %f %f %f\n", hit.Ng_x, hit.Ng_y, hit.Ng_z);
-    printf("u,v :%f %f\n", hit.u, hit.v);
+    printf("u,v: %f %f\n", hit.u, hit.v);
     printf("prim, geom, inst: %i %i %i\n", hit.primID, hit.geomID, hit.instID[0]);
 
     return m_surfaces;
