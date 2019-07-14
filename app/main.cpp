@@ -35,6 +35,18 @@ void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback,
 int main() {
     printf("Hello, world!\n");
 
+    RTCDevice rtcDevice = rtcNewDevice(NULL);
+    if (rtcDevice == NULL) {
+        std::cout << "Failed to create device" << std::endl;
+        exit(1);
+    }
+
+    RTCScene rtcScene = rtcNewScene(rtcDevice);
+    if (rtcScene == NULL) {
+        std::cout << "Failed to create scene" << std::endl;
+        exit(1);
+    }
+
     int success = chdir("..");
     assert(success == 0);
 
@@ -88,6 +100,9 @@ int main() {
     }
 
     renderThread.join();
+
+    rtcReleaseScene(rtcScene);
+    rtcReleaseDevice(rtcDevice);
 
     return 0;
 }

@@ -19,7 +19,6 @@ set(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
 set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
 set(EMBREE_TUTORIALS OFF CACHE BOOL "Enable to build Embree tutorials" FORCE)
 add_subdirectory(embree)
-add_definitions(-DEMBREE_STATIC_LIB=1)
 include_directories(embree/include)
 
 # For reliability of parallel build, make the NanoGUI targets dependencies
