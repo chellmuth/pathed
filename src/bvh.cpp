@@ -51,6 +51,7 @@ static bool compareNodeAlongZ(IndexedCentroid ic1, IndexedCentroid ic2)
 
 void BVH::bake(const std::vector<std::shared_ptr<Primitive>> &primitives)
 {
+    return; // turn off with embree on
     m_root = new BVHNode();
 
     bakeHelper(primitives, m_root, 0);
