@@ -34,25 +34,27 @@ class Scene {
 public:
     Scene(
         // old
-        std::vector<std::shared_ptr<Primitive>> primitives,
-        std::vector<std::shared_ptr<Surface>> surfaces,
-        std::vector<std::shared_ptr<Light>> lights,
+        std::vector<std::shared_ptr<Primitive> > primitives,
+        std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+        std::vector<std::shared_ptr<Light> > lights,
 
         // new
         std::shared_ptr<Camera> camera
     );
 
-    std::vector<std::shared_ptr<Light>> lights() const { return m_lights; }
-    Intersection testIntersect(const Ray &ray) const;
+    const std::vector<std::shared_ptr<Light>> &lights() const { return m_lights; }
 
-    std::vector<std::shared_ptr<Surface>> getSurfaces();
+    Intersection testIntersect(const Ray &ray) const;
+    bool testOcclusion(const Ray &ray, float maxT) const;
+
+    std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces();
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
 
 private:
     std::unique_ptr<BVH> m_bvh;
-    std::vector<std::shared_ptr<Surface>> m_surfaces;
-    std::vector<std::shared_ptr<Light>> m_lights;
+    std::vector<std::vector<std::shared_ptr<Surface> > > m_surfaces;
+    std::vector<std::shared_ptr<Light> > m_lights;
     std::shared_ptr<Camera> m_camera;
 };

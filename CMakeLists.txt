@@ -14,6 +14,14 @@ set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 add_subdirectory(ext/nanogui)
 include_directories(ext/nanogui/include)
 
+# Add the configurations from embree
+set(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
+set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
+set(EMBREE_TUTORIALS OFF CACHE BOOL "Enable to build Embree tutorials" FORCE)
+set(EMBREE_RAY_MASK OFF CACHE BOOL "Enables ray mask support." FORCE)
+add_subdirectory(embree)
+include_directories(embree/include)
+
 # For reliability of parallel build, make the NanoGUI targets dependencies
 set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 
@@ -36,4 +44,4 @@ add_executable(pathed app/main.cpp ${SOURCES})
 
 # Lastly, additional libraries may have been built for you.  In addition to linking
 # against NanoGUI, we need to link against those as well.
-target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree)

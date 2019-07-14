@@ -4,7 +4,7 @@ gl::Scene::Scene() {}
 
 void gl::Scene::init(::Scene &scene)
 {
-    auto surfaces = scene.getSurfaces();
+    auto surfaceLists = scene.getSurfaces();
     std::vector<GLfloat> positionsGL;
     std::vector<GLfloat> normalsGL;
     std::vector<GLfloat> colorsGL;
@@ -12,22 +12,24 @@ void gl::Scene::init(::Scene &scene)
 
     RandomGenerator random;
 
-    for (int i = 0; i < surfaces.size(); i++) {
-        int offset = positionsGL.size() / 3;
+    for (auto &surfaces : surfaceLists) {
+        for (int i = 0; i < surfaces.size(); i++) {
+            int offset = positionsGL.size() / 3;
 
-        auto shape = surfaces[i]->getShape();
-        shape->pushVertices(positionsGL);
-        shape->pushNormals(normalsGL);
-        shape->pushIndices(indicesGL, offset);
+            auto shape = surfaces[i]->getShape();
+            shape->pushVertices(positionsGL);
+            shape->pushNormals(normalsGL);
+            shape->pushIndices(indicesGL, offset);
 
-        float r = random.next();
-        float g = random.next();
-        float b = random.next();
+            float r = random.next();
+            float g = random.next();
+            float b = random.next();
 
-        for (int i = 0; i < 3; i++) {
-            colorsGL.push_back(r);
-            colorsGL.push_back(g);
-            colorsGL.push_back(b);
+            for (int i = 0; i < 3; i++) {
+                colorsGL.push_back(r);
+                colorsGL.push_back(g);
+                colorsGL.push_back(b);
+            }
         }
     }
 

@@ -30,7 +30,7 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
 static void parseObjects(
     json objectsJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     std::vector<std::shared_ptr<BVH> > &bvhs
 );
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
@@ -52,18 +52,20 @@ Scene parseScene(std::ifstream &sceneFile)
     );
 
     auto objects = sceneJson["models"];
-    std::vector<std::shared_ptr<Surface> > surfaces;
+    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
     std::vector<std::shared_ptr<BVH> > bvhs;
     parseObjects(objects, surfaces, bvhs);
 
     std::vector<std::shared_ptr<Light>> lights;
-    for (auto &surfacePtr : surfaces) {
-        if (surfacePtr->getMaterial()->emit().isBlack()) {
-            continue;
-        }
+    for (auto &surfaceList : surfaces) {
+        for (auto &surfacePtr : surfaceList) {
+            if (surfacePtr->getMaterial()->emit().isBlack()) {
+                continue;
+            }
 
-        auto light = std::make_shared<Light>(surfacePtr);
-        lights.push_back(light);
+            auto light = std::make_shared<Light>(surfacePtr);
+            lights.push_back(light);
+        }
     }
 
     std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
@@ -79,7 +81,7 @@ Scene parseScene(std::ifstream &sceneFile)
 
 static void parseObjects(
     json objectsJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces,
+    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     std::vector<std::shared_ptr<BVH> > &bvhs
 ) {
     for (auto objectJson : objectsJson) {
@@ -99,11 +101,7 @@ static void parseObjects(
         bvh->bake(primitives);
         bvhs.push_back(bvh);
 
-        surfaces.insert(
-            surfaces.end(),
-            localSurfaces.begin(),
-            localSurfaces.end()
-        );
+        surfaces.push_back(localSurfaces);
     }
 }
 
@@ -111,7 +109,13 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 {
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
-    ObjParser objParser(objFile, false, Handedness::Left);
+    auto transformJson = objJson["transform"];
+    Transform transform;
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    ObjParser objParser(objFile, transform, false, Handedness::Left);
     auto objSurfaces = objParser.parse();
 
     std::shared_ptr<Material> jsonMaterial;
@@ -122,11 +126,6 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 
     for (auto surfacePtr : objSurfaces) {
         auto shape = surfacePtr->getShape();
-        auto transformJson = objJson["transform"];
-        if (transformJson.is_object()) {
-            Transform transform = parseTransform(transformJson);
-            shape = shape->transform(transform);
-        }
         if (jsonMaterial) {
             auto surface = std::make_shared<Surface>(shape, jsonMaterial);
             surfaces.push_back(surface);

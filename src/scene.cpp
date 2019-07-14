@@ -2,16 +2,21 @@
 
 #include "camera.h"
 #include "color.h"
+#include "globals.h"
 #include "intersection.h"
 #include "ray.h"
 #include "util.h"
+#include "uv.h"
 
+#include <embree3/rtcore.h>
+
+#include <cmath>
 #include <limits>
 
 Scene::Scene(
-    std::vector<std::shared_ptr<Primitive>> primitives,
-    std::vector<std::shared_ptr<Surface>> surfaces,
-    std::vector<std::shared_ptr<Light>> lights,
+    std::vector<std::shared_ptr<Primitive> > primitives,
+    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+    std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<Camera> camera
 )
     : m_surfaces(surfaces), m_lights(lights), m_camera(camera), m_bvh(new BVH())
@@ -19,27 +24,107 @@ Scene::Scene(
     printf("BAKING...\n");
     m_bvh->bake(primitives);
     printf("BAKED...\n");
+
+    rtcCommitScene(g_rtcScene);
 }
 
-std::vector<std::shared_ptr<Surface>> Scene::getSurfaces()
+std::vector<std::vector<std::shared_ptr<Surface> > > Scene::getSurfaces()
 {
     return m_surfaces;
 }
 
 Intersection Scene::testIntersect(const Ray &ray) const
 {
-    // Intersection result = IntersectionHelper::miss;
+    RTCRayHit rayHit;
+    rayHit.ray.org_x = ray.origin().x();
+    rayHit.ray.org_y = ray.origin().y();
+    rayHit.ray.org_z = ray.origin().z();
 
-    // for (std::shared_ptr<Surface> surfacePtr : m_surfaces) {
-    //     Intersection intersection = surfacePtr->testIntersect(ray);
-    //     if (intersection.hit && intersection.t < result.t) {
-    //         result = intersection;
-    //     }
-    // }
+    rayHit.ray.dir_x = ray.direction().x();
+    rayHit.ray.dir_y = ray.direction().y();
+    rayHit.ray.dir_z = ray.direction().z();
 
-    // return result;
+    rayHit.ray.tnear = 1e-5f;
+    rayHit.ray.tfar = 1e5f;
 
-    return m_bvh->testIntersect(ray);
+    rayHit.ray.flags = 0;
+
+    rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+    rtcIntersect1(
+        g_rtcScene,
+        &context,
+        &rayHit
+    );
+
+    const RTCHit &hit = rayHit.hit;
+
+    // need parallel arrays of geometry and materials
+    if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+        RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+        UV uv;
+        rtcInterpolate0(
+            geometry,
+            hit.primID,
+            hit.u,
+            hit.v,
+            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+            0,
+            &uv.u,
+            2
+        );
+
+        Intersection hit = {
+            .hit = true,
+            .t = rayHit.ray.tfar,
+            .point = ray.at(rayHit.ray.tfar),
+            .wi = ray.direction(),
+            .normal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f,
+            .uv = uv,
+            .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
+        };
+        return hit;
+    } else {
+        return IntersectionHelper::miss;
+    }
+
+    // return m_bvh->testIntersect(ray);
+}
+
+bool Scene::testOcclusion(const Ray &ray, float maxT) const
+{
+    RTCRay rtcRay;
+    rtcRay.org_x = ray.origin().x();
+    rtcRay.org_y = ray.origin().y();
+    rtcRay.org_z = ray.origin().z();
+
+    rtcRay.dir_x = ray.direction().x();
+    rtcRay.dir_y = ray.direction().y();
+    rtcRay.dir_z = ray.direction().z();
+
+    rtcRay.tnear = 1e-5f;
+    rtcRay.tfar = maxT - 1e-5f;
+
+    rtcRay.flags = 0;
+
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+    rtcOccluded1(
+        g_rtcScene,
+        &context,
+        &rtcRay
+    );
+
+    return std::isinf(rtcRay.tfar);
 }
 
 LightSample Scene::sampleLights(RandomGenerator &random) const

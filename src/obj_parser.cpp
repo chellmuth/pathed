@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "color.h"
+#include "globals.h"
 #include "lambertian.h"
 #include "primitive.h"
 #include "string_util.h"
@@ -15,12 +16,20 @@
 
 using string = std::string;
 
-ObjParser::ObjParser(std::ifstream &objFile, bool useFaceNormals, Handedness handedness)
+ObjParser::ObjParser(
+    std::ifstream &objFile,
+    const Transform &transform,
+    bool useFaceNormals,
+    Handedness handedness
+)
     : m_objFile(objFile),
+      m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
       m_currentGroup("")
-{}
+{
+    m_geometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
+}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {
@@ -28,6 +37,69 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
+
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
+    float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                /* geometry */
+        RTC_BUFFER_TYPE_VERTEX, /* type */
+        0,                      /* slot */
+        RTC_FORMAT_FLOAT3,      /* format */
+        3 * sizeof(float),      /* byte stride */
+        m_vertices.size()       /* item count */
+    );
+
+    int i = 0;
+    for (auto &vertex : m_vertices) {
+        rtcVertices[i * 3 + 0] = vertex.x();
+        rtcVertices[i * 3 + 1] = vertex.y();
+        rtcVertices[i * 3 + 2] = vertex.z();
+
+        i += 1;
+    }
+
+    unsigned int *rtcFaces = (unsigned int *)rtcSetNewGeometryBuffer(
+        rtcMesh,
+        RTC_BUFFER_TYPE_INDEX,
+        0,
+        RTC_FORMAT_UINT3,
+        3 * sizeof(unsigned int),
+        m_faces.size() / 3
+    );
+
+    i = 0;
+    for (auto face : m_faces) {
+        rtcFaces[i] = face;
+        i += 1;
+    }
+
+    rtcSetGeometryVertexAttributeCount(rtcMesh, 1);
+    float *rtcUVs = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                          /* geometry */
+        RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
+        0,                                /* slot */
+        RTC_FORMAT_FLOAT2,                /* format */
+        2 * sizeof(float),                /* byte stride */
+        m_vertices.size()                 /* item count */
+    );
+
+    i = 0;
+    for (auto &uv : m_uvs) {
+        rtcUVs[2 * i + 0] = uv.u;
+        rtcUVs[2 * i + 1] = uv.v;
+        i += 1;
+    }
+
+    // If this object doesn't do UVs, supply them anyway for now
+    if (i == 0) {
+        for (i = 0; i < m_vertices.size() * 2; i++) {
+            rtcUVs[i] = 0.f;
+        }
+    }
+
+    rtcCommitGeometry(rtcMesh);
+
+    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
+    rtcReleaseGeometry(rtcMesh);
 
     return m_surfaces;
 }
@@ -78,7 +150,7 @@ void ObjParser::processVertex(string &vertexArgs)
     float z = std::stof(rest, &index);
 
     Point3 vertex(x, y, z);
-    m_vertices.push_back(vertex);
+    m_vertices.push_back(m_transform.apply(vertex));
 }
 
 void ObjParser::processNormal(string &normalArgs)
@@ -178,6 +250,10 @@ void ObjParser::processTriangle(
     );
 
     processFace(face);
+
+    m_faces.push_back(vertexIndex0);
+    m_faces.push_back(vertexIndex1);
+    m_faces.push_back(vertexIndex2);
 }
 
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
@@ -191,6 +267,10 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
     );
 
     processFace(face);
+
+    m_faces.push_back(vertexIndex0);
+    m_faces.push_back(vertexIndex1);
+    m_faces.push_back(vertexIndex2);
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
