@@ -42,7 +42,7 @@ public:
         std::shared_ptr<Camera> camera
     );
 
-    std::vector<std::shared_ptr<Light>> lights() const { return m_lights; }
+    const std::vector<std::shared_ptr<Light>> &lights() const { return m_lights; }
 
     Intersection testIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
