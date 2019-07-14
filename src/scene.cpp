@@ -6,6 +6,7 @@
 #include "intersection.h"
 #include "ray.h"
 #include "util.h"
+#include "uv.h"
 
 #include <embree3/rtcore.h>
 
@@ -60,8 +61,23 @@ Intersection Scene::testIntersect(const Ray &ray) const
         &rayHit
     );
 
+    const RTCHit &hit = rayHit.hit;
+
     // need parallel arrays of geometry and materials
-    if (rayHit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+    if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+        RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+        UV uv;
+        rtcInterpolate0(
+            geometry,
+            hit.primID,
+            hit.u,
+            hit.v,
+            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+            0,
+            &uv.u,
+            2
+        );
+
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,
@@ -72,7 +88,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.Ng_y,
                 rayHit.hit.Ng_z
             ).normalized() * -1.f,
-            .uv = { 0.f, 0.f },
+            .uv = uv,
             .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
         };
         return hit;
