@@ -72,6 +72,30 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         i += 1;
     }
 
+    rtcSetGeometryVertexAttributeCount(rtcMesh, 1);
+    float *rtcUVs = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                          /* geometry */
+        RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
+        0,                                /* slot */
+        RTC_FORMAT_FLOAT2,                /* format */
+        2 * sizeof(float),                /* byte stride */
+        m_vertices.size()                 /* item count */
+    );
+
+    i = 0;
+    for (auto &uv : m_uvs) {
+        rtcUVs[2 * i + 0] = uv.u;
+        rtcUVs[2 * i + 1] = uv.v;
+        i += 1;
+    }
+
+    // If this object doesn't do UVs, supply them anyway for now
+    if (i == 0) {
+        for (i = 0; i < m_vertices.size() * 2; i++) {
+            rtcUVs[i] = 0.f;
+        }
+    }
+
     rtcCommitGeometry(rtcMesh);
 
     unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
