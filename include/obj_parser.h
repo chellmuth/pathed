@@ -1,14 +1,16 @@
 #pragma once
 
-#include <fstream>
-#include <string>
-#include <vector>
-
 #include "mtl_parser.h"
 #include "light.h"
 #include "point.h"
 #include "surface.h"
 #include "uv.h"
+
+#include <embree3/rtcore.h>
+
+#include <fstream>
+#include <string>
+#include <vector>
 
 enum class Handedness {
     Right,
@@ -28,10 +30,13 @@ private:
     Handedness m_handedness;
     bool m_useFaceNormals;
 
+    RTCGeometry m_geometry;
+
     std::string m_currentGroup;
     std::string m_currentMaterialName;
 
     std::vector<Point3> m_vertices;
+    std::vector<unsigned int> m_faces;
     std::vector<Vector3> m_normals;
     std::vector<UV> m_uvs;
     std::vector<std::shared_ptr<Surface>> m_surfaces;

@@ -25,6 +25,8 @@
 using namespace std;
 
 Job *g_job;
+RTCDevice g_rtcDevice;
+RTCScene g_rtcScene;
 
 void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
 {
@@ -35,14 +37,14 @@ void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback,
 int main() {
     printf("Hello, world!\n");
 
-    RTCDevice rtcDevice = rtcNewDevice(NULL);
-    if (rtcDevice == NULL) {
+    g_rtcDevice = rtcNewDevice(NULL);
+    if (g_rtcDevice == NULL) {
         std::cout << "Failed to create device" << std::endl;
         exit(1);
     }
 
-    RTCScene rtcScene = rtcNewScene(rtcDevice);
-    if (rtcScene == NULL) {
+    g_rtcScene = rtcNewScene(g_rtcDevice);
+    if (g_rtcScene == NULL) {
         std::cout << "Failed to create scene" << std::endl;
         exit(1);
     }
@@ -101,8 +103,8 @@ int main() {
 
     renderThread.join();
 
-    rtcReleaseScene(rtcScene);
-    rtcReleaseDevice(rtcDevice);
+    rtcReleaseScene(g_rtcScene);
+    rtcReleaseDevice(g_rtcDevice);
 
     return 0;
 }
