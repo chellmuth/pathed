@@ -71,7 +71,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.Ng_z
             ).normalized() * -1.f,
             .uv = { 0.f, 0.f },
-            .material = m_surfaces[0]->getMaterial().get()
+            .material = m_surfaces[rayHit.hit.primID]->getMaterial().get()
         };
         return hit;
     } else {
