@@ -14,6 +14,11 @@ set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 add_subdirectory(ext/nanogui)
 include_directories(ext/nanogui/include)
 
+# Add the configurations from embree
+set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
+set(EMBREE_TUTORIALS OFF CACHE BOOL "Enable to build Embree tutorials" FORCE)
+add_subdirectory(embree)
+
 # For reliability of parallel build, make the NanoGUI targets dependencies
 set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 
