@@ -98,10 +98,10 @@ Color PathTracer::direct(
     }
 
     Ray shadowRay = Ray(intersection.point, wo);
-    Intersection shadowIntersection = scene.testIntersect(shadowRay);
     float lightDistance = lightDirection.length();
+    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
-    if (shadowIntersection.hit && shadowIntersection.t + 0.0001f < lightDistance) {
+    if (occluded) {
         return Color(0.f, 0.f, 0.f);
     }
 

@@ -10,6 +10,7 @@
 
 #include <embree3/rtcore.h>
 
+#include <cmath>
 #include <limits>
 
 Scene::Scene(
@@ -45,7 +46,6 @@ Intersection Scene::testIntersect(const Ray &ray) const
 
     rayHit.ray.tnear = 1e-5f;
     rayHit.ray.tfar = 1e5f;
-    rayHit.ray.time = 0.f;
 
     rayHit.ray.flags = 0;
 
@@ -97,6 +97,34 @@ Intersection Scene::testIntersect(const Ray &ray) const
     }
 
     // return m_bvh->testIntersect(ray);
+}
+
+bool Scene::testOcclusion(const Ray &ray, float maxT) const
+{
+    RTCRay rtcRay;
+    rtcRay.org_x = ray.origin().x();
+    rtcRay.org_y = ray.origin().y();
+    rtcRay.org_z = ray.origin().z();
+
+    rtcRay.dir_x = ray.direction().x();
+    rtcRay.dir_y = ray.direction().y();
+    rtcRay.dir_z = ray.direction().z();
+
+    rtcRay.tnear = 1e-5f;
+    rtcRay.tfar = maxT - 1e-5f;
+
+    rtcRay.flags = 0;
+
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+    rtcOccluded1(
+        g_rtcScene,
+        &context,
+        &rtcRay
+    );
+
+    return std::isinf(rtcRay.tfar);
 }
 
 LightSample Scene::sampleLights(RandomGenerator &random) const

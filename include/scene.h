@@ -43,8 +43,9 @@ public:
     );
 
     std::vector<std::shared_ptr<Light>> lights() const { return m_lights; }
-    Intersection testIntersect(const Ray &ray) const;
 
+    Intersection testIntersect(const Ray &ray) const;
+    bool testOcclusion(const Ray &ray, float maxT) const;
 
     std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces();
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
