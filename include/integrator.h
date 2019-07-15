@@ -13,12 +13,10 @@
 
 struct Sample {
     std::vector<Point3> eyePoints;
-    std::vector<Point3> lightPoints;
     std::vector<Point3> shadowPoints;
-    bool connected;
 
     Sample()
-    : eyePoints(), lightPoints(), shadowPoints(), connected(false)
+    : eyePoints(), shadowPoints()
     {}
 };
 

@@ -164,10 +164,10 @@ Color BDPT::L(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    sample.eyePoints.push_back(intersection.point);
+    // sample.eyePoints.push_back(intersection.point);
 
     LightSample lightSample = scene.sampleLights(random);
-    sample.lightPoints.push_back(lightSample.point);
+    // sample.lightPoints.push_back(lightSample.point);
     Vector3 hemisphereSample = UniformSampleHemisphere(random);
     Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
@@ -175,14 +175,14 @@ Color BDPT::L(
 
     Intersection lightIntersection = scene.testIntersect(lightRay);
     if (!lightIntersection.hit) {
-        sample.lightPoints.push_back(lightRay.at(10.f));
-        sample.connected = false;
+        // sample.lightPoints.push_back(lightRay.at(10.f));
+        // sample.connected = false;
 
         return Color(0.f);
     }
 
-    sample.lightPoints.push_back(lightIntersection.point);
-    sample.connected = true;
+    // sample.lightPoints.push_back(lightIntersection.point);
+    // sample.connected = true;
 
     PathPoint eyePoint(
         PointType::Eye,
