@@ -4,21 +4,13 @@
 #include "image.h"
 #include "intersection.h"
 #include "random_generator.h"
+#include "sample.h"
 #include "scene.h"
 #include "point.h"
 #include "render_status.h"
 
 #include <functional>
 #include <vector>
-
-struct Sample {
-    std::vector<Point3> eyePoints;
-    std::vector<Point3> shadowPoints;
-
-    Sample()
-    : eyePoints(), shadowPoints()
-    {}
-};
 
 class Integrator {
 public:
@@ -43,6 +35,7 @@ public:
 private:
     void sampleImage(
         std::vector<float> &radianceLookup,
+        std::vector<Sample> &sampleLookup,
         Scene &scene,
         RandomGenerator &random
     );
@@ -51,6 +44,7 @@ private:
         int row, int col,
         int width, int height,
         std::vector<float> &radianceLookup,
+        std::vector<Sample> &sampleLookup,
         const Scene &scene,
         RandomGenerator &random
     );

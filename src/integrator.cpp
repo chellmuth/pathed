@@ -41,8 +41,10 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
     for (int i = 0; i < primarySamples; i++) {
         std::clock_t begin = clock();
 
+        auto sampleLookup = std::make_shared<std::vector<Sample> >(width * height);
         sampleImage(
             radianceLookup,
+            *sampleLookup,
             scene,
             random
         );
@@ -53,6 +55,8 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
 
         RenderStatus renderStatus;
         renderStatus.setSample(i + 1);
+        renderStatus.setSampleLookup(sampleLookup);
+
         callback(renderStatus);
 
         std::mutex &lock = image.getLock();
@@ -98,6 +102,7 @@ void Integrator::samplePixel(
     int row, int col,
     int width, int height,
     std::vector<float> &radianceLookup,
+    std::vector<Sample> &sampleLookup,
     const Scene &scene,
     RandomGenerator &random
 ) {
@@ -121,6 +126,8 @@ void Integrator::samplePixel(
         }
     }
 
+    sampleLookup[row * width + col] = sample;
+
     radianceLookup[3 * (row * width + col) + 0] += color.r();
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
@@ -133,6 +140,7 @@ void Integrator::samplePixel(
 
 void Integrator::sampleImage(
     std::vector<float> &radianceLookup,
+    std::vector<Sample> &sampleLookup,
     Scene &scene,
     RandomGenerator &random
 ) {
@@ -142,7 +150,14 @@ void Integrator::sampleImage(
     #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            samplePixel(row, col, width, height, radianceLookup, scene, random);
+            samplePixel(
+                row, col,
+                width, height,
+                radianceLookup,
+                sampleLookup,
+                scene,
+                random
+            );
         }
     }
 }

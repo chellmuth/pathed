@@ -204,6 +204,7 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
+    m_sampleLookups.push_back(renderStatus.sampleLookup());
 }
 
 bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifiers)

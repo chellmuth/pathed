@@ -55,4 +55,5 @@ private:
     nanogui::ref<nanogui::Label> m_sampleLabel;
 
     std::shared_ptr<AppController> m_controller;
+    std::vector<std::shared_ptr<std::vector<Sample> > > m_sampleLookups;
 };
