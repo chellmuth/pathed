@@ -71,24 +71,24 @@ Vector3 Depositer::sample(
         point.z()
     };
 
-    const float searchRadius = 0.1f;
-    std::vector<std::pair<size_t, float> > matches;
-    nanoflann::SearchParams params;
+    // const float searchRadius = 0.1f;
+    // std::vector<std::pair<size_t, float> > matches;
+    // nanoflann::SearchParams params;
 
-    const size_t matchCount = tree->radiusSearch(queryPoint, searchRadius, matches, params);
-    // const int debugSearchCount = g_job->debugSearchCount();
-    // auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
-    // std::vector<float> outDistanceSquared(debugSearchCount);
+    // const size_t matchCount = tree->radiusSearch(queryPoint, searchRadius, matches, params);
+    // auto resultIndices = std::make_shared<std::vector<size_t> >(matchCount);
+    // for (auto &match : matches) {
+    //     resultIndices->push_back(match.first);
+    // }
 
-    // nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
-    // resultSet.init(resultIndices->data(), outDistanceSquared.data());
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
 
-    // tree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
-    auto resultIndices = std::make_shared<std::vector<size_t> >(matchCount);
-    for (auto &match : matches) {
-        resultIndices->push_back(match.first);
-    }
+    tree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
 
     PhotonPDF photonPDF(point, m_eyeDataSource, resultIndices, phiSteps, thetaSteps);
 
@@ -223,6 +223,16 @@ Color Depositer::L(
         resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
         m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+        // const float searchRadius = 0.1f;
+        // std::vector<std::pair<size_t, float> > matches;
+        // nanoflann::SearchParams params;
+
+        // const size_t matchCount = m_KDTree->radiusSearch(queryPoint, searchRadius, matches, params);
+        // auto resultIndices = std::make_shared<std::vector<size_t> >(matchCount);
+        // for (auto &match : matches) {
+        //     resultIndices->push_back(match.first);
+        // }
 
         Transform worldToNormal = worldSpaceToNormal(lastIntersection.normal);
 

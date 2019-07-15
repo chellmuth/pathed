@@ -77,29 +77,16 @@ void PhotonPDF::buildCDF(const Transform &worldToNormal)
         return;
     }
 
-    // int emptyCells = 0;
+    // const float addedMass = totalMass * 0.2f;
+    // const float addedMassPerCell = addedMass / (m_phiSteps * m_thetaSteps);
+
     // for (int phi = 0; phi < m_phiSteps; phi++) {
     //     for (int theta = 0; theta < m_thetaSteps; theta++) {
-    //         if (massLookup[phi][theta] == 0.f) {
-    //             emptyCells += 1;
-    //         }
+    //         massLookup[phi][theta] += addedMassPerCell;
     //     }
     // }
 
-    // if (emptyCells > 0) {
-    //     const float addedMass = totalMass * 0.2f;
-    //     const float addedMassPerCell = addedMass / (emptyCells);
-
-    //     for (int phi = 0; phi < m_phiSteps; phi++) {
-    //         for (int theta = 0; theta < m_thetaSteps; theta++) {
-    //             if (massLookup[phi][theta] == 0.f) {
-    //                 massLookup[phi][theta] = addedMassPerCell;
-    //             }
-    //         }
-    //     }
-
-    //     totalMass += addedMass;
-    // }
+    // totalMass += addedMass;
 
     m_CDF.reserve(m_phiSteps * m_thetaSteps);
     for (int i = 0; i < m_phiSteps * m_thetaSteps; i++) {
