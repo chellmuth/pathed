@@ -6,6 +6,8 @@
 #include "logger.h"
 #include "ray.h"
 
+#include <omp.h>
+
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -57,6 +59,7 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
         lock.lock();
 
         image.setSpp(i + 1);
+
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 int index = 3 * (row * width + col);
@@ -136,6 +139,7 @@ void Integrator::sampleImage(
     const int width = g_job->width();
     const int height = g_job->height();
 
+    #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             samplePixel(row, col, width, height, radianceLookup, scene, random);

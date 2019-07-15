@@ -22,8 +22,11 @@ using json = nlohmann::json;
 #include <iostream>
 #include <limits>
 #include <math.h>
+#include <mutex>
 #include <utility>
 #include <vector>
+
+static std::mutex lock;
 
 static int maxBounces = 6;
 
@@ -256,7 +259,9 @@ Color Depositer::L(
                 lastIntersection.point,
                 modulation
             };
+            lock.lock();
             m_eyeDataSource->points.push_back(eyeVertex);
+            lock.unlock();
         }
 
         sample.eyePoints.push_back(bounceIntersection.point);
