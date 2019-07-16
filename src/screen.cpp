@@ -9,6 +9,7 @@
 
 #include <nanogui/checkbox.h>
 #include <nanogui/button.h>
+#include <nanogui/entypo.h>
 #include <nanogui/glcanvas.h>
 #include <nanogui/layout.h>
 #include <nanogui/opengl.h>
@@ -62,6 +63,34 @@ private:
     Rasterizer *m_rasterizer;
 };
 
+
+class SampleWidget : public nanogui::Widget {
+public:
+    SampleWidget(Widget *parent)
+        : nanogui::Widget(parent),
+          m_currentSample(0)
+    {
+        using namespace nanogui;
+
+        setLayout(new GroupLayout());
+
+        auto container = new Widget(this);
+        auto containerLayout = new BoxLayout(Orientation::Horizontal);
+        containerLayout->setSpacing(6);
+        container->setLayout(containerLayout);
+
+        auto backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
+        backButton->setFixedWidth(40);
+
+        std::string sampleText = "Sample: " + std::to_string(m_currentSample);
+        auto text = new Label(container, sampleText);;
+        auto forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
+        forwardButton->setFixedWidth(40);
+    }
+
+private:
+    int m_currentSample;
+};
 
 RenderWidget::RenderWidget(
     Widget *parent,
@@ -134,6 +163,8 @@ PathedScreen::PathedScreen(
 
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
+
+    auto sampleWidget = new SampleWidget(leftPanel);
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
