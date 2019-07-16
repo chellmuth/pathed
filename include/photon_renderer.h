@@ -3,6 +3,7 @@
 #include "gl_points.h"
 #include "gl_scene.h"
 #include "gl_visualization.h"
+#include "kd_tree.h"
 #include "shader.h"
 
 #include "json.hpp"
@@ -10,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace gl {
     class PhotonRenderer : public gl::Visualization {
@@ -18,6 +20,7 @@ namespace gl {
         ~PhotonRenderer();
 
         void init(const std::string &jsonFile);
+        void init(const std::vector<DataSource::Point> &photons);
         void draw(
             GLfloat (&model)[4][4],
             GLfloat (&view)[4][4],
@@ -39,5 +42,6 @@ namespace gl {
         DebugMode m_debugMode;
 
         int m_pointCount;
+        std::vector<DataSource::Point> m_photons;
     };
 }

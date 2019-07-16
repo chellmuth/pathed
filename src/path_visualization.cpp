@@ -1,6 +1,6 @@
 #include "path_visualization.h"
 
-void gl::PathVisualization::init(const Sample &sample)
+void gl::PathVisualization::init(const Sample& sample, const std::vector<DataSource::Point> &photons)
 {
     std::vector<gl::Line> lines;
 
@@ -27,6 +27,7 @@ void gl::PathVisualization::init(const Sample &sample)
     }
 
     m_glLines.init(lines);
+    m_photonRenderer.init(photons);
 }
 
 void gl::PathVisualization::draw(
@@ -35,4 +36,5 @@ void gl::PathVisualization::draw(
     GLfloat (&projection)[4][4]
 ) {
     m_glLines.draw(model, view, projection);
+    m_photonRenderer.draw(model, view, projection);
 }

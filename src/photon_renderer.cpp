@@ -29,17 +29,9 @@ gl::PhotonRenderer::~PhotonRenderer()
     glDeleteBuffers(1, &m_entityIDs.colorBufferID);
 }
 
-void gl::PhotonRenderer::init(const std::string &jsonFile)
+void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons)
 {
-    std::ifstream jsonScene(jsonFile);
-    if (!jsonScene.is_open()) {
-        std::cout << "Could not open: " << jsonFile << std::endl;
-        exit(1);
-    }
-    m_pointsJson = json::parse(jsonScene);
-
-    m_pointCount = m_pointsJson["Results"].size() + 1;
-    std::cout << "Loading " << m_pointCount << " points" << std::endl;
+    m_photons = photons;
 
     {
         glGenVertexArrays(1, &m_entityIDs.vertexArrayID);
@@ -49,7 +41,7 @@ void gl::PhotonRenderer::init(const std::string &jsonFile)
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * 3 * m_pointCount,
+            sizeof(GLfloat) * 3 * m_photons.size(),
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -58,7 +50,7 @@ void gl::PhotonRenderer::init(const std::string &jsonFile)
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * 3 * m_pointCount,
+            sizeof(GLfloat) * 3 * m_photons.size(),
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -67,10 +59,61 @@ void gl::PhotonRenderer::init(const std::string &jsonFile)
     updateBuffers();
 }
 
+void gl::PhotonRenderer::init(const std::string &jsonFile)
+{
+    // std::ifstream jsonScene(jsonFile);
+    // if (!jsonScene.is_open()) {
+    //     std::cout << "Could not open: " << jsonFile << std::endl;
+    //     exit(1);
+    // }
+    // m_pointsJson = json::parse(jsonScene);
+
+    // m_pointCount = m_pointsJson["Results"].size() + 1;
+    // std::cout << "Loading " << m_pointCount << " points" << std::endl;
+
+    // {
+    //     glGenVertexArrays(1, &m_entityIDs.vertexArrayID);
+    //     glBindVertexArray(m_entityIDs.vertexArrayID);
+
+    //     glGenBuffers(1, &m_entityIDs.vertexBufferID);
+    //     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
+    //     glBufferData(
+    //         GL_ARRAY_BUFFER,
+    //         sizeof(GLfloat) * 3 * m_pointCount,
+    //         NULL,
+    //         GL_DYNAMIC_DRAW
+    //     );
+
+    //     glGenBuffers(1, &m_entityIDs.colorBufferID);
+    //     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
+    //     glBufferData(
+    //         GL_ARRAY_BUFFER,
+    //         sizeof(GLfloat) * 3 * m_pointCount,
+    //         NULL,
+    //         GL_DYNAMIC_DRAW
+    //     );
+    // }
+
+    // updateBuffers();
+}
+
 void gl::PhotonRenderer::updateBuffers()
 {
-    std::vector<GLfloat> positionsGL = getPositions();
-    std::vector<GLfloat> colorsGL = getColors();
+    // std::vector<GLfloat> positionsGL = getPositions();
+    // std::vector<GLfloat> colorsGL = getColors();
+
+    std::vector<GLfloat> positionsGL;
+    std::vector<GLfloat> colorsGL;
+
+    for (auto &photon : m_photons) {
+        positionsGL.push_back(photon.x);
+        positionsGL.push_back(photon.y);
+        positionsGL.push_back(photon.z);
+
+        colorsGL.push_back(1.f);
+        colorsGL.push_back(1.f);
+        colorsGL.push_back(1.f);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     glBufferSubData(
@@ -182,7 +225,7 @@ void gl::PhotonRenderer::draw(
     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glDrawArrays(GL_POINTS, 0, m_pointCount);
+    glDrawArrays(GL_POINTS, 0, m_photons.size());
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);

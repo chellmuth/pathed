@@ -207,7 +207,9 @@ void PathedScreen::setPathVisualization()
 
     const auto &sampleLookup = *m_sampleLookups[m_sampleProps.currentSample];
     const Sample &sample = sampleLookup[m_sampleProps.renderY * m_width + m_sampleProps.renderX];
-    pathVisualization->init(sample);
+
+    const auto &photons = *m_photonLists[m_sampleProps.currentSample];
+    pathVisualization->init(sample, photons);
 
     m_glWidget->setVisualization(std::move(pathVisualization));
 }

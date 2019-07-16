@@ -2,13 +2,15 @@
 
 #include "gl_lines.h"
 #include "gl_visualization.h"
+#include "kd_tree.h"
+#include "photon_renderer.h"
 #include "sample.h"
 
 namespace gl {
     class PathVisualization : public gl::Visualization {
     public:
         ~PathVisualization() {};
-        void init(const Sample& sample);
+        void init(const Sample& sample, const std::vector<DataSource::Point> &photons);
 
         void draw(
             GLfloat (&model)[4][4],
@@ -17,6 +19,7 @@ namespace gl {
         ) override;
 
     private:
+        PhotonRenderer m_photonRenderer;
         gl::Lines m_glLines;
     };
 };
