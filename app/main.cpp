@@ -1,6 +1,5 @@
 #define  GL_SILENCE_DEPRECATION 1
 
-#include "app_controller.h"
 #include "globals.h"
 #include "image.h"
 #include "integrator.h"
@@ -63,13 +62,10 @@ int main() {
     ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
-    auto controller = std::make_shared<AppController>(scene, width, height);
-
     nanogui::init();
     nanogui::ref<PathedScreen> screen = new PathedScreen(
         image,
         scene,
-        controller,
         width,
         height
     );

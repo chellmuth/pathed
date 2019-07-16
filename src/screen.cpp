@@ -20,9 +20,8 @@ using namespace std;
 
 class GLWidget : public nanogui::Widget {
 public:
-    GLWidget(Widget *parent, Scene &scene, std::shared_ptr<AppController> controller, int width, int height)
-        : nanogui::Widget(parent),
-          m_controller(controller)
+    GLWidget(Widget *parent, Scene &scene, int width, int height)
+        : nanogui::Widget(parent)
     {
         using namespace nanogui;
 
@@ -32,10 +31,6 @@ public:
         m_rasterizer->setSize({width, height});
         m_rasterizer->init();
         m_rasterizer->setBackgroundColor({100, 100, 100, 255});
-
-        m_controller->addSubscriber([this] {
-            std::cout << "GL OBSERVED!" << std::endl;
-        });
     }
 
     void setShowVisualization(bool showVisualization) {
@@ -62,18 +57,8 @@ public:
         return false;
     }
 
-    virtual void draw(NVGcontext *ctx) {
-        if (m_controller->testAndClearUpdate()) {
-            // m_rasterizer->reload();
-        }
-
-        m_rasterizer->setState(m_controller->getSample());
-        Widget::draw(ctx);
-    }
-
 private:
     Rasterizer *m_rasterizer;
-    std::shared_ptr<AppController> m_controller;
 };
 
 
@@ -81,19 +66,17 @@ RenderWidget::RenderWidget(
     Widget *parent,
     Image &image,
     std::function<void(int x, int y)> clickCallback,
-    std::shared_ptr<AppController> controller,
     int width,
     int height
 )
     : nanogui::Widget(parent),
-      m_clickCallback(clickCallback),
-      m_controller(controller)
+      m_clickCallback(clickCallback)
 {
     using namespace nanogui;
 
     setSize({width, height});
 
-    m_canvas = new Canvas(this, controller, image, width, height);
+    m_canvas = new Canvas(this, image, width, height);
     m_canvas->setSize({width, height});
     m_canvas->init();
     m_canvas->setBackgroundColor({100, 100, 100, 255});
@@ -137,12 +120,10 @@ bool RenderWidget::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool d
 PathedScreen::PathedScreen(
     Image &image,
     Scene &scene,
-    std::shared_ptr<AppController> controller,
     int width,
     int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
-      m_controller(controller)
+    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false)
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -154,8 +135,8 @@ PathedScreen::PathedScreen(
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
     auto clickCallback = [](int x, int y) { std::cout << "x: " << x << " y: " << y << std::endl ; };
-    m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, controller, width, height);
-    m_glWidget = new GLWidget(rightPanel, scene, controller, width, height);
+    m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, width, height);
+    m_glWidget = new GLWidget(rightPanel, scene, width, height);
 
     m_renderWidget->setVisible(true);
     m_glWidget->setVisible(false);
@@ -184,10 +165,6 @@ PathedScreen::PathedScreen(
     reloadRadioButtons();
 
     performLayout();
-
-    m_controller->addSubscriber([this] {
-        reloadRadioButtons();
-    });
 }
 
 void PathedScreen::reloadRadioButtons()

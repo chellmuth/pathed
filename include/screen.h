@@ -1,9 +1,9 @@
 #pragma once
 
-#include "app_controller.h"
 #include "canvas.h"
 #include "image.h"
 #include "render_status.h"
+#include "scene.h"
 
 #include <nanogui/label.h>
 #include <nanogui/screen.h>
@@ -20,7 +20,6 @@ public:
         Widget *parent,
         Image &image,
         std::function<void(int x, int y)> clickCallback,
-        std::shared_ptr<AppController> controller,
         int width,
         int height
     );
@@ -33,7 +32,6 @@ public:
 private:
     nanogui::ref<Canvas> m_canvas;
     std::function<void(int x, int y)> m_clickCallback;
-    std::shared_ptr<AppController> m_controller;
 };
 
 class PathedScreen : public nanogui::Screen {
@@ -41,7 +39,6 @@ public:
     PathedScreen(
         Image &image,
         Scene &scene,
-        std::shared_ptr<AppController> controller,
         int width,
         int height
     );
@@ -58,6 +55,5 @@ private:
     nanogui::ref<nanogui::Widget> m_buttonsGroup;
     nanogui::ref<nanogui::Label> m_sampleLabel;
 
-    std::shared_ptr<AppController> m_controller;
     std::vector<std::shared_ptr<std::vector<Sample> > > m_sampleLookups;
 };

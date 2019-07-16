@@ -7,13 +7,12 @@
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 
-#include "app_controller.h"
 #include "image.h"
 #include "shader.h"
 
 class Canvas : public nanogui::GLCanvas {
 public:
-    Canvas(Widget *parent, std::shared_ptr<AppController> controller, Image &image, int width, int height);
+    Canvas(Widget *parent, Image &image, int width, int height);
 
     void init();
     void save(char const *filestem);
@@ -23,10 +22,6 @@ public:
     void syncTextureBuffer();
 
 private:
-    virtual bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
-
-    std::shared_ptr<AppController> mController;
-
     Shader mShader;
     GLuint mVertexArrayID, mVertexBufferID, mUVBufferID, mElementBufferID, mTextureID;
 
