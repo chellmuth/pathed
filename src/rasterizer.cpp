@@ -34,18 +34,12 @@ Rasterizer::Rasterizer(Widget *parent, Scene &scene, int width, int height)
     );
 
     m_GLScene.init(scene);
-    m_GLLines.init();
 
     m_arcball.setSize({width, height});
 }
 
 void Rasterizer::init()
 {
-}
-
-void Rasterizer::setState(const Sample &sample)
-{
-    m_GLLines.update(sample);
 }
 
 void Rasterizer::calculateViewMatrix(GLfloat (&view)[4][4])
@@ -108,7 +102,6 @@ void Rasterizer::drawGL()
 
     if (m_visualization) {
         m_visualization->draw(model, view, projection);
-        // m_GLLines.draw(model, view, projection);
     }
 
     glDisable(GL_DEPTH_TEST);
