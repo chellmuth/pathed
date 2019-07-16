@@ -2,7 +2,7 @@
 
 gl::Lines::Lines()
 {
-    mShader = shader::createProgram(
+    m_shader = shader::createProgram(
         "shader/line.vs",
         "shader/line.fs"
     );
@@ -18,11 +18,11 @@ void gl::Lines::init()
     // }
 
     // {
-    //     glGenVertexArrays(1, &mEntityIDs.vertexArrayID);
-    //     glBindVertexArray(mEntityIDs.vertexArrayID);
+    //     glGenVertexArrays(1, &m_entityIDs.vertexArrayID);
+    //     glBindVertexArray(m_entityIDs.vertexArrayID);
 
-    //     glGenBuffers(1, &mEntityIDs.vertexIndexBufferID);
-    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
+    //     glGenBuffers(1, &m_entityIDs.vertexIndexBufferID);
+    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_entityIDs.vertexIndexBufferID);
     //     glBufferData(
     //         GL_ELEMENT_ARRAY_BUFFER,
     //         sizeof(GLuint) * 2 * MaxLines,
@@ -30,8 +30,8 @@ void gl::Lines::init()
     //         GL_STATIC_DRAW
     //     );
 
-    //     glGenBuffers(1, &mEntityIDs.vertexBufferID);
-    //     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    //     glGenBuffers(1, &m_entityIDs.vertexBufferID);
+    //     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     //     glBufferData(
     //         GL_ARRAY_BUFFER,
     //         sizeof(GLfloat) * 3 * 2 * MaxLines,
@@ -39,8 +39,8 @@ void gl::Lines::init()
     //         GL_DYNAMIC_DRAW
     //     );
 
-    //     glGenBuffers(1, &mEntityIDs.colorBufferID);
-    //     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    //     glGenBuffers(1, &m_entityIDs.colorBufferID);
+    //     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     //     glBufferData(
     //         GL_ARRAY_BUFFER,
     //         sizeof(GLfloat) * 3 * MaxLines,
@@ -49,12 +49,12 @@ void gl::Lines::init()
     //     );
     // }
 
-    // mLineCount = 0;
+    // m_lineCount = 0;
 }
 
 void gl::Lines::update(const Sample &sample)
 {
-    // mLineCount = 0;
+    // m_lineCount = 0;
 
     // if (sample.lightPoints.size() < 2 && sample.eyePoints.size() < 2) { return; }
 
@@ -82,7 +82,7 @@ void gl::Lines::update(const Sample &sample)
     //         colorsGL.push_back(1.f);
     //     }
 
-    //     mLineCount += 1;
+    //     m_lineCount += 1;
     // }
 
     // for (int i = 0; i < sample.shadowPoints.size(); i++) {
@@ -106,7 +106,7 @@ void gl::Lines::update(const Sample &sample)
     //         colorsGL.push_back(0.f);
     //     }
 
-    //     mLineCount += 1;
+    //     m_lineCount += 1;
     // }
 
     // for (int i = 1; i < sample.lightPoints.size(); i++) {
@@ -130,7 +130,7 @@ void gl::Lines::update(const Sample &sample)
     //         colorsGL.push_back(0.f);
     //     }
 
-    //     mLineCount += 1;
+    //     m_lineCount += 1;
     // }
 
     // if (sample.connected) {
@@ -154,10 +154,10 @@ void gl::Lines::update(const Sample &sample)
     //         colorsGL.push_back(1.f);
     //     }
 
-    //     mLineCount += 1;
+    //     m_lineCount += 1;
     // }
 
-    // glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     // glBufferSubData(
     //     GL_ARRAY_BUFFER,
     //     0,
@@ -165,7 +165,7 @@ void gl::Lines::update(const Sample &sample)
     //     (GLvoid *)&positionsGL[0]
     // );
 
-    // glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     // glBufferSubData(
     //     GL_ARRAY_BUFFER,
     //     0,
@@ -179,32 +179,32 @@ void gl::Lines::draw(
     GLfloat (&view)[4][4],
     GLfloat (&projection)[4][4]
 ) {
-    // glUseProgram(mShader.programID);
+    // glUseProgram(m_shader.programID);
 
-    // GLuint modelID = glGetUniformLocation(mShader.programID, "model");
-    // GLuint viewID = glGetUniformLocation(mShader.programID, "view");
-    // GLuint projectionID = glGetUniformLocation(mShader.programID, "projection");
+    // GLuint modelID = glGetUniformLocation(m_shader.programID, "model");
+    // GLuint viewID = glGetUniformLocation(m_shader.programID, "view");
+    // GLuint projectionID = glGetUniformLocation(m_shader.programID, "projection");
 
     // glUniformMatrix4fv(modelID, 1, GL_TRUE, &model[0][0]);
     // glUniformMatrix4fv(viewID, 1, GL_TRUE, &view[0][0]);
     // glUniformMatrix4fv(projectionID, 1, GL_TRUE, &projection[0][0]);
 
-    // glBindVertexArray(mEntityIDs.vertexArrayID);
+    // glBindVertexArray(m_entityIDs.vertexArrayID);
 
     // glEnableVertexAttribArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     // glEnableVertexAttribArray(1);
-    // glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     // glEnableVertexAttribArray(1);
-    // glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.colorBufferID);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
-    // glDrawElements(GL_LINES, mLineCount * 2, GL_UNSIGNED_INT, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_entityIDs.vertexIndexBufferID);
+    // glDrawElements(GL_LINES, m_lineCount * 2, GL_UNSIGNED_INT, 0);
 
     // glDisableVertexAttribArray(0);
     // glDisableVertexAttribArray(1);

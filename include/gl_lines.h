@@ -24,8 +24,8 @@ namespace gl {
         void update(const Sample &sample);
 
     private:
-        Shader mShader;
-        EntityIDs mEntityIDs;
-        int mLineCount;
+        Shader m_shader;
+        EntityIDs m_entityIDs;
+        int m_lineCount;
     };
 }
