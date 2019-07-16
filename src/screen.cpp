@@ -9,7 +9,6 @@
 
 #include <nanogui/checkbox.h>
 #include <nanogui/button.h>
-#include <nanogui/entypo.h>
 #include <nanogui/glcanvas.h>
 #include <nanogui/layout.h>
 #include <nanogui/opengl.h>
@@ -65,66 +64,6 @@ private:
     Rasterizer *m_rasterizer;
 };
 
-
-class SampleWidget : public nanogui::Widget {
-public:
-    SampleWidget(
-        Widget *parent,
-        const SampleWidgetProps &props,
-        std::function<void(int)> callback
-    )
-        : nanogui::Widget(parent),
-          m_props(props),
-          m_callback(callback)
-    {
-        using namespace nanogui;
-
-        setLayout(new GroupLayout());
-
-        auto container = new Widget(this);
-        auto containerLayout = new BoxLayout(Orientation::Horizontal);
-        containerLayout->setSpacing(6);
-        container->setLayout(containerLayout);
-
-        m_backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
-        m_backButton->setFixedWidth(40);
-        m_backButton->setCallback([this] { m_callback(-1); });
-
-        m_sampleLabel = new Label(container, "");
-
-        m_forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
-        m_forwardButton->setFixedWidth(40);
-        m_forwardButton->setCallback([this] { m_callback(1); });
-
-        updateButtonStates();
-        updateCaption();
-    }
-
-    void update(const SampleWidgetProps &props) {
-        m_props = props;
-
-        updateButtonStates();
-        updateCaption();
-    }
-
-private:
-    void updateButtonStates() {
-        m_backButton->setEnabled(m_props.currentSample > 0);
-        m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
-    }
-
-    void updateCaption() {
-        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
-        m_sampleLabel->setCaption(sampleCaption);
-    }
-
-    SampleWidgetProps m_props;
-    std::function<void(int)> m_callback;
-
-    nanogui::ref<Label> m_sampleLabel;
-    nanogui::ref<Button> m_backButton;
-    nanogui::ref<Button> m_forwardButton;
-};
 
 RenderWidget::RenderWidget(
     Widget *parent,

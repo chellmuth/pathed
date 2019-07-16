@@ -3,6 +3,7 @@
 #include "canvas.h"
 #include "image.h"
 #include "render_status.h"
+#include "sample_widget.h"
 #include "scene.h"
 
 #include <nanogui/label.h>
@@ -13,14 +14,6 @@
 #include <memory>
 
 class GLWidget;
-class SampleWidget;
-
-struct SampleWidgetProps {
-    int sampleCount;
-    int currentSample;
-    int renderX;
-    int renderY;
-};
 
 class RenderWidget : public nanogui::Widget {
 public:
