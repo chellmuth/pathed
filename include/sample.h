@@ -4,11 +4,17 @@
 
 #include <vector>
 
+struct ShadowTest {
+    Point3 shadingPoint;
+    Point3 lightPoint;
+    bool occluded;
+};
+
 struct Sample {
     std::vector<Point3> eyePoints;
-    std::vector<Point3> shadowPoints;
+    std::vector<ShadowTest> shadowTests;
 
     Sample()
-    : eyePoints(), shadowPoints()
+    : eyePoints(), shadowTests()
     {}
 };

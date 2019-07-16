@@ -312,7 +312,7 @@ Color Depositer::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    sample.shadowPoints.push_back(lightSample.point);
+    // sample.shadowPoints.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         return Color(0.f, 0.f, 0.f);

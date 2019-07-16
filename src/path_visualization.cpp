@@ -14,10 +14,12 @@ void gl::PathVisualization::init(const Sample &sample)
         lines.push_back(line);
     }
 
-    for (int i = 0; i < sample.shadowPoints.size(); i++) {
+    for (auto &shadowTest : sample.shadowTests) {
+        if (shadowTest.occluded) { continue; }
+
         gl::Line line = {
-            sample.eyePoints[i + 1],
-            sample.shadowPoints[i],
+            shadowTest.shadingPoint,
+            shadowTest.lightPoint,
             Color(1.f, 1.f, 0.f)
         };
 

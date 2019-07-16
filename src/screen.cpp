@@ -88,9 +88,8 @@ public:
         backButton->setFixedWidth(40);
         backButton->setCallback([this] { m_callback(-1, this); });
 
-        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample);
         m_sampleLabel = new Label(container, "");
-        m_sampleLabel->setCaption(sampleCaption);
+        updateCaption();
 
         auto forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
         forwardButton->setFixedWidth(40);
@@ -100,11 +99,15 @@ public:
     void update(const SampleWidgetProps &props) {
         m_props = props;
 
-        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample);
-        m_sampleLabel->setCaption(sampleCaption);
+        updateCaption();
     }
 
 private:
+    void updateCaption() {
+        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
+        m_sampleLabel->setCaption(sampleCaption);
+    }
+
     SampleWidgetProps m_props;
     std::function<void(int, SampleWidget *)> m_callback;
 
@@ -199,6 +202,7 @@ PathedScreen::PathedScreen(
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
         int renderY = height - y - 1;
 
+        m_sampleProps.currentSample = 0;
         m_sampleProps.renderY = renderY;
         m_sampleProps.renderX = x;
 
@@ -277,7 +281,7 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
-    if (renderStatus.sample() < 10) {
+    if (renderStatus.sample() < 16) {
         m_sampleLookups.push_back(renderStatus.sampleLookup());
     }
 }

@@ -91,9 +91,13 @@ Color PathTracer::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
-    sample.shadowPoints.push_back(lightSample.point);
-
     if (lightSample.normal.dot(wo) >= 0.f) {
+        sample.shadowTests.push_back({
+            intersection.point,
+            lightSample.point,
+            true
+        });
+
         return Color(0.f, 0.f, 0.f);
     }
 
@@ -101,8 +105,14 @@ Color PathTracer::direct(
     float lightDistance = lightDirection.length();
     bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
+    sample.shadowTests.push_back({
+        intersection.point,
+        lightSample.point,
+        occluded
+    });
+
     if (occluded) {
-        return Color(0.f, 0.f, 0.f);
+        return Color(0.f);
     }
 
     float invPDF = lightSample.invPDF * lightCount;
