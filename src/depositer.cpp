@@ -197,12 +197,13 @@ Color Depositer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
+    Color modulation = Color(1.f, 1.f, 1.f);
+
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
-        result = direct(intersection, scene, random, sample);
+        result = direct(intersection, modulation, scene, random, sample);
     }
 
-    Color modulation = Color(1.f, 1.f, 1.f);
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
@@ -284,7 +285,7 @@ Color Depositer::L(
             * invPDF;
         lastIntersection = bounceIntersection;
 
-        result += direct(bounceIntersection, scene, random, sample) * modulation;
+        result += direct(bounceIntersection, modulation, scene, random, sample);
     }
 
     return result;
@@ -292,6 +293,7 @@ Color Depositer::L(
 
 Color Depositer::direct(
     const Intersection &intersection,
+    const Color &modulation,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -299,7 +301,6 @@ Color Depositer::direct(
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         // part of my old logic - if you hit an emitter, don't do direct lighting?
-        // sample.shadowRays.push_back(intersection.point);
         return Color(0.f, 0.f, 0.f);
     }
 
@@ -311,8 +312,6 @@ Color Depositer::direct(
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
-
-    // sample.shadowPoints.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
         sample.shadowTests.push_back({
@@ -340,7 +339,18 @@ Color Depositer::direct(
 
     float invPDF = lightSample.invPDF * lightCount;
 
-    return light->biradiance(lightSample, intersection.point)
+    // DataSource::Point eyeVertex = {
+    //     lightSample.point.x(),
+    //     lightSample.point.y(),
+    //     lightSample.point.z(),
+    //     intersection.point,
+    //     modulation
+    // };
+    // lock.lock();
+    // m_eyeDataSource->points.push_back(eyeVertex);
+    // lock.unlock();
+
+    return modulation * light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.normal))
         * invPDF;

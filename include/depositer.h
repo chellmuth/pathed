@@ -58,6 +58,7 @@ public:
 private:
     Color direct(
         const Intersection &intersection,
+        const Color &modulation,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample

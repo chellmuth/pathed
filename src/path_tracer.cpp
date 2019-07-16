@@ -78,7 +78,6 @@ Color PathTracer::direct(
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         // part of my old logic - if you hit an emitter, don't do direct lighting?
-        // sample.shadowRays.push_back(intersection.point);
         return Color(0.f, 0.f, 0.f);
     }
 
