@@ -20,6 +20,8 @@
 using namespace nanogui;
 using namespace std;
 
+static const int MaxSavedSamples = 16;
+
 class GLWidget : public nanogui::Widget {
 public:
     GLWidget(Widget *parent, Scene &scene, int width, int height)
@@ -69,7 +71,7 @@ public:
     SampleWidget(
         Widget *parent,
         const SampleWidgetProps &props,
-        std::function<void(int, SampleWidget *)> callback
+        std::function<void(int)> callback
     )
         : nanogui::Widget(parent),
           m_props(props),
@@ -84,34 +86,46 @@ public:
         containerLayout->setSpacing(6);
         container->setLayout(containerLayout);
 
-        auto backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
-        backButton->setFixedWidth(40);
-        backButton->setCallback([this] { m_callback(-1, this); });
+        m_backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
+        m_backButton->setFixedWidth(40);
+        m_backButton->setCallback([this] { m_callback(-1); });
 
         m_sampleLabel = new Label(container, "");
-        updateCaption();
 
-        auto forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
-        forwardButton->setFixedWidth(40);
-        forwardButton->setCallback([this] { m_callback(1, this); });
+        m_forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
+        m_forwardButton->setFixedWidth(40);
+        m_forwardButton->setCallback([this] { m_callback(1); });
+
+        updateButtonStates();
+        updateCaption();
     }
 
     void update(const SampleWidgetProps &props) {
         m_props = props;
 
+        updateButtonStates();
         updateCaption();
     }
 
 private:
+    void updateButtonStates() {
+        m_backButton->setEnabled(m_props.currentSample > 0);
+        m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
+
+        std::cout << "enabled? " << m_backButton->enabled() << std::endl;
+    }
+
     void updateCaption() {
         std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
         m_sampleLabel->setCaption(sampleCaption);
     }
 
     SampleWidgetProps m_props;
-    std::function<void(int, SampleWidget *)> m_callback;
+    std::function<void(int)> m_callback;
 
     nanogui::ref<Label> m_sampleLabel;
+    nanogui::ref<Button> m_backButton;
+    nanogui::ref<Button> m_forwardButton;
 };
 
 RenderWidget::RenderWidget(
@@ -178,7 +192,7 @@ PathedScreen::PathedScreen(
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
       m_width(width),
       m_height(height),
-      m_sampleProps({ .currentSample = 0 })
+      m_sampleProps({ .sampleCount = 0, .currentSample = 0, .renderX = 0, .renderY = 0 })
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -189,13 +203,13 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    auto sampleCallback = [this](int sampleOffset, SampleWidget *widget) {
+    auto sampleCallback = [this](int sampleOffset) {
         m_sampleProps.currentSample += sampleOffset;
-        widget->update(m_sampleProps);
+        m_sampleWidget->update(m_sampleProps);
 
         setPathVisualization();
     };
-    auto sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback);
+    m_sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback);
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
@@ -206,7 +220,7 @@ PathedScreen::PathedScreen(
         m_sampleProps.renderY = renderY;
         m_sampleProps.renderX = x;
 
-        sampleWidget->update(m_sampleProps);
+        m_sampleWidget->update(m_sampleProps);
 
         setPathVisualization();
     };
@@ -281,8 +295,11 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
-    if (renderStatus.sample() < 16) {
+    if (renderStatus.sample() < MaxSavedSamples) {
         m_sampleLookups.push_back(renderStatus.sampleLookup());
+
+        m_sampleProps.sampleCount = m_sampleLookups.size();
+        m_sampleWidget->update(m_sampleProps);
     }
 }
 

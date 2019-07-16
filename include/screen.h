@@ -13,8 +13,10 @@
 #include <memory>
 
 class GLWidget;
+class SampleWidget;
 
 struct SampleWidgetProps {
+    int sampleCount;
     int currentSample;
     int renderX;
     int renderY;
@@ -62,6 +64,7 @@ private:
     int m_width;
     int m_height;
 
+    nanogui::ref<SampleWidget> m_sampleWidget;
     nanogui::ref<GLWidget> m_glWidget;
     nanogui::ref<RenderWidget> m_renderWidget;
     nanogui::ref<nanogui::Widget> m_buttonsGroup;
