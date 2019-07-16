@@ -295,7 +295,7 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
-    if (renderStatus.sample() < MaxSavedSamples) {
+    if (renderStatus.sample() <= MaxSavedSamples) {
         m_sampleLookups.push_back(renderStatus.sampleLookup());
 
         m_sampleProps.sampleCount = m_sampleLookups.size();
