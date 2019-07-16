@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "job.h"
+#include "path_visualization.h"
 #include "photon_renderer.h"
 #include "rasterizer.h"
 #include "visualization.h"
@@ -37,7 +38,7 @@ public:
         m_rasterizer->setShowVisualization(showVisualization);
     }
 
-    void setVisualization(std::unique_ptr<gl::PhotonRenderer> renderer) {
+    void setVisualization(std::unique_ptr<gl::Visualization> renderer) {
         m_rasterizer->setVisualization(std::move(renderer));
     }
 
@@ -134,11 +135,13 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    auto clickCallback = [](int x, int y) {
+    m_glWidget = new GLWidget(rightPanel, scene, width, height);
+    auto clickCallback = [this](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
+        auto pathVisualization = std::make_unique<gl::PathVisualization>();
+        m_glWidget->setVisualization(std::move(pathVisualization));
     };
     m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, width, height);
-    m_glWidget = new GLWidget(rightPanel, scene, width, height);
 
     m_renderWidget->setVisible(true);
     m_glWidget->setVisible(false);
