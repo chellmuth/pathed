@@ -80,14 +80,18 @@ private:
 RenderWidget::RenderWidget(
     Widget *parent,
     Image &image,
+    std::function<void(int x, int y)> clickCallback,
     std::shared_ptr<AppController> controller,
     int width,
     int height
 )
     : nanogui::Widget(parent),
+      m_clickCallback(clickCallback),
       m_controller(controller)
 {
     using namespace nanogui;
+
+    setSize({width, height});
 
     m_canvas = new Canvas(this, controller, image, width, height);
     m_canvas->setSize({width, height});
@@ -120,6 +124,16 @@ void RenderWidget::draw(NVGcontext *ctx)
     Widget::draw(ctx);
 }
 
+bool RenderWidget::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
+{
+    if (button == GLFW_MOUSE_BUTTON_1 && down) {
+        m_clickCallback(p.x(), p.y());
+        return true;
+    }
+
+    return false;
+}
+
 PathedScreen::PathedScreen(
     Image &image,
     Scene &scene,
@@ -139,7 +153,8 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    m_renderWidget = new RenderWidget(rightPanel, image, controller, width, height);
+    auto clickCallback = [](int x, int y) { std::cout << "x: " << x << " y: " << y << std::endl ; };
+    m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, controller, width, height);
     m_glWidget = new GLWidget(rightPanel, scene, controller, width, height);
 
     m_renderWidget->setVisible(true);
@@ -204,7 +219,9 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
-    m_sampleLookups.push_back(renderStatus.sampleLookup());
+    if (renderStatus.sample() < 10) {
+        m_sampleLookups.push_back(renderStatus.sampleLookup());
+    }
 }
 
 bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifiers)

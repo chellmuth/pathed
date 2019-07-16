@@ -137,6 +137,7 @@ void Canvas::save(char const *filestem)
 bool Canvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
 {
     if (button == GLFW_MOUSE_BUTTON_1 && down) {
+        printf("CANVAS CLICK!\n");
         mController->handlePathTraceClick(p.x(), p.y());
 
         return true;

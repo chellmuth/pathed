@@ -9,6 +9,7 @@
 #include <nanogui/screen.h>
 #include <nanogui/widget.h>
 
+#include <functional>
 #include <memory>
 
 class GLWidget;
@@ -18,17 +19,20 @@ public:
     RenderWidget(
         Widget *parent,
         Image &image,
+        std::function<void(int x, int y)> clickCallback,
         std::shared_ptr<AppController> controller,
         int width,
         int height
     );
 
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
+    bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
 
     void draw(NVGcontext *ctx) override;
 
 private:
     nanogui::ref<Canvas> m_canvas;
+    std::function<void(int x, int y)> m_clickCallback;
     std::shared_ptr<AppController> m_controller;
 };
 
