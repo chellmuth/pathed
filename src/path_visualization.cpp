@@ -4,12 +4,16 @@
 
 void gl::PathVisualization::init(const Sample &sample)
 {
-    gl::Line line = {
-        sample.eyePoints[0],
-        sample.eyePoints[1]
-    };
+    std::vector<gl::Line> lines;
 
-    std::vector<gl::Line> lines = { line };
+    for (int i = 0; i < sample.eyePoints.size() - 1; i++) {
+        gl::Line line = {
+            sample.eyePoints[i],
+            sample.eyePoints[i + 1]
+        };
+
+        lines.push_back(line);
+    }
 
     m_glLines.init(lines);
 }

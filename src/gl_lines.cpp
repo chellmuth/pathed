@@ -10,8 +10,8 @@ gl::Lines::Lines()
 
 void gl::Lines::init(const std::vector<gl::Line> &lines)
 {
-    const int lineCount = lines.size();
-    const int pointCount = 2 * lines.size();
+    m_lineCount = lines.size();
+    const int pointCount = 2 * m_lineCount;
 
     std::vector<GLuint> indicesGL(pointCount);
     for (int i = 0; i < pointCount; i++) {
@@ -20,22 +20,22 @@ void gl::Lines::init(const std::vector<gl::Line> &lines)
 
     std::vector<GLfloat> positionsGL(pointCount * 3);
     std::vector<GLfloat> colorsGL(pointCount * 3);
-    for (int i = 0; i < lineCount; i++) {
-        positionsGL[2 * i + 0] = lines[i].p0.x();
-        positionsGL[2 * i + 1] = lines[i].p0.y();
-        positionsGL[2 * i + 2] = lines[i].p0.z();
+    for (int i = 0; i < m_lineCount; i++) {
+        positionsGL[6 * i + 0] = lines[i].p0.x();
+        positionsGL[6 * i + 1] = lines[i].p0.y();
+        positionsGL[6 * i + 2] = lines[i].p0.z();
 
-        positionsGL[2 * i + 3] = lines[i].p1.x();
-        positionsGL[2 * i + 4] = lines[i].p1.y();
-        positionsGL[2 * i + 5] = lines[i].p1.z();
+        positionsGL[6 * i + 3] = lines[i].p1.x();
+        positionsGL[6 * i + 4] = lines[i].p1.y();
+        positionsGL[6 * i + 5] = lines[i].p1.z();
 
-        colorsGL[2 * i + 0] = 1.f;
-        colorsGL[2 * i + 1] = 1.f;
-        colorsGL[2 * i + 2] = 0.f;
+        colorsGL[6 * i + 0] = 1.f;
+        colorsGL[6 * i + 1] = 1.f;
+        colorsGL[6 * i + 2] = 0.f;
 
-        colorsGL[2 * i + 3] = 1.f;
-        colorsGL[2 * i + 4] = 1.f;
-        colorsGL[2 * i + 5] = 0.f;
+        colorsGL[6 * i + 3] = 1.f;
+        colorsGL[6 * i + 4] = 1.f;
+        colorsGL[6 * i + 5] = 0.f;
     }
 
     {
@@ -46,7 +46,7 @@ void gl::Lines::init(const std::vector<gl::Line> &lines)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_entityIDs.vertexIndexBufferID);
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            sizeof(GLuint) * 2 * pointCount,
+            sizeof(GLuint) * pointCount,
             (GLvoid *)&indicesGL[0],
             GL_STATIC_DRAW
         );
@@ -218,13 +218,9 @@ void gl::Lines::draw(
     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_entityIDs.vertexIndexBufferID);
-    glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, m_lineCount * 2, GL_UNSIGNED_INT, 0);
 
-    glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);
 }
