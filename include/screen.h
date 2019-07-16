@@ -14,6 +14,10 @@
 
 class GLWidget;
 
+struct SampleWidgetProps {
+    int currentSample;
+};
+
 class RenderWidget : public nanogui::Widget {
 public:
     RenderWidget(
@@ -48,6 +52,8 @@ public:
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 
 private:
+    SampleWidgetProps m_sampleProps;
+
     void reloadRadioButtons();
 
     nanogui::ref<GLWidget> m_glWidget;

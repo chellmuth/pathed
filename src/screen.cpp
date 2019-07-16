@@ -64,16 +64,16 @@ private:
 };
 
 
-struct SampleWidgetProps {
-    int currentSample;
-};
-
 class SampleWidget : public nanogui::Widget {
 public:
-    SampleWidget(Widget *parent, const SampleWidgetProps &props, std::function<void(int)> callback)
+    SampleWidget(
+        Widget *parent,
+        const SampleWidgetProps &props,
+        std::function<void(int, SampleWidget *)> callback
+    )
         : nanogui::Widget(parent),
-        m_props(props),
-        m_callback(callback)
+          m_props(props),
+          m_callback(callback)
     {
         using namespace nanogui;
 
@@ -86,18 +86,29 @@ public:
 
         auto backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
         backButton->setFixedWidth(40);
-        backButton->setCallback([this] { m_callback(-1); });
+        backButton->setCallback([this] { m_callback(-1, this); });
 
-        std::string sampleText = "Sample: " + std::to_string(m_props.currentSample);
-        auto text = new Label(container, sampleText);
+        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample);
+        m_sampleLabel = new Label(container, "");
+        m_sampleLabel->setCaption(sampleCaption);
+
         auto forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
         forwardButton->setFixedWidth(40);
-        forwardButton->setCallback([this] { m_callback(1); });
+        forwardButton->setCallback([this] { m_callback(1, this); });
+    }
+
+    void update(const SampleWidgetProps &props) {
+        m_props = props;
+
+        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample);
+        m_sampleLabel->setCaption(sampleCaption);
     }
 
 private:
     SampleWidgetProps m_props;
-    std::function<void(int)> m_callback;
+    std::function<void(int, SampleWidget *)> m_callback;
+
+    nanogui::ref<Label> m_sampleLabel;
 };
 
 RenderWidget::RenderWidget(
@@ -161,7 +172,8 @@ PathedScreen::PathedScreen(
     int width,
     int height
 )
-    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false)
+    : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
+      m_sampleProps({ .currentSample = 0 })
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -172,11 +184,11 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    SampleWidgetProps sampleProps = { .currentSample = 0 };
-    auto sampleCallback = [](int sampleOffset) {
-        std::cout << "updating sample: " << sampleOffset << std::endl;
+    auto sampleCallback = [this](int sampleOffset, SampleWidget *widget) {
+        m_sampleProps.currentSample += sampleOffset;
+        widget->update(m_sampleProps);
     };
-    auto sampleWidget = new SampleWidget(leftPanel, sampleProps, sampleCallback);
+    auto sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback);
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
