@@ -14,6 +14,16 @@ void gl::PathVisualization::init(const Sample &sample)
         lines.push_back(line);
     }
 
+    for (int i = 0; i < sample.shadowPoints.size(); i++) {
+        gl::Line line = {
+            sample.eyePoints[i + 1],
+            sample.shadowPoints[i],
+            Color(1.f, 1.f, 0.f)
+        };
+
+        lines.push_back(line);
+    }
+
     m_glLines.init(lines);
 }
 
