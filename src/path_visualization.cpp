@@ -7,7 +7,8 @@ void gl::PathVisualization::init(const Sample &sample)
     for (int i = 0; i < sample.eyePoints.size() - 1; i++) {
         gl::Line line = {
             sample.eyePoints[i],
-            sample.eyePoints[i + 1]
+            sample.eyePoints[i + 1],
+            Color(1.f, 0.f, 0.f)
         };
 
         lines.push_back(line);

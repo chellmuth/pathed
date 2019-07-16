@@ -1,5 +1,6 @@
 #pragma once
 
+#include "color.h"
 #include "gl_scene.h"
 #include "integrator.h"
 #include "point.h"
@@ -14,6 +15,7 @@ namespace gl {
     struct Line {
         Point3 p0;
         Point3 p1;
+        Color color;
     };
 
     class Lines {

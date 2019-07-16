@@ -37,13 +37,13 @@ void gl::Lines::init(const std::vector<gl::Line> &lines)
         positionsGL[6 * i + 4] = lines[i].p1.y();
         positionsGL[6 * i + 5] = lines[i].p1.z();
 
-        colorsGL[6 * i + 0] = 1.f;
-        colorsGL[6 * i + 1] = 1.f;
-        colorsGL[6 * i + 2] = 0.f;
+        colorsGL[6 * i + 0] = lines[i].color.r();
+        colorsGL[6 * i + 1] = lines[i].color.g();
+        colorsGL[6 * i + 2] = lines[i].color.b();
 
-        colorsGL[6 * i + 3] = 1.f;
-        colorsGL[6 * i + 4] = 1.f;
-        colorsGL[6 * i + 5] = 0.f;
+        colorsGL[6 * i + 3] = lines[i].color.r();
+        colorsGL[6 * i + 4] = lines[i].color.g();
+        colorsGL[6 * i + 5] = lines[i].color.b();
     }
 
     {
