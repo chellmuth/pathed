@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gl_lines.h"
 #include "gl_visualization.h"
 #include "sample.h"
 
@@ -13,5 +14,8 @@ namespace gl {
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
         ) override;
+
+    private:
+        gl::Lines m_glLines;
     };
 };
