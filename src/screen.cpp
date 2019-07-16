@@ -244,6 +244,8 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
     if (renderStatus.sample() <= MaxSavedSamples) {
         m_sampleLookups.push_back(renderStatus.sampleLookup());
 
+        m_photonLists.push_back(renderStatus.photons());
+
         m_sampleProps.sampleCount = m_sampleLookups.size();
         m_sampleWidget->update(m_sampleProps);
     }

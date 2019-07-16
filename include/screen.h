@@ -2,6 +2,7 @@
 
 #include "canvas.h"
 #include "image.h"
+#include "kd_tree.h"
 #include "render_status.h"
 #include "sample_widget.h"
 #include "scene.h"
@@ -12,6 +13,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 class GLWidget;
 
@@ -64,4 +66,5 @@ private:
     nanogui::ref<nanogui::Label> m_sampleLabel;
 
     std::vector<std::shared_ptr<std::vector<Sample> > > m_sampleLookups;
+    std::vector<std::shared_ptr<std::vector<DataSource::Point> > > m_photonLists;
 };
