@@ -38,5 +38,9 @@ private:
     nanogui::ref<nanogui::Button> m_forwardButton;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_xCoordinate;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_yCoordinate;
+
+    nanogui::ref<nanogui::Button> m_localButton;
+    nanogui::ref<nanogui::Button> m_sourceButton;
+    nanogui::ref<nanogui::Button> m_hemisphereButton;
 };
 

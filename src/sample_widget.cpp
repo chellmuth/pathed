@@ -17,7 +17,10 @@ SampleWidget::SampleWidget(
 {
     using namespace nanogui;
 
-    setLayout(new GroupLayout());
+    auto layout = new BoxLayout(Orientation::Vertical);
+    layout->setAlignment(Alignment::Fill);
+    layout->setSpacing(10);
+    setLayout(layout);
 
     {
         auto container = new Widget(this);
@@ -57,6 +60,17 @@ SampleWidget::SampleWidget(
             std::cout << "y: " << y << "!" << std::endl;
             m_coordinateCallback(m_props.renderX, y);
         });
+    }
+
+    {
+        auto container = new Widget(this);
+        auto containerLayout = new BoxLayout(Orientation::Horizontal);
+        containerLayout->setSpacing(6);
+        container->setLayout(containerLayout);
+
+        m_localButton = new Button(container, "Local");
+        m_sourceButton = new Button(container, "Source");
+        m_hemisphereButton = new Button(container, "Hemisphere");
     }
 
     updateCoordinates();
