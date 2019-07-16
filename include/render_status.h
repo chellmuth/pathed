@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kd_tree.h"
 #include "sample.h"
 
 #include <memory>
@@ -18,4 +19,5 @@ public:
 private:
     int m_sample;
     std::shared_ptr<std::vector<Sample> > m_sampleLookup;
+    std::shared_ptr<std::vector<DataSource::Point> > m_photons;
 };
