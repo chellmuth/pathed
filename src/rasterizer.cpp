@@ -158,7 +158,7 @@ void Rasterizer::move(Direction direction)
 
 void Rasterizer::updateDebugMode()
 {
-    m_visualization->updateDebugMode();
+    // m_visualization->updateDebugMode();
 }
 
 bool Rasterizer::mouseButtonEvent(

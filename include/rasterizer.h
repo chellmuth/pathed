@@ -2,6 +2,7 @@
 
 #include "gl_lines.h"
 #include "gl_scene.h"
+#include "gl_visualization.h"
 #include "integrator.h"
 #include "point.h"
 #include "photon_renderer.h"
@@ -36,11 +37,11 @@ public:
     void updateDebugMode();
 
     void setShowVisualization(bool showVisualization) { m_showVisualization = showVisualization; }
-    void setVisualization(std::unique_ptr<gl::PhotonRenderer> visualization) { m_visualization = std::move(visualization); }
+    void setVisualization(std::unique_ptr<gl::Visualization> visualization) { m_visualization = std::move(visualization); }
 
 private:
     bool m_showVisualization;
-    std::unique_ptr<gl::PhotonRenderer> m_visualization;
+    std::unique_ptr<gl::Visualization> m_visualization;
 
     Scene &m_scene;
     Point3 m_origin;

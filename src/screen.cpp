@@ -134,7 +134,9 @@ PathedScreen::PathedScreen(
     Widget *rightPanel = new Widget(this);
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
-    auto clickCallback = [](int x, int y) { std::cout << "x: " << x << " y: " << y << std::endl ; };
+    auto clickCallback = [](int x, int y) {
+        std::cout << "clicked x: " << x << " y: " << y << std::endl;
+    };
     m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, width, height);
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
 

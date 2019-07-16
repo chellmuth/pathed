@@ -2,6 +2,7 @@
 
 #include "gl_points.h"
 #include "gl_scene.h"
+#include "gl_visualization.h"
 #include "shader.h"
 
 #include "json.hpp"
@@ -11,7 +12,7 @@
 #include <string>
 
 namespace gl {
-    class PhotonRenderer {
+    class PhotonRenderer : public gl::Visualization {
     public:
         PhotonRenderer();
         ~PhotonRenderer();
@@ -21,7 +22,7 @@ namespace gl {
             GLfloat (&model)[4][4],
             GLfloat (&view)[4][4],
             GLfloat (&projection)[4][4]
-        );
+        ) override;
 
         void updateBuffers();
         void updateDebugMode();
