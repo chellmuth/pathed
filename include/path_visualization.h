@@ -7,6 +7,7 @@
 namespace gl {
     class PathVisualization : public gl::Visualization {
     public:
+        ~PathVisualization() {};
         void init(const Sample& sample);
 
         void draw(

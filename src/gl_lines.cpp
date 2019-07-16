@@ -8,6 +8,14 @@ gl::Lines::Lines()
     );
 }
 
+gl::Lines::~Lines()
+{
+    glDeleteVertexArrays(1, &m_entityIDs.vertexArrayID);
+    glDeleteBuffers(1, &m_entityIDs.vertexIndexBufferID);
+    glDeleteBuffers(1, &m_entityIDs.vertexBufferID);
+    glDeleteBuffers(1, &m_entityIDs.colorBufferID);
+}
+
 void gl::Lines::init(const std::vector<gl::Line> &lines)
 {
     m_lineCount = lines.size();

@@ -33,8 +33,12 @@ public:
     void move(Direction direction);
     void updateDebugMode();
 
-    void setShowVisualization(bool showVisualization) { m_showVisualization = showVisualization; }
-    void setVisualization(std::unique_ptr<gl::Visualization> visualization) { m_visualization = std::move(visualization); }
+    void setShowVisualization(bool showVisualization) {
+        m_showVisualization = showVisualization;
+    }
+    void setVisualization(std::unique_ptr<gl::Visualization> visualization) {
+        m_visualization = std::move(visualization);
+    }
 
 private:
     bool m_showVisualization;

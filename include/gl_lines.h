@@ -19,6 +19,7 @@ namespace gl {
     class Lines {
     public:
         Lines();
+        ~Lines();
 
         void init(const std::vector<gl::Line> &lines);
         void draw(

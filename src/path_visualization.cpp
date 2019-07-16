@@ -1,7 +1,5 @@
 #include "path_visualization.h"
 
-#include <iostream>
-
 void gl::PathVisualization::init(const Sample &sample)
 {
     std::vector<gl::Line> lines;
