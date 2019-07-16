@@ -138,10 +138,11 @@ PathedScreen::PathedScreen(
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
+        int renderY = height - y - 1;
         auto pathVisualization = std::make_unique<gl::PathVisualization>();
 
         const auto &sampleLookup = *m_sampleLookups[0];
-        const Sample &sample = sampleLookup[y * width + x];
+        const Sample &sample = sampleLookup[renderY * width + x];
         pathVisualization->init(sample);
 
         m_glWidget->setVisualization(std::move(pathVisualization));
