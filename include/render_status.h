@@ -16,6 +16,11 @@ public:
         m_sampleLookup = sampleLookup;
     }
 
+    std::shared_ptr<std::vector<DataSource::Point> > photons() const { return m_photons; }
+    void setPhotons(std::shared_ptr<std::vector<DataSource::Point> > photons) {
+        m_photons = photons;
+    }
+
 private:
     int m_sample;
     std::shared_ptr<std::vector<Sample> > m_sampleLookup;

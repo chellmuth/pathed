@@ -57,6 +57,9 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
         renderStatus.setSample(i + 1);
         renderStatus.setSampleLookup(sampleLookup);
 
+        auto photons = std::make_shared<std::vector<DataSource::Point> >(getPhotons());
+        renderStatus.setPhotons(photons);
+
         callback(renderStatus);
 
         std::mutex &lock = image.getLock();
