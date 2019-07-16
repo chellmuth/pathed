@@ -146,7 +146,16 @@ PathedScreen::PathedScreen(
 
         setPathVisualization();
     };
-    m_sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback);
+    auto coordinateCallback = [this](int renderX, int renderY) {
+        m_sampleProps.currentSample = 0;
+        m_sampleProps.renderX = std::min(std::max(0, renderX), m_width - 1);
+        m_sampleProps.renderY = std::min(std::max(0, renderY), m_height - 1);
+
+        m_sampleWidget->update(m_sampleProps);
+
+        setPathVisualization();
+    };
+    m_sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback, coordinateCallback);
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
