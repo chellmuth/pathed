@@ -173,6 +173,8 @@ PathedScreen::PathedScreen(
     int height
 )
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
+      m_width(width),
+      m_height(height),
       m_sampleProps({ .currentSample = 0 })
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
@@ -187,6 +189,8 @@ PathedScreen::PathedScreen(
     auto sampleCallback = [this](int sampleOffset, SampleWidget *widget) {
         m_sampleProps.currentSample += sampleOffset;
         widget->update(m_sampleProps);
+
+        setPathVisualization();
     };
     auto sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback);
 
@@ -194,13 +198,13 @@ PathedScreen::PathedScreen(
     auto clickCallback = [=](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
         int renderY = height - y - 1;
-        auto pathVisualization = std::make_unique<gl::PathVisualization>();
 
-        const auto &sampleLookup = *m_sampleLookups[0];
-        const Sample &sample = sampleLookup[renderY * width + x];
-        pathVisualization->init(sample);
+        m_sampleProps.renderY = renderY;
+        m_sampleProps.renderX = x;
 
-        m_glWidget->setVisualization(std::move(pathVisualization));
+        sampleWidget->update(m_sampleProps);
+
+        setPathVisualization();
     };
     m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, width, height);
 
@@ -231,6 +235,17 @@ PathedScreen::PathedScreen(
     reloadRadioButtons();
 
     performLayout();
+}
+
+void PathedScreen::setPathVisualization()
+{
+    auto pathVisualization = std::make_unique<gl::PathVisualization>();
+
+    const auto &sampleLookup = *m_sampleLookups[m_sampleProps.currentSample];
+    const Sample &sample = sampleLookup[m_sampleProps.renderY * m_width + m_sampleProps.renderX];
+    pathVisualization->init(sample);
+
+    m_glWidget->setVisualization(std::move(pathVisualization));
 }
 
 void PathedScreen::reloadRadioButtons()

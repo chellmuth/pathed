@@ -16,6 +16,8 @@ class GLWidget;
 
 struct SampleWidgetProps {
     int currentSample;
+    int renderX;
+    int renderY;
 };
 
 class RenderWidget : public nanogui::Widget {
@@ -55,6 +57,10 @@ private:
     SampleWidgetProps m_sampleProps;
 
     void reloadRadioButtons();
+    void setPathVisualization();
+
+    int m_width;
+    int m_height;
 
     nanogui::ref<GLWidget> m_glWidget;
     nanogui::ref<RenderWidget> m_renderWidget;
