@@ -111,8 +111,6 @@ private:
     void updateButtonStates() {
         m_backButton->setEnabled(m_props.currentSample > 0);
         m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
-
-        std::cout << "enabled? " << m_backButton->enabled() << std::endl;
     }
 
     void updateCaption() {

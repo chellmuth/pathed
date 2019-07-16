@@ -315,15 +315,27 @@ Color Depositer::direct(
     // sample.shadowPoints.push_back(lightSample.point);
 
     if (lightSample.normal.dot(wo) >= 0.f) {
-        return Color(0.f, 0.f, 0.f);
+        sample.shadowTests.push_back({
+            intersection.point,
+            lightSample.point,
+            true
+        });
+
+        return Color(0.f);
     }
 
     Ray shadowRay = Ray(intersection.point, wo);
-    Intersection shadowIntersection = scene.testIntersect(shadowRay);
     float lightDistance = lightDirection.length();
+    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
-    if (shadowIntersection.hit && shadowIntersection.t + 0.0001f < lightDistance) {
-        return Color(0.f, 0.f, 0.f);
+    sample.shadowTests.push_back({
+        intersection.point,
+        lightSample.point,
+        occluded
+    });
+
+    if (occluded) {
+        return Color(0.f);
     }
 
     float invPDF = lightSample.invPDF * lightCount;

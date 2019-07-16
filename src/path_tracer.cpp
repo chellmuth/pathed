@@ -98,7 +98,7 @@ Color PathTracer::direct(
             true
         });
 
-        return Color(0.f, 0.f, 0.f);
+        return Color(0.f);
     }
 
     Ray shadowRay = Ray(intersection.point, wo);
