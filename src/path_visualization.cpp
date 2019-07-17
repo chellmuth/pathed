@@ -1,5 +1,7 @@
 #include "path_visualization.h"
 
+#include "point.h"
+
 void gl::PathVisualization::init(
     const Sample& sample,
     const std::vector<DataSource::Point> &photons,
@@ -30,7 +32,9 @@ void gl::PathVisualization::init(
     }
 
     m_glLines.init(lines);
-    m_photonRenderer.init(photons, debugMode);
+
+    Point3 queryPoint = sample.eyePoints[1];
+    m_photonRenderer.init(queryPoint, photons, debugMode);
 }
 
 void gl::PathVisualization::draw(

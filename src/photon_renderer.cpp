@@ -14,6 +14,7 @@ using json = nlohmann::json;
 
 gl::PhotonRenderer::PhotonRenderer()
     : m_pointCount(0),
+      m_queryPoint(0.f, 0.f, 0.f),
       m_debugMode(DebugMode::Local)
 {
     m_shader = shader::createProgram(
@@ -29,8 +30,12 @@ gl::PhotonRenderer::~PhotonRenderer()
     glDeleteBuffers(1, &m_entityIDs.colorBufferID);
 }
 
-void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons, DebugMode debugMode)
-{
+void gl::PhotonRenderer::init(
+    const Point3 &queryPoint,
+    const std::vector<DataSource::Point> &photons,
+    DebugMode debugMode
+) {
+    m_queryPoint = queryPoint;
     m_photons = photons;
     m_debugMode = debugMode;
 
@@ -42,7 +47,7 @@ void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons, Deb
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * 3 * m_photons.size(),
+            sizeof(GLfloat) * 3 * (m_photons.size() + 1),
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -51,7 +56,7 @@ void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons, Deb
         glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GLfloat) * 3 * m_photons.size(),
+            sizeof(GLfloat) * 3 * (m_photons.size() + 1),
             NULL,
             GL_DYNAMIC_DRAW
         );
@@ -154,6 +159,10 @@ std::vector<GLfloat> gl::PhotonRenderer::getPositions()
         }
     }
 
+    positionsGL.push_back(m_queryPoint.x());
+    positionsGL.push_back(m_queryPoint.y());
+    positionsGL.push_back(m_queryPoint.z());
+
     return positionsGL;
 }
 
@@ -167,9 +176,9 @@ std::vector<GLfloat> gl::PhotonRenderer::getColors()
         colorsGL.push_back(0.7f);
     }
 
-    // colorsGL.push_back(1.f);
-    // colorsGL.push_back(0.f);
-    // colorsGL.push_back(0.f);
+    colorsGL.push_back(1.f);
+    colorsGL.push_back(0.f);
+    colorsGL.push_back(0.f);
 
     return colorsGL;
 }
@@ -202,7 +211,7 @@ void gl::PhotonRenderer::draw(
     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.colorBufferID);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glDrawArrays(GL_POINTS, 0, m_photons.size());
+    glDrawArrays(GL_POINTS, 0, m_photons.size() + 1);
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);

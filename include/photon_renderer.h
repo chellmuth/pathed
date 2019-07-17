@@ -5,6 +5,7 @@
 #include "gl_types.h"
 #include "gl_visualization.h"
 #include "kd_tree.h"
+#include "point.h"
 #include "shader.h"
 
 #include "json.hpp"
@@ -21,7 +22,11 @@ namespace gl {
         ~PhotonRenderer();
 
         void init(const std::string &jsonFile);
-        void init(const std::vector<DataSource::Point> &photons, DebugMode debugMode);
+        void init(
+            const Point3 &queryPoint,
+            const std::vector<DataSource::Point> &photons,
+            DebugMode debugMode
+        );
         void draw(
             GLfloat (&model)[4][4],
             GLfloat (&view)[4][4],
@@ -40,9 +45,10 @@ namespace gl {
         Shader m_shader;
         EntityIDs m_entityIDs;
 
-        DebugMode m_debugMode;
-
         int m_pointCount;
+
+        Point3 m_queryPoint;
         std::vector<DataSource::Point> m_photons;
+        DebugMode m_debugMode;
     };
 }
