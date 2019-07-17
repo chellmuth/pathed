@@ -479,3 +479,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
     jsonFile << j.dump(4) << std::endl;
     std::cout << "Wrote to live-gt.json" << std::endl;
 }
+
+std::vector<DataSource::Point> Depositer::getPhotons() const {
+    return m_dataSource->points;
+};
