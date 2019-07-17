@@ -179,11 +179,10 @@ PathedScreen::PathedScreen(
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
-        int renderY = height - y - 1;
 
         m_sampleProps.currentSample = 0;
-        m_sampleProps.renderY = renderY;
         m_sampleProps.renderX = x;
+        m_sampleProps.renderY = y;
 
         m_sampleWidget->update(m_sampleProps);
 
@@ -224,8 +223,9 @@ void PathedScreen::setPathVisualization()
 {
     auto pathVisualization = std::make_unique<gl::PathVisualization>();
 
+    const int lookupY = m_height - m_sampleProps.renderY - 1;
     const auto &sampleLookup = *m_sampleLookups[m_sampleProps.currentSample];
-    const Sample &sample = sampleLookup[m_sampleProps.renderY * m_width + m_sampleProps.renderX];
+    const Sample &sample = sampleLookup[lookupY * m_width + m_sampleProps.renderX];
 
     const auto &photons = *m_photonLists[m_sampleProps.currentSample];
     const auto &dataSource = *m_dataSources[m_sampleProps.currentSample];
