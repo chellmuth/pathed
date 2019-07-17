@@ -37,14 +37,6 @@ protected:
     //temp!! for real
     virtual std::vector<DataSource::Point> getPhotons() const {
         std::vector<DataSource::Point> dummy;
-        DataSource::Point point = {
-            .x = 4.f,
-            .y = 1.f,
-            .z = -2.f,
-            .source = Point3(0.f, 0.f, 0.f),
-            .throughput = Color(1.f)
-        };
-        dummy.push_back(point);
         return dummy;
     };
 
