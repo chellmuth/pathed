@@ -9,6 +9,7 @@
 #include <nanogui/widget.h>
 
 #include <functional>
+#include <vector>
 
 struct SampleWidgetProps {
     int sampleCount;
@@ -20,6 +21,8 @@ struct SampleWidgetProps {
 
     std::vector<Color> contributions;
 };
+
+class PagerWidget;
 
 class SampleWidget : public nanogui::Widget {
 public:
@@ -39,13 +42,10 @@ private:
     void updateCaption();
 
     SampleWidgetProps m_props;
-    std::function<void(int)> m_sampleCallback;
     std::function<void(int, int)> m_coordinateCallback;
     std::function<void(DebugMode)> m_debugModeCallback;
 
-    nanogui::ref<nanogui::Label> m_sampleLabel;
-    nanogui::ref<nanogui::Button> m_backButton;
-    nanogui::ref<nanogui::Button> m_forwardButton;
+    nanogui::ref<PagerWidget> m_samplePager;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_xCoordinate;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_yCoordinate;
 

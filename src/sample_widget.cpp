@@ -7,6 +7,57 @@
 
 using namespace nanogui;
 
+class PagerWidget : public nanogui::Widget {
+public:
+    PagerWidget(
+        Widget *parent,
+        const SampleWidgetProps &props,
+        std::function<void(int)> sampleCallback
+    )
+        : nanogui::Widget(parent),
+          m_props(props),
+          m_sampleCallback(sampleCallback)
+    {
+        auto layout = new BoxLayout(Orientation::Horizontal);
+        layout->setSpacing(6);
+        setLayout(layout);
+
+        m_backButton = new Button(this, "", ENTYPO_ICON_ARROW_LEFT);
+        m_backButton->setFixedWidth(40);
+        m_backButton->setCallback([this] { m_sampleCallback(-1); });
+
+        m_sampleLabel = new Label(this, "");
+
+        m_forwardButton = new Button(this, "", ENTYPO_ICON_ARROW_RIGHT);
+        m_forwardButton->setFixedWidth(40);
+        m_forwardButton->setCallback([this] { m_sampleCallback(1); });
+
+        update();
+    }
+
+    void update(const SampleWidgetProps &newProps) {
+        m_props = newProps;
+        update();
+    }
+
+private:
+    void update() {
+        m_backButton->setEnabled(m_props.currentSample > 0);
+        m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
+
+        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
+        m_sampleLabel->setCaption(sampleCaption);
+    }
+
+    SampleWidgetProps m_props;
+
+    std::function<void(int)> m_sampleCallback;
+
+    nanogui::ref<nanogui::Label> m_sampleLabel;
+    nanogui::ref<nanogui::Button> m_backButton;
+    nanogui::ref<nanogui::Button> m_forwardButton;
+};
+
 SampleWidget::SampleWidget(
     Widget *parent,
     const SampleWidgetProps &props,
@@ -15,7 +66,6 @@ SampleWidget::SampleWidget(
     std::function<void(DebugMode)> debugModeCallback
 ) : nanogui::Widget(parent),
     m_props(props),
-    m_sampleCallback(sampleCallback),
     m_coordinateCallback(coordinateCallback),
     m_debugModeCallback(debugModeCallback)
 {
@@ -24,22 +74,7 @@ SampleWidget::SampleWidget(
     layout->setSpacing(10);
     setLayout(layout);
 
-    {
-        auto container = new Widget(this);
-        auto containerLayout = new BoxLayout(Orientation::Horizontal);
-        containerLayout->setSpacing(6);
-        container->setLayout(containerLayout);
-
-        m_backButton = new Button(container, "", ENTYPO_ICON_ARROW_LEFT);
-        m_backButton->setFixedWidth(40);
-        m_backButton->setCallback([this] { m_sampleCallback(-1); });
-
-        m_sampleLabel = new Label(container, "");
-
-        m_forwardButton = new Button(container, "", ENTYPO_ICON_ARROW_RIGHT);
-        m_forwardButton->setFixedWidth(40);
-        m_forwardButton->setCallback([this] { m_sampleCallback(1); });
-    }
+    m_samplePager = new PagerWidget(this, m_props, sampleCallback);
 
     {
         auto container = new Widget(this);
@@ -104,17 +139,16 @@ SampleWidget::SampleWidget(
     updateContributions();
     updateCoordinates();
     updateButtonStates();
-    updateCaption();
 }
 
 void SampleWidget::update(const SampleWidgetProps &newProps)
 {
     m_props = newProps;
 
+    m_samplePager->update(m_props);
     updateContributions();
     updateCoordinates();
     updateButtonStates();
-    updateCaption();
 }
 
 void SampleWidget::updateCoordinates()
@@ -125,18 +159,9 @@ void SampleWidget::updateCoordinates()
 
 void SampleWidget::updateButtonStates()
 {
-    m_backButton->setEnabled(m_props.currentSample > 0);
-    m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
-
     m_localButton->setPushed(m_props.debugMode == DebugMode::Local);
     m_sourceButton->setPushed(m_props.debugMode == DebugMode::Source);
     m_hemisphereButton->setPushed(m_props.debugMode == DebugMode::Hemisphere);
-}
-
-void SampleWidget::updateCaption()
-{
-    std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
-    m_sampleLabel->setCaption(sampleCaption);
 }
 
 void SampleWidget::updateContributions()
