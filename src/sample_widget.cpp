@@ -155,8 +155,8 @@ PagerWidgetProps SampleWidget::samplePagerProps()
 PagerWidgetProps SampleWidget::bouncePagerProps()
 {
     return {
-        .currentCount = 2,
-        .maxCount = 5,
+        .currentCount = m_props.currentBounce,
+        .maxCount = m_props.bounceCount,
         .caption = "Bounce"
     };
 }

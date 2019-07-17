@@ -156,11 +156,18 @@ PathedScreen::PathedScreen(
             m_sampleProps.currentSample + sampleOffset,
             m_sampleProps.renderX,
             m_sampleProps.renderY,
+            0,
             m_sampleProps.debugMode
         );
     };
     auto bounceCallback = [this](int bounceOffset) {
-        std::cout << "Bounce! " << bounceOffset << std::endl;
+        setCurrentSample(
+            m_sampleProps.currentSample,
+            m_sampleProps.renderX,
+            m_sampleProps.renderY,
+            m_sampleProps.currentBounce + bounceOffset,
+            m_sampleProps.debugMode
+        );
     };
 
     auto coordinateCallback = [this](int renderX, int renderY) {
@@ -168,6 +175,7 @@ PathedScreen::PathedScreen(
             0,
             std::min(std::max(0, renderX), m_width - 1),
             std::min(std::max(0, renderY), m_height - 1),
+            0,
             m_sampleProps.debugMode
         );
     };
@@ -176,6 +184,7 @@ PathedScreen::PathedScreen(
             m_sampleProps.currentSample,
             m_sampleProps.renderX,
             m_sampleProps.renderY,
+            m_sampleProps.currentBounce,
             debugMode
         );
     };
@@ -196,6 +205,7 @@ PathedScreen::PathedScreen(
             0,
             x,
             y,
+            0,
             m_sampleProps.debugMode
         );
     };
@@ -278,11 +288,17 @@ void PathedScreen::reloadRadioButtons()
     performLayout();
 }
 
-void PathedScreen::setCurrentSample(int currentSample, int renderX, int renderY, DebugMode debugMode)
-{
+void PathedScreen::setCurrentSample(
+    int currentSample,
+    int renderX,
+    int renderY,
+    int bounce,
+    DebugMode debugMode
+) {
     m_sampleProps.currentSample = currentSample;
     m_sampleProps.renderX = renderX;
     m_sampleProps.renderY = renderY;
+    m_sampleProps.currentBounce = bounce;
     m_sampleProps.debugMode = debugMode;
 
     const Sample &sample = lookupSample(
@@ -291,6 +307,7 @@ void PathedScreen::setCurrentSample(int currentSample, int renderX, int renderY,
         m_sampleProps.renderY
     );
     m_sampleProps.contributions = sample.contributions;
+    m_sampleProps.bounceCount = sample.eyePoints.size() - 1;
 
     m_sampleWidget->update(m_sampleProps);
     setPathVisualization();

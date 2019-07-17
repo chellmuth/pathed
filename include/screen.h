@@ -53,7 +53,7 @@ public:
 private:
     SampleWidgetProps m_sampleProps;
 
-    void setCurrentSample(int currentSample, int renderX, int renderY, DebugMode debugMode);
+    void setCurrentSample(int currentSample, int renderX, int renderY, int bounce, DebugMode debugMode);
     const Sample& lookupSample(int currentSample, int renderX, int renderY);
 
     void reloadRadioButtons();
