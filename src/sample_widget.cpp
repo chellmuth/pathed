@@ -151,7 +151,6 @@ void SampleWidget::updateContributions()
         float luminance = contribution.luminance();
         std::string text = "Bounce " + std::to_string(i) + ": " + std::to_string(luminance);
         auto contributionLabel = new Label(m_contributionsTable, text);
-        std::cout << text << std::endl;
         i += 1;
     }
 }
