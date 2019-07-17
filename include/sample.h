@@ -1,5 +1,6 @@
 #pragma once
 
+#include "color.h"
 #include "point.h"
 
 #include <vector>
@@ -13,8 +14,9 @@ struct ShadowTest {
 struct Sample {
     std::vector<Point3> eyePoints;
     std::vector<ShadowTest> shadowTests;
+    std::vector<Color> contributions;
 
     Sample()
-    : eyePoints(), shadowTests()
+    : eyePoints(), shadowTests(), contributions()
     {}
 };

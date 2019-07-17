@@ -1,5 +1,6 @@
 #pragma once
 
+#include "color.h"
 #include "gl_types.h"
 
 #include <nanogui/button.h>
@@ -16,6 +17,8 @@ struct SampleWidgetProps {
     int renderY;
 
     DebugMode debugMode;
+
+    std::vector<Color> contributions;
 };
 
 class SampleWidget : public nanogui::Widget {
@@ -30,6 +33,7 @@ public:
     void update(const SampleWidgetProps &newProps);
 
 private:
+    void updateContributions();
     void updateCoordinates();
     void updateButtonStates();
     void updateCaption();
@@ -48,5 +52,7 @@ private:
     nanogui::ref<nanogui::Button> m_localButton;
     nanogui::ref<nanogui::Button> m_sourceButton;
     nanogui::ref<nanogui::Button> m_hemisphereButton;
+
+    nanogui::ref<nanogui::Widget> m_contributionsTable;
 };
 

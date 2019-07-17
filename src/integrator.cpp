@@ -123,14 +123,18 @@ void Integrator::samplePixel(
     Sample sample;
     sample.eyePoints.push_back(ray.origin());
 
-    Color color = L(intersection, scene, random, sample);
+    Color color(0.f);
 
     if (g_job->bounceController().checkCounts(0)) {
         Color emit = intersection.material->emit();
         if (!emit.isBlack()) {
             color += emit;
         }
+
+        sample.contributions.push_back(color);
     }
+
+    color += L(intersection, scene, random, sample);
 
     sampleLookup[row * width + col] = sample;
 

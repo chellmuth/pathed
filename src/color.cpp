@@ -24,6 +24,15 @@ Color Color::operator+ (const Color c) const
     );
 }
 
+Color Color::operator- (const Color c) const
+{
+    return Color(
+        m_r - c.r(),
+        m_g - c.g(),
+        m_b - c.b()
+    );
+}
+
 Color& Color::operator+= (const Color &c)
 {
     m_r += c.r();

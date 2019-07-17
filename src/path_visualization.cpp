@@ -4,6 +4,8 @@
 
 #include "nanoflann.hpp"
 
+#include <algorithm>
+
 void gl::PathVisualization::init(
     const Sample& sample,
     const std::vector<DataSource::Point> &photons,
@@ -45,7 +47,7 @@ void gl::PathVisualization::init(
     KDTree *tree = new KDTree(3, dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     tree->buildIndex();
 
-    const int searchCount = 100;
+    const size_t searchCount = std::min((size_t)100, dataSource.points.size());
     auto resultIndices = std::vector<size_t>(searchCount);
     std::vector<float> outDistanceSquared(searchCount);
 

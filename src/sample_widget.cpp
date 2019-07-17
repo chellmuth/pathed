@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+using namespace nanogui;
+
 SampleWidget::SampleWidget(
     Widget *parent,
     const SampleWidgetProps &props,
@@ -17,8 +19,6 @@ SampleWidget::SampleWidget(
     m_coordinateCallback(coordinateCallback),
     m_debugModeCallback(debugModeCallback)
 {
-    using namespace nanogui;
-
     auto layout = new BoxLayout(Orientation::Vertical);
     layout->setAlignment(Alignment::Fill);
     layout->setSpacing(10);
@@ -89,6 +89,19 @@ SampleWidget::SampleWidget(
         });
     }
 
+    {
+        auto container = new Widget(this);
+        auto containerLayout = new BoxLayout(Orientation::Horizontal);
+        containerLayout->setSpacing(6);
+        container->setLayout(containerLayout);
+
+        m_contributionsTable = new Widget(container);
+        auto contributionsLayout = new BoxLayout(Orientation::Vertical);
+        contributionsLayout->setSpacing(6);
+        m_contributionsTable->setLayout(contributionsLayout);
+    }
+
+    updateContributions();
     updateCoordinates();
     updateButtonStates();
     updateCaption();
@@ -98,6 +111,7 @@ void SampleWidget::update(const SampleWidgetProps &newProps)
 {
     m_props = newProps;
 
+    updateContributions();
     updateCoordinates();
     updateButtonStates();
     updateCaption();
@@ -123,4 +137,21 @@ void SampleWidget::updateCaption()
 {
     std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
     m_sampleLabel->setCaption(sampleCaption);
+}
+
+void SampleWidget::updateContributions()
+{
+    const int childCount = m_contributionsTable->childCount();
+    for (int i = 0; i < childCount; i++) {
+        m_contributionsTable->removeChild(0);
+    }
+
+    int i = 0;
+    for (auto &contribution : m_props.contributions) {
+        float luminance = contribution.luminance();
+        std::string text = "Bounce " + std::to_string(i) + ": " + std::to_string(luminance);
+        auto contributionLabel = new Label(m_contributionsTable, text);
+        std::cout << text << std::endl;
+        i += 1;
+    }
 }

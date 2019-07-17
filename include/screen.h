@@ -53,6 +53,9 @@ public:
 private:
     SampleWidgetProps m_sampleProps;
 
+    void setCurrentSample(int currentSample, int renderX, int renderY, DebugMode debugMode);
+    const Sample& lookupSample(int currentSample, int renderX, int renderY);
+
     void reloadRadioButtons();
     void setPathVisualization();
 

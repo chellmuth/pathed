@@ -148,25 +148,28 @@ PathedScreen::PathedScreen(
     rightPanel->setSize(Eigen::Vector2i(width, height));
 
     auto sampleCallback = [this](int sampleOffset) {
-        m_sampleProps.currentSample += sampleOffset;
-        m_sampleWidget->update(m_sampleProps);
-
-        setPathVisualization();
+        setCurrentSample(
+            m_sampleProps.currentSample + sampleOffset,
+            m_sampleProps.renderX,
+            m_sampleProps.renderY,
+            m_sampleProps.debugMode
+        );
     };
     auto coordinateCallback = [this](int renderX, int renderY) {
-        m_sampleProps.currentSample = 0;
-        m_sampleProps.renderX = std::min(std::max(0, renderX), m_width - 1);
-        m_sampleProps.renderY = std::min(std::max(0, renderY), m_height - 1);
-
-        m_sampleWidget->update(m_sampleProps);
-
-        setPathVisualization();
+        setCurrentSample(
+            0,
+            std::min(std::max(0, renderX), m_width - 1),
+            std::min(std::max(0, renderY), m_height - 1),
+            m_sampleProps.debugMode
+        );
     };
     auto debugModeCallback = [this](DebugMode debugMode) {
-        m_sampleProps.debugMode = debugMode;
-        m_sampleWidget->update(m_sampleProps);
-
-        setPathVisualization();
+        setCurrentSample(
+            m_sampleProps.currentSample,
+            m_sampleProps.renderX,
+            m_sampleProps.renderY,
+            debugMode
+        );
     };
     m_sampleWidget = new SampleWidget(
         leftPanel,
@@ -180,13 +183,12 @@ PathedScreen::PathedScreen(
     auto clickCallback = [=](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
 
-        m_sampleProps.currentSample = 0;
-        m_sampleProps.renderX = x;
-        m_sampleProps.renderY = y;
-
-        m_sampleWidget->update(m_sampleProps);
-
-        setPathVisualization();
+        setCurrentSample(
+            0,
+            x,
+            y,
+            m_sampleProps.debugMode
+        );
     };
     m_renderWidget = new RenderWidget(rightPanel, image, clickCallback, width, height);
 
@@ -219,13 +221,23 @@ PathedScreen::PathedScreen(
     performLayout();
 }
 
+const Sample& PathedScreen::lookupSample(int currentSample, int renderX, int renderY)
+{
+    const int lookupY = m_height - renderY - 1;
+    const auto &sampleLookup = *m_sampleLookups[currentSample];
+    const Sample &sample = sampleLookup[lookupY * m_width + renderX];
+    return sample;
+}
+
 void PathedScreen::setPathVisualization()
 {
     auto pathVisualization = std::make_unique<gl::PathVisualization>();
 
-    const int lookupY = m_height - m_sampleProps.renderY - 1;
-    const auto &sampleLookup = *m_sampleLookups[m_sampleProps.currentSample];
-    const Sample &sample = sampleLookup[lookupY * m_width + m_sampleProps.renderX];
+    const Sample &sample = lookupSample(
+        m_sampleProps.currentSample,
+        m_sampleProps.renderX,
+        m_sampleProps.renderY
+    );
 
     const auto &photons = *m_photonLists[m_sampleProps.currentSample];
     const auto &dataSource = *m_dataSources[m_sampleProps.currentSample];
@@ -257,21 +269,48 @@ void PathedScreen::reloadRadioButtons()
     performLayout();
 }
 
+void PathedScreen::setCurrentSample(int currentSample, int renderX, int renderY, DebugMode debugMode)
+{
+    m_sampleProps.currentSample = currentSample;
+    m_sampleProps.renderX = renderX;
+    m_sampleProps.renderY = renderY;
+    m_sampleProps.debugMode = debugMode;
+
+    const Sample &sample = lookupSample(
+        m_sampleProps.currentSample,
+        m_sampleProps.renderX,
+        m_sampleProps.renderY
+    );
+    m_sampleProps.contributions = sample.contributions;
+
+    m_sampleWidget->update(m_sampleProps);
+    setPathVisualization();
+
+    performLayout();
+}
+
 void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
 {
     std::ostringstream sampleStream;
     sampleStream << "Sample: " << renderStatus.sample();
 
     m_sampleLabel->setCaption(sampleStream.str());
-    if (renderStatus.sample() <= MaxSavedSamples) {
-        m_sampleLookups.push_back(renderStatus.sampleLookup());
+    if (renderStatus.sample() > MaxSavedSamples) { return; }
 
-        m_photonLists.push_back(renderStatus.photons());
-        m_dataSources.push_back(renderStatus.dataSource());
 
-        m_sampleProps.sampleCount = m_sampleLookups.size();
-        m_sampleWidget->update(m_sampleProps);
-    }
+    // Update model
+    m_sampleLookups.push_back(renderStatus.sampleLookup());
+    m_photonLists.push_back(renderStatus.photons());
+    m_dataSources.push_back(renderStatus.dataSource());
+
+
+    // Update current props
+    m_sampleProps.sampleCount = m_sampleLookups.size();
+
+
+    // Reload UI
+    m_sampleWidget->update(m_sampleProps);
+    performLayout();
 }
 
 bool PathedScreen::keyboardEvent(int key, int scancode, int action, int modifiers)
