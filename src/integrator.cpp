@@ -131,7 +131,7 @@ void Integrator::samplePixel(
             color += emit;
         }
 
-        sample.contributions.push_back(color);
+        sample.contributions.push_back({color, 1.f});
     }
 
     color += L(intersection, scene, random, sample);

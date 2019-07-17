@@ -195,8 +195,9 @@ void SampleWidget::updateContributions()
 
     int i = 0;
     for (auto &contribution : m_props.contributions) {
-        float luminance = contribution.luminance();
-        std::string text = "Bounce " + std::to_string(i) + ": " + std::to_string(luminance);
+        float luminance = contribution.radiance.luminance();
+        float invPDF = contribution.invPDF;
+        std::string text = "Bounce " + std::to_string(i) + ": " + std::to_string(luminance) + " invPDF: " + std::to_string(invPDF);
         auto contributionLabel = new Label(m_contributionsTable, text);
         i += 1;
     }

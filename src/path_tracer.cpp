@@ -28,7 +28,7 @@ Color PathTracer::L(
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
         result = direct(intersection, scene, random, sample);
-        sample.contributions.push_back(result);
+        sample.contributions.push_back({result, 1.f});
     }
 
     Color modulation = Color(1.f);
@@ -67,7 +67,7 @@ Color PathTracer::L(
 
             result += direct(bounceIntersection, scene, random, sample) * modulation;
 
-            sample.contributions.push_back(result - previous);
+            sample.contributions.push_back({result - previous, invPDF});
         }
     }
 

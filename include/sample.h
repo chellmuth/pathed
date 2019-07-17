@@ -5,6 +5,11 @@
 
 #include <vector>
 
+struct Contribution {
+    Color radiance;
+    float invPDF;
+};
+
 struct ShadowTest {
     Point3 shadingPoint;
     Point3 lightPoint;
@@ -14,7 +19,7 @@ struct ShadowTest {
 struct Sample {
     std::vector<Point3> eyePoints;
     std::vector<ShadowTest> shadowTests;
-    std::vector<Color> contributions;
+    std::vector<Contribution> contributions;
 
     Sample()
     : eyePoints(), shadowTests(), contributions()

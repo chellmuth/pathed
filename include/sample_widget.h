@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "gl_types.h"
+#include "sample.h"
 
 #include <nanogui/button.h>
 #include <nanogui/label.h>
@@ -23,7 +24,7 @@ struct SampleWidgetProps {
 
     DebugMode debugMode;
 
-    std::vector<Color> contributions;
+    std::vector<Contribution> contributions;
 };
 
 struct PagerWidgetProps {

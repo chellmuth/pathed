@@ -203,7 +203,7 @@ Color Depositer::L(
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
         result = direct(intersection, modulation, scene, random, sample);
-        sample.contributions.push_back(result);
+        sample.contributions.push_back({result, 1.f});
     }
 
     Intersection lastIntersection = intersection;
@@ -291,7 +291,7 @@ Color Depositer::L(
 
         result += direct(bounceIntersection, modulation, scene, random, sample);
 
-        sample.contributions.push_back(result - previous);
+        sample.contributions.push_back({result - previous, invPDF});
     }
 
     return result;
