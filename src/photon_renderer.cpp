@@ -29,9 +29,10 @@ gl::PhotonRenderer::~PhotonRenderer()
     glDeleteBuffers(1, &m_entityIDs.colorBufferID);
 }
 
-void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons)
+void gl::PhotonRenderer::init(const std::vector<DataSource::Point> &photons, DebugMode debugMode)
 {
     m_photons = photons;
+    m_debugMode = debugMode;
 
     {
         glGenVertexArrays(1, &m_entityIDs.vertexArrayID);
@@ -99,21 +100,8 @@ void gl::PhotonRenderer::init(const std::string &jsonFile)
 
 void gl::PhotonRenderer::updateBuffers()
 {
-    // std::vector<GLfloat> positionsGL = getPositions();
-    // std::vector<GLfloat> colorsGL = getColors();
-
-    std::vector<GLfloat> positionsGL;
-    std::vector<GLfloat> colorsGL;
-
-    for (auto &photon : m_photons) {
-        positionsGL.push_back(photon.x);
-        positionsGL.push_back(photon.y);
-        positionsGL.push_back(photon.z);
-
-        colorsGL.push_back(1.f);
-        colorsGL.push_back(1.f);
-        colorsGL.push_back(1.f);
-    }
+    std::vector<GLfloat> positionsGL = getPositions();
+    std::vector<GLfloat> colorsGL = getColors();
 
     glBindBuffer(GL_ARRAY_BUFFER, m_entityIDs.vertexBufferID);
     glBufferSubData(
@@ -136,17 +124,10 @@ std::vector<GLfloat> gl::PhotonRenderer::getPositions()
 {
     std::vector<GLfloat> positionsGL;
 
-    Point3 queryPoint(
-        m_pointsJson["QueryPoint"][0],
-        m_pointsJson["QueryPoint"][1],
-        m_pointsJson["QueryPoint"][2]
-    );
-
-    for (auto &resultJson : m_pointsJson["Results"]) {
-        auto &pointJson = resultJson["point"];
-
-        auto &sourceJson = resultJson["source"];
-        Point3 sourcePoint(sourceJson[0], sourceJson[1], sourceJson[2]);
+    Point3 queryPoint = Point3(0.f, 0.f, 0.f);
+    for (auto &photon : m_photons) {
+        Point3 localPoint = Point3(photon.x, photon.y, photon.z);
+        Point3 &sourcePoint = photon.source;
 
         Vector3 wi = (sourcePoint - queryPoint).toVector().normalized() * 0.2f;
         Point3 hemispherePoint = queryPoint + wi;
@@ -165,17 +146,13 @@ std::vector<GLfloat> gl::PhotonRenderer::getPositions()
             break;
         }
         case DebugMode::Local: {
-            positionsGL.push_back(pointJson[0]);
-            positionsGL.push_back(pointJson[1]);
-            positionsGL.push_back(pointJson[2]);
+            positionsGL.push_back(localPoint.x());
+            positionsGL.push_back(localPoint.y());
+            positionsGL.push_back(localPoint.z());
             break;
         }
         }
     }
-
-    positionsGL.push_back(m_pointsJson["QueryPoint"][0]);
-    positionsGL.push_back(m_pointsJson["QueryPoint"][1]);
-    positionsGL.push_back(m_pointsJson["QueryPoint"][2]);
 
     return positionsGL;
 }
@@ -184,15 +161,15 @@ std::vector<GLfloat> gl::PhotonRenderer::getColors()
 {
     std::vector<GLfloat> colorsGL;
 
-    for (auto &resultJson : m_pointsJson["Results"]) {
+    for (auto &photon : m_photons) {
         colorsGL.push_back(0.7f);
         colorsGL.push_back(0.7f);
         colorsGL.push_back(0.7f);
     }
 
-    colorsGL.push_back(1.f);
-    colorsGL.push_back(0.f);
-    colorsGL.push_back(0.f);
+    // colorsGL.push_back(1.f);
+    // colorsGL.push_back(0.f);
+    // colorsGL.push_back(0.f);
 
     return colorsGL;
 }

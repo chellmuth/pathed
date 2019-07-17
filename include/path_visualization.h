@@ -10,7 +10,11 @@ namespace gl {
     class PathVisualization : public gl::Visualization {
     public:
         ~PathVisualization() {};
-        void init(const Sample& sample, const std::vector<DataSource::Point> &photons);
+        void init(
+            const Sample& sample,
+            const std::vector<DataSource::Point> &photons,
+            DebugMode debugMode
+        );
 
         void draw(
             GLfloat (&model)[4][4],

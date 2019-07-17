@@ -21,7 +21,7 @@ namespace gl {
         ~PhotonRenderer();
 
         void init(const std::string &jsonFile);
-        void init(const std::vector<DataSource::Point> &photons);
+        void init(const std::vector<DataSource::Point> &photons, DebugMode debugMode);
         void draw(
             GLfloat (&model)[4][4],
             GLfloat (&view)[4][4],
