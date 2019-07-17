@@ -11,12 +11,12 @@ class PagerWidget : public nanogui::Widget {
 public:
     PagerWidget(
         Widget *parent,
-        const SampleWidgetProps &props,
-        std::function<void(int)> sampleCallback
+        const PagerWidgetProps &props,
+        std::function<void(int)> pagingCallback
     )
         : nanogui::Widget(parent),
           m_props(props),
-          m_sampleCallback(sampleCallback)
+          m_pagingCallback(pagingCallback)
     {
         auto layout = new BoxLayout(Orientation::Horizontal);
         layout->setSpacing(6);
@@ -24,34 +24,34 @@ public:
 
         m_backButton = new Button(this, "", ENTYPO_ICON_ARROW_LEFT);
         m_backButton->setFixedWidth(40);
-        m_backButton->setCallback([this] { m_sampleCallback(-1); });
+        m_backButton->setCallback([this] { m_pagingCallback(-1); });
 
         m_sampleLabel = new Label(this, "");
 
         m_forwardButton = new Button(this, "", ENTYPO_ICON_ARROW_RIGHT);
         m_forwardButton->setFixedWidth(40);
-        m_forwardButton->setCallback([this] { m_sampleCallback(1); });
+        m_forwardButton->setCallback([this] { m_pagingCallback(1); });
 
         update();
     }
 
-    void update(const SampleWidgetProps &newProps) {
+    void update(const PagerWidgetProps &newProps) {
         m_props = newProps;
         update();
     }
 
 private:
     void update() {
-        m_backButton->setEnabled(m_props.currentSample > 0);
-        m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
+        m_backButton->setEnabled(m_props.currentCount > 0);
+        m_forwardButton->setEnabled(m_props.currentCount + 1 < m_props.maxCount);
 
-        std::string sampleCaption = "Sample: " + std::to_string(m_props.currentSample + 1);
+        std::string sampleCaption = m_props.caption + ": " + std::to_string(m_props.currentCount + 1);
         m_sampleLabel->setCaption(sampleCaption);
     }
 
-    SampleWidgetProps m_props;
+    PagerWidgetProps m_props;
 
-    std::function<void(int)> m_sampleCallback;
+    std::function<void(int)> m_pagingCallback;
 
     nanogui::ref<nanogui::Label> m_sampleLabel;
     nanogui::ref<nanogui::Button> m_backButton;
@@ -62,6 +62,7 @@ SampleWidget::SampleWidget(
     Widget *parent,
     const SampleWidgetProps &props,
     std::function<void(int)> sampleCallback,
+    std::function<void(int)> bounceCallback,
     std::function<void(int, int)> coordinateCallback,
     std::function<void(DebugMode)> debugModeCallback
 ) : nanogui::Widget(parent),
@@ -74,7 +75,8 @@ SampleWidget::SampleWidget(
     layout->setSpacing(10);
     setLayout(layout);
 
-    m_samplePager = new PagerWidget(this, m_props, sampleCallback);
+    m_samplePager = new PagerWidget(this, samplePagerProps(), sampleCallback);
+    m_bouncePager = new PagerWidget(this, bouncePagerProps(), bounceCallback);
 
     {
         auto container = new Widget(this);
@@ -141,11 +143,31 @@ SampleWidget::SampleWidget(
     updateButtonStates();
 }
 
+PagerWidgetProps SampleWidget::samplePagerProps()
+{
+    return {
+        .currentCount = m_props.currentSample,
+        .maxCount = m_props.sampleCount,
+        .caption = "Sample"
+    };
+}
+
+PagerWidgetProps SampleWidget::bouncePagerProps()
+{
+    return {
+        .currentCount = 2,
+        .maxCount = 5,
+        .caption = "Bounce"
+    };
+}
+
 void SampleWidget::update(const SampleWidgetProps &newProps)
 {
     m_props = newProps;
 
-    m_samplePager->update(m_props);
+    m_samplePager->update(samplePagerProps());
+    m_bouncePager->update(bouncePagerProps());
+
     updateContributions();
     updateCoordinates();
     updateButtonStates();

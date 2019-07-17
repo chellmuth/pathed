@@ -133,6 +133,10 @@ PathedScreen::PathedScreen(
       m_sampleProps({
           .sampleCount = 0,
           .currentSample = 0,
+
+          .bounceCount = 0,
+          .currentBounce = 0,
+
           .renderX = 0,
           .renderY = 0,
           .debugMode = DebugMode::Local
@@ -155,6 +159,10 @@ PathedScreen::PathedScreen(
             m_sampleProps.debugMode
         );
     };
+    auto bounceCallback = [this](int bounceOffset) {
+        std::cout << "Bounce! " << bounceOffset << std::endl;
+    };
+
     auto coordinateCallback = [this](int renderX, int renderY) {
         setCurrentSample(
             0,
@@ -175,6 +183,7 @@ PathedScreen::PathedScreen(
         leftPanel,
         m_sampleProps,
         sampleCallback,
+        bounceCallback,
         coordinateCallback,
         debugModeCallback
     );

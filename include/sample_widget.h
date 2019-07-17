@@ -14,12 +14,22 @@
 struct SampleWidgetProps {
     int sampleCount;
     int currentSample;
+
+    int bounceCount;
+    int currentBounce;
+
     int renderX;
     int renderY;
 
     DebugMode debugMode;
 
     std::vector<Color> contributions;
+};
+
+struct PagerWidgetProps {
+    int currentCount;
+    int maxCount;
+    std::string caption;
 };
 
 class PagerWidget;
@@ -30,6 +40,7 @@ public:
         Widget *parent,
         const SampleWidgetProps &props,
         std::function<void(int)> sampleCallback,
+        std::function<void(int)> bounceCallback,
         std::function<void(int, int)> coordinateCallback,
         std::function<void(DebugMode)> debugModeCallback
     );
@@ -41,11 +52,15 @@ private:
     void updateButtonStates();
     void updateCaption();
 
+    PagerWidgetProps samplePagerProps();
+    PagerWidgetProps bouncePagerProps();
+
     SampleWidgetProps m_props;
     std::function<void(int, int)> m_coordinateCallback;
     std::function<void(DebugMode)> m_debugModeCallback;
 
     nanogui::ref<PagerWidget> m_samplePager;
+    nanogui::ref<PagerWidget> m_bouncePager;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_xCoordinate;
     nanogui::ref<nanogui::IntBox<unsigned int> > m_yCoordinate;
 
