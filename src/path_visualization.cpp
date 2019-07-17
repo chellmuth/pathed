@@ -8,6 +8,7 @@
 
 void gl::PathVisualization::init(
     const Sample& sample,
+    const int bounce,
     const std::vector<DataSource::Point> &photons,
     const DataSource &dataSource,
     DebugMode debugMode
@@ -38,7 +39,8 @@ void gl::PathVisualization::init(
 
     m_glLines.init(lines);
 
-    Point3 queryPoint = sample.eyePoints[1];
+    assert(bounce + 1 < sample.eyePoints.size());
+    Point3 queryPoint = sample.eyePoints[bounce + 1];
     float queryPointStruct[3] = {
         queryPoint.x(),
         queryPoint.y(),

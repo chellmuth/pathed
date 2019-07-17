@@ -12,6 +12,7 @@ namespace gl {
         ~PathVisualization() {};
         void init(
             const Sample& sample,
+            const int bounce,
             const std::vector<DataSource::Point> &photons,
             const DataSource &dataSource,
             DebugMode debugMode
