@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gl_types.h"
+
 #include <nanogui/button.h>
 #include <nanogui/label.h>
 #include <nanogui/textbox.h>
@@ -12,6 +14,8 @@ struct SampleWidgetProps {
     int currentSample;
     int renderX;
     int renderY;
+
+    DebugMode debugMode;
 };
 
 class SampleWidget : public nanogui::Widget {
@@ -20,7 +24,8 @@ public:
         Widget *parent,
         const SampleWidgetProps &props,
         std::function<void(int)> sampleCallback,
-        std::function<void(int, int)> coordinateCallback
+        std::function<void(int, int)> coordinateCallback,
+        std::function<void(DebugMode)> debugModeCallback
     );
     void update(const SampleWidgetProps &newProps);
 
@@ -32,6 +37,7 @@ private:
     SampleWidgetProps m_props;
     std::function<void(int)> m_sampleCallback;
     std::function<void(int, int)> m_coordinateCallback;
+    std::function<void(DebugMode)> m_debugModeCallback;
 
     nanogui::ref<nanogui::Label> m_sampleLabel;
     nanogui::ref<nanogui::Button> m_backButton;

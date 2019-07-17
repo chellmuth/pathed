@@ -1,17 +1,12 @@
 #pragma once
 
 #include "gl_scene.h"
+#include "gl_types.h"
 #include "shader.h"
 
 #include <nanogui/opengl.h>
 
 namespace gl {
-    enum class DebugMode {
-        Hemisphere,
-        Source,
-        Local,
-    };
-
     class Points {
     public:
         Points();

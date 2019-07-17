@@ -1,6 +1,7 @@
 #include "screen.h"
 
 #include "globals.h"
+#include "gl_types.h"
 #include "job.h"
 #include "path_visualization.h"
 #include "photon_renderer.h"
@@ -129,7 +130,13 @@ PathedScreen::PathedScreen(
     : nanogui::Screen(Eigen::Vector2i(width + 300, height), "Pathed: " + g_job->outputDirectory(), false),
       m_width(width),
       m_height(height),
-      m_sampleProps({ .sampleCount = 0, .currentSample = 0, .renderX = 0, .renderY = 0 })
+      m_sampleProps({
+          .sampleCount = 0,
+          .currentSample = 0,
+          .renderX = 0,
+          .renderY = 0,
+          .debugMode = DebugMode::Local
+      })
 {
     setLayout(new BoxLayout(Orientation::Horizontal));
 
@@ -155,7 +162,19 @@ PathedScreen::PathedScreen(
 
         setPathVisualization();
     };
-    m_sampleWidget = new SampleWidget(leftPanel, m_sampleProps, sampleCallback, coordinateCallback);
+    auto debugModeCallback = [this](DebugMode debugMode) {
+        m_sampleProps.debugMode = debugMode;
+        m_sampleWidget->update(m_sampleProps);
+
+        setPathVisualization();
+    };
+    m_sampleWidget = new SampleWidget(
+        leftPanel,
+        m_sampleProps,
+        sampleCallback,
+        coordinateCallback,
+        debugModeCallback
+    );
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {

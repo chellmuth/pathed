@@ -9,11 +9,13 @@ SampleWidget::SampleWidget(
     Widget *parent,
     const SampleWidgetProps &props,
     std::function<void(int)> sampleCallback,
-    std::function<void(int, int)> coordinateCallback
+    std::function<void(int, int)> coordinateCallback,
+    std::function<void(DebugMode)> debugModeCallback
 ) : nanogui::Widget(parent),
     m_props(props),
     m_sampleCallback(sampleCallback),
-    m_coordinateCallback(coordinateCallback)
+    m_coordinateCallback(coordinateCallback),
+    m_debugModeCallback(debugModeCallback)
 {
     using namespace nanogui;
 
@@ -71,6 +73,20 @@ SampleWidget::SampleWidget(
         m_localButton = new Button(container, "Local");
         m_sourceButton = new Button(container, "Source");
         m_hemisphereButton = new Button(container, "Hemisphere");
+
+        m_localButton->setFlags(Button::RadioButton);
+        m_sourceButton->setFlags(Button::RadioButton);
+        m_hemisphereButton->setFlags(Button::RadioButton);
+
+        m_localButton->setCallback([this]() {
+            m_debugModeCallback(DebugMode::Local);
+        });
+        m_sourceButton->setCallback([this]() {
+            m_debugModeCallback(DebugMode::Source);
+        });
+        m_hemisphereButton->setCallback([this]() {
+            m_debugModeCallback(DebugMode::Hemisphere);
+        });
     }
 
     updateCoordinates();
@@ -97,6 +113,10 @@ void SampleWidget::updateButtonStates()
 {
     m_backButton->setEnabled(m_props.currentSample > 0);
     m_forwardButton->setEnabled(m_props.currentSample + 1 < m_props.sampleCount);
+
+    m_localButton->setPushed(m_props.debugMode == DebugMode::Local);
+    m_sourceButton->setPushed(m_props.debugMode == DebugMode::Source);
+    m_hemisphereButton->setPushed(m_props.debugMode == DebugMode::Hemisphere);
 }
 
 void SampleWidget::updateCaption()

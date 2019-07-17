@@ -2,6 +2,7 @@
 
 #include "gl_points.h"
 #include "gl_scene.h"
+#include "gl_types.h"
 #include "gl_visualization.h"
 #include "kd_tree.h"
 #include "shader.h"
