@@ -129,13 +129,12 @@ std::vector<GLfloat> gl::PhotonRenderer::getPositions()
 {
     std::vector<GLfloat> positionsGL;
 
-    Point3 queryPoint = Point3(0.f, 0.f, 0.f);
     for (auto &photon : m_photons) {
         Point3 localPoint = Point3(photon.x, photon.y, photon.z);
         Point3 &sourcePoint = photon.source;
 
-        Vector3 wi = (sourcePoint - queryPoint).toVector().normalized() * 0.2f;
-        Point3 hemispherePoint = queryPoint + wi;
+        Vector3 wi = (sourcePoint - m_queryPoint).toVector().normalized() * 0.2f;
+        Point3 hemispherePoint = m_queryPoint + wi;
 
         switch(m_debugMode) {
         case DebugMode::Hemisphere: {
