@@ -13,9 +13,11 @@ void gl::PathVisualization::init(
     const DataSource &dataSource,
     DebugMode debugMode
 ) {
+    if (sample.eyePoints.size() <= 1) { return; }
+
     std::vector<gl::Line> lines;
 
-    for (int i = 0; i < sample.eyePoints.size() - 1; i++) {
+    for (int i = 0; i + 1 < sample.eyePoints.size(); i++) {
         gl::Line line = {
             sample.eyePoints[i],
             sample.eyePoints[i + 1],

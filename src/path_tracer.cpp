@@ -31,7 +31,7 @@ Color PathTracer::L(
         sample.contributions.push_back(result);
     }
 
-    Color modulation = Color(1.f, 1.f, 1.f);
+    Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
