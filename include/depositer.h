@@ -23,6 +23,8 @@ public:
     void postwave(const Scene &scene, RandomGenerator &random, int waveCount) override;
 
     std::vector<DataSource::Point> getPhotons() const override;
+    DataSource getDataSource() const override;
+
     void debug(const Intersection &intersection, const Scene &scene) const override;
 
 private:

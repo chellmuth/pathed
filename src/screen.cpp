@@ -228,7 +228,8 @@ void PathedScreen::setPathVisualization()
     const Sample &sample = sampleLookup[m_sampleProps.renderY * m_width + m_sampleProps.renderX];
 
     const auto &photons = *m_photonLists[m_sampleProps.currentSample];
-    pathVisualization->init(sample, photons, m_sampleProps.debugMode);
+    const auto &dataSource = *m_dataSources[m_sampleProps.currentSample];
+    pathVisualization->init(sample, photons, dataSource, m_sampleProps.debugMode);
 
     m_glWidget->setVisualization(std::move(pathVisualization));
 }
@@ -266,6 +267,7 @@ void PathedScreen::updateRenderStatus(const RenderStatus &renderStatus)
         m_sampleLookups.push_back(renderStatus.sampleLookup());
 
         m_photonLists.push_back(renderStatus.photons());
+        m_dataSources.push_back(renderStatus.dataSource());
 
         m_sampleProps.sampleCount = m_sampleLookups.size();
         m_sampleWidget->update(m_sampleProps);

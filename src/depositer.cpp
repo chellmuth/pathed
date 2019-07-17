@@ -15,6 +15,7 @@
 #include "vector.h"
 
 #include "json.hpp"
+#include "nanoflann.hpp"
 using json = nlohmann::json;
 
 #include <assert.h>
@@ -483,3 +484,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
 std::vector<DataSource::Point> Depositer::getPhotons() const {
     return m_dataSource->points;
 };
+
+DataSource Depositer::getDataSource() const {
+    return *m_dataSource;
+}

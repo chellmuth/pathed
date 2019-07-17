@@ -57,6 +57,9 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
         renderStatus.setSample(i + 1);
         renderStatus.setSampleLookup(sampleLookup);
 
+        auto dataSource = std::make_shared<DataSource>(std::move(getDataSource()));
+        renderStatus.setDataSource(dataSource);
+
         auto photons = std::make_shared<std::vector<DataSource::Point> >(getPhotons());
         renderStatus.setPhotons(photons);
 

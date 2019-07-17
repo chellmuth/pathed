@@ -40,6 +40,11 @@ protected:
         return dummy;
     };
 
+    virtual DataSource getDataSource() const {
+        DataSource dummy;
+        return dummy;
+    };
+
 private:
     void sampleImage(
         std::vector<float> &radianceLookup,

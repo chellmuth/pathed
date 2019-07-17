@@ -21,8 +21,14 @@ public:
         m_photons = photons;
     }
 
+    std::shared_ptr<DataSource> dataSource() const { return m_dataSource; }
+    void setDataSource(std::shared_ptr<DataSource> dataSource) {
+        m_dataSource = dataSource;
+    }
+
 private:
     int m_sample;
     std::shared_ptr<std::vector<Sample> > m_sampleLookup;
     std::shared_ptr<std::vector<DataSource::Point> > m_photons;
+    std::shared_ptr<DataSource> m_dataSource;
 };

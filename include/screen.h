@@ -67,4 +67,5 @@ private:
 
     std::vector<std::shared_ptr<std::vector<Sample> > > m_sampleLookups;
     std::vector<std::shared_ptr<std::vector<DataSource::Point> > > m_photonLists;
+    std::vector<std::shared_ptr<DataSource> > m_dataSources;
 };

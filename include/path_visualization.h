@@ -13,6 +13,7 @@ namespace gl {
         void init(
             const Sample& sample,
             const std::vector<DataSource::Point> &photons,
+            const DataSource &dataSource,
             DebugMode debugMode
         );
 

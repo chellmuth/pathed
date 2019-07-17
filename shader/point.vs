@@ -14,5 +14,5 @@ void main()
     frag_color = color;
 
     gl_Position = projection * view * model * vec4(position, 1.0);
-    gl_PointSize = 2.0;
+    gl_PointSize = 4.0;
 }
