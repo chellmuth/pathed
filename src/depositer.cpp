@@ -159,6 +159,9 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
             lightRay = Ray(intersection.point, bounceDirection);
 
             throughput *= intersection.material->f(intersection, bounceDirection);
+
+            // float invPDF = 1.f / INV_TWO_PI;
+            // throughput *= invPDF;
         }
     }
 }

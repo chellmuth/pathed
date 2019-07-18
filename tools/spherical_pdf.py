@@ -1,4 +1,5 @@
 import math
+import random
 
 import numpy as np
 
@@ -35,7 +36,35 @@ def run():
 
             estimator += pdf * math.sin(step_theta) * d_phi * d_theta
 
+
+    monte_carlo_samples = 100000
+    monte_carlo_estimator = 0
+    for _ in range(monte_carlo_samples):
+        y = random.random()
+
+        phi = math.pi * 2 * random.random()
+        theta = math.acos(y)
+
+        phi_cell = int((phi / (2 * math.pi)) / phi_cells)
+        theta_cell = int((theta / (math.pi / 2)) * theta_cells)
+
+        assert(phi_cell < phi_cells)
+        assert(theta_cell < theta_cells)
+
+        mass = grid[phi_cell][theta_cell]
+
+        phi1 = (2 * math.pi) * phi_cell / phi_cells
+        phi2 = (2 * math.pi) * (phi_cell + 1) / phi_cells
+
+        theta1 = (math.pi / 2) * theta_cell / theta_cells
+        theta2 = (math.pi / 2) * (theta_cell + 1) / theta_cells
+
+        pdf = mass / ((math.cos(theta1) - math.cos(theta2)) * (phi2 - phi1))
+
+        monte_carlo_estimator += pdf * 2 * math.pi / monte_carlo_samples
+
     print(estimator)
+    print(monte_carlo_estimator)
 
 if __name__ == "__main__":
     run()
