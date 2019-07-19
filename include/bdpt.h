@@ -1,8 +1,8 @@
 #pragma once
 
-#include "integrator.h"
+#include "sample_integrator.h"
 
-class BDPT : public Integrator {
+class BDPT : public SampleIntegrator {
 public:
     Color L(
         const Intersection &intersection,

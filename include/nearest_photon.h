@@ -2,16 +2,16 @@
 
 #include "color.h"
 #include "depositer.h"
-#include "integrator.h"
 #include "intersection.h"
 #include "random_generator.h"
+#include "sample_integrator.h"
 #include "scene.h"
 
 #include "nanoflann.hpp"
 
 #include <memory>
 
-class NearestPhoton : public Integrator {
+class NearestPhoton : public SampleIntegrator {
 public:
     NearestPhoton();
 

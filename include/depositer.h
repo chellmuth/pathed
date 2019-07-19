@@ -2,13 +2,13 @@
 
 #include "bounce_controller.h"
 #include "color.h"
-#include "integrator.h"
 #include "kd_tree.h"
+#include "sample_integrator.h"
 
 #include <memory>
 #include <vector>
 
-class Depositer : public Integrator {
+class Depositer : public SampleIntegrator {
 public:
     Depositer(BounceController bounceController);
 

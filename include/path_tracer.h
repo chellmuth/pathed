@@ -1,9 +1,9 @@
 #pragma once
 
 #include "bounce_controller.h"
-#include "integrator.h"
+#include "sample_integrator.h"
 
-class PathTracer : public Integrator {
+class PathTracer : public SampleIntegrator {
 public:
     PathTracer(BounceController bounceController)
         : m_bounceController(bounceController)

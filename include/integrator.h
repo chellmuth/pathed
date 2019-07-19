@@ -45,21 +45,10 @@ protected:
         return dummy;
     };
 
-private:
-    void sampleImage(
+    virtual void sampleImage(
         std::vector<float> &radianceLookup,
         std::vector<Sample> &sampleLookup,
         Scene &scene,
         RandomGenerator &random
-    );
-
-    void samplePixel(
-        int row, int col,
-        int width, int height,
-        std::vector<float> &radianceLookup,
-        std::vector<Sample> &sampleLookup,
-        const Scene &scene,
-        RandomGenerator &random
-    );
-
+    ) = 0;
 };
