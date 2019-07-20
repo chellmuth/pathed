@@ -22,13 +22,6 @@ public:
         bool *quit
     );
 
-    virtual Color L(
-        const Intersection &intersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const = 0;
-
     virtual void preprocess(const Scene &scene, RandomGenerator &random) {};
     virtual void postwave(const Scene &scene, RandomGenerator &random, int waveCount) {};
     virtual void debug(const Intersection &intersection, const Scene &scene) const {};

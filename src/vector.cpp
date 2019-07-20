@@ -76,6 +76,16 @@ Vector3 Vector3::operator- (const Vector3& v) const
     );
 }
 
+Vector3 Vector3::operator- () const
+{
+    return Vector3(
+        -m_x,
+        -m_y,
+        -m_z
+    );
+}
+
+
 bool Vector3::operator==(const Vector3 &v) const
 {
     return m_x == v.x() && m_y == v.y() && m_z == v.z();

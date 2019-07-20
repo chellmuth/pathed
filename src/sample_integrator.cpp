@@ -12,10 +12,7 @@ void SampleIntegrator::samplePixel(
     const Scene &scene,
     RandomGenerator &random
 ) {
-    Ray ray = scene.getCamera()->generateRay(
-        row, col,
-        width, height
-    );
+    Ray ray = scene.getCamera()->generateRay(row, col);
 
     Intersection intersection = scene.testIntersect(ray);
     if (!intersection.hit) { return; }

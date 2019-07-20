@@ -1,6 +1,7 @@
 #include "job.h"
 
 #include "depositer.h"
+#include "light_tracer.h"
 #include "nearest_photon.h"
 #include "path_tracer.h"
 
@@ -62,6 +63,8 @@ std::unique_ptr<Integrator> Job::integrator() const
         return std::make_unique<Depositer>(m_bounceController);
     } else if (integrator == "NearestPhoton") {
         return std::make_unique<NearestPhoton>();
+    } else if (integrator == "LightTracer") {
+        return std::make_unique<LightTracer>(m_bounceController);
     }
     throw "Unimplemented";
 }

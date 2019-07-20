@@ -2,6 +2,8 @@
 
 #include "camera.h"
 #include "checkerboard.h"
+#include "globals.h"
+#include "job.h"
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
@@ -44,11 +46,14 @@ Scene parseScene(std::ifstream &sceneFile)
     auto sensor = sceneJson["sensor"];
 
     float fov = parseFloat(sensor["fov"]);
+
+    Resolution resolution = { g_job->width(), g_job->height() };
     auto camera = std::make_shared<Camera>(
         parsePoint(sensor["lookAt"]["origin"], true),
         parsePoint(sensor["lookAt"]["target"], true),
         parseVector(sensor["lookAt"]["up"]),
-        fov / 180.f * M_PI
+        fov / 180.f * M_PI,
+        resolution
     );
 
     auto objects = sceneJson["models"];

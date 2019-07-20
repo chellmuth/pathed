@@ -22,6 +22,7 @@ public:
 
     Vector3 operator* (const float t) const;
     Vector3 operator- (const Vector3& v) const;
+    Vector3 operator- () const;
     bool operator==(const Vector3 &v) const;
 
     void debug() const;

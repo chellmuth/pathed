@@ -97,6 +97,22 @@ Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
     return Transform(matrix);
 }
 
+Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector3 &up)
+{
+    Vector3 direction = (target - source).toVector().normalized();
+    Vector3 xAxis = up.normalized().cross(direction).normalized();
+    Vector3 yAxis = direction.cross(xAxis);
+
+    float matrix[4][4] {
+        { xAxis.x(),     xAxis.y(),     xAxis.z(),     -source.x() },
+        { yAxis.x(),     yAxis.y(),     yAxis.z(),     -source.y() },
+        { direction.x(), direction.y(), direction.z(), -source.z() },
+        { 0.f, 0.f, 0.f, 1.f }
+    };
+
+    return Transform(matrix);
+}
+
 Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection)
 {
     Vector3 xAxis = normal.cross(rayDirection).normalized();

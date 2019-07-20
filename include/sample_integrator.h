@@ -9,6 +9,12 @@
 
 class SampleIntegrator : public Integrator {
 public:
+    virtual Color L(
+        const Intersection &intersection,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const = 0;
 
 protected:
     void sampleImage(
