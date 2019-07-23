@@ -24,10 +24,11 @@ static int maxBounces = 6;
 
 void LightTracer::splat(
     const Color &radiance,
-    const Point3 &source,
+    const Intersection &intersection,
     const Scene &scene,
     std::vector<float> &radianceLookup
 ) const {
+    const Point3 &source = intersection.point;
     const Camera &camera = *scene.getCamera();
 
     const Point3 origin = camera.getOrigin();
@@ -43,10 +44,13 @@ void LightTracer::splat(
     const Pixel pixel = wrappedPixel.value();
     const size_t index = 3 * (pixel.y * camera.getResolution().x + pixel.x);
 
+    const float cosTheta = std::max(0.f, intersection.normal.dot(direction));
+    const Color biradiance = radiance * cosTheta / (direction.length() * direction.length());
+
     lock.lock();
-    radianceLookup[index + 0] += radiance.r();
-    radianceLookup[index + 1] += radiance.g();
-    radianceLookup[index + 2] += radiance.b();
+    radianceLookup[index + 0] += biradiance.r();
+    radianceLookup[index + 1] += biradiance.g();
+    radianceLookup[index + 2] += biradiance.b();
     lock.unlock();
 }
 
@@ -57,14 +61,17 @@ void LightTracer::measure(
 ) const {
     const LightSample lightSample = scene.sampleLights(random);
 
-    Color throughput = lightSample.light->getMaterial()->emit();
-    splat(throughput, lightSample.point, scene, radianceLookup);
+    const float sampleInvPDF = lightSample.invPDF * scene.lights().size();
+
+    Color throughput = lightSample.light->getMaterial()->emit() * sampleInvPDF;
+    // splat(throughput, lightSample.point, scene, radianceLookup);
 
     const Vector3 hemisphereSample = UniformSampleHemisphere(random);
     const Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
 
     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-    if (bounceDirection.y() == 0.f) { bounceDirection.debug(); }
+
+    throughput *= std::max(0.f, lightSample.normal.dot(bounceDirection));
 
     Ray lightRay(lightSample.point, bounceDirection);
 
@@ -73,15 +80,15 @@ void LightTracer::measure(
         Intersection intersection = scene.testIntersect(lightRay);
         if (!intersection.hit) { break; }
 
-        throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
+        // throughput *= std::max(0.f, intersection.wi.dot(intersection.normal * -1.f));
         throughput *= intersection.material->f(intersection, bounceDirection);
 
-        const float invPDF = INV_TWO_PI;
+        const float invPDF = M_TWO_PI;
         throughput *= invPDF;
 
         if (throughput.isBlack()) { break; }
 
-        splat(throughput, intersection.point, scene, radianceLookup);
+        splat(throughput, intersection, scene, radianceLookup);
         return;
 
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
