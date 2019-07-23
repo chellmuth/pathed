@@ -44,8 +44,10 @@ void LightTracer::splat(
     const Pixel pixel = wrappedPixel.value();
     const size_t index = 3 * (pixel.y * camera.getResolution().x + pixel.x);
 
+    const Color brdf = intersection.material->f(intersection, direction);
+
     const float cosTheta = std::max(0.f, intersection.normal.dot(direction));
-    const Color biradiance = radiance * cosTheta / (direction.length() * direction.length());
+    const Color biradiance = radiance * brdf * cosTheta / (direction.length() * direction.length());
 
     lock.lock();
     radianceLookup[index + 0] += biradiance.r();
@@ -73,6 +75,9 @@ void LightTracer::measure(
 
     throughput *= std::max(0.f, lightSample.normal.dot(bounceDirection));
 
+    const float invPDF = M_TWO_PI;
+    throughput *= invPDF;
+
     Ray lightRay(lightSample.point, bounceDirection);
 
     const int photonBounces = g_job->photonBounces();
@@ -80,24 +85,20 @@ void LightTracer::measure(
         Intersection intersection = scene.testIntersect(lightRay);
         if (!intersection.hit) { break; }
 
-        // throughput *= std::max(0.f, intersection.wi.dot(intersection.normal * -1.f));
-        throughput *= intersection.material->f(intersection, bounceDirection);
-
-        const float invPDF = M_TWO_PI;
-        throughput *= invPDF;
-
-        if (throughput.isBlack()) { break; }
-
         splat(throughput, intersection, scene, radianceLookup);
-        return;
 
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
         Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
         bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         lightRay = Ray(intersection.point, bounceDirection);
 
-        // float invPDF = 1.f / INV_TWO_PI;
-        // throughput *= invPDF;
+        throughput *= intersection.material->f(intersection, bounceDirection);
+        throughput *= std::max(0.f, intersection.normal.dot(bounceDirection));
+
+        const float invPDF = M_TWO_PI;
+        throughput *= invPDF;
+
+        if (throughput.isBlack()) { break; }
     }
 }
 
