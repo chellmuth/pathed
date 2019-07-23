@@ -25,18 +25,29 @@ static int maxBounces = 6;
 void LightTracer::splat(
     const Color &radiance,
     const Point3 &source,
-    const Camera &camera,
+    const Scene &scene,
     std::vector<float> &radianceLookup
 ) const {
+    const Camera &camera = *scene.getCamera();
+
+    const Point3 origin = camera.getOrigin();
+    const Vector3 direction = (origin - source).toVector();
+    const Ray shadowRay(source, direction.normalized());
+
+    bool occluded = scene.testOcclusion(shadowRay, direction.length());
+    if (occluded) { return; }
+
     const std::optional<Pixel> wrappedPixel = camera.calculatePixel(source);
     if (!wrappedPixel) { return; }
 
     const Pixel pixel = wrappedPixel.value();
     const size_t index = 3 * (pixel.y * camera.getResolution().x + pixel.x);
 
+    lock.lock();
     radianceLookup[index + 0] += radiance.r();
     radianceLookup[index + 1] += radiance.g();
     radianceLookup[index + 2] += radiance.b();
+    lock.unlock();
 }
 
 void LightTracer::measure(
@@ -44,18 +55,17 @@ void LightTracer::measure(
     const Scene &scene,
     RandomGenerator &random
 ) const {
-    const Camera &camera = *scene.getCamera();
-
     const LightSample lightSample = scene.sampleLights(random);
 
     Color throughput = lightSample.light->getMaterial()->emit();
-    splat(throughput, lightSample.point, camera, radianceLookup);
-    return;
+    splat(throughput, lightSample.point, scene, radianceLookup);
 
     const Vector3 hemisphereSample = UniformSampleHemisphere(random);
     const Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
 
     Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    if (bounceDirection.y() == 0.f) { bounceDirection.debug(); }
+
     Ray lightRay(lightSample.point, bounceDirection);
 
     const int photonBounces = g_job->photonBounces();
@@ -64,15 +74,20 @@ void LightTracer::measure(
         if (!intersection.hit) { break; }
 
         throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
+        throughput *= intersection.material->f(intersection, bounceDirection);
+
+        const float invPDF = INV_PI;
+        throughput *= invPDF;
+
         if (throughput.isBlack()) { break; }
+
+        splat(throughput, intersection.point, scene, radianceLookup);
+        return;
 
         Vector3 hemisphereSample = UniformSampleHemisphere(random);
         Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
         bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         lightRay = Ray(intersection.point, bounceDirection);
-
-        throughput *= intersection.material->f(intersection, bounceDirection);
-        splat(throughput, intersection.point, camera, radianceLookup);
 
         // float invPDF = 1.f / INV_TWO_PI;
         // throughput *= invPDF;

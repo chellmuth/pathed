@@ -77,6 +77,9 @@ std::optional<Pixel> Camera::calculatePixel(const Point3 &point) const
         return {};
     }
 
-    const Pixel pixel { pixelX, m_resolution.y - pixelY - 1 };
+    const Pixel pixel {
+        pixelX,
+        pixelY
+    };
     return pixel;
 }

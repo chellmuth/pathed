@@ -65,6 +65,23 @@ Vector3 Transform::apply(const Vector3 &vector) const
     );
 }
 
+
+Transform Transform::apply(const Transform &transform) const
+{
+    float transformed[4][4];
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            transformed[i][j] = 0.f;
+            for (int k = 0; k < 4; k++) {
+                transformed[i][j] += m_matrix[i][k] * transform.m_matrix[k][j];
+            }
+        }
+    }
+
+    return Transform(transformed);
+}
+
 Ray Transform::apply(const Ray &ray) const
 {
     return Ray(
@@ -104,9 +121,9 @@ Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector
     Vector3 yAxis = direction.cross(xAxis);
 
     float matrix[4][4] {
-        { xAxis.x(),     xAxis.y(),     xAxis.z(),     -source.x() },
-        { yAxis.x(),     yAxis.y(),     yAxis.z(),     -source.y() },
-        { direction.x(), direction.y(), direction.z(), -source.z() },
+        { xAxis.x(),     xAxis.y(),     xAxis.z(),     -xAxis.dot(source) },
+        { yAxis.x(),     yAxis.y(),     yAxis.z(),     -yAxis.dot(source) },
+        { direction.x(), direction.y(), direction.z(), -direction.dot(source) },
         { 0.f, 0.f, 0.f, 1.f }
     };
 

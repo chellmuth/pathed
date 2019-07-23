@@ -26,7 +26,7 @@ private:
     void splat(
         const Color &radiance,
         const Point3 &source,
-        const Camera &camera,
+        const Scene &scene,
         std::vector<float> &radianceLookup
     ) const;
 

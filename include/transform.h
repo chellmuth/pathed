@@ -13,6 +13,7 @@ public:
 
     Point3 apply(const Point3 &point) const;
     Vector3 apply(const Vector3 &vector) const;
+    Transform apply(const Transform &transform) const;
     Ray apply(const Ray &ray) const;
 
     void debug() const;
