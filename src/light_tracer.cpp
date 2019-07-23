@@ -76,7 +76,7 @@ void LightTracer::measure(
         throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
         throughput *= intersection.material->f(intersection, bounceDirection);
 
-        const float invPDF = INV_PI;
+        const float invPDF = INV_TWO_PI;
         throughput *= invPDF;
 
         if (throughput.isBlack()) { break; }
