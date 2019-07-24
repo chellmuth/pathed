@@ -60,10 +60,13 @@ std::optional<Pixel> Camera::calculatePixel(const Point3 &point) const
         filmDirection
     );
 
-    const geometry::Plane filmPlane(
-        Vector3(0.f, 0.f, -1.f),
-        Point3(0.f, 0.f, filmZ)
-    );
+    const Vector3 filmNormal(0.f, 0.f, -1.f);
+
+    if (filmNormal.dot(filmDirection) < 0.f) {
+        return {};
+    }
+
+    const geometry::Plane filmPlane(filmNormal, Point3(0.f, 0.f, filmZ));
 
     const Point3 filmPoint = geometry::intersectRayPlane(filmRay, filmPlane);
 
