@@ -20,8 +20,6 @@
 
 static std::mutex lock;
 
-static int maxBounces = 6;
-
 void LightTracer::splat(
     const Color &radiance,
     const Intersection &intersection,
@@ -33,9 +31,12 @@ void LightTracer::splat(
 
     const Point3 origin = camera.getOrigin();
     const Vector3 direction = (origin - source).toVector();
-    const Ray shadowRay(source, direction.normalized());
+    const float distance = direction.length();
+    const Vector3 wi = direction.normalized();
 
-    bool occluded = scene.testOcclusion(shadowRay, direction.length());
+    const Ray shadowRay(source, wi);
+
+    bool occluded = scene.testOcclusion(shadowRay, distance);
     if (occluded) { return; }
 
     const std::optional<Pixel> wrappedPixel = camera.calculatePixel(source);
@@ -44,15 +45,15 @@ void LightTracer::splat(
     const Pixel pixel = wrappedPixel.value();
     const size_t index = 3 * (pixel.y * camera.getResolution().x + pixel.x);
 
-    const Color brdf = intersection.material->f(intersection, direction);
+    const Color brdf = intersection.material->f(intersection, wi);
+    const float cosTheta = std::max(0.f, intersection.normal.dot(wi));
 
-    const float cosTheta = std::max(0.f, intersection.normal.dot(direction));
-    const Color biradiance = radiance * brdf * cosTheta / (direction.length() * direction.length());
+    const Color splattedRadiance = radiance * brdf * cosTheta / (distance * distance);
 
     lock.lock();
-    radianceLookup[index + 0] += biradiance.r();
-    radianceLookup[index + 1] += biradiance.g();
-    radianceLookup[index + 2] += biradiance.b();
+    radianceLookup[index + 0] += splattedRadiance.r();
+    radianceLookup[index + 1] += splattedRadiance.g();
+    radianceLookup[index + 2] += splattedRadiance.b();
     lock.unlock();
 }
 
@@ -81,7 +82,7 @@ void LightTracer::measure(
     Ray lightRay(lightSample.point, bounceDirection);
 
     const int photonBounces = g_job->photonBounces();
-    for (int bounce = 0; bounce < photonBounces; bounce++) {
+    for (int bounce = 0; bounce < 2; bounce++) {
         Intersection intersection = scene.testIntersect(lightRay);
         if (!intersection.hit) { break; }
 
