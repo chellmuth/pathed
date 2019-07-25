@@ -72,14 +72,14 @@ void LightTracer::measure(
     const Vector3 hemisphereSample = UniformSampleHemisphere(random);
     const Transform hemisphereToWorld = normalToWorldSpace(lightSample.normal);
 
-    Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+    const Vector3 wi = hemisphereToWorld.apply(hemisphereSample);
 
-    throughput *= std::max(0.f, lightSample.normal.dot(bounceDirection));
+    throughput *= std::max(0.f, lightSample.normal.dot(wi));
 
     const float invPDF = M_TWO_PI;
     throughput *= invPDF;
 
-    Ray lightRay(lightSample.point, bounceDirection);
+    Ray lightRay(lightSample.point, wi);
 
     const int photonBounces = g_job->photonBounces();
     for (int bounce = 0; bounce < 2; bounce++) {
@@ -88,13 +88,13 @@ void LightTracer::measure(
 
         splat(throughput, intersection, scene, radianceLookup);
 
-        Vector3 hemisphereSample = UniformSampleHemisphere(random);
-        Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
-        bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-        lightRay = Ray(intersection.point, bounceDirection);
+        const Vector3 hemisphereSample = UniformSampleHemisphere(random);
+        const Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
+        const Vector3 wi = hemisphereToWorld.apply(hemisphereSample);
+        lightRay = Ray(intersection.point, wi);
 
-        throughput *= intersection.material->f(intersection, bounceDirection);
-        throughput *= std::max(0.f, intersection.normal.dot(bounceDirection));
+        throughput *= intersection.material->f(intersection, wi);
+        throughput *= std::max(0.f, intersection.normal.dot(wi));
 
         const float invPDF = M_TWO_PI;
         throughput *= invPDF;
