@@ -33,7 +33,7 @@ void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback,
     integrator->run(image, scene, callback, quit);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     printf("Hello, world!\n");
 
     g_rtcDevice = rtcNewDevice(NULL);
@@ -51,8 +51,16 @@ int main() {
     int success = chdir("..");
     assert(success == 0);
 
-    ifstream jsonJob("job.json");
-    g_job = new Job(jsonJob);
+    if (argc > 1) {
+        printf("Using: %s\n", argv[1]);
+
+        ifstream jsonJob(argv[1]);
+        g_job = new Job(jsonJob);
+    } else {
+        ifstream jsonJob("job.json");
+        g_job = new Job(jsonJob);
+    }
+
     g_job->init();
 
     const int width = g_job->width();
