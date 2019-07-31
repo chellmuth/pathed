@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <stdio.h>
 
 static const int primarySamples = 99999;
