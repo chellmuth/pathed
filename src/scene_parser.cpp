@@ -7,6 +7,7 @@
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "mirror.h"
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
@@ -199,6 +200,8 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         } else {
             return std::make_shared<Lambertian>(diffuse, emit);
         }
+    } else if (bsdfJson["type"] == "Mirror") {
+        return std::make_shared<Mirror>();
     } else {
         throw "Unimplemented";
     }

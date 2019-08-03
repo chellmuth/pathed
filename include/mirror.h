@@ -9,10 +9,9 @@
 
 #include <memory>
 
-class Lambertian : public Material {
+class Mirror : public Material {
 public:
-    Lambertian(Color diffuse, Color emit);
-    Lambertian(std::shared_ptr<Albedo> albedo, Color emit);
+    Mirror();
 
     Color f(
         const Intersection &intersection,
@@ -26,8 +25,4 @@ public:
         Vector3 *wi,
         float *pdf
     ) const override;
-
-private:
-    Color m_diffuse;
-    std::shared_ptr<Albedo> m_albedo;
 };

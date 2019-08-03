@@ -24,3 +24,13 @@ Color Phong::f(const Intersection &intersection, const Vector3 &wo, float *pdf) 
 
     return diffuse + specular;
 }
+
+Color Phong::sampleF(
+    const Intersection &intersection,
+    RandomGenerator &random,
+    Vector3 *wi,
+    float *pdf
+) const
+{
+    throw "Unimplemented!";
+}

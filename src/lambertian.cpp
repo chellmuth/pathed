@@ -1,6 +1,7 @@
 #include "lambertian.h"
 
 #include "monte_carlo.h"
+#include "transform.h"
 
 #include <math.h>
 
@@ -18,11 +19,29 @@ Color Lambertian::f(
     float *pdf
 ) const
 {
-    *pdf = UniformHemispherePdf(wo);
+    *pdf = CosineHemispherePdf(wo);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection.uv) / M_PI;
     } else {
         return m_diffuse / M_PI;
     }
+}
+
+Color Lambertian::sampleF(
+    const Intersection &intersection,
+    RandomGenerator &random,
+    Vector3 *wi,
+    float *pdf
+) const
+{
+    Transform hemisphereToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
+
+    Vector3 hemisphereSample = CosineSampleHemisphere(random);
+
+    *wi = hemisphereToWorld.apply(hemisphereSample);
+    return f(intersection, *wi, pdf);
 }
