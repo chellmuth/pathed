@@ -35,15 +35,16 @@ Color PathTracer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        Transform hemisphereToWorld = normalToWorldSpace(
-            lastIntersection.normal,
-            lastIntersection.wi
+        float pdf;
+        Vector3 bounceDirection(0.f, 0.f, 0.f);
+
+        Color bounceReflectance = lastIntersection.material->sampleF(
+            lastIntersection,
+            random,
+            &bounceDirection,
+            &pdf
         );
 
-        Vector3 hemisphereSample = CosineSampleHemisphere(random);
-        float pdf = CosineHemispherePdf(hemisphereSample);
-
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         Ray bounceRay(
             lastIntersection.point,
             bounceDirection
@@ -54,10 +55,9 @@ Color PathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        Color f = lastIntersection.material->f(lastIntersection, bounceDirection);
         float invPDF = 1.f / pdf;
 
-        modulation *= f
+        modulation *= bounceReflectance
             * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
             * invPDF;
         lastIntersection = bounceIntersection;

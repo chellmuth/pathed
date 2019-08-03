@@ -19,7 +19,7 @@ Color Lambertian::f(
     float *pdf
 ) const
 {
-    *pdf = CosineHemispherePdf(wo);
+    *pdf = UniformHemispherePdf(wo);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection.uv) / M_PI;
@@ -35,12 +35,12 @@ Color Lambertian::sampleF(
     float *pdf
 ) const
 {
+    Vector3 hemisphereSample = UniformSampleHemisphere(random);
+
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
         intersection.wi
     );
-
-    Vector3 hemisphereSample = CosineSampleHemisphere(random);
 
     *wi = hemisphereToWorld.apply(hemisphereSample);
     return f(intersection, *wi, pdf);
