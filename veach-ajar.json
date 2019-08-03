@@ -41,7 +41,7 @@
         },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -50,7 +50,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.247059", "0.168627", "0.0901961" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -59,7 +59,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -68,7 +68,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -77,7 +77,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -86,7 +86,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -96,7 +96,7 @@
         "texture": "veach-ajar/textures/Good Textures_005844.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -109,7 +109,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -123,7 +123,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -137,7 +137,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -148,10 +148,8 @@
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
       },
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
-        "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+        "type": "mirror"
+      }
     },
     {
       "type": "obj",
@@ -162,10 +160,10 @@
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
       },
       "bsdf": {
-        "type": "lambertian",
+        "type": "mirror",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -179,7 +177,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -193,7 +191,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -203,7 +201,7 @@
         "texture": "veach-ajar/textures/cherry-wood-texture.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -222,7 +220,7 @@
         "texture": "veach-ajar/textures/landscape-with-a-lake.jpg",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -231,7 +229,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -240,7 +238,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -249,7 +247,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     },
     {
       "type": "obj",
@@ -258,7 +256,7 @@
         "type": "lambertian",
         "diffuseReflectance": [ "0.8", "0.8", "0.8" ],
         "specularReflectance": [ "0.0", "0.0", "0.0" ]
-       }
+      }
     }
   ]
 }

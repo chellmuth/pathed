@@ -200,7 +200,7 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         } else {
             return std::make_shared<Lambertian>(diffuse, emit);
         }
-    } else if (bsdfJson["type"] == "Mirror") {
+    } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
     } else {
         throw "Unimplemented";

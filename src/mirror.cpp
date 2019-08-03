@@ -23,5 +23,5 @@ Color Mirror::sampleF(
     *pdf = 1.f;
     *wi = intersection.wi.reflect(intersection.normal);
 
-    return Color(1.f);
+    return Color(1.f) / wi->dot(intersection.normal);
 }
