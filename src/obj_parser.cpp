@@ -296,9 +296,9 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 {
-    static std::regex expression("(\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+)\\s*");
+    static std::regex expression("(\\d+)/(\\d*)/(\\d*) (\\d+)/(\\d*)/(\\d*) (\\d+)/(\\d*)/(\\d*)\\s*");
     std::smatch match;
-    std::regex_match (faceArgs, match, expression);
+    std::regex_match(faceArgs, match, expression);
 
     if (match.empty()) {
         return false;
@@ -308,14 +308,21 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     int vertexIndex1 = std::stoi(match[4]);
     int vertexIndex2 = std::stoi(match[7]);
 
-    int UVIndex0 = std::stoi(match[3]);
-    int UVIndex1 = std::stoi(match[6]);
-    int UVIndex2 = std::stoi(match[9]);
+    auto UVMatch0 = match[2];
+    
 
-    processTriangle(
-        vertexIndex0, vertexIndex1, vertexIndex2,
-        UVIndex0, UVIndex1, UVIndex2
-    );
+    if (match[2] != "" && match[5] != "" && match[8] != "") {
+        int UVIndex0 = std::stoi(match[2]);
+        int UVIndex1 = std::stoi(match[5]);
+        int UVIndex2 = std::stoi(match[8]);
+
+        processTriangle(
+            vertexIndex0, vertexIndex1, vertexIndex2,
+            UVIndex0, UVIndex1, UVIndex2
+        );
+    } else {
+        processTriangle(vertexIndex0, vertexIndex1, vertexIndex2);
+    }
 
     return true;
 }
