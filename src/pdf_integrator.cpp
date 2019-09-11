@@ -12,10 +12,6 @@
 #include "util.h"
 #include "vector.h"
 
-#include "json.hpp"
-using json = nlohmann::json;
-
-#include <fstream>
 #include <iostream>
 #include <mutex>
 
@@ -36,7 +32,7 @@ void PDFIntegrator::run(
     Ray ray = scene.getCamera()->generateRay(500, 500);
     Intersection intersection = scene.testIntersect(ray);
 
-    const int spp = 8;
+    const int spp = 1024;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
@@ -57,6 +53,15 @@ void PDFIntegrator::run(
         }
 
         lock.unlock();
+
+        image.setSpp(i + 1);
+
+        int maxJ = log2f(spp);
+        for (int j = 0; j <= maxJ; j++) {
+            if (1 << j == i + 1) {
+                image.save("auto");
+            }
+        }
     }
 
     *quit = true;
@@ -73,20 +78,11 @@ void PDFIntegrator::renderPDF(
     PathTracer pathTracer(g_job->bounceController());
 
     RandomGenerator random;
-    Sample sample;
     int bounceCount = 2;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
 
-    json j;
-    j["QueryPoint"] = {
-        intersection.point.x(),
-        intersection.point.y(),
-        intersection.point.z()
-    };
-    j["Steps"] = { { "phi", phiSteps }, { "theta", thetaSteps } };
-    j["Gt"] = json::array();
-
+    #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             float phi = M_TWO_PI * phiStep / phiSteps;
@@ -103,6 +99,8 @@ void PDFIntegrator::renderPDF(
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
             if (fisheyeIntersection.hit) {
+                Sample sample;
+
                 sampleL = pathTracer.L(
                     fisheyeIntersection,
                     scene,
@@ -110,36 +108,23 @@ void PDFIntegrator::renderPDF(
                     sample
                 );
 
-                Color emit = fisheyeIntersection.material->emit();
-                sampleL += emit;
+                // Color emit = fisheyeIntersection.material->emit();
+                // sampleL += emit;
             }
 
-            // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
-            // std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
-            // std::cout << sampleL << std::endl;
-
-            j["Gt"].push_back({
-                { "wi", { x, y, z } },
-                { "phiStep", phiStep },
-                { "thetaStep", thetaStep },
-                { "phi", phi },
-                { "theta", theta },
-                { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
-                { "luminance", { sampleL.luminance() } }
-            });
-
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += sampleL.r();
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += sampleL.g();
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += sampleL.b();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += sampleL.r();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += sampleL.g();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += sampleL.b();
 
             // const float luminance = sampleL.luminance();
             // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += luminance;
             // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += luminance;
             // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += luminance;
+
+            const float average = sampleL.average();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += average;
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += average;
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
         }
     }
-
-    std::ofstream jsonFile("live.json");
-    jsonFile << j.dump(4) << std::endl;
-    std::cout << "Wrote to live.json" << std::endl;
 }

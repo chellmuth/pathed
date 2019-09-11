@@ -21,6 +21,10 @@ public:
         );
     }
 
+    float average() const {
+        return (m_r + m_g + m_b) / 3.f;
+    }
+
     Color& operator+= (const Color &c);
     Color operator+ (const Color c) const;
     Color operator- (const Color c) const;
