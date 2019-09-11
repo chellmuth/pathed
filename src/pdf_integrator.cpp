@@ -33,28 +33,31 @@ void PDFIntegrator::run(
         radianceLookup[i] = 0.f;
     }
 
-    Ray ray = scene.getCamera()->generateRay(400, 400);
+    Ray ray = scene.getCamera()->generateRay(500, 500);
     Intersection intersection = scene.testIntersect(ray);
 
-    renderPDF(radianceLookup, scene, intersection);
+    const int spp = 8;
+    for (int i = 0; i < spp; i++) {
+        renderPDF(radianceLookup, scene, intersection);
 
-    std::mutex &lock = image.getLock();
-    lock.lock();
+        std::mutex &lock = image.getLock();
+        lock.lock();
 
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            int index = 3 * (row * width + col);
-            image.set(
-                row,
-                col,
-                radianceLookup[index + 0],
-                radianceLookup[index + 1],
-                radianceLookup[index + 2]
-            );
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                int index = 3 * (row * width + col);
+                image.set(
+                    row,
+                    col,
+                    radianceLookup[index + 0] / (i + 1),
+                    radianceLookup[index + 1] / (i + 1),
+                    radianceLookup[index + 2] / (i + 1)
+                );
+            }
         }
-    }
 
-    lock.unlock();
+        lock.unlock();
+    }
 
     *quit = true;
 }
@@ -125,14 +128,14 @@ void PDFIntegrator::renderPDF(
                 { "luminance", { sampleL.luminance() } }
             });
 
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] = sampleL.r();
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] = sampleL.g();
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] = sampleL.b();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += sampleL.r();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += sampleL.g();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += sampleL.b();
 
             // const float luminance = sampleL.luminance();
-            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] = luminance;
-            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] = luminance;
-            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] = luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += luminance;
         }
     }
 
