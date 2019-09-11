@@ -20,6 +20,8 @@ public:
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
     float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
 
+    void save(const Transform &worldToNormal);
+
 private:
     void buildCDF(const Transform &worldToNormal);
 

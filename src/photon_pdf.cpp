@@ -200,3 +200,24 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     assert(pdf != 0.f);
     return pdf;
 }
+
+void PhotonPDF::save(const Transform &worldToNormal)
+{
+    buildCDF(worldToNormal);
+
+    Image image(m_phiSteps, m_thetaSteps);
+    for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
+        for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+            int index = phiStep * m_thetaSteps + thetaStep;
+
+            float pdf = m_CDF[index];
+            if (index > 0) {
+                pdf -= m_CDF[index - 1];
+            }
+
+            image.set(m_thetaSteps - thetaStep - 1, phiStep, pdf, pdf, pdf);
+        }
+    }
+
+    image.write("testing.bmp");
+}

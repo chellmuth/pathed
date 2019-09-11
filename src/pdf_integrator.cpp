@@ -6,6 +6,7 @@
 #include "job.h"
 #include "monte_carlo.h"
 #include "path_tracer.h"
+#include "photon_pdf.h"
 #include "ray.h"
 #include "sample.h"
 #include "transform.h"
@@ -83,6 +84,9 @@ void PDFIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
 void PDFIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
 {
     createPhotons(scene, random);
+
+    m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree->buildIndex();
 }
 
 void PDFIntegrator::run(
@@ -208,4 +212,29 @@ void PDFIntegrator::renderPDF(
             radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
         }
     }
+
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
+
+    float queryPoint[3] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    PhotonPDF photonPDF(
+        intersection.point,
+        m_dataSource,
+        resultIndices,
+        g_job->phiSteps(),
+        g_job->thetaSteps()
+    );
+    photonPDF.save(worldToNormal);
 }
