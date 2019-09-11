@@ -17,6 +17,7 @@ using json = nlohmann::json;
 
 #include <fstream>
 #include <iostream>
+#include <mutex>
 
 void PDFIntegrator::run(
     Image &image,
@@ -24,26 +25,53 @@ void PDFIntegrator::run(
     std::function<void(RenderStatus)> callback,
     bool *quit
 ) {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
+    std::vector<float> radianceLookup(3 * width * height);
+    for (int i = 0; i < 3 * width * height; i++) {
+        radianceLookup[i] = 0.f;
+    }
+
     Ray ray = scene.getCamera()->generateRay(400, 400);
     Intersection intersection = scene.testIntersect(ray);
 
-    renderPDF(scene, intersection);
+    renderPDF(radianceLookup, scene, intersection);
+
+    std::mutex &lock = image.getLock();
+    lock.lock();
+
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            int index = 3 * (row * width + col);
+            image.set(
+                row,
+                col,
+                radianceLookup[index + 0],
+                radianceLookup[index + 1],
+                radianceLookup[index + 2]
+            );
+        }
+    }
+
+    lock.unlock();
 
     *quit = true;
 }
 
 void PDFIntegrator::renderPDF(
+    std::vector<float> &radianceLookup,
     const Scene &scene,
     const Intersection &intersection
 ) {
-    const int phiSteps = 300;
-    const int thetaSteps = 300;
+    const int phiSteps = g_job->width();
+    const int thetaSteps = g_job->height();
 
     PathTracer pathTracer(g_job->bounceController());
 
     RandomGenerator random;
     Sample sample;
-    int bounceCount = 5;
+    int bounceCount = 2;
 
     Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
 
@@ -96,6 +124,15 @@ void PDFIntegrator::renderPDF(
                 { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
                 { "luminance", { sampleL.luminance() } }
             });
+
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] = sampleL.r();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] = sampleL.g();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] = sampleL.b();
+
+            // const float luminance = sampleL.luminance();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] = luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] = luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] = luminance;
         }
     }
 
@@ -103,4 +140,3 @@ void PDFIntegrator::renderPDF(
     jsonFile << j.dump(4) << std::endl;
     std::cout << "Wrote to live.json" << std::endl;
 }
-

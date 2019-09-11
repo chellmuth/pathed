@@ -19,6 +19,7 @@ public:
 
 protected:
     void renderPDF(
+        std::vector<float> &radianceLookup,
         const Scene &scene,
         const Intersection &intersection
     );
