@@ -15,7 +15,7 @@
 
 class Integrator {
 public:
-    void run(
+    virtual void run(
         Image &image,
         Scene &scene,
         std::function<void(RenderStatus)> callback,
@@ -43,5 +43,5 @@ protected:
         std::vector<Sample> &sampleLookup,
         Scene &scene,
         RandomGenerator &random
-    ) = 0;
+    ) {};
 };
