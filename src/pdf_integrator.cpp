@@ -34,9 +34,6 @@ void PDFIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
     const int photonSamples = g_job->photonSamples();
     const int photonBounces = g_job->photonBounces();
 
-    const int phiSteps = g_job->lightPhiSteps();
-    const int thetaSteps = g_job->lightThetaSteps();
-
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
 
