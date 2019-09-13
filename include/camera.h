@@ -4,8 +4,6 @@
 #include "transform.h"
 #include "vector.h"
 
-#include <optional>
-
 class Ray;
 
 struct Pixel {
@@ -28,7 +26,7 @@ public:
     Resolution getResolution() const { return m_resolution; }
 
     Ray generateRay(int row, int col) const;
-    std::optional<Pixel> calculatePixel(const Point3 &point) const;
+    void calculatePixel(const Point3 &point, Pixel *pixel) const;
 private:
     Point3 m_origin;
     Point3 m_target;

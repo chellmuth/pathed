@@ -48,7 +48,7 @@ Ray Camera::generateRay(int row, int col) const
     return transformedRay;
 }
 
-std::optional<Pixel> Camera::calculatePixel(const Point3 &point) const
+void Camera::calculatePixel(const Point3 &point, Pixel *pixel) const
 {
     const Point3 cameraPoint = m_worldToCamera.apply(point);
     const Vector3 filmDirection = -cameraPoint.toVector();
@@ -63,7 +63,7 @@ std::optional<Pixel> Camera::calculatePixel(const Point3 &point) const
     const Vector3 filmNormal(0.f, 0.f, -1.f);
 
     if (filmNormal.dot(filmDirection) < 0.f) {
-        return {};
+        return;
     }
 
     const geometry::Plane filmPlane(filmNormal, Point3(0.f, 0.f, filmZ));
@@ -77,12 +77,11 @@ std::optional<Pixel> Camera::calculatePixel(const Point3 &point) const
     const int pixelY = std::floor(m_resolution.y * (filmPoint.y() / height + 0.5f));
 
     if (pixelX < 0 || pixelX >= m_resolution.x || pixelY < 0 || pixelY >= m_resolution.y) {
-        return {};
+        return;
     }
 
-    const Pixel pixel {
+    *pixel = {
         pixelX,
         pixelY
     };
-    return pixel;
 }
