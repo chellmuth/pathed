@@ -32,6 +32,8 @@ protected:
     );
 
     void createPhotons(const Scene &scene, RandomGenerator &random);
+    void savePhotonBundle(const Intersection &intersection);
+
     Vector3 sample(const Vector3 &normal, RandomGenerator &random, float *pdf);
 
     std::shared_ptr<DataSource> m_dataSource;

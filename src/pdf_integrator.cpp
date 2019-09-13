@@ -114,7 +114,9 @@ void PDFIntegrator::run(
     Ray ray = scene.getCamera()->generateRay(200, 200);
     Intersection intersection = scene.testIntersect(ray);
 
-    const int spp = 1024;
+    savePhotonBundle(intersection);
+
+    const int spp = 16;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
@@ -137,16 +139,40 @@ void PDFIntegrator::run(
         lock.unlock();
 
         image.setSpp(i + 1);
-
-        int maxJ = log2f(spp);
-        for (int j = 0; j <= maxJ; j++) {
-            if (1 << j == i + 1) {
-                image.save("auto");
-            }
-        }
     }
 
+    image.save("gt");
+
     *quit = true;
+}
+
+void PDFIntegrator::savePhotonBundle(const Intersection &intersection)
+{
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
+
+    float queryPoint[3] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    PhotonPDF photonPDF(
+        intersection.point,
+        m_dataSource,
+        resultIndices,
+        g_job->phiSteps(),
+        g_job->thetaSteps()
+    );
+    photonPDF.save(worldToNormal);
+    printf("Saved photon bundle\n");
 }
 
 void PDFIntegrator::renderPDF(
@@ -209,29 +235,4 @@ void PDFIntegrator::renderPDF(
             radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
         }
     }
-
-    const int debugSearchCount = g_job->debugSearchCount();
-    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
-    std::vector<float> outDistanceSquared(debugSearchCount);
-
-    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
-    resultSet.init(resultIndices->data(), outDistanceSquared.data());
-
-    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
-
-    float queryPoint[3] = {
-        intersection.point.x(),
-        intersection.point.y(),
-        intersection.point.z()
-    };
-    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-
-    PhotonPDF photonPDF(
-        intersection.point,
-        m_dataSource,
-        resultIndices,
-        g_job->phiSteps(),
-        g_job->thetaSteps()
-    );
-    photonPDF.save(worldToNormal);
 }
