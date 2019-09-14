@@ -157,6 +157,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     }
 
     assert(false);
+    return Vector3(0.f, 0.f, 0.f);
 }
 
 float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
@@ -201,7 +202,7 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     return pdf;
 }
 
-void PhotonPDF::save(const Transform &worldToNormal)
+void PhotonPDF::save(const std::string &filename, const Transform &worldToNormal)
 {
     buildCDF(worldToNormal);
 
@@ -219,5 +220,5 @@ void PhotonPDF::save(const Transform &worldToNormal)
         }
     }
 
-    image.write("testing.bmp");
+    image.write(filename);
 }

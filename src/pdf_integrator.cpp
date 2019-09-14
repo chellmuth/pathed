@@ -16,6 +16,7 @@
 #include <ctime>
 #include <iostream>
 #include <mutex>
+#include <sstream>
 
 PDFIntegrator::PDFIntegrator()
 {
@@ -103,6 +104,17 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
+    const int dataPoints = 2;
+    for (int i = 0; i < dataPoints; i ++) {
+        createAndSaveDataPoint(image, scene, i);
+        printf("Finished point %i/%i\n", i + 1, dataPoints);
+    }
+
+    *quit = true;
+}
+
+void PDFIntegrator::createAndSaveDataPoint(Image &image, const Scene &scene, int pointID)
+{
     const int width = g_job->width();
     const int height = g_job->height();
 
@@ -114,7 +126,7 @@ void PDFIntegrator::run(
     Ray ray = scene.getCamera()->generateRay(200, 200);
     Intersection intersection = scene.testIntersect(ray);
 
-    savePhotonBundle(intersection);
+    savePhotonBundle(intersection, pointID);
 
     const int spp = 16;
     for (int i = 0; i < spp; i++) {
@@ -141,12 +153,12 @@ void PDFIntegrator::run(
         image.setSpp(i + 1);
     }
 
-    image.save("gt");
-
-    *quit = true;
+    std::ostringstream filenameStream;
+    filenameStream << "pdf_" << pointID;
+    image.save(filenameStream.str());
 }
 
-void PDFIntegrator::savePhotonBundle(const Intersection &intersection)
+void PDFIntegrator::savePhotonBundle(const Intersection &intersection, int pointID)
 {
     const int debugSearchCount = g_job->debugSearchCount();
     auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
@@ -171,8 +183,12 @@ void PDFIntegrator::savePhotonBundle(const Intersection &intersection)
         g_job->phiSteps(),
         g_job->thetaSteps()
     );
-    photonPDF.save(worldToNormal);
-    printf("Saved photon bundle\n");
+
+    std::ostringstream filenameStream;
+    filenameStream << "photon-bundle_" << pointID << ".bmp";
+
+    photonPDF.save(filenameStream.str(), worldToNormal);
+    // printf("Saved photon bundle\n");
 }
 
 void PDFIntegrator::renderPDF(

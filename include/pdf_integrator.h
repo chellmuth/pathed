@@ -32,7 +32,8 @@ protected:
     );
 
     void createPhotons(const Scene &scene, RandomGenerator &random);
-    void savePhotonBundle(const Intersection &intersection);
+    void createAndSaveDataPoint(Image &image, const Scene &scene, int pointID);
+    void savePhotonBundle(const Intersection &intersection, int pointID);
 
     Vector3 sample(const Vector3 &normal, RandomGenerator &random, float *pdf);
 

@@ -1,21 +1,23 @@
 #pragma once
 
-#include <memory>
-#include <vector>
+#include "image.h"
+#include "shader.h"
 
 #include <Eigen/Geometry>
 #include <nanogui/opengl.h>
 #include <nanogui/glcanvas.h>
 
-#include "image.h"
-#include "shader.h"
+#include <memory>
+#include <string>
+#include <vector>
+
 
 class Canvas : public nanogui::GLCanvas {
 public:
     Canvas(Widget *parent, Image &image, int width, int height);
 
     void init();
-    void save(char const *filestem);
+    void save(const std::string &filestem);
 
     virtual void drawGL() override;
 

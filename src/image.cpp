@@ -60,7 +60,7 @@ std::mutex &Image::getLock()
     return m_lock;
 }
 
-void Image::save(char const *filestem)
+void Image::save(const std::string &filestem)
 {
     EXRHeader header;
     InitEXRHeader(&header);
@@ -138,7 +138,7 @@ void Image::save(char const *filestem)
     free(header.requested_pixel_types);
 }
 
-void Image::write(char const *filename)
+void Image::write(const std::string &filename)
 {
-    stbi_write_bmp(filename, m_width, m_height, 3, m_data.data());
+    stbi_write_bmp(filename.c_str(), m_width, m_height, 3, m_data.data());
 }
