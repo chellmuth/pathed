@@ -18,6 +18,13 @@
 #include <mutex>
 #include <sstream>
 
+static std::string zeroPad(int num, int fillCount)
+{
+    std::ostringstream stream;
+    stream << std::setfill('0') << std::setw(fillCount) << num;
+    return stream.str();
+}
+
 PDFIntegrator::PDFIntegrator()
 {
     m_dataSource = std::make_shared<DataSource>();
@@ -154,7 +161,7 @@ void PDFIntegrator::createAndSaveDataPoint(Image &image, const Scene &scene, int
     }
 
     std::ostringstream filenameStream;
-    filenameStream << "pdf_" << pointID;
+    filenameStream << "pdf_" << zeroPad(pointID, 5);
     image.save(filenameStream.str());
 }
 
@@ -185,7 +192,7 @@ void PDFIntegrator::savePhotonBundle(const Intersection &intersection, int point
     );
 
     std::ostringstream filenameStream;
-    filenameStream << "photon-bundle_" << pointID << ".bmp";
+    filenameStream << "photon-bundle_" << zeroPad(pointID, 5) << ".bmp";
 
     photonPDF.save(filenameStream.str(), worldToNormal);
     // printf("Saved photon bundle\n");
