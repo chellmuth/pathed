@@ -60,6 +60,14 @@ std::mutex &Image::getLock()
     return m_lock;
 }
 
+std::string Image::pathFromFilename(const std::string &filename)
+{
+    std::string outputDirectory = g_job->outputDirectory();
+    std::ostringstream outputExrStream;
+    outputExrStream << outputDirectory << filename;
+    return outputExrStream.str();
+}
+
 void Image::save(const std::string &filestem)
 {
     EXRHeader header;
@@ -107,17 +115,13 @@ void Image::save(const std::string &filestem)
 
     const char *err;
 
-    std::string outputDirectory = g_job->outputDirectory();
-    std::ostringstream outputExrStream;
-    outputExrStream << outputDirectory << filestem << ".exr";
-    std::string outputExr = outputExrStream.str();
+    std::string outputExr = pathFromFilename(filestem + ".exr");
 
     std::ostringstream outputSppExrStream;
-    outputSppExrStream << outputDirectory << "/"
-                       << filestem << "-"
+    outputSppExrStream << filestem << "-"
                        << std::setfill('0') << std::setw(5) << m_spp
                        << "spp.exr";
-    std::string outputSppExr = outputSppExrStream.str();
+    std::string outputSppExr = pathFromFilename(outputSppExrStream.str());
 
     int ret = SaveEXRImageToFile(&image, &header, outputExr.c_str(), &err);
     if (ret != TINYEXR_SUCCESS) {
@@ -140,5 +144,7 @@ void Image::save(const std::string &filestem)
 
 void Image::write(const std::string &filename)
 {
-    stbi_write_bmp(filename.c_str(), m_width, m_height, 3, m_data.data());
+    std::string path = pathFromFilename(filename);
+
+    stbi_write_bmp(path.c_str(), m_width, m_height, 3, m_data.data());
 }

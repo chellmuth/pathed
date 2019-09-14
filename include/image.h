@@ -20,6 +20,8 @@ public:
     void setSpp(int spp) { m_spp = spp; }
 
 private:
+    std::string pathFromFilename(const std::string &filename);
+
     int m_height, m_width;
     int m_spp;
     std::vector<unsigned char> m_data;
