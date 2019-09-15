@@ -113,15 +113,41 @@ void PDFIntegrator::run(
 
     const int dataPoints = 2;
     for (int i = 0; i < dataPoints; i ++) {
-        createAndSaveDataPoint(image, scene, i);
+        createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);
     }
 
     *quit = true;
 }
 
-void PDFIntegrator::createAndSaveDataPoint(Image &image, const Scene &scene, int pointID)
-{
+Intersection PDFIntegrator::generateIntersection(
+    const Scene &scene,
+    RandomGenerator &random
+) {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
+    while (true) {
+        float x = random.next();
+        float y = random.next();
+
+        int row = (int)(y * height);
+        int col = (int)(x * width);
+
+        Ray ray = scene.getCamera()->generateRay(row, col);
+        Intersection intersection = scene.testIntersect(ray);
+        if (intersection.hit) {
+            return intersection;
+        }
+    }
+}
+
+void PDFIntegrator::createAndSaveDataPoint(
+    Image &image,
+    const Scene &scene,
+    RandomGenerator &random,
+    int pointID
+) {
     const int width = g_job->width();
     const int height = g_job->height();
 
@@ -130,8 +156,7 @@ void PDFIntegrator::createAndSaveDataPoint(Image &image, const Scene &scene, int
         radianceLookup[i] = 0.f;
     }
 
-    Ray ray = scene.getCamera()->generateRay(200, 200);
-    Intersection intersection = scene.testIntersect(ray);
+    Intersection intersection = generateIntersection(scene, random);
 
     savePhotonBundle(intersection, pointID);
 
