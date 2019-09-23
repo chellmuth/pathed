@@ -170,3 +170,9 @@ Transform worldSpaceToNormal(const Vector3 &normal)
     Transform normalToWorld(normalToWorldSpace(normal));
     return normalToWorld.transposed();
 }
+
+Transform worldSpaceToNormal(const Vector3 &normal, const Vector3 &rayDirection)
+{
+    Transform normalToWorld(normalToWorldSpace(normal, rayDirection));
+    return normalToWorld.transposed();
+}

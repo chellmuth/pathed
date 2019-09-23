@@ -14,6 +14,7 @@
 #include "vector.h"
 
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -111,7 +112,7 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
-    const int dataPoints = 2;
+    const int dataPoints = 99999;
     for (int i = 0; i < dataPoints; i ++) {
         createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);
@@ -160,7 +161,7 @@ void PDFIntegrator::createAndSaveDataPoint(
 
     savePhotonBundle(intersection, pointID);
 
-    const int spp = 16;
+    const int spp = 32;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
@@ -199,8 +200,6 @@ void PDFIntegrator::savePhotonBundle(const Intersection &intersection, int point
     nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
     resultSet.init(resultIndices->data(), outDistanceSquared.data());
 
-    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
-
     float queryPoint[3] = {
         intersection.point.x(),
         intersection.point.y(),
@@ -219,6 +218,10 @@ void PDFIntegrator::savePhotonBundle(const Intersection &intersection, int point
     std::ostringstream filenameStream;
     filenameStream << "photon-bundle_" << zeroPad(pointID, 5) << ".bmp";
 
+    Transform worldToNormal = worldSpaceToNormal(
+        intersection.normal,
+        intersection.wi
+    );
     photonPDF.save(filenameStream.str(), worldToNormal);
     // printf("Saved photon bundle\n");
 }
@@ -236,7 +239,10 @@ void PDFIntegrator::renderPDF(
     RandomGenerator random;
     int bounceCount = 2;
 
-    Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
+    Transform hemisphereToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
 
     #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
