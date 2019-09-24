@@ -2,6 +2,7 @@
 
 #include "depositer.h"
 #include "light_tracer.h"
+#include "ml_integrator.h"
 #include "nearest_photon.h"
 #include "path_tracer.h"
 #include "pdf_integrator.h"
@@ -68,6 +69,8 @@ std::unique_ptr<Integrator> Job::integrator() const
         return std::make_unique<LightTracer>(m_bounceController);
     } else if (integrator == "PDFIntegrator") {
         return std::make_unique<PDFIntegrator>();
+    } else if (integrator == "MLIntegrator") {
+        return std::make_unique<MLIntegrator>(m_bounceController);
     }
     throw "Unimplemented";
 }

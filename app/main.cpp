@@ -37,10 +37,6 @@ void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback,
 int main(int argc, char *argv[]) {
     printf("Hello, world!\n");
 
-    MLPDF pdf;
-    pdf.connectToModel();
-    pdf.go();
-
     g_rtcDevice = rtcNewDevice(NULL);
     if (g_rtcDevice == NULL) {
         std::cout << "Failed to create device" << std::endl;
