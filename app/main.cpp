@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     printf("Hello, world!\n");
 
     MLPDF pdf;
+    pdf.connectToModel();
     pdf.go();
 
     g_rtcDevice = rtcNewDevice(NULL);

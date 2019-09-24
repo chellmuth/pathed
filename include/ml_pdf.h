@@ -4,6 +4,7 @@ class MLPDF {
 public:
     MLPDF();
 
+    bool connectToModel();
     void go();
 
 private:
