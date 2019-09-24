@@ -1,5 +1,6 @@
 #include "photon_pdf.h"
 
+#include "coordinate.h"
 #include "monte_carlo.h"
 #include "util.h"
 
@@ -21,19 +22,6 @@ PhotonPDF::PhotonPDF(
       m_thetaSteps(thetaSteps),
       m_emptyCDF(false)
 {}
-
-void cartesianToSpherical(Vector3 cartesian, float *phi, float *theta)
-{
-    *phi = atan2f(cartesian.z(), cartesian.x());
-    if (*phi < 0.f) {
-        *phi += 2 * M_PI;
-    }
-    if (*phi == M_TWO_PI) {
-        *phi = 0;
-    }
-
-    *theta = acosf(cartesian.y());
-}
 
 void PhotonPDF::buildCDF(const Transform &worldToNormal)
 {
@@ -200,6 +188,28 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     const float pdf = massRatio / ((y1 - y2) * (phi2 - phi1));
     assert(pdf != 0.f);
     return pdf;
+}
+
+std::vector<float> PhotonPDF::asVector(const Transform &worldToNormal)
+{
+    buildCDF(worldToNormal);
+
+    std::vector<float> result(m_thetaSteps * m_phiSteps);
+
+    for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
+        for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+            int index = phiStep * m_thetaSteps + thetaStep;
+
+            float pdf = m_CDF[index];
+            if (index > 0) {
+                pdf -= m_CDF[index - 1];
+            }
+
+            result[index] = pdf;
+        }
+    }
+
+    return result;
 }
 
 void PhotonPDF::save(const std::string &filename, const Transform &worldToNormal)

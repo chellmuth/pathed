@@ -4,6 +4,7 @@
 #include "bounce_controller.h"
 #include "intersection.h"
 #include "kd_tree.h"
+#include "ml_pdf.h"
 #include "random_generator.h"
 #include "sample_integrator.h"
 #include "sample.h"
@@ -26,6 +27,7 @@ public:
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
 private:
+    Vector3 nextBounce(const Intersection &intersection, float *pdf) const;
     void createPhotons(const Scene &scene, RandomGenerator &random);
     Vector3 sample(const Vector3 &normal, RandomGenerator &random, float *pdf);
 
@@ -39,4 +41,5 @@ private:
     std::unique_ptr<KDTree> m_KDTree;
 
     BounceController m_bounceController;
+    MLPDF m_MLPDF;
 };

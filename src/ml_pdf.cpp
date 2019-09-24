@@ -40,21 +40,16 @@ bool MLPDF::connectToModel()
     return true;
 }
 
-void MLPDF::go()
+void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> photonBundle) const
 {
-    float photonBundle[100];
-    for (int i = 0; i < 100; i++) {
-        photonBundle[i] = i / 99.f;
-    }
-
-    send(m_socket, photonBundle, sizeof(photonBundle), 0);
+    send(m_socket, photonBundle.data(), sizeof(photonBundle), 0);
     printf("Hello message sent\n");
 
     float buffer[3] = {0.f, 0.f, 0.f};
     int valread = recv(m_socket, buffer, sizeof(buffer), 0);
 
-    float x = buffer[0];
-    float y = buffer[1];
-    float pdf = buffer[2];
-    printf("%f %f %f\n", x, y, pdf);
+    *phi = buffer[0];
+    *theta = buffer[1];
+    *pdf = buffer[2];
+    printf("%f %f %f\n", *phi, *theta, *pdf);
 }

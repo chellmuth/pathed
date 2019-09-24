@@ -1,9 +1,11 @@
 #include "ml_integrator.h"
 
+#include "coordinate.h"
 #include "globals.h"
 #include "job.h"
 #include "light.h"
 #include "monte_carlo.h"
+#include "photon_pdf.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
@@ -80,6 +82,50 @@ void MLIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
 
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_KDTree->buildIndex();
+
+    if (!m_MLPDF.connectToModel()) {
+        printf("We're done here!\n");
+        throw "Failure to connect";
+    }
+}
+
+Vector3 MLIntegrator::nextBounce(const Intersection &intersection, float *pdf) const
+{
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+    float queryPoint[3] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    PhotonPDF photonPDF(
+        intersection.point,
+        m_dataSource,
+        resultIndices,
+        g_job->phiSteps(),
+        g_job->thetaSteps()
+    );
+
+    Transform worldToNormal = worldSpaceToNormal(
+        intersection.normal,
+        intersection.wi
+    );
+    std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
+
+    float phi, theta;
+    m_MLPDF.sample(&phi, &theta, pdf, photonBundle);
+
+    Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
+    Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
+
+    return bounceDirection;
 }
 
 Color MLIntegrator::L(
@@ -102,10 +148,13 @@ Color MLIntegrator::L(
             lastIntersection.wi
         );
 
-        Vector3 hemisphereSample = CosineSampleHemisphere(random);
-        float pdf = CosineHemispherePdf(hemisphereSample);
+        float pdf;
+        Vector3 bounceDirection = nextBounce(intersection, &pdf);
 
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+        // Vector3 hemisphereSample = CosineSampleHemisphere(random);
+        // float pdf = CosineHemispherePdf(hemisphereSample);
+
+        // Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
         Ray bounceRay(
             lastIntersection.point,
             bounceDirection

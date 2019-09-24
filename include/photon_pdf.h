@@ -22,6 +22,7 @@ public:
     float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
 
     void save(const std::string &filename, const Transform &worldToNormal);
+    std::vector<float> asVector(const Transform &worldToNormal);
 
 private:
     void buildCDF(const Transform &worldToNormal);
