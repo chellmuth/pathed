@@ -1,5 +1,7 @@
 #include "ml_pdf.h"
 
+#include <assert.h>
+#include <iostream>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -42,14 +44,16 @@ bool MLPDF::connectToModel()
 
 void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> photonBundle) const
 {
-    send(m_socket, photonBundle.data(), sizeof(photonBundle), 0);
-    printf("Hello message sent\n");
+    float *photonData = photonBundle.data();
+    send(m_socket, photonData, sizeof(float) * photonBundle.size(), 0);
 
     float buffer[3] = {0.f, 0.f, 0.f};
-    int valread = recv(m_socket, buffer, sizeof(buffer), 0);
+    int bytesRead = recv(m_socket, buffer, sizeof(buffer), 0);
+
+    assert(bytesRead == sizeof(float) * 3);
 
     *phi = buffer[0];
     *theta = buffer[1];
     *pdf = buffer[2];
-    printf("%f %f %f\n", *phi, *theta, *pdf);
+    // printf("%f %f %f\n", *phi, *theta, *pdf);
 }
