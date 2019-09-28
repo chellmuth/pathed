@@ -12,6 +12,7 @@
 #include "vector.h"
 
 #include <memory>
+#include <vector>
 
 class MLIntegrator : public SampleIntegrator {
 public:
@@ -27,9 +28,14 @@ public:
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
 private:
-    Vector3 nextBounce(const Intersection &intersection, float *pdf) const;
+    Vector3 nextBounce(const Intersection &intersection, const Scene &scene, float *pdf) const;
     void createPhotons(const Scene &scene, RandomGenerator &random);
     Vector3 sample(const Vector3 &normal, RandomGenerator &random, float *pdf);
+    void renderPDF(
+        std::vector<float> &radianceLookup,
+        const Scene &scene,
+        const Intersection &intersection
+    ) const;
 
     Color direct(
         const Intersection &intersection,

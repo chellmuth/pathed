@@ -2,16 +2,26 @@
 
 #include "coordinate.h"
 #include "globals.h"
+#include "image.h"
 #include "job.h"
 #include "light.h"
 #include "monte_carlo.h"
+#include "path_tracer.h"
 #include "photon_pdf.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
 #include "vector.h"
 
+#include <iomanip>
 #include <iostream>
+
+static std::string zeroPad(int num, int fillCount)
+{
+    std::ostringstream stream;
+    stream << std::setfill('0') << std::setw(fillCount) << num;
+    return stream.str();
+}
 
 MLIntegrator::MLIntegrator(BounceController bounceController)
     : m_bounceController(bounceController)
@@ -89,7 +99,73 @@ void MLIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
     }
 }
 
-Vector3 MLIntegrator::nextBounce(const Intersection &intersection, float *pdf) const
+void MLIntegrator::renderPDF(
+    std::vector<float> &radianceLookup,
+    const Scene &scene,
+    const Intersection &intersection
+) const {
+    const int phiSteps = g_job->width();
+    const int thetaSteps = g_job->height();
+
+    PathTracer pathTracer(g_job->bounceController());
+
+    RandomGenerator random;
+    int bounceCount = 2;
+
+    Transform hemisphereToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
+
+    for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
+        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
+            float phi = M_TWO_PI * phiStep / phiSteps;
+            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+
+            float y = cosf(theta);
+            float x = sinf(theta) * cosf(phi);
+            float z = sinf(theta) * sinf(phi);
+
+            Vector3 wiHemisphere(x, y, z);
+            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+
+            Ray ray = Ray(intersection.point, wiWorld);
+            const Intersection fisheyeIntersection = scene.testIntersect(ray);
+            Color sampleL(0.f);
+            if (fisheyeIntersection.hit) {
+                Sample sample;
+
+                sampleL = pathTracer.L(
+                    fisheyeIntersection,
+                    scene,
+                    random,
+                    sample
+                );
+
+                // Color emit = fisheyeIntersection.material->emit();
+                // sampleL += emit;
+            }
+
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += sampleL.r();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += sampleL.g();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += sampleL.b();
+
+            // const float luminance = sampleL.luminance();
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += luminance;
+            // radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += luminance;
+
+            const float average = sampleL.average();
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += average;
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += average;
+            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
+        }
+    }
+}
+
+static int imageIndex = 0;
+
+Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &scene, float *pdf) const
 {
     const int debugSearchCount = g_job->debugSearchCount();
     auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
@@ -125,6 +201,46 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, float *pdf) c
     Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
     Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
 
+    if (true) {
+        const int width = g_job->width();
+        const int height = g_job->height();
+        Image image(width, height);
+
+        std::vector<float> radianceLookup(3 * width * height);
+        for (int i = 0; i < 3 * width * height; i++) {
+            radianceLookup[i] = 0.f;
+        }
+
+        const int spp = 4;
+        for (int i = 0; i < spp; i++) {
+            renderPDF(radianceLookup, scene, intersection);
+
+            std::mutex &lock = image.getLock();
+            lock.lock();
+
+            for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
+                    int index = 3 * (row * width + col);
+                    image.set(
+                        row,
+                        col,
+                        radianceLookup[index + 0] / (i + 1),
+                        radianceLookup[index + 1] / (i + 1),
+                        radianceLookup[index + 2] / (i + 1)
+                        );
+                }
+            }
+
+            lock.unlock();
+
+            image.setSpp(i + 1);
+        }
+
+        std::ostringstream filenameStream;
+        filenameStream << "pdf_" << zeroPad(imageIndex++, 5);
+        image.save(filenameStream.str());
+    }
+
     return bounceDirection;
 }
 
@@ -149,7 +265,7 @@ Color MLIntegrator::L(
         );
 
         float pdf;
-        Vector3 bounceDirection = nextBounce(intersection, &pdf);
+        Vector3 bounceDirection = nextBounce(intersection, scene, &pdf);
 
         // Vector3 hemisphereSample = CosineSampleHemisphere(random);
         // float pdf = CosineHemispherePdf(hemisphereSample);
