@@ -112,7 +112,7 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
-    const int dataPoints = 99999;
+    const int dataPoints = 4000;
     for (int i = 0; i < dataPoints; i ++) {
         createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);
@@ -161,7 +161,7 @@ void PDFIntegrator::createAndSaveDataPoint(
 
     savePhotonBundle(intersection, pointID);
 
-    const int spp = 32;
+    const int spp = 128;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 

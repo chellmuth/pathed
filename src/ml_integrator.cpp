@@ -194,6 +194,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
         intersection.wi
     );
     std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
+    photonPDF.save("photons.bmp", worldToNormal);
 
     float phi, theta;
     m_MLPDF.sample(&phi, &theta, pdf, photonBundle);

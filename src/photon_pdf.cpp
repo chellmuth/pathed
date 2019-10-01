@@ -20,11 +20,15 @@ PhotonPDF::PhotonPDF(
       m_indices(indices),
       m_phiSteps(phiSteps),
       m_thetaSteps(thetaSteps),
-      m_emptyCDF(false)
+      m_emptyCDF(false),
+      m_built(false)
 {}
 
 void PhotonPDF::buildCDF(const Transform &worldToNormal)
 {
+    if (m_built) { return; }
+    m_built = true;
+
     float massLookup[m_phiSteps][m_thetaSteps];
     float totalMass = 0.f;
 
@@ -196,18 +200,27 @@ std::vector<float> PhotonPDF::asVector(const Transform &worldToNormal)
 
     std::vector<float> result(m_thetaSteps * m_phiSteps);
 
-    for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
-        for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
-            int index = phiStep * m_thetaSteps + thetaStep;
-
-            float pdf = m_CDF[index];
-            if (index > 0) {
-                pdf -= m_CDF[index - 1];
-            }
-
-            result[index] = pdf;
+    for (int index = 0; index < m_thetaSteps * m_phiSteps; index++) {
+        float pdf = m_CDF[index];
+        if (index > 0) {
+            pdf -= m_CDF[index - 1];
         }
+
+        result[index] = pdf;
     }
+
+    // for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
+    //     for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+    //         int index = phiStep * m_thetaSteps + thetaStep;
+
+    //         float pdf = m_CDF[index];
+    //         if (index > 0) {
+    //             pdf -= m_CDF[index - 1];
+    //         }
+
+    //         result[index] = pdf;
+    //     }
+    // }
 
     return result;
 }

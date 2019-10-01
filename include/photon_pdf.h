@@ -26,6 +26,7 @@ public:
 
 private:
     void buildCDF(const Transform &worldToNormal);
+    bool m_built;
 
     std::vector<float> m_CDF;
     bool m_emptyCDF;
