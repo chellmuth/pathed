@@ -194,7 +194,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
         intersection.wi
     );
     std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
-    photonPDF.save("photons.bmp", worldToNormal);
+    //photonPDF.save("photons", worldToNormal);
 
     float phi, theta;
     m_MLPDF.sample(&phi, &theta, pdf, photonBundle);
@@ -202,7 +202,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
     Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
     Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
 
-    if (true) {
+    if (false) {
         const int width = g_job->width();
         const int height = g_job->height();
         Image image(width, height);
@@ -228,7 +228,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
                         radianceLookup[index + 0] / (i + 1),
                         radianceLookup[index + 1] / (i + 1),
                         radianceLookup[index + 2] / (i + 1)
-                        );
+                    );
                 }
             }
 

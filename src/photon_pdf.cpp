@@ -1,11 +1,15 @@
 #include "photon_pdf.h"
 
 #include "coordinate.h"
+#include "globals.h"
+#include "job.h"
 #include "monte_carlo.h"
 #include "util.h"
 
 #include <assert.h>
 #include <math.h>
+#include <fstream>
+#include <sstream>
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,
@@ -211,21 +215,30 @@ std::vector<float> PhotonPDF::asVector(const Transform &worldToNormal)
 
     // for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
     //     for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
-    //         int index = phiStep * m_thetaSteps + thetaStep;
+    //         int CDFIndex = phiStep * m_thetaSteps + thetaStep;
+    //         int resultIndex = (m_thetaSteps - thetaStep - 1) * m_phiSteps + phiStep;
 
-    //         float pdf = m_CDF[index];
-    //         if (index > 0) {
-    //             pdf -= m_CDF[index - 1];
+    //         float pdf = m_CDF[CDFIndex];
+    //         if (CDFIndex > 0) {
+    //             pdf -= m_CDF[CDFIndex - 1];
     //         }
 
-    //         result[index] = pdf;
+    //         result[resultIndex] = pdf;
     //     }
     // }
 
     return result;
 }
 
-void PhotonPDF::save(const std::string &filename, const Transform &worldToNormal)
+static std::string pathFromFilename(const std::string &filename)
+{
+    std::string outputDirectory = g_job->outputDirectory();
+    std::ostringstream outputStream;
+    outputStream << outputDirectory << filename;
+    return outputStream.str();
+}
+
+void PhotonPDF::save(const std::string &filestem, const Transform &worldToNormal)
 {
     buildCDF(worldToNormal);
 
@@ -243,5 +256,18 @@ void PhotonPDF::save(const std::string &filename, const Transform &worldToNormal
         }
     }
 
-    image.write(filename);
+    std::ofstream out;
+    std::string path = pathFromFilename(filestem + ".dat");
+    out.open(path, std::ios::out | std::ios::binary);
+    for (int i = 0; i < m_phiSteps * m_thetaSteps; i++) {
+        float pdf = m_CDF[i];
+        if (i > 0) {
+            pdf -= m_CDF[i - 1];
+        }
+
+        out.write(reinterpret_cast<const char*>(&pdf), sizeof(float));
+    }
+    out.close();
+
+    image.write(filestem + ".bmp");
 }

@@ -1,6 +1,9 @@
 #include "ml_pdf.h"
 
+#include "util.h"
+
 #include <assert.h>
+#include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -52,8 +55,9 @@ void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> phot
 
     assert(bytesRead == sizeof(float) * 3);
 
-    *phi = buffer[0];
-    *theta = buffer[1];
+    *phi = buffer[0] * M_TWO_PI;
+    // *theta = (1.f - buffer[1]) * (M_PI / 2.f);
+    *theta = buffer[1] * (M_PI / 2.f);
     *pdf = buffer[2];
-    // printf("%f %f %f\n", *phi, *theta, *pdf);
+    // printf("(%f %f %f) (%f %f)\n", *phi, *theta, *pdf, buffer[0], buffer[1]);
 }

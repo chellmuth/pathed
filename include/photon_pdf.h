@@ -21,7 +21,7 @@ public:
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
     float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
 
-    void save(const std::string &filename, const Transform &worldToNormal);
+    void save(const std::string &filestem, const Transform &worldToNormal);
     std::vector<float> asVector(const Transform &worldToNormal);
 
 private:
