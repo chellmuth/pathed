@@ -1,5 +1,7 @@
 #include "ml_pdf.h"
 
+#include "globals.h"
+#include "job.h"
 #include "util.h"
 
 #include <assert.h>
@@ -45,7 +47,7 @@ bool MLPDF::connectToModel()
     return true;
 }
 
-void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> photonBundle) const
+void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> &photonBundle) const
 {
     float *photonData = photonBundle.data();
     send(m_socket, photonData, sizeof(float) * photonBundle.size(), 0);
@@ -56,8 +58,27 @@ void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> phot
     assert(bytesRead == sizeof(float) * 3);
 
     *phi = buffer[0] * M_TWO_PI;
-    // *theta = (1.f - buffer[1]) * (M_PI / 2.f);
-    *theta = buffer[1] * (M_PI / 2.f);
+    *theta = (1.f - buffer[1]) * (M_PI / 2.f);
+    // *theta = buffer[1] * (M_PI / 2.f);
     *pdf = buffer[2];
     // printf("(%f %f %f) (%f %f)\n", *phi, *theta, *pdf, buffer[0], buffer[1]);
+}
+
+void MLPDF::estimatePDF(std::vector<float> &radianceLookup, std::vector<float> &photonBundle) const
+{
+    const int phiSteps = g_job->width();
+    const int thetaSteps = g_job->height();
+    const int sampleCount = 10000;
+
+    for (int i = 0; i < sampleCount; i++) {
+        float phi, theta, pdf;
+        sample(&phi, &theta, &pdf, photonBundle);
+
+        int phiIndex = floorf(phi / M_TWO_PI * phiSteps);
+        int thetaIndex = floorf(theta / (M_PI / 2.f) * thetaSteps);
+
+        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 0] += 1.f / 100;
+        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 1] += 1.f / 100;
+        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 2] += 1.f / 100;
+    }
 }

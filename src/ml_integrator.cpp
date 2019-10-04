@@ -199,10 +199,14 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
     float phi, theta;
     m_MLPDF.sample(&phi, &theta, pdf, photonBundle);
 
-    Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
-    Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
+    // std::cout << phi << " " << theta << " " << *pdf << std::endl;
 
-    if (false) {
+    Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
+    // hemisphereSample.debug();
+
+    // Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
+
+    if (imageIndex == 0) {
         const int width = g_job->width();
         const int height = g_job->height();
         Image image(width, height);
@@ -212,7 +216,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
             radianceLookup[i] = 0.f;
         }
 
-        const int spp = 4;
+        const int spp = 64;
         for (int i = 0; i < spp; i++) {
             renderPDF(radianceLookup, scene, intersection);
 
@@ -242,7 +246,46 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
         image.save(filenameStream.str());
     }
 
-    return bounceDirection;
+    if (imageIndex == 1) {
+        const int width = g_job->width();
+        const int height = g_job->height();
+        Image image(width, height);
+
+        std::vector<float> radianceLookup(3 * width * height);
+        for (int i = 0; i < 3 * width * height; i++) {
+            radianceLookup[i] = 0.f;
+        }
+
+        std::cout << "Start estimating" << std::endl;
+        m_MLPDF.estimatePDF(radianceLookup, photonBundle);
+        std::cout << "Finished estimating" << std::endl;
+
+        std::mutex &lock = image.getLock();
+        lock.lock();
+
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                int index = 3 * (row * width + col);
+                image.set(
+                    row,
+                    col,
+                    radianceLookup[index + 0],
+                    radianceLookup[index + 1],
+                    radianceLookup[index + 2]
+                );
+            }
+        }
+
+        lock.unlock();
+
+        std::ostringstream filenameStream;
+        filenameStream << "neural_" << zeroPad(imageIndex++, 5);
+        image.save(filenameStream.str());
+    }
+
+    // return bounceDirection;
+
+    return hemisphereSample;
 }
 
 Color MLIntegrator::L(
@@ -266,12 +309,12 @@ Color MLIntegrator::L(
         );
 
         float pdf;
-        Vector3 bounceDirection = nextBounce(intersection, scene, &pdf);
+        Vector3 bounceDirection = hemisphereToWorld.apply(nextBounce(intersection, scene, &pdf));
 
         // Vector3 hemisphereSample = CosineSampleHemisphere(random);
         // float pdf = CosineHemispherePdf(hemisphereSample);
-
         // Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+
         Ray bounceRay(
             lastIntersection.point,
             bounceDirection
@@ -295,6 +338,7 @@ Color MLIntegrator::L(
         }
     }
 
+    // std::cout << result << std::endl;
     return result;
 }
 

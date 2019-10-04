@@ -16,7 +16,7 @@
 #include <sstream>
 #include <stdio.h>
 
-static const int primarySamples = 4000;
+static const int primarySamples = 999999;
 
 void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
 {
