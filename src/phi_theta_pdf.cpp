@@ -10,12 +10,12 @@ PhiThetaPDF::PhiThetaPDF(int phiSteps, int thetaSteps)
 {
     const int length = m_phiSteps * m_thetaSteps;
 
-    m_map.reserve(length);
+    m_map.resize(length);
     for (int i = 0; i < length; i++) {
         m_map[i] = 0.f;
     }
 
-    m_cdf.reserve(length);
+    m_cdf.resize(length);
     for (int i = 0; i < length; i++) {
         m_cdf[i] = 0.f;
     }
@@ -31,17 +31,29 @@ static int getThetaStep(float theta, int thetaSteps)
     return (int)floorf((theta / (M_PI / 2.f)) * thetaSteps);
 }
 
+static int getIndexStepped(int phiStep, int thetaStep, int phiSteps)
+{
+    return thetaStep * phiSteps + phiStep;
+}
+
 static int getIndex(float phi, float theta, int phiSteps, int thetaSteps)
 {
     const int phiStep = getPhiStep(phi, phiSteps);
     const int thetaStep = getThetaStep(theta, thetaSteps);
 
-    return thetaStep * phiSteps + phiStep;
+    return getIndexStepped(phiStep, thetaStep, phiSteps);
 }
 
 static void getStepsFromIndex(int index, int *phiStep, int *thetaStep, int phiSteps) {
     *phiStep = index % phiSteps;
     *thetaStep = (int)floorf(index / phiSteps);
+}
+
+void PhiThetaPDF::splatStepped(int phiStep, int thetaStep, float value)
+{
+    const int index = getIndexStepped(phiStep, thetaStep, m_phiSteps);
+
+    m_map[index] += value;
 }
 
 void PhiThetaPDF::splat(float phi, float theta, float value)
@@ -76,7 +88,7 @@ void PhiThetaPDF::build()
     m_built = true;
 }
 
-float PhiThetaPDF::eval(float phi, float theta)
+float PhiThetaPDF::eval(float phi, float theta) const
 {
     assert(m_built);
 
@@ -88,7 +100,7 @@ float PhiThetaPDF::eval(float phi, float theta)
     }
 }
 
-void PhiThetaPDF::sample(RandomGenerator &random, float *phi, float *theta, float *pdf)
+void PhiThetaPDF::sample(RandomGenerator &random, float *phi, float *theta, float *pdf) const
 {
     assert(m_built);
 
@@ -113,8 +125,7 @@ void PhiThetaPDF::sample(RandomGenerator &random, float *phi, float *theta, floa
         assert(thetaStep != -1);
 
         const float xiPhi = random.next();
-        const float phiSample = lerp(phi1, phi2, xiPhi);
-        *phi = M_TWO_PI * phiSample;
+        *phi = lerp(phi1, phi2, xiPhi);
 
         const float xiY = random.next();
         const float y1 = cosf(theta1);

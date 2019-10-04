@@ -6,6 +6,7 @@
 #include "nearest_photon.h"
 #include "path_tracer.h"
 #include "pdf_integrator.h"
+#include "self_integrator.h"
 
 #include <errno.h>
 #include <iomanip>
@@ -71,6 +72,8 @@ std::unique_ptr<Integrator> Job::integrator() const
         return std::make_unique<PDFIntegrator>();
     } else if (integrator == "MLIntegrator") {
         return std::make_unique<MLIntegrator>(m_bounceController);
+    } else if (integrator == "SelfIntegrator") {
+        return std::make_unique<SelfIntegrator>(m_bounceController);
     }
     throw "Unimplemented";
 }

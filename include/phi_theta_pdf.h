@@ -9,10 +9,12 @@ public:
     PhiThetaPDF(int phiSteps, int thetaSteps);
 
     void splat(float phi, float theta, float value);
+    void splatStepped(int phiStep, int thetaStep, float value);
+
     void build();
 
-    float eval(float phi, float theta);
-    void sample(RandomGenerator &random, float *phi, float *theta, float *pdf);
+    float eval(float phi, float theta) const;
+    void sample(RandomGenerator &random, float *phi, float *theta, float *pdf) const;
 
 private:
     bool m_built;
