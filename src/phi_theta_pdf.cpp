@@ -44,7 +44,8 @@ static int getIndex(float phi, float theta, int phiSteps, int thetaSteps)
     return getIndexStepped(phiStep, thetaStep, phiSteps);
 }
 
-static void getStepsFromIndex(int index, int *phiStep, int *thetaStep, int phiSteps) {
+static void getStepsFromIndex(int index, int *phiStep, int *thetaStep, int phiSteps)
+{
     *phiStep = index % phiSteps;
     *thetaStep = (int)floorf(index / phiSteps);
 }

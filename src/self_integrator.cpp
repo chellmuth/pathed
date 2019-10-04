@@ -66,7 +66,7 @@ void SelfIntegrator::renderPDF(
     const Intersection &intersection
 ) const {
     const int phiSteps = g_job->width();
-    const int thetaSteps = g_job->height();
+    const int cosThetaSteps = g_job->height();
 
     PathTracer pathTracer(g_job->bounceController());
 
@@ -79,9 +79,9 @@ void SelfIntegrator::renderPDF(
     );
 
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+        for (int cosThetaStep = 0; cosThetaStep < cosThetaSteps; cosThetaStep++) {
+            float phi = m_gtPDF.phiAtStep(phiStep);
+            float theta = m_gtPDF.thetaAtStep(cosThetaStep);
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
@@ -105,9 +105,9 @@ void SelfIntegrator::renderPDF(
             }
 
             const float average = sampleL.average();
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 0] += average;
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 1] += average;
-            radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
+            radianceLookup[3 * (cosThetaStep * phiSteps + phiStep) + 0] += average;
+            radianceLookup[3 * (cosThetaStep * phiSteps + phiStep) + 1] += average;
+            radianceLookup[3 * (cosThetaStep * phiSteps + phiStep) + 2] += average;
         }
     }
 }

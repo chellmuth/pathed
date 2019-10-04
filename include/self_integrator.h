@@ -6,6 +6,7 @@
 #include "kd_tree.h"
 #include "ml_pdf.h"
 #include "phi_theta_pdf.h"
+#include "phi_cos_theta_pdf.h"
 #include "random_generator.h"
 #include "sample_integrator.h"
 #include "sample.h"
@@ -48,6 +49,6 @@ private:
         RandomGenerator &random
     ) const;
 
-    PhiThetaPDF m_gtPDF;
+    PhiCosThetaPDF m_gtPDF;
     BounceController m_bounceController;
 };
