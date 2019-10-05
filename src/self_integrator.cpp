@@ -58,6 +58,8 @@ void SelfIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
         }
     }
     m_gtPDF.build();
+
+    m_gtPDF.save();
 }
 
 void SelfIntegrator::renderPDF(

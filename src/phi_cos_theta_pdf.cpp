@@ -1,5 +1,6 @@
 #include "phi_cos_theta_pdf.h"
 
+#include "image.h"
 #include "util.h"
 
 #include <assert.h>
@@ -153,4 +154,19 @@ void PhiCosThetaPDF::sample(RandomGenerator &random, float *phi, float *theta, f
     }
 
     assert(0);
+}
+
+void PhiCosThetaPDF::save() const
+{
+    Image image(m_phiSteps, m_cosThetaSteps);
+    for (int cosThetaStep = 0; cosThetaStep < m_cosThetaSteps; cosThetaStep++) {
+        for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+            int index = getIndexStepped(phiStep, cosThetaStep, m_phiSteps);
+
+            float value = m_map[index];
+            image.set(m_cosThetaSteps - cosThetaStep - 1, phiStep, value, value, value);
+        }
+    }
+
+    image.save("pdf_cos-theta");
 }

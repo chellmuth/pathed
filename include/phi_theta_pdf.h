@@ -16,6 +16,11 @@ public:
     float eval(float phi, float theta) const;
     void sample(RandomGenerator &random, float *phi, float *theta, float *pdf) const;
 
+    float thetaAtStep(int thetaStep) const;
+    float phiAtStep(int phiStep) const;
+
+    void save() const;
+
 private:
     bool m_built;
 

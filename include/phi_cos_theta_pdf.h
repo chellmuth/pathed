@@ -19,6 +19,8 @@ public:
     float thetaAtStep(int cosThetaStep) const;
     float phiAtStep(int phiStep) const;
 
+    void save() const;
+
 private:
     bool m_built;
 

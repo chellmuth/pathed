@@ -1,5 +1,6 @@
 #include "phi_theta_pdf.h"
 
+#include "image.h"
 #include "util.h"
 
 #include <assert.h>
@@ -48,6 +49,16 @@ static void getStepsFromIndex(int index, int *phiStep, int *thetaStep, int phiSt
 {
     *phiStep = index % phiSteps;
     *thetaStep = (int)floorf(index / phiSteps);
+}
+
+float PhiThetaPDF::thetaAtStep(int thetaStep) const
+{
+    return (M_PI / 2.f) * (thetaStep + 0.5f) / m_thetaSteps;
+}
+
+float PhiThetaPDF::phiAtStep(int phiStep) const
+{
+    return M_TWO_PI * (phiStep + 0.5f) / m_phiSteps;
 }
 
 void PhiThetaPDF::splatStepped(int phiStep, int thetaStep, float value)
@@ -144,4 +155,19 @@ void PhiThetaPDF::sample(RandomGenerator &random, float *phi, float *theta, floa
     }
 
     assert(0);
+}
+
+void PhiThetaPDF::save() const
+{
+    Image image(m_phiSteps, m_thetaSteps);
+    for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
+        for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+            int index = getIndexStepped(phiStep, thetaStep, m_phiSteps);
+
+            float value = m_map[index];
+            image.set(thetaStep, phiStep, value, value, value);
+        }
+    }
+
+    image.save("pdf_theta");
 }
