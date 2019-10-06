@@ -18,6 +18,10 @@ def calculate_ae(test, gt):
     h, w, _ = gt.shape
     return np.sum(np.abs(gt - test)) / (h * w)
 
+def calculate_mrse(test, gt):
+    h, w, _ = gt.shape
+    return np.sum((gt - test) ** 2 / (gt + 1e-5)) / (h * w)
+
 def build_dataset(error_fn, gt, data_path):
     mses = []
 
@@ -49,7 +53,7 @@ def power_of_two_formatter(x, pos):
     return int(2 ** x)
 
 def run(gt, data_sources, max_spp):
-    errors = [ ("MSE", calculate_mse), ("AE", calculate_ae) ]
+    errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
 
     fig, axs = plt.subplots(nrows=len(errors))
     fig.suptitle("Convergence Plots")
