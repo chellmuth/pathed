@@ -47,5 +47,5 @@ private:
     std::unique_ptr<KDTree> m_KDTree;
 
     BounceController m_bounceController;
-    MLPDF m_MLPDF;
+    MLPDFPool m_MLPDF;
 };

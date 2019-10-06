@@ -206,82 +206,82 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
 
     // Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
 
-    if (imageIndex == 0) {
-        const int width = g_job->width();
-        const int height = g_job->height();
-        Image image(width, height);
+    // if (imageIndex == 0) {
+    //     const int width = g_job->width();
+    //     const int height = g_job->height();
+    //     Image image(width, height);
 
-        std::vector<float> radianceLookup(3 * width * height);
-        for (int i = 0; i < 3 * width * height; i++) {
-            radianceLookup[i] = 0.f;
-        }
+    //     std::vector<float> radianceLookup(3 * width * height);
+    //     for (int i = 0; i < 3 * width * height; i++) {
+    //         radianceLookup[i] = 0.f;
+    //     }
 
-        const int spp = 64;
-        for (int i = 0; i < spp; i++) {
-            renderPDF(radianceLookup, scene, intersection);
+    //     const int spp = 64;
+    //     for (int i = 0; i < spp; i++) {
+    //         renderPDF(radianceLookup, scene, intersection);
 
-            std::mutex &lock = image.getLock();
-            lock.lock();
+    //         std::mutex &lock = image.getLock();
+    //         lock.lock();
 
-            for (int row = 0; row < height; row++) {
-                for (int col = 0; col < width; col++) {
-                    int index = 3 * (row * width + col);
-                    image.set(
-                        row,
-                        col,
-                        radianceLookup[index + 0] / (i + 1),
-                        radianceLookup[index + 1] / (i + 1),
-                        radianceLookup[index + 2] / (i + 1)
-                    );
-                }
-            }
+    //         for (int row = 0; row < height; row++) {
+    //             for (int col = 0; col < width; col++) {
+    //                 int index = 3 * (row * width + col);
+    //                 image.set(
+    //                     row,
+    //                     col,
+    //                     radianceLookup[index + 0] / (i + 1),
+    //                     radianceLookup[index + 1] / (i + 1),
+    //                     radianceLookup[index + 2] / (i + 1)
+    //                 );
+    //             }
+    //         }
 
-            lock.unlock();
+    //         lock.unlock();
 
-            image.setSpp(i + 1);
-        }
+    //         image.setSpp(i + 1);
+    //     }
 
-        std::ostringstream filenameStream;
-        filenameStream << "pdf_" << zeroPad(imageIndex++, 5);
-        image.save(filenameStream.str());
-    }
+    //     std::ostringstream filenameStream;
+    //     filenameStream << "pdf_" << zeroPad(imageIndex++, 5);
+    //     image.save(filenameStream.str());
+    // }
 
-    if (imageIndex == 1) {
-        const int width = g_job->width();
-        const int height = g_job->height();
-        Image image(width, height);
+    // if (imageIndex == 1) {
+    //     const int width = g_job->width();
+    //     const int height = g_job->height();
+    //     Image image(width, height);
 
-        std::vector<float> radianceLookup(3 * width * height);
-        for (int i = 0; i < 3 * width * height; i++) {
-            radianceLookup[i] = 0.f;
-        }
+    //     std::vector<float> radianceLookup(3 * width * height);
+    //     for (int i = 0; i < 3 * width * height; i++) {
+    //         radianceLookup[i] = 0.f;
+    //     }
 
-        std::cout << "Start estimating" << std::endl;
-        m_MLPDF.estimatePDF(radianceLookup, photonBundle);
-        std::cout << "Finished estimating" << std::endl;
+    //     std::cout << "Start estimating" << std::endl;
+    //     m_MLPDF.estimatePDF(radianceLookup, photonBundle);
+    //     std::cout << "Finished estimating" << std::endl;
 
-        std::mutex &lock = image.getLock();
-        lock.lock();
+    //     std::mutex &lock = image.getLock();
+    //     lock.lock();
 
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                int index = 3 * (row * width + col);
-                image.set(
-                    row,
-                    col,
-                    radianceLookup[index + 0],
-                    radianceLookup[index + 1],
-                    radianceLookup[index + 2]
-                );
-            }
-        }
+    //     for (int row = 0; row < height; row++) {
+    //         for (int col = 0; col < width; col++) {
+    //             int index = 3 * (row * width + col);
+    //             image.set(
+    //                 row,
+    //                 col,
+    //                 radianceLookup[index + 0],
+    //                 radianceLookup[index + 1],
+    //                 radianceLookup[index + 2]
+    //             );
+    //         }
+    //     }
 
-        lock.unlock();
+    //     lock.unlock();
 
-        std::ostringstream filenameStream;
-        filenameStream << "neural_" << zeroPad(imageIndex++, 5);
-        image.save(filenameStream.str());
-    }
+    //     std::ostringstream filenameStream;
+    //     filenameStream << "neural_" << zeroPad(imageIndex++, 5);
+    //     image.save(filenameStream.str());
+    // }
 
     // return bounceDirection;
 
