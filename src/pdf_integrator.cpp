@@ -130,7 +130,7 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
-    const int dataPoints = 1000;
+    const int dataPoints = 3000;
     for (int i = 0; i < dataPoints; i ++) {
         createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);
@@ -182,7 +182,7 @@ void PDFIntegrator::createAndSaveDataPoint(
     savePhotonBundle(m_dataSource3, m_KDTree3, intersection, pointID, "c");
     savePhotonBundle(m_dataSource4, m_KDTree4, intersection, pointID, "d");
 
-    const int spp = 16;
+    const int spp = 256;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
@@ -258,12 +258,12 @@ void PDFIntegrator::renderPDF(
     const Intersection &intersection
 ) {
     const int phiSteps = g_job->width();
-    const int thetaSteps = g_job->height();
+    const int cosThetaSteps = g_job->height();
 
-    PathTracer pathTracer(g_job->bounceController());
+    BounceController bounceController(1, 1);
+    PathTracer pathTracer(bounceController);
 
     RandomGenerator random;
-    int bounceCount = 2;
 
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
