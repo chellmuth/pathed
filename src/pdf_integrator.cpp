@@ -258,7 +258,7 @@ void PDFIntegrator::renderPDF(
     const Intersection &intersection
 ) {
     const int phiSteps = g_job->width();
-    const int cosThetaSteps = g_job->height();
+    const int thetaSteps = g_job->height();
 
     BounceController bounceController(1, 1);
     PathTracer pathTracer(bounceController);
@@ -273,8 +273,8 @@ void PDFIntegrator::renderPDF(
     #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+            float phi = M_TWO_PI * (phiStep + random.next()) / phiSteps;
+            float theta = (M_PI / 2.f) * (thetaStep + random.next()) / thetaSteps;
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
