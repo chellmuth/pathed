@@ -1,5 +1,6 @@
 #include "job.h"
 
+#include "data_parallel_integrator.h"
 #include "depositer.h"
 #include "light_tracer.h"
 #include "ml_integrator.h"
@@ -74,6 +75,8 @@ std::unique_ptr<Integrator> Job::integrator() const
         return std::make_unique<MLIntegrator>(m_bounceController);
     } else if (integrator == "SelfIntegrator") {
         return std::make_unique<SelfIntegrator>(m_bounceController);
+    } else if (integrator == "DataParallelIntegrator") {
+        return std::make_unique<DataParallelIntegrator>();
     }
     throw "Unimplemented";
 }

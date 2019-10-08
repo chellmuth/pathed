@@ -99,6 +99,31 @@ void MLPDF::sample(float *phi, float *theta, float *pdf, std::vector<float> &pho
     // printf("(%f %f %f) (%f %f)\n", *phi, *theta, *pdf, buffer[0], buffer[1]);
 }
 
+void MLPDF::batchSample(
+    int count,
+    std::vector<float> &phis,
+    std::vector<float> &thetas,
+    std::vector<float> &pdfs,
+    std::vector<float> &photonBundles
+) const {
+    send(m_socket, &count, sizeof(int) * 1, 0);
+
+    float *photonData = photonBundles.data();
+    send(m_socket, photonData, sizeof(float) * photonBundles.size(), 0);
+
+    float buffer[3 * count];
+    int bytesRead = recv(m_socket, buffer, sizeof(buffer), MSG_WAITALL);
+    assert(bytesRead == 3 * count);
+
+    for (int i = 0; i < count; i++) {
+        int offset = i * 3;
+        phis[i] = buffer[offset + 0] * M_TWO_PI;
+        const float theta = (1.f - buffer[offset + 1]) * (M_PI / 2.f);
+        thetas[i] = theta;
+        pdfs[i] = buffer[offset + 2] / sinf(theta) / (M_TWO_PI * M_PI / 2.f);
+    }
+}
+
 void MLPDF::estimatePDF(std::vector<float> &radianceLookup, std::vector<float> &photonBundle) const
 {
     const int phiSteps = g_job->width();
