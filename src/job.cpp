@@ -57,26 +57,26 @@ void Job::init()
     outputStream << std::setw(4) << m_json << std::endl;
 }
 
-std::unique_ptr<Integrator> Job::integrator() const
+std::shared_ptr<Integrator> Job::integrator() const
 {
     std::string integrator(m_json["integrator"].get<std::string>());
 
     if (integrator == "PathTracer") {
-        return std::make_unique<PathTracer>(m_bounceController);
+        return std::make_shared<PathTracer>(m_bounceController);
     } else if (integrator == "Depositer") {
-        return std::make_unique<Depositer>(m_bounceController);
+        return std::make_shared<Depositer>(m_bounceController);
     } else if (integrator == "NearestPhoton") {
-        return std::make_unique<NearestPhoton>();
+        return std::make_shared<NearestPhoton>();
     } else if (integrator == "LightTracer") {
-        return std::make_unique<LightTracer>(m_bounceController);
+        return std::make_shared<LightTracer>(m_bounceController);
     } else if (integrator == "PDFIntegrator") {
-        return std::make_unique<PDFIntegrator>();
+        return std::make_shared<PDFIntegrator>();
     } else if (integrator == "MLIntegrator") {
-        return std::make_unique<MLIntegrator>(m_bounceController);
+        return std::make_shared<MLIntegrator>(m_bounceController);
     } else if (integrator == "SelfIntegrator") {
-        return std::make_unique<SelfIntegrator>(m_bounceController);
+        return std::make_shared<SelfIntegrator>(m_bounceController);
     } else if (integrator == "DataParallelIntegrator") {
-        return std::make_unique<DataParallelIntegrator>();
+        return std::make_shared<DataParallelIntegrator>();
     }
     throw "Unimplemented";
 }

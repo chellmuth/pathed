@@ -56,7 +56,7 @@ public:
     int lastBounce() const { return m_bounceController.lastBounce(); }
     BounceController bounceController() const { return m_bounceController; }
 
-    std::unique_ptr<Integrator> integrator() const;
+    std::shared_ptr<Integrator> integrator() const;
 
 private:
     nlohmann::json m_json;

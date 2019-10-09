@@ -28,9 +28,13 @@ Job *g_job;
 RTCDevice g_rtcDevice;
 RTCScene g_rtcScene;
 
-void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
-{
-    std::unique_ptr<Integrator> integrator = g_job->integrator();
+void run(
+    std::shared_ptr<Integrator> integrator,
+    Image &image,
+    Scene &scene,
+    std::function<void(RenderStatus)> callback,
+    bool *quit
+) {
     integrator->run(image, scene, callback, quit);
 }
 
@@ -83,8 +87,10 @@ int main(int argc, char *argv[]) {
         screen->updateRenderStatus(rs);
     });
 
+    std::shared_ptr<Integrator> integrator = g_job->integrator();
+
     bool quit = false;
-    std::thread renderThread(run, std::ref(image), std::ref(scene), callback, &quit);
+    std::thread renderThread(run, integrator, std::ref(image), std::ref(scene), callback, &quit);
 
     try {
        if (g_job->showUI()) {
