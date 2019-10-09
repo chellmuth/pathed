@@ -11,8 +11,10 @@
 #include <nanogui/checkbox.h>
 #include <nanogui/button.h>
 #include <nanogui/glcanvas.h>
+#include <nanogui/imageview.h>
 #include <nanogui/layout.h>
 #include <nanogui/opengl.h>
+#include <nanogui/window.h>
 
 #include <iostream>
 #include <sstream>
@@ -203,6 +205,36 @@ PathedScreen::PathedScreen(
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
 
         integrator->helloWorld();
+
+        auto popup = new nanogui::Screen(
+            Eigen::Vector2i(200, 200), "POPUP!", false
+        );
+        popup->setVisible(true);
+
+        int rows = 100;
+        int cols = 100;
+        unsigned char *data = (unsigned char *)malloc(rows * cols * 4 * sizeof(char));
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                int offset = 4 * (row * cols + col);
+                data[offset + 0] = floorf(1.f * row / rows * 255);
+                data[offset + 1] = floorf(1.f * col / cols * 255);
+                data[offset + 3] = 0;
+                data[offset + 4] = 255;
+            }
+        }
+
+        int imageID = nvgCreateImageRGBA(popup->nvgContext(), cols, rows, 0, data);
+
+        auto window = new nanogui::Window(popup, "test");
+        window->setPosition({0, 0});
+        window->setLayout(new GroupLayout());
+
+        auto label = new Label(window, "this is a label");
+
+        auto imageView = new nanogui::ImageView(window, imageID);
+
+        popup->performLayout();
 
         setCurrentSample(
             0,
