@@ -28,24 +28,29 @@ Camera::Camera(
     m_worldToCamera = lookAtInverse(origin, target, up);
 }
 
-Ray Camera::generateRay(int row, int col) const
+Ray Camera::generateRay(float row, float col) const
 {
     float height = 2 * tanf(m_verticalFOV / 2) * m_zNear;
     float width = height * m_resolution.x / m_resolution.y;
 
     Point3 origin = Point3(0.f, 0.f, 0.f);
 
-    float jitterX = (1.f * std::rand() / RAND_MAX) - 0.5f;
-    float jitterY = (1.f * std::rand() / RAND_MAX) - 0.5f;
-
     Vector3 direction = Vector3(
-        width * (col + 0.5f + jitterX) / m_resolution.x - width / 2.f,
-        height * (row + 0.5f + jitterY) / m_resolution.y - height / 2.f,
+        width * (col + 0.5f) / m_resolution.x - width / 2.f,
+        height * (row + 0.5f) / m_resolution.y - height / 2.f,
         m_zNear
     ).normalized();
 
     Ray transformedRay = m_cameraToWorld.apply(Ray(origin, direction));
     return transformedRay;
+}
+
+Ray Camera::generateRay(int row, int col) const
+{
+    float jitterX = (1.f * std::rand() / RAND_MAX) - 0.5f;
+    float jitterY = (1.f * std::rand() / RAND_MAX) - 0.5f;
+
+    return generateRay(row + jitterY, col + jitterX);
 }
 
 void Camera::calculatePixel(const Point3 &point, Pixel *pixel) const

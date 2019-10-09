@@ -25,7 +25,9 @@ public:
     Point3 getTarget() const { return m_target; }
     Resolution getResolution() const { return m_resolution; }
 
+    Ray generateRay(float row, float col) const;
     Ray generateRay(int row, int col) const;
+
     void calculatePixel(const Point3 &point, Pixel *pixel) const;
 private:
     Point3 m_origin;

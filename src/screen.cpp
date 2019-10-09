@@ -4,6 +4,7 @@
 #include "gl_types.h"
 #include "job.h"
 #include "path_visualization.h"
+#include "pdf_widget.h"
 #include "photon_renderer.h"
 #include "rasterizer.h"
 #include "visualization.h"
@@ -201,7 +202,7 @@ PathedScreen::PathedScreen(
     );
 
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
-    auto clickCallback = [=](int x, int y) {
+    auto clickCallback = [=, &scene](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
 
         integrator->helloWorld();
@@ -213,14 +214,20 @@ PathedScreen::PathedScreen(
 
         int rows = 100;
         int cols = 100;
+
+        std::shared_ptr<Image> image = renderPDF(cols, rows, 200.f, 200.f, scene);
+        const std::vector<unsigned char> imageData = image->data();
+
         unsigned char *data = (unsigned char *)malloc(rows * cols * 4 * sizeof(char));
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                int offset = 4 * (row * cols + col);
-                data[offset + 0] = floorf(1.f * row / rows * 255);
-                data[offset + 1] = floorf(1.f * col / cols * 255);
-                data[offset + 3] = 0;
-                data[offset + 4] = 255;
+                int sourceOffset = 3 * (row * cols + col);
+
+                int targetOffset = 4 * (row * cols + col);
+                data[targetOffset + 0] = imageData[sourceOffset + 0];
+                data[targetOffset + 1] = imageData[sourceOffset + 1];
+                data[targetOffset + 2] = imageData[sourceOffset + 2];
+                data[targetOffset + 3] = 255;
             }
         }
 
