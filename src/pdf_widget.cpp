@@ -33,31 +33,36 @@ std::shared_ptr<Image> renderPDF(
         intersection.wi
     );
 
+    const int spp = 16;
+
     #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * (phiStep + random.next()) / phiSteps;
-            float theta = (M_PI / 2.f) * (thetaStep + random.next()) / thetaSteps;
-
-            float y = cosf(theta);
-            float x = sinf(theta) * cosf(phi);
-            float z = sinf(theta) * sinf(phi);
-
-            Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
-
-            Ray ray = Ray(intersection.point, wiWorld);
-            const Intersection fisheyeIntersection = scene.testIntersect(ray);
             Color sampleL(0.f);
-            if (fisheyeIntersection.hit) {
-                Sample sample;
 
-                sampleL = pathTracer.L(
-                    fisheyeIntersection,
-                    scene,
-                    random,
-                    sample
-                );
+            for (int i = 0; i < spp; i++) {
+                float phi = M_TWO_PI * (phiStep + random.next()) / phiSteps;
+                float theta = (M_PI / 2.f) * (thetaStep + random.next()) / thetaSteps;
+
+                float y = cosf(theta);
+                float x = sinf(theta) * cosf(phi);
+                float z = sinf(theta) * sinf(phi);
+
+                Vector3 wiHemisphere(x, y, z);
+                Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+
+                Ray ray = Ray(intersection.point, wiWorld);
+                const Intersection fisheyeIntersection = scene.testIntersect(ray);
+                if (fisheyeIntersection.hit) {
+                    Sample dummySample;
+
+                    sampleL += pathTracer.L(
+                        fisheyeIntersection,
+                        scene,
+                        random,
+                        dummySample
+                    ) / spp;
+                }
             }
 
             const float average = sampleL.average();

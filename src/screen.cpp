@@ -207,15 +207,15 @@ PathedScreen::PathedScreen(
 
         integrator->helloWorld();
 
+        const int rows = 600;
+        const int cols = 600;
+
         auto popup = new nanogui::Screen(
-            Eigen::Vector2i(200, 200), "POPUP!", false
+            Eigen::Vector2i(cols + 50, rows + 100), "", false
         );
         popup->setVisible(true);
 
-        int rows = 100;
-        int cols = 100;
-
-        std::shared_ptr<Image> image = renderPDF(cols, rows, 200.f, 200.f, scene);
+        std::shared_ptr<Image> image = renderPDF(cols, rows, (400 - y - 1), x, scene);
         const std::vector<unsigned char> imageData = image->data();
 
         unsigned char *data = (unsigned char *)malloc(rows * cols * 4 * sizeof(char));
@@ -233,11 +233,9 @@ PathedScreen::PathedScreen(
 
         int imageID = nvgCreateImageRGBA(popup->nvgContext(), cols, rows, 0, data);
 
-        auto window = new nanogui::Window(popup, "test");
+        auto window = new nanogui::Window(popup, "PDF");
         window->setPosition({0, 0});
         window->setLayout(new GroupLayout());
-
-        auto label = new Label(window, "this is a label");
 
         auto imageView = new nanogui::ImageView(window, imageID);
 
