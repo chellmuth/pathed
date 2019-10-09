@@ -122,6 +122,7 @@ bool RenderWidget::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool d
 }
 
 PathedScreen::PathedScreen(
+    std::shared_ptr<Integrator> integrator,
     Image &image,
     Scene &scene,
     int width,
@@ -200,6 +201,8 @@ PathedScreen::PathedScreen(
     m_glWidget = new GLWidget(rightPanel, scene, width, height);
     auto clickCallback = [=](int x, int y) {
         std::cout << "clicked x: " << x << " y: " << y << std::endl;
+
+        integrator->helloWorld();
 
         setCurrentSample(
             0,

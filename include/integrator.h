@@ -26,6 +26,8 @@ public:
     virtual void postwave(const Scene &scene, RandomGenerator &random, int waveCount) {};
     virtual void debug(const Intersection &intersection, const Scene &scene) const {};
 
+    void helloWorld() { printf("HELLO WORLD\n"); }
+
 protected:
     //temp!! for real
     virtual std::vector<DataSource::Point> getPhotons() const {

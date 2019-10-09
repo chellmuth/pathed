@@ -75,8 +75,11 @@ int main(int argc, char *argv[]) {
     ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
+    std::shared_ptr<Integrator> integrator = g_job->integrator();
+
     nanogui::init();
     nanogui::ref<PathedScreen> screen = new PathedScreen(
+        integrator,
         image,
         scene,
         width,
@@ -86,8 +89,6 @@ int main(int argc, char *argv[]) {
     std::function<void(RenderStatus)> callback([&screen](RenderStatus rs) {
         screen->updateRenderStatus(rs);
     });
-
-    std::shared_ptr<Integrator> integrator = g_job->integrator();
 
     bool quit = false;
     std::thread renderThread(run, integrator, std::ref(image), std::ref(scene), callback, &quit);
