@@ -25,6 +25,12 @@ protected:
 
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
+    void visualizePDF(
+        int rows, int cols,
+        int row, int col,
+        const Scene &scene
+    );
+
 private:
     void createPhotons(const Scene &scene, RandomGenerator &random);
 

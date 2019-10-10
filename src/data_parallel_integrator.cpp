@@ -10,46 +10,7 @@
 
 #include "omp.h"
 
-// void SampleIntegrator::samplePixel(
-//     int row, int col,
-//     int width, int height,
-//     std::vector<float> &radianceLookup,
-//     std::vector<Sample> &sampleLookup,
-//     const Scene &scene,
-//     RandomGenerator &random
-// ) {
-//     Ray ray = scene.getCamera()->generateRay(row, col);
-
-//     Intersection intersection = scene.testIntersect(ray);
-//     if (!intersection.hit) { return; }
-
-//     Sample sample;
-//     sample.eyePoints.push_back(ray.origin());
-
-//     Color color(0.f);
-
-//     if (g_job->bounceController().checkCounts(0)) {
-//         Color emit = intersection.material->emit();
-//         if (!emit.isBlack()) {
-//             color += emit;
-//         }
-
-//         sample.contributions.push_back({color, 1.f});
-//     }
-
-//     color += L(intersection, scene, random, sample);
-
-//     sampleLookup[row * width + col] = sample;
-
-//     radianceLookup[3 * (row * width + col) + 0] += color.r();
-//     radianceLookup[3 * (row * width + col) + 1] += color.g();
-//     radianceLookup[3 * (row * width + col) + 2] += color.b();
-
-//     // Vector3 normal = intersection.normal;
-//     // radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
-//     // radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
-//     // radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);
-// }
+#include <mutex>
 
 DataParallelIntegrator::DataParallelIntegrator()
 {
@@ -232,6 +193,8 @@ void DataParallelIntegrator::generatePhotonBundles(
     }
 }
 
+static std::mutex pdfLock;
+
 void DataParallelIntegrator::batchSamplePDFs(
     int rows, int cols,
     std::vector<float> &phis,
@@ -239,7 +202,36 @@ void DataParallelIntegrator::batchSamplePDFs(
     std::vector<float> &pdfs,
     std::vector<float> &photonBundles
 ) {
+    pdfLock.lock();
     m_MLPDF.batchSample(rows * cols, phis, thetas, pdfs, photonBundles);
+    pdfLock.unlock();
+}
+
+void DataParallelIntegrator::visualizePDF(
+    int rows, int cols,
+    int row, int col,
+    const Scene &scene
+) {
+    const int debugSearchCount = g_job->debugSearchCount();
+
+    const Ray ray = scene.getCamera()->generateRay(row, col);
+    const Intersection intersection = scene.testIntersect(ray);
+
+    std::vector<Intersection> intersections = { intersection };
+    std::vector<float> photonBundles(rows * cols * debugSearchCount, -1.f);
+    generatePhotonBundles(rows, cols, scene, intersections, photonBundles);
+
+    std::vector<float> phis(rows * cols, -1.f);
+    std::vector<float> thetas(rows * cols, -1.f);
+    std::vector<float> pdfs(rows * cols, -1.f);
+
+    batchSamplePDFs(
+        rows, cols,
+        phis,
+        thetas,
+        pdfs,
+        photonBundles
+    );
 }
 
 void DataParallelIntegrator::calculateLighting(
