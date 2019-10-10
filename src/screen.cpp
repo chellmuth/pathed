@@ -207,11 +207,11 @@ PathedScreen::PathedScreen(
 
         integrator->helloWorld();
 
-        const int rows = 600;
-        const int cols = 600;
+        const int rows = 400;
+        const int cols = 400;
 
         auto popup = new nanogui::Screen(
-            Eigen::Vector2i(cols + 50, rows + 100), "", false
+            Eigen::Vector2i(cols * 2 + 20, rows + 100), "", false
         );
         popup->setVisible(true);
 
@@ -239,7 +239,7 @@ PathedScreen::PathedScreen(
         unsigned char *data2 = (unsigned char *)malloc(phiSteps * thetaSteps * 4 * sizeof(char));
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-                int sourceOffset = thetaStep * phiSteps + phiStep;
+                int sourceOffset = (thetaSteps - thetaStep - 1) * phiSteps + phiStep;
 
                 int targetOffset = 4 * (thetaStep * phiSteps + phiStep);
                 data2[targetOffset + 0] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
@@ -249,13 +249,15 @@ PathedScreen::PathedScreen(
             }
         }
 
-        int imageID = nvgCreateImageRGBA(popup->nvgContext(), phiSteps, thetaSteps, 0, data2);
+        int imageID1 = nvgCreateImageRGBA(popup->nvgContext(), rows, cols, 0, data);
+        int imageID2 = nvgCreateImageRGBA(popup->nvgContext(), phiSteps, thetaSteps, 0, data2);
 
         auto window = new nanogui::Window(popup, "PDF");
         window->setPosition({0, 0});
-        window->setLayout(new GroupLayout());
+        window->setLayout(new GridLayout(Orientation::Horizontal, 2));
 
-        auto imageView = new nanogui::ImageView(window, imageID);
+        auto imageView1 = new nanogui::ImageView(window, imageID1);
+        auto imageView2 = new nanogui::ImageView(window, imageID2);
 
         popup->performLayout();
 
