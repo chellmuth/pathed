@@ -16,6 +16,12 @@ public:
         std::vector<float> &photonBundles
     ) const;
 
+    void batchEval(
+        int count,
+        std::vector<float> &pdfs,
+        std::vector<float> &photonBundles
+    ) const;
+
     void estimatePDF(std::vector<float> &radianceLookup, std::vector<float> &photonBundle) const;
 
 private:

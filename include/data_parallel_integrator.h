@@ -25,11 +25,11 @@ protected:
 
     void preprocess(const Scene &scene, RandomGenerator &random) override;
 
-    void visualizePDF(
+    std::vector<float> visualizePDF(
         int rows, int cols,
         int row, int col,
         const Scene &scene
-    );
+    ) override;
 
 private:
     void createPhotons(const Scene &scene, RandomGenerator &random);
@@ -51,6 +51,12 @@ private:
         int rows, int cols,
         std::vector<float> &phis,
         std::vector<float> &thetas,
+        std::vector<float> &pdfs,
+        std::vector<float> &photonBundles
+    );
+
+    void batchEvalPDFs(
+        int rows, int cols,
         std::vector<float> &pdfs,
         std::vector<float> &photonBundles
     );

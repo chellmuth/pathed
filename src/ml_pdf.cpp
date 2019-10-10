@@ -106,7 +106,8 @@ void MLPDF::batchSample(
     std::vector<float> &pdfs,
     std::vector<float> &photonBundles
 ) const {
-    send(m_socket, &count, sizeof(int) * 1, 0);
+    int hello[] = { 0, count };
+    send(m_socket, &hello, sizeof(int) * 2, 0);
 
     float *photonData = photonBundles.data();
     send(m_socket, photonData, sizeof(float) * photonBundles.size(), 0);
@@ -124,21 +125,29 @@ void MLPDF::batchSample(
     }
 }
 
-void MLPDF::estimatePDF(std::vector<float> &radianceLookup, std::vector<float> &photonBundle) const
-{
-    const int phiSteps = g_job->width();
-    const int thetaSteps = g_job->height();
-    const int sampleCount = 100;
+void MLPDF::batchEval(
+    int count,
+    std::vector<float> &pdfs,
+    std::vector<float> &photonBundles
+) const {
+    int hello[] = { 1, count };
+    send(m_socket, &hello, sizeof(int) * 2, 0);
 
-    for (int i = 0; i < sampleCount; i++) {
-        float phi, theta, pdf;
-        sample(&phi, &theta, &pdf, photonBundle);
+    float *photonData = photonBundles.data();
+    send(m_socket, photonData, sizeof(float) * photonBundles.size(), 0);
 
-        int phiIndex = floorf(phi / M_TWO_PI * phiSteps);
-        int thetaIndex = floorf(theta / (M_PI / 2.f) * thetaSteps);
+    float buffer[count];
+    int bytesRead = recv(m_socket, buffer, sizeof(buffer), MSG_WAITALL);
+    assert(bytesRead == 4 * count);
 
-        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 0] += 1.f / 100;
-        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 1] += 1.f / 100;
-        radianceLookup[3 * (thetaIndex * phiSteps + phiIndex) + 2] += 1.f / 100;
+    const int rows = (int)sqrtf(count);
+    const int cols = (int)sqrtf(count);
+
+    for (int i = 0; i < count; i++) {
+        int row = (int)floorf(i / cols);
+        int col = i % cols;
+
+        const float theta = M_PI / 2.f * (row + 0.5f) / rows;
+        pdfs[i] = buffer[i] / sinf(theta) / (M_TWO_PI * M_PI / 2.f);
     }
 }

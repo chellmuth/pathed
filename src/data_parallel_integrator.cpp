@@ -207,7 +207,17 @@ void DataParallelIntegrator::batchSamplePDFs(
     pdfLock.unlock();
 }
 
-void DataParallelIntegrator::visualizePDF(
+void DataParallelIntegrator::batchEvalPDFs(
+    int rows, int cols,
+    std::vector<float> &pdfs,
+    std::vector<float> &photonBundles
+) {
+    pdfLock.lock();
+    m_MLPDF.batchEval(rows * cols, pdfs, photonBundles);
+    pdfLock.unlock();
+}
+
+std::vector<float> DataParallelIntegrator::visualizePDF(
     int rows, int cols,
     int row, int col,
     const Scene &scene
@@ -218,20 +228,18 @@ void DataParallelIntegrator::visualizePDF(
     const Intersection intersection = scene.testIntersect(ray);
 
     std::vector<Intersection> intersections = { intersection };
-    std::vector<float> photonBundles(rows * cols * debugSearchCount, -1.f);
-    generatePhotonBundles(rows, cols, scene, intersections, photonBundles);
+    std::vector<float> photonBundles(debugSearchCount, -1.f);
+    generatePhotonBundles(1, 1, scene, intersections, photonBundles);
 
-    std::vector<float> phis(rows * cols, -1.f);
-    std::vector<float> thetas(rows * cols, -1.f);
     std::vector<float> pdfs(rows * cols, -1.f);
 
-    batchSamplePDFs(
+    batchEvalPDFs(
         rows, cols,
-        phis,
-        thetas,
         pdfs,
         photonBundles
     );
+
+    return pdfs;
 }
 
 void DataParallelIntegrator::calculateLighting(

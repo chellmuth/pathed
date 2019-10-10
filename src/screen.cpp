@@ -231,7 +231,25 @@ PathedScreen::PathedScreen(
             }
         }
 
-        int imageID = nvgCreateImageRGBA(popup->nvgContext(), cols, rows, 0, data);
+        const int phiSteps = 400;
+        const int thetaSteps = 400;
+
+        std::vector<float> pdfs = integrator->visualizePDF(thetaSteps, phiSteps, (400 - y - 1), x, scene);
+
+        unsigned char *data2 = (unsigned char *)malloc(phiSteps * thetaSteps * 4 * sizeof(char));
+        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
+            for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
+                int sourceOffset = thetaStep * phiSteps + phiStep;
+
+                int targetOffset = 4 * (thetaStep * phiSteps + phiStep);
+                data2[targetOffset + 0] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
+                data2[targetOffset + 1] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
+                data2[targetOffset + 2] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
+                data2[targetOffset + 3] = 255;
+            }
+        }
+
+        int imageID = nvgCreateImageRGBA(popup->nvgContext(), phiSteps, thetaSteps, 0, data2);
 
         auto window = new nanogui::Window(popup, "PDF");
         window->setPosition({0, 0});
