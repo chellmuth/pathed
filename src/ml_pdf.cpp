@@ -140,14 +140,15 @@ void MLPDF::batchEval(
     int bytesRead = recv(m_socket, buffer, sizeof(buffer), MSG_WAITALL);
     assert(bytesRead == 4 * count);
 
-    const int rows = (int)sqrtf(count);
-    const int cols = (int)sqrtf(count);
+    const int thetaSteps = (int)sqrtf(count);
+    const int phiSteps = (int)sqrtf(count);
 
     for (int i = 0; i < count; i++) {
-        int row = (int)floorf(i / cols);
-        int col = i % cols;
+        const int thetaStep = thetaSteps - (int)floorf(i / phiSteps) - 1;
+        const int phiStep = i % phiSteps;
+        const int sourceIndex = thetaStep * phiSteps + phiStep;
 
-        const float theta = M_PI / 2.f * (row + 0.5f) / rows;
-        pdfs[i] = buffer[i] / sinf(theta) / (M_TWO_PI * M_PI / 2.f);
+        const float theta = M_PI / 2.f * (thetaStep + 0.5f) / thetaSteps;
+        pdfs[i] = buffer[sourceIndex];// / sinf(theta) / (M_TWO_PI * M_PI / 2.f);
     }
 }

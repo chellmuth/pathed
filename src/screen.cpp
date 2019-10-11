@@ -239,12 +239,12 @@ PathedScreen::PathedScreen(
         unsigned char *data2 = (unsigned char *)malloc(phiSteps * thetaSteps * 4 * sizeof(char));
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
             for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-                int sourceOffset = (thetaSteps - thetaStep - 1) * phiSteps + phiStep;
+                int sourceOffset = thetaStep * phiSteps + phiStep;
 
                 int targetOffset = 4 * (thetaStep * phiSteps + phiStep);
                 data2[targetOffset + 0] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
-                data2[targetOffset + 1] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
-                data2[targetOffset + 2] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
+                data2[targetOffset + 1] = 255 * fminf(1.f, pdfs[sourceOffset + 1]);
+                data2[targetOffset + 2] = 255 * fminf(1.f, pdfs[sourceOffset + 2]);
                 data2[targetOffset + 3] = 255;
             }
         }
