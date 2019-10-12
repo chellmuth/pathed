@@ -1,41 +1,76 @@
 import json
+import math
 import random
 from pathlib import Path
 
 import numpy as np
 
-points = np.array([
-    ( 0.53, 0.60, 0.75, 1),
-    ( 0.70, 0.60, 0.17, 1),
-    ( 0.13, 0.60, 0.00, 1),
-    (-0.05, 0.60, 0.57, 1),
-    (-0.05, 0.00, 0.57, 1),
-    (-0.05, 0.60, 0.57, 1),
-    ( 0.13, 0.60, 0.00, 1),
-    ( 0.13, 0.00, 0.00, 1),
-    ( 0.53, 0.00, 0.75, 1),
-    ( 0.53, 0.60, 0.75, 1),
-    (-0.05, 0.60, 0.57, 1),
-    (-0.05, 0.00, 0.57, 1),
-    ( 0.70, 0.00, 0.17, 1),
-    ( 0.70, 0.60, 0.17, 1),
-    ( 0.53, 0.60, 0.75, 1),
-    ( 0.53, 0.00, 0.75, 1),
-    ( 0.13, 0.00, 0.00, 1),
-    ( 0.13, 0.60, 0.00, 1),
-    ( 0.70, 0.60, 0.17, 1),
-    ( 0.70, 0.00, 0.17, 1),
-    ( 0.53, 0.00, 0.75, 1),
-    ( 0.70, 0.00, 0.17, 1),
-    ( 0.13, 0.00, 0.00, 1),
-    (-0.05, 0.00, 0.57, 1),
-])
+def get_points():
+    points = np.array([
+        ( 0.53, 0.60, 0.75, 1),
+        ( 0.70, 0.60, 0.17, 1),
+        ( 0.13, 0.60, 0.00, 1),
+        (-0.05, 0.60, 0.57, 1),
+        (-0.05, 0.00, 0.57, 1),
+        (-0.05, 0.60, 0.57, 1),
+        ( 0.13, 0.60, 0.00, 1),
+        ( 0.13, 0.00, 0.00, 1),
+        ( 0.53, 0.00, 0.75, 1),
+        ( 0.53, 0.60, 0.75, 1),
+        (-0.05, 0.60, 0.57, 1),
+        (-0.05, 0.00, 0.57, 1),
+        ( 0.70, 0.00, 0.17, 1),
+        ( 0.70, 0.60, 0.17, 1),
+        ( 0.53, 0.60, 0.75, 1),
+        ( 0.53, 0.00, 0.75, 1),
+        ( 0.13, 0.00, 0.00, 1),
+        ( 0.13, 0.60, 0.00, 1),
+        ( 0.70, 0.60, 0.17, 1),
+        ( 0.70, 0.00, 0.17, 1),
+        ( 0.53, 0.00, 0.75, 1),
+        ( 0.70, 0.00, 0.17, 1),
+        ( 0.13, 0.00, 0.00, 1),
+        (-0.05, 0.00, 0.57, 1),
+    ])
+    return points
+
+def scale(x, y, z):
+    return np.array([
+        [ x, 0, 0, 0, ],
+        [ 0, y, 0, 0, ],
+        [ 0, 0, z, 0, ],
+        [ 0, 0, 0, 1, ],
+    ])
 
 def translate(dx, dy, dz):
     return np.array([
         [ 1, 0, 0, dx, ],
         [ 0, 1, 0, dy, ],
         [ 0, 0, 1, dz, ],
+        [ 0, 0, 0,  1, ],
+    ])
+
+def rotate_x(theta):
+    return np.array([
+        [ 1,               0,                0, 0, ],
+        [ 0, math.cos(theta), -math.sin(theta), 0, ],
+        [ 0, math.sin(theta),  math.cos(theta), 0, ],
+        [ 0,               0,                0, 1, ],
+    ])
+
+def rotate_y(theta):
+    return np.array([
+        [  math.cos(theta),  0, math.sin(theta), 0, ],
+        [                0,  1,               0, 0, ],
+        [ -math.sin(theta),  0, math.cos(theta), 0, ],
+        [                0,  0,               0, 1, ],
+    ])
+
+def identity():
+    return np.array([
+        [ 1, 0, 0, 0, ],
+        [ 0, 1, 0, 0, ],
+        [ 0, 0, 1, 0, ],
         [ 0, 0, 0, 1, ],
     ])
 
@@ -43,10 +78,37 @@ def rand_over(low, hi):
     distance = hi - low
     return low + random.random() * distance
 
-def perturb_and_write(f):
-    t = translate(rand_over(-0.2, 0.2), rand_over(0, 0.5), rand_over(-0.2, 0.2))
+def box_center(points):
+    means = np.mean(points, axis=0)
+    return means[0:3]
 
-    result = t.dot(points.transpose()).transpose()
+def perturb_and_write(f):
+    points = get_points()
+
+    center = box_center(points)
+
+    transforms = [
+        translate(-center[0], -center[1], -center[2]),
+        scale(
+            rand_over(0.5, 1.5),
+            rand_over(0.8, 2),
+            rand_over(0.8, 2)
+        ),
+        rotate_x(2 * math.pi * random.random()),
+        rotate_y(2 * math.pi * random.random()),
+        translate(center[0], center[1], center[2]),
+        translate(
+            rand_over(-0.2, 0.2),
+            rand_over(0, 0.5),
+            rand_over(-0.2, 0.2)
+        ),
+    ]
+
+    transform = identity()
+    for t in transforms:
+        transform = t.dot(transform)
+
+    result = transform.dot(points.transpose()).transpose()
 
     f.write(cornell_pt1())
 
@@ -68,11 +130,11 @@ def perturb_and_write(f):
 
     f.write(cornell_pt2())
 
-def go():
+def go(count):
     procedural_path_local = Path("..") / "procedural"
     procedural_path_runtime = Path(".") / "procedural"
 
-    for i in range(20):
+    for i in range(count):
         obj_filename = f"CornellBox-{i:04d}.obj"
         obj_path = procedural_path_local / obj_filename
 

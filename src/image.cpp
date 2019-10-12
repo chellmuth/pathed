@@ -130,12 +130,12 @@ void Image::save(const std::string &filestem)
     }
     printf("Saved exr file. [ %s ] \n", outputExr.c_str());
 
-    ret = SaveEXRImageToFile(&image, &header, outputSppExr.c_str(), &err);
-    if (ret != TINYEXR_SUCCESS) {
-        fprintf(stderr, "Save EXR err: %s\n", err);
-        return;
-    }
-    printf("Saved exr file. [ %s ] \n", outputSppExr.c_str());
+    // ret = SaveEXRImageToFile(&image, &header, outputSppExr.c_str(), &err);
+    // if (ret != TINYEXR_SUCCESS) {
+    //     fprintf(stderr, "Save EXR err: %s\n", err);
+    //     return;
+    // }
+    // printf("Saved exr file. [ %s ] \n", outputSppExr.c_str());
 
     free(header.channels);
     free(header.pixel_types);

@@ -29,9 +29,9 @@ static std::string zeroPad(int num, int fillCount)
 PDFIntegrator::PDFIntegrator()
 {
     m_dataSource1 = std::make_shared<DataSource>();
-    m_dataSource2 = std::make_shared<DataSource>();
-    m_dataSource3 = std::make_shared<DataSource>();
-    m_dataSource4 = std::make_shared<DataSource>();
+    // m_dataSource2 = std::make_shared<DataSource>();
+    // m_dataSource3 = std::make_shared<DataSource>();
+    // m_dataSource4 = std::make_shared<DataSource>();
 }
 
 Vector3 PDFIntegrator::sample(const Vector3 &normal, RandomGenerator &random, float *pdf) {
@@ -96,21 +96,21 @@ void PDFIntegrator::createPhotons(
 void PDFIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
 {
     createPhotons(m_dataSource1, scene, random);
-    createPhotons(m_dataSource2, scene, random);
-    createPhotons(m_dataSource3, scene, random);
-    createPhotons(m_dataSource4, scene, random);
+    // createPhotons(m_dataSource2, scene, random);
+    // createPhotons(m_dataSource3, scene, random);
+    // createPhotons(m_dataSource4, scene, random);
 
     m_KDTree1 = std::make_unique<KDTree>(3, *m_dataSource1, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_KDTree1->buildIndex();
 
-    m_KDTree2 = std::make_unique<KDTree>(3, *m_dataSource2, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-    m_KDTree2->buildIndex();
+    // m_KDTree2 = std::make_unique<KDTree>(3, *m_dataSource2, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree2->buildIndex();
 
-    m_KDTree3 = std::make_unique<KDTree>(3, *m_dataSource3, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-    m_KDTree3->buildIndex();
+    // m_KDTree3 = std::make_unique<KDTree>(3, *m_dataSource3, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree3->buildIndex();
 
-    m_KDTree4 = std::make_unique<KDTree>(3, *m_dataSource4, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-    m_KDTree4->buildIndex();
+    // m_KDTree4 = std::make_unique<KDTree>(3, *m_dataSource4, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree4->buildIndex();
 }
 
 void PDFIntegrator::run(
@@ -130,7 +130,7 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
-    const int dataPoints = 3000;
+    const int dataPoints = 30;
     for (int i = 0; i < dataPoints; i ++) {
         createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);
@@ -177,12 +177,12 @@ void PDFIntegrator::createAndSaveDataPoint(
 
     Intersection intersection = generateIntersection(scene, random);
 
-    savePhotonBundle(m_dataSource1, m_KDTree1, intersection, pointID, "a");
-    savePhotonBundle(m_dataSource2, m_KDTree2, intersection, pointID, "b");
-    savePhotonBundle(m_dataSource3, m_KDTree3, intersection, pointID, "c");
-    savePhotonBundle(m_dataSource4, m_KDTree4, intersection, pointID, "d");
+    savePhotonBundle(m_dataSource1, m_KDTree1, intersection, pointID, "");
+    // savePhotonBundle(m_dataSource2, m_KDTree2, intersection, pointID, "b");
+    // savePhotonBundle(m_dataSource3, m_KDTree3, intersection, pointID, "c");
+    // savePhotonBundle(m_dataSource4, m_KDTree4, intersection, pointID, "d");
 
-    const int spp = 256;
+    const int spp = 64;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
