@@ -72,13 +72,13 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, por
     return server_process, render_process
 
 def go():
-    iteration = "0008"
+    iteration = "0045"
     scene = f"procedural/cornell-{iteration}"
     scene_json = scene + ".json"
-    ours_one_out = "/tmp/test-{iteration}-one"
-    ours_many_out = "/tmp/test-{iteration}-many"
-    path_out = "/tmp/test-{iteration}-path"
-    gt_out = "/tmp/test-{iteration}-gt"
+    ours_one_out = f"/tmp/test-{iteration}-one"
+    ours_many_out = f"/tmp/test-{iteration}-many"
+    path_out = f"/tmp/test-{iteration}-path"
+    gt_out = f"/tmp/test-{iteration}-gt"
 
     p1, p2 = run_our_render(
         scene=scene_json,
@@ -95,11 +95,6 @@ def go():
         output_directory=ours_one_out,
         port_offset=1,
     )
-
-    p1.join()
-    p2.join()
-    p3.join()
-    p4.join()
 
     path_job_json = custom_json(
         spp=128,
@@ -120,6 +115,11 @@ def go():
     )
     gt_process = Process(target=run_renderer, args=(gt_job_json,))
     gt_process.start()
+
+    p1.join()
+    p2.join()
+    p3.join()
+    p4.join()
 
     path_process.join()
     gt_process.join()
