@@ -130,23 +130,25 @@ def perturb_and_write(f):
 
     f.write(cornell_pt2())
 
-def go(count):
+def one(i):
     procedural_path_local = Path("..") / "procedural"
     procedural_path_runtime = Path(".") / "procedural"
 
+    obj_filename = f"CornellBox-{i:04d}.obj"
+    obj_path = procedural_path_local / obj_filename
+
+    scene_filename = f"cornell-{i:04d}.json"
+    print(obj_path, scene_filename)
+
+    with open(obj_path, "w") as f:
+        perturb_and_write(f)
+
+    with open(procedural_path_local / scene_filename, "w") as f:
+        f.write(scene_content(procedural_path_runtime / obj_filename))
+
+def go(count):
     for i in range(count):
-        obj_filename = f"CornellBox-{i:04d}.obj"
-        obj_path = procedural_path_local / obj_filename
-
-        scene_filename = f"cornell-{i:04d}.json"
-        print(obj_path, scene_filename)
-
-        with open(obj_path, "w") as f:
-            perturb_and_write(f)
-
-        with open(procedural_path_local / scene_filename, "w") as f:
-            f.write(scene_content(procedural_path_runtime / obj_filename))
-
+        one(i)
 
 def cornell_pt1():
     return """

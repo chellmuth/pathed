@@ -66,7 +66,6 @@ void SampleIntegrator::sampleImage(
     // );
     // std::cout << "DONE!" << std::endl;
 
-    omp_set_num_threads(4);
     #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {

@@ -121,7 +121,8 @@ void DataParallelIntegrator::preprocess(const Scene &scene, RandomGenerator &ran
     m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
     m_KDTree->buildIndex();
 
-    if (!m_MLPDF.connectToModel(0)) {
+    const int portOffset = g_job->portOffset();
+    if (!m_MLPDF.connectToModel(portOffset)) {
         printf("We're done here!\n");
         throw "Failure to connect";
     }

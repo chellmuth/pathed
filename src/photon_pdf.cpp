@@ -202,7 +202,11 @@ std::vector<float> PhotonPDF::asVector(const Transform &worldToNormal)
 {
     buildCDF(worldToNormal);
 
-    std::vector<float> result(m_thetaSteps * m_phiSteps);
+    std::vector<float> result(m_thetaSteps * m_phiSteps, 0.f);
+
+    if (m_emptyCDF) {
+        return result;
+    }
 
     for (int index = 0; index < m_thetaSteps * m_phiSteps; index++) {
         float pdf = m_CDF[index];

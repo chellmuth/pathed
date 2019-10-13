@@ -16,12 +16,12 @@
 #include <sstream>
 #include <stdio.h>
 
-static const int primarySamples = 999999;
-
 void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
 {
     const int width = g_job->width();
     const int height = g_job->height();
+
+    const int primarySamples = g_job->spp();
 
     RandomGenerator random;
 

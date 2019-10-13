@@ -24,6 +24,16 @@ public:
     int width() const { return m_json["width"].get<int>(); }
     int height() const { return m_json["height"].get<int>(); }
 
+    int spp() const {
+        int spp = m_json["spp"].get<int>();
+        if (spp > 0) {
+            return spp;
+        }
+        return 99999;
+    }
+
+    int portOffset() const { return m_json["port_offset"].get<int>(); }
+
     std::string outputDirectory() const {
         return m_json["output_directory"].get<std::string>() + "/";
     }
