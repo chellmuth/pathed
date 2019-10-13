@@ -12,9 +12,11 @@
   "phiSteps": 1,
   "thetaSteps": 1,
   "debugSearchCount": 100,
-  
+
   "photonSamples": 10000,
   "photonBounces": 6,
+
+  "portOffset": 0,
 
   "width": 400,
   "height": 400
