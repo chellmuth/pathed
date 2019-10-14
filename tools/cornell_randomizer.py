@@ -131,8 +131,8 @@ def perturb_and_write(f):
     f.write(cornell_pt2())
 
 def one(i):
-    procedural_path_local = Path("..") / "procedural"
-    procedural_path_runtime = Path(".") / "procedural"
+    procedural_path_local = Path("..") / "procedural-test"
+    procedural_path_runtime = Path(".") / "procedural-test"
 
     obj_filename = f"CornellBox-{i:04d}.obj"
     obj_path = procedural_path_local / obj_filename

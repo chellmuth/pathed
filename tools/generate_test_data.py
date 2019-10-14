@@ -7,6 +7,7 @@ import cornell_randomizer
 def custom_pdf_json(i):
     return {
         "force": True,
+        "spp": -1,
 
         "output_directory": f"/home/cjh/workpad/cornell-dataset/iteration-{i:04d}",
         "output_name": "--",
@@ -24,6 +25,8 @@ def custom_pdf_json(i):
         "thetaSteps": 10,
         "debugSearchCount": 100,
 
+        "portOffset": 0,
+
         "photonSamples": 100000,
         "photonBounces": 2,
 
@@ -34,6 +37,7 @@ def custom_pdf_json(i):
 def custom_path_json(i):
     return {
         "force": True,
+        "spp": 32,
 
         "output_directory": f"/home/cjh/workpad/cornell-dataset/iteration-{i:04d}",
         "output_name": "--",
@@ -51,6 +55,8 @@ def custom_path_json(i):
         "thetaSteps": 10,
         "debugSearchCount": 100,
 
+        "portOffset": 0,
+
         "photonSamples": 100000,
         "photonBounces": 2,
 
@@ -58,11 +64,13 @@ def custom_path_json(i):
         "height": 400
     }
 
-def run():
-    count = 100
+def run(test_only=False):
+    count = 10
 
     for i in range(count):
         cornell_randomizer.one(i)
+
+        if test_only: continue
 
         job_content = custom_pdf_json(i)
         with tempfile.NamedTemporaryFile("w") as f:
@@ -83,8 +91,6 @@ def run():
                 output = subprocess.check_call(["./pathed", f.name], cwd="../Release")
             except subprocess.CalledProcessError:
                 print("ERROR! (path)", i)
-
-    # later: gather step
 
 if __name__ == "__main__":
     run()

@@ -71,9 +71,8 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, por
 
     return server_process, render_process
 
-def go():
-    iteration = "0045"
-    scene = f"procedural/cornell-{iteration}"
+def go(iteration):
+    scene = f"procedural-test/cornell-{iteration}"
     scene_json = scene + ".json"
     ours_one_out = f"/tmp/test-{iteration}-one"
     ours_many_out = f"/tmp/test-{iteration}-many"
@@ -130,4 +129,11 @@ def go():
     ))
 
 if __name__ == "__main__":
-    go()
+    iterations = [
+        f"{i:04d}"
+        for i in range(10)
+    ]
+    print(iterations)
+
+    for iteration in iterations:
+        go(iteration)
