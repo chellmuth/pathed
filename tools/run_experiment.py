@@ -72,7 +72,7 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, por
     return server_process, render_process
 
 def go(iteration):
-    scene = f"procedural-test/cornell-{iteration}"
+    scene = f"procedural/cornell-{iteration}"
     scene_json = scene + ".json"
     ours_one_out = f"/tmp/test-{iteration}-one"
     ours_many_out = f"/tmp/test-{iteration}-many"

@@ -1,15 +1,16 @@
 import json
 import subprocess
 import tempfile
+from pathlib import Path
 
 import cornell_randomizer
 
-def custom_pdf_json(i):
+def custom_pdf_json(i, dataset_path):
     return {
         "force": True,
         "spp": -1,
 
-        "output_directory": f"/home/cjh/workpad/cornell-dataset/iteration-{i:04d}",
+        "output_directory": str(dataset_path / f"iteration-{i:04d}"),
         "output_name": "--",
         "integrator": "PDFIntegrator",
         "scene": f"procedural/cornell-{i:04d}.json",
@@ -34,12 +35,12 @@ def custom_pdf_json(i):
         "height": 400
     }
 
-def custom_path_json(i):
+def custom_path_json(i, dataset_path):
     return {
         "force": True,
         "spp": 32,
 
-        "output_directory": f"/home/cjh/workpad/cornell-dataset/iteration-{i:04d}",
+        "output_directory": str(dataset_path / f"iteration-{i:04d}"),
         "output_name": "--",
         "integrator": "PathTracer",
         "scene": f"procedural/cornell-{i:04d}.json",
@@ -64,15 +65,13 @@ def custom_path_json(i):
         "height": 400
     }
 
-def run(test_only=False):
-    count = 10
-
-    for i in range(count):
-        cornell_randomizer.one(i)
+def run(dir_name, scene_count, dataset_path, test_only=False):
+    for i in range(scene_count):
+        cornell_randomizer.one(i, dir_name)
 
         if test_only: continue
 
-        job_content = custom_pdf_json(i)
+        job_content = custom_pdf_json(i, dataset_path)
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(json.dumps(job_content, indent=2))
             f.flush()
@@ -82,7 +81,7 @@ def run(test_only=False):
             except subprocess.CalledProcessError:
                 print("ERROR (pdf)!", i)
 
-        job_content = custom_path_json(i)
+        job_content = custom_path_json(i, dataset_path)
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(json.dumps(job_content, indent=2))
             f.flush()
@@ -93,4 +92,7 @@ def run(test_only=False):
                 print("ERROR! (path)", i)
 
 if __name__ == "__main__":
-    run()
+    dataset_path = Path("/home/cjh/workpad/cornell-dataset")
+
+    run("procedural", 100, dataset_path, test_only=False)
+    run("procedural-test", 10, dataset_path, test_only=True)
