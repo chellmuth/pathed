@@ -5,7 +5,36 @@ from pathlib import Path
 
 import numpy as np
 
-def get_points():
+def get_tall_points():
+    points = np.array([
+        (-0.53, 1.20,  0.09, 1),
+        ( 0.04, 1.20, -0.09, 1),
+        (-0.14, 1.20, -0.67, 1),
+        (-0.71, 1.20, -0.49, 1),
+        (-0.53, 0.00,  0.09, 1),
+        (-0.53, 1.20,  0.09, 1),
+        (-0.71, 1.20, -0.49, 1),
+        (-0.71, 0.00, -0.49, 1),
+        (-0.71, 0.00, -0.49, 1),
+        (-0.71, 1.20, -0.49, 1),
+        (-0.14, 1.20, -0.67, 1),
+        (-0.14, 0.00, -0.67, 1),
+        (-0.14, 0.00, -0.67, 1),
+        (-0.14, 1.20, -0.67, 1),
+        ( 0.04, 1.20, -0.09, 1),
+        ( 0.04, 0.00, -0.09, 1),
+        ( 0.04, 0.00, -0.09, 1),
+        ( 0.04, 1.20, -0.09, 1),
+        (-0.53, 1.20,  0.09, 1),
+        (-0.53, 0.00,  0.09, 1),
+        (-0.53, 0.00,  0.09, 1),
+        ( 0.04, 0.00, -0.09, 1),
+        (-0.14, 0.00, -0.67, 1),
+        (-0.71, 0.00, -0.49, 1),
+    ])
+    return points
+
+def get_short_points():
     points = np.array([
         ( 0.53, 0.60, 0.75, 1),
         ( 0.70, 0.60, 0.17, 1),
@@ -82,15 +111,13 @@ def box_center(points):
     means = np.mean(points, axis=0)
     return means[0:3]
 
-def perturb_and_write(f):
-    points = get_points()
-
+def transform_points(points):
     center = box_center(points)
 
     transforms = [
         translate(-center[0], -center[1], -center[2]),
         scale(
-            rand_over(0.5, 1.5),
+            rand_over(0.2, 1.3),
             rand_over(0.8, 2),
             rand_over(0.8, 2)
         ),
@@ -109,9 +136,9 @@ def perturb_and_write(f):
         transform = t.dot(transform)
 
     result = transform.dot(points.transpose()).transpose()
+    return result
 
-    f.write(cornell_pt1())
-
+def write_transformed_points(f, transformed_points):
     faces = [
         "f -4 -3 -2 -1",
         "f -4 -3 -2 -1",
@@ -121,14 +148,27 @@ def perturb_and_write(f):
         "f -4 -3 -2 -1",
     ]
 
-    for i in range(len(points) // 4):
+    for i in range(len(transformed_points) // 4):
         for j in range(4):
-            x, y, z, _ = result[4 * i + j]
+            x, y, z, _ = transformed_points[4 * i + j]
             f.write(f"v {x} {y} {z}\n")
         f.write(faces[i] + "\n")
         f.write("\n")
 
+def perturb_and_write(f):
+    f.write(cornell_pt1())
+
+    short_points = get_short_points()
+    transformed_points = transform_points(short_points)
+    write_transformed_points(f, transformed_points)
+
     f.write(cornell_pt2())
+
+    tall_points = get_tall_points()
+    transformed_points = transform_points(tall_points)
+    write_transformed_points(f, transformed_points)
+
+    f.write(cornell_pt3())
 
 def one(i, dir_name):
     procedural_path_local = Path("..") / dir_name
@@ -227,48 +267,10 @@ usemtl shortBox
 ## Object tallBox
 usemtl tallBox
 
-# Top Face
-v	-0.53  1.20   0.09
-v	 0.04  1.20  -0.09
-v	-0.14  1.20  -0.67
-v	-0.71  1.20  -0.49
-f -4 -3 -2 -1
+"""
 
-# Left Face
-v	-0.53  0.00   0.09
-v	-0.53  1.20   0.09
-v	-0.71  1.20  -0.49
-v	-0.71  0.00  -0.49
-f -4 -3 -2 -1
-
-# Back Face
-v	-0.71  0.00  -0.49
-v	-0.71  1.20  -0.49
-v	-0.14  1.20  -0.67
-v	-0.14  0.00  -0.67
-f -4 -3 -2 -1
-
-# Right Face
-v	-0.14  0.00  -0.67
-v	-0.14  1.20  -0.67
-v	 0.04  1.20  -0.09
-v	 0.04  0.00  -0.09
-f -4 -3 -2 -1
-
-# Front Face
-v	 0.04  0.00  -0.09
-v	 0.04  1.20  -0.09
-v	-0.53  1.20   0.09
-v	-0.53  0.00   0.09
-f -4 -3 -2 -1
-
-# Bottom Face
-v	-0.53  0.00   0.09
-v	 0.04  0.00  -0.09
-v	-0.14  0.00  -0.67
-v	-0.71  0.00  -0.49
-f -8 -7 -6 -5
-
+def cornell_pt3():
+    return """
 g tallBox
 usemtl tallBox
 
