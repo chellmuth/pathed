@@ -118,7 +118,7 @@ def perturb_and_write(f):
         "f -4 -3 -2 -1",
         "f -4 -3 -2 -1",
         "f -4 -3 -2 -1",
-        "f -12 -11 -10 -9",
+        "f -4 -3 -2 -1",
     ]
 
     for i in range(len(points) // 4):
@@ -130,9 +130,9 @@ def perturb_and_write(f):
 
     f.write(cornell_pt2())
 
-def one(i):
-    procedural_path_local = Path("..") / "procedural-test"
-    procedural_path_runtime = Path(".") / "procedural-test"
+def one(i, dir_name):
+    procedural_path_local = Path("..") / dir_name
+    procedural_path_runtime = Path(".") / dir_name
 
     obj_filename = f"CornellBox-{i:04d}.obj"
     obj_path = procedural_path_local / obj_filename
@@ -148,7 +148,7 @@ def one(i):
 
 def go(count):
     for i in range(count):
-        one(i)
+        one(i, "procedural")
 
 def cornell_pt1():
     return """
@@ -305,4 +305,4 @@ def scene_content(obj_path):
 
 
 if __name__ == "__main__":
-    go()
+    go(10)
