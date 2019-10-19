@@ -33,6 +33,7 @@ public:
     }
 
     int portOffset() const { return m_json["port_offset"].get<int>(); }
+    int pdfSamples() const { return m_json["pdf_samples"].get<int>(); }
 
     std::string outputDirectory() const {
         return m_json["output_directory"].get<std::string>() + "/";

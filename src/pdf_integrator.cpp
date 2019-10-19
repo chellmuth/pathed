@@ -130,7 +130,7 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
-    const int dataPoints = 30;
+    const int dataPoints = g_job->pdfSamples();
     for (int i = 0; i < dataPoints; i ++) {
         createAndSaveDataPoint(image, scene, random, i);
         printf("Finished point %i/%i\n", i + 1, dataPoints);

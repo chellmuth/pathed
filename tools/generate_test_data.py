@@ -6,7 +6,7 @@ from pathlib import Path
 import cornell_randomizer
 import runner
 
-def custom_pdf_json(i, render_path, scene_path):
+def custom_pdf_json(i, pdf_samples, render_path, scene_path):
     return {
         "force": True,
         "spp": -1,
@@ -27,7 +27,8 @@ def custom_pdf_json(i, render_path, scene_path):
         "thetaSteps": 10,
         "debugSearchCount": 100,
 
-        "portOffset": 0,
+        "pdf_samples": pdf_samples,
+        "port_offset": 0,
 
         "photonSamples": 100000,
         "photonBounces": 2,
@@ -57,7 +58,8 @@ def custom_path_json(i, render_path, scene_path):
         "thetaSteps": 10,
         "debugSearchCount": 100,
 
-        "portOffset": 0,
+        "pdf_samples": -1,
+        "port_offset": 0,
 
         "photonSamples": 100000,
         "photonBounces": 2,
@@ -66,7 +68,7 @@ def custom_path_json(i, render_path, scene_path):
         "height": 400
     }
 
-def run(scene_count, dataset_info, mode):
+def run(scene_count, pdf_samples, dataset_info, mode):
     for i in range(scene_count):
         cornell_randomizer.one(i, dataset_info.scene_path(mode))
 
@@ -74,6 +76,7 @@ def run(scene_count, dataset_info, mode):
 
         pdf_job = custom_pdf_json(
             i,
+            pdf_samples,
             dataset_info.render_path(mode),
             dataset_info.scene_path(mode)
         )
@@ -130,8 +133,12 @@ class DatasetInfo:
         raise ValueError("Unsupported mode")
 
 if __name__ == "__main__":
+    training_scenes = 100
+    test_scenes = 10
+    pdf_samples = 50
+
     dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset")
     dataset_info.check_and_create()
 
-    run(1, dataset_info, "train")
-    run(1, dataset_info, "test")
+    run(training_scenes, pdf_samples, dataset_info, "train")
+    run(test_scenes, None, dataset_info, "test")
