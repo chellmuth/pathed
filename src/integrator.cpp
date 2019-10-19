@@ -87,7 +87,7 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
         int maxJ = log2f(primarySamples);
         for (int j = 0; j <= maxJ; j++) {
             if (1 << j == i + 1) {
-                image.save("auto");
+                image.saveCheckpoint("auto");
             }
         }
 

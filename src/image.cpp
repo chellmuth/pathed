@@ -70,6 +70,16 @@ std::string Image::pathFromFilename(const std::string &filename)
 
 void Image::save(const std::string &filestem)
 {
+    save(filestem, false);
+}
+
+void Image::saveCheckpoint(const std::string &filestem)
+{
+    save(filestem);
+}
+
+void Image::save(const std::string &filestem, bool saveCheckpoint)
+{
     EXRHeader header;
     InitEXRHeader(&header);
 
@@ -99,14 +109,14 @@ void Image::save(const std::string &filestem)
     image.height = m_height;
 
     header.num_channels = 3;
-    header.channels = (EXRChannelInfo *)malloc(sizeof(EXRChannelInfo) * header.num_channels); 
+    header.channels = (EXRChannelInfo *)malloc(sizeof(EXRChannelInfo) * header.num_channels);
 
     // Must be BGR(A) order, since most of EXR viewers expect this channel order.
     strncpy(header.channels[0].name, "B", 255); header.channels[0].name[strlen("B")] = '\0';
     strncpy(header.channels[1].name, "G", 255); header.channels[1].name[strlen("G")] = '\0';
     strncpy(header.channels[2].name, "R", 255); header.channels[2].name[strlen("R")] = '\0';
 
-    header.pixel_types = (int *)malloc(sizeof(int) * header.num_channels); 
+    header.pixel_types = (int *)malloc(sizeof(int) * header.num_channels);
     header.requested_pixel_types = (int *)malloc(sizeof(int) * header.num_channels);
     for (int i = 0; i < header.num_channels; i++) {
         header.pixel_types[i] = TINYEXR_PIXELTYPE_FLOAT; // pixel type of input image
@@ -130,12 +140,14 @@ void Image::save(const std::string &filestem)
     }
     printf("Saved exr file. [ %s ] \n", outputExr.c_str());
 
-    ret = SaveEXRImageToFile(&image, &header, outputSppExr.c_str(), &err);
-    if (ret != TINYEXR_SUCCESS) {
-        fprintf(stderr, "Save EXR err: %s\n", err);
-        return;
+    if (saveCheckpoint) {
+        ret = SaveEXRImageToFile(&image, &header, outputSppExr.c_str(), &err);
+        if (ret != TINYEXR_SUCCESS) {
+            fprintf(stderr, "Save EXR err: %s\n", err);
+            return;
+        }
+        printf("Saved exr file. [ %s ] \n", outputSppExr.c_str());
     }
-    printf("Saved exr file. [ %s ] \n", outputSppExr.c_str());
 
     free(header.channels);
     free(header.pixel_types);

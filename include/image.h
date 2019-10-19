@@ -12,6 +12,8 @@ public:
     void debug();
 
     void save(const std::string &filestem);
+    void saveCheckpoint(const std::string &filestem);
+
     void write(const std::string &filename);
 
     const std::vector<unsigned char> &data();
@@ -20,6 +22,8 @@ public:
     void setSpp(int spp) { m_spp = spp; }
 
 private:
+    void save(const std::string &filestem, bool saveCheckpoint);
+
     std::string pathFromFilename(const std::string &filename);
 
     int m_height, m_width;
