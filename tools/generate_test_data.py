@@ -66,6 +66,13 @@ def custom_path_json(i, dataset_path):
     }
 
 def run(dir_name, scene_count, dataset_path, test_only=False):
+    dir_path = Path("..") / dir_name
+    if not dir_path.exists():
+        dir_path.mkdir()
+
+    if not dataset_path.exists():
+        dataset_path.mkdir()
+
     for i in range(scene_count):
         cornell_randomizer.one(i, dir_name)
 
@@ -94,5 +101,5 @@ def run(dir_name, scene_count, dataset_path, test_only=False):
 if __name__ == "__main__":
     dataset_path = Path("/home/cjh/workpad/cornell-dataset")
 
-    run("procedural", 100, dataset_path, test_only=False)
-    run("procedural-test", 10, dataset_path, test_only=True)
+    run("procedural", 1, dataset_path, test_only=False)
+    run("procedural-test", 1, dataset_path, test_only=True)
