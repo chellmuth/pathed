@@ -1,9 +1,9 @@
-import json
 import subprocess
 import time
-import tempfile
 from multiprocessing import Process
 from pathlib import Path
+
+import runner
 
 def custom_json(*, spp, port_offset=0, output_directory, integrator, scene, output_name):
     return {
@@ -36,17 +36,6 @@ def custom_json(*, spp, port_offset=0, output_directory, integrator, scene, outp
     }
 
 
-def run_renderer(job_json):
-    with tempfile.NamedTemporaryFile("w") as f:
-        f.write(json.dumps(job_json, indent=2))
-        f.flush()
-
-        try:
-            output = subprocess.check_call(["./pathed", f.name], cwd="../Release")
-        except subprocess.CalledProcessError:
-            print("ERROR CALLING RENDERER!!")
-            print(job_json)
-
 def run_server(server_directory, port_offset, checkpoint_path):
     subprocess.check_output(
         ["pipenv", "run", "python", "server.py", str(port_offset), checkpoint_path],
@@ -67,7 +56,7 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, ser
         scene=scene,
         output_name=output_name
     )
-    render_process = Process(target=run_renderer, args=(job_json,))
+    render_process = Process(target=runner.run_renderer, args=(job_json,))
     render_process.start()
 
     return server_process, render_process
@@ -107,7 +96,7 @@ def go(scene_directory, server_directory, iteration):
         scene=scene_json,
         output_name="Path",
     )
-    path_process = Process(target=run_renderer, args=(path_job_json,))
+    path_process = Process(target=runner.run_renderer, args=(path_job_json,))
     path_process.start()
 
     gt_job_json = custom_json(
@@ -117,7 +106,7 @@ def go(scene_directory, server_directory, iteration):
         scene=scene_json,
         output_name="GT",
     )
-    gt_process = Process(target=run_renderer, args=(gt_job_json,))
+    gt_process = Process(target=runner.run_renderer, args=(gt_job_json,))
     gt_process.start()
 
     p1.join()

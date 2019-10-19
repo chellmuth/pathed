@@ -4,16 +4,17 @@ import tempfile
 from pathlib import Path
 
 import cornell_randomizer
+import runner
 
-def custom_pdf_json(i, dataset_path):
+def custom_pdf_json(i, render_path, scene_path):
     return {
         "force": True,
         "spp": -1,
 
-        "output_directory": str(dataset_path / f"iteration-{i:04d}"),
+        "output_directory": str(render_path / f"iteration-{i:04d}"),
         "output_name": "--",
         "integrator": "PDFIntegrator",
-        "scene": f"procedural/cornell-{i:04d}.json",
+        "scene": str(scene_path / f"cornell-{i:04d}.json"),
         "showUI": False,
 
         "startBounce": 2,
@@ -35,15 +36,15 @@ def custom_pdf_json(i, dataset_path):
         "height": 400
     }
 
-def custom_path_json(i, dataset_path):
+def custom_path_json(i, render_path, scene_path):
     return {
         "force": True,
         "spp": 32,
 
-        "output_directory": str(dataset_path / f"iteration-{i:04d}"),
+        "output_directory": str(render_path / f"iteration-{i:04d}"),
         "output_name": "--",
         "integrator": "PathTracer",
-        "scene": f"procedural/cornell-{i:04d}.json",
+        "scene": str(scene_path / f"cornell-{i:04d}.json"),
         "showUI": False,
 
         "startBounce": 2,
@@ -65,41 +66,72 @@ def custom_path_json(i, dataset_path):
         "height": 400
     }
 
-def run(dir_name, scene_count, dataset_path, test_only=False):
-    dir_path = Path("..") / dir_name
-    if not dir_path.exists():
-        dir_path.mkdir()
-
-    if not dataset_path.exists():
-        dataset_path.mkdir()
-
+def run(scene_count, dataset_info, mode):
     for i in range(scene_count):
-        cornell_randomizer.one(i, dir_name)
+        cornell_randomizer.one(i, dataset_info.scene_path(mode))
 
-        if test_only: continue
+        if mode == "test": continue
 
-        job_content = custom_pdf_json(i, dataset_path)
-        with tempfile.NamedTemporaryFile("w") as f:
-            f.write(json.dumps(job_content, indent=2))
-            f.flush()
+        pdf_job = custom_pdf_json(
+            i,
+            dataset_info.render_path(mode),
+            dataset_info.scene_path(mode)
+        )
+        runner.run_renderer(pdf_job)
 
-            try:
-                output = subprocess.check_call(["./pathed", f.name], cwd="../Release")
-            except subprocess.CalledProcessError:
-                print("ERROR (pdf)!", i)
+        path_job = custom_path_json(
+            i,
+            dataset_info.render_path(mode),
+            dataset_info.scene_path(mode)
+        )
+        runner.run_renderer(path_job)
 
-        job_content = custom_path_json(i, dataset_path)
-        with tempfile.NamedTemporaryFile("w") as f:
-            f.write(json.dumps(job_content, indent=2))
-            f.flush()
+class DatasetInfo:
+    def __init__(self, root):
+        self.root = Path(root)
 
-            try:
-                output = subprocess.check_call(["./pathed", f.name], cwd="../Release")
-            except subprocess.CalledProcessError:
-                print("ERROR! (path)", i)
+        self.train = self.root / "train"
+        self.test = self.root / "test"
+
+        self.train_scenes = self.train / "scenes"
+        self.test_scenes = self.test / "scenes"
+
+        self.train_renders = self.train / "renders"
+        self.test_renders = self.test / "renders"
+
+    def check_and_create(self):
+        directories = [
+            self.root,
+            self.train,
+            self.test,
+            self.train_scenes,
+            self.test_scenes,
+            self.train_renders,
+            self.test_renders
+        ]
+
+        for directory in directories:
+            directory.mkdir(exist_ok=True)
+
+    def scene_path(self, mode):
+        if mode == "train":
+            return self.train_scenes
+        if mode == "test":
+            return self.test_scenes
+
+        raise ValueError("Unsupported mode")
+
+    def render_path(self, mode):
+        if mode == "train":
+            return self.train_renders
+        if mode == "test":
+            return self.test_renders
+
+        raise ValueError("Unsupported mode")
 
 if __name__ == "__main__":
-    dataset_path = Path("/home/cjh/workpad/cornell-dataset")
+    dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset")
+    dataset_info.check_and_create()
 
-    run("procedural", 1, dataset_path, test_only=False)
-    run("procedural-test", 1, dataset_path, test_only=True)
+    run(1, dataset_info, "train")
+    run(1, dataset_info, "test")
