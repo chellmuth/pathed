@@ -3,6 +3,7 @@ import subprocess
 import time
 import tempfile
 from multiprocessing import Process
+from pathlib import Path
 
 def custom_json(*, spp, port_offset=0, output_directory, integrator, scene, output_name):
     return {
@@ -46,14 +47,14 @@ def run_renderer(job_json):
             print("ERROR CALLING RENDERER!!")
             print(job_json)
 
-def run_server(port_offset, checkpoint_path):
+def run_server(server_directory, port_offset, checkpoint_path):
     subprocess.check_output(
         ["pipenv", "run", "python", "server.py", str(port_offset), checkpoint_path],
-        cwd="/home/cjh/workpad/src/nsf/"
+        cwd=server_directory
     )
 
-def run_our_render(*, checkpoint_path, output_name, output_directory, scene, port_offset):
-    server_process = Process(target=run_server, args=(port_offset, checkpoint_path))
+def run_our_render(*, checkpoint_path, output_name, output_directory, scene, server_directory, port_offset):
+    server_process = Process(target=run_server, args=(server_directory, port_offset, checkpoint_path))
     server_process.start()
 
     time.sleep(10) # make sure server starts up
@@ -71,29 +72,33 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, por
 
     return server_process, render_process
 
-def go(iteration):
-    scene = f"procedural/cornell-{iteration}"
+def go(scene_directory, server_directory, iteration):
+    experiment_root = Path("/home/cjh/workpad/cornell-dataset/20191018-streaming-dataset")
+
+    scene = f"{scene_directory}/cornell-{iteration}"
     scene_json = scene + ".json"
-    ours_one_out = f"/tmp/test-{iteration}-one"
-    ours_many_out = f"/tmp/test-{iteration}-many"
-    path_out = f"/tmp/test-{iteration}-path"
-    gt_out = f"/tmp/test-{iteration}-gt"
+    ours_one_out = str(experiment_root / f"test-{iteration}-one")
+    ours_many_out = str(experiment_root / f"test-{iteration}-many")
+    path_out = str(experiment_root / f"test-{iteration}-path")
+    gt_out = str(experiment_root / f"test-{iteration}-gt")
 
     p1, p2 = run_our_render(
         scene=scene_json,
-        checkpoint_path="/home/cjh/workpad/src/nsf/roots/tmp/decomposition-flows/checkpoints/20191012-random-cornell.t",
-        output_name="Ours (trained many)",
+        checkpoint_path="/home/cjh/src/nsf/roots/tmp/decomposition-flows/checkpoints/20191015-streaming-dataset.t",
+        output_name="Ours",
         output_directory=ours_many_out,
+        server_directory=server_directory,
         port_offset=0,
     )
 
-    p3, p4 = run_our_render(
-        scene=scene_json,
-        checkpoint_path="/home/cjh/workpad/src/nsf/roots/tmp/decomposition-flows/checkpoints/direct-only.t",
-        output_name="Ours (trained one)",
-        output_directory=ours_one_out,
-        port_offset=1,
-    )
+    # p3, p4 = run_our_render(
+    #     scene=scene_json,
+    #     checkpoint_path="/home/cjh/workpad/src/nsf/roots/tmp/decomposition-flows/checkpoints/direct-only.t",
+    #     output_name="Ours (trained one)",
+    #     output_directory=ours_one_out,
+    #     server_directory=server_directory,
+    #     port_offset=1,
+    # )
 
     path_job_json = custom_json(
         spp=128,
@@ -117,8 +122,8 @@ def go(iteration):
 
     p1.join()
     p2.join()
-    p3.join()
-    p4.join()
+    # p3.join()
+    # p4.join()
 
     path_process.join()
     gt_process.join()
@@ -129,6 +134,9 @@ def go(iteration):
     ))
 
 if __name__ == "__main__":
+    scene_directory = "procedural-test"
+    server_directory = "/home/cjh/src/nsf/"
+
     iterations = [
         f"{i:04d}"
         for i in range(10)
@@ -136,4 +144,4 @@ if __name__ == "__main__":
     print(iterations)
 
     for iteration in iterations:
-        go(iteration)
+        go(scene_directory, server_directory, iteration)
