@@ -75,7 +75,7 @@ void Image::save(const std::string &filestem)
 
 void Image::saveCheckpoint(const std::string &filestem)
 {
-    save(filestem);
+    save(filestem, true);
 }
 
 void Image::save(const std::string &filestem, bool saveCheckpoint)

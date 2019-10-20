@@ -51,7 +51,7 @@ class DatasetInfo:
         raise ValueError("Unsupported mode")
 
     def experiment_path(self, experiment):
-        path = self.root / experiment
-        path.mkdir(exist_ok=True)
+        path = self.root / "experiments" / experiment
+        path.mkdir(parents=True, exist_ok=True)
 
         return path

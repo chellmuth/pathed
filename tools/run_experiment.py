@@ -43,14 +43,14 @@ def run_server(server_directory, port_offset, checkpoint_path):
         cwd=server_directory
     )
 
-def run_our_render(*, checkpoint_path, output_name, output_directory, scene, server_directory, port_offset):
+def run_our_render(*, spp, checkpoint_path, output_name, output_directory, scene, server_directory, port_offset):
     server_process = Process(target=run_server, args=(server_directory, port_offset, checkpoint_path))
     server_process.start()
 
     time.sleep(10) # make sure server starts up
 
     job_json = custom_json(
-        spp=128,
+        spp=spp,
         port_offset=port_offset,
         output_directory=output_directory,
         integrator="DataParallelIntegrator",
@@ -62,7 +62,7 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, ser
 
     return server_process, render_process
 
-def go(experiment_name, dataset_info, server_directory, checkpoint_path, iteration):
+def go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, iteration):
     scene = dataset_info.scene("test", iteration)
     scene_json = str(scene) + ".json"
 
@@ -73,6 +73,7 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, iterati
     gt_out = str(experiment_path / f"test-{iteration}-gt")
 
     p1, p2 = run_our_render(
+        spp=spp,
         scene=scene_json,
         checkpoint_path=checkpoint_path,
         output_name="Ours",
@@ -91,7 +92,7 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, iterati
     # )
 
     path_job_json = custom_json(
-        spp=128,
+        spp=spp,
         output_directory=path_out,
         integrator="PathTracer",
         scene=scene_json,
@@ -124,12 +125,14 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, iterati
     ))
 
 if __name__ == "__main__":
+    spp = 32
+
     dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset")
     scene_directory = dataset_info.scene_path("test")
     nsf_path = Path("/home/cjh/workpad/src/nsf/")
     server_directory = str(nsf_path)
 
-    experiment_name = "20191019-both-blocks-random"
+    experiment_name = "20191019-24-bins"
     experiment_path = dataset_info.experiment_path(experiment_name)
     checkpoint_path = nsf_path / f"roots/tmp/decomposition-flows/checkpoints/{experiment_name}.t"
 
@@ -140,4 +143,4 @@ if __name__ == "__main__":
     print(iterations)
 
     for iteration in iterations:
-        go(experiment_name, dataset_info, server_directory, checkpoint_path, iteration)
+        go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, iteration)
