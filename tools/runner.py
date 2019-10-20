@@ -12,3 +12,6 @@ def run_renderer(job_json):
         except subprocess.CalledProcessError:
             print("ERROR CALLING RENDERER!!")
             print(job_json)
+
+def skip(directory):
+    print(f"Skipping {directory}")

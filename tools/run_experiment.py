@@ -43,7 +43,27 @@ def run_server(server_directory, port_offset, checkpoint_path):
         cwd=server_directory
     )
 
+def run_path_tracer(job_json, output_directory):
+    if check_freeze(output_directory):
+        dummy = Process(target=runner.skip, args=(output_directory,))
+        dummy.start()
+
+        return dummy
+
+    path_process = Process(target=runner.run_renderer, args=(job_json,))
+    path_process.start()
+
+    return path_process
+
 def run_our_render(*, spp, checkpoint_path, output_name, output_directory, scene, server_directory, port_offset):
+    if check_freeze(output_directory):
+        dummy1 = Process(target=runner.skip, args=(output_directory,))
+        dummy2 = Process(target=runner.skip, args=(output_directory,))
+        dummy1.start()
+        dummy2.start()
+
+        return dummy1, dummy2
+
     server_process = Process(target=run_server, args=(server_directory, port_offset, checkpoint_path))
     server_process.start()
 
@@ -61,6 +81,14 @@ def run_our_render(*, spp, checkpoint_path, output_name, output_directory, scene
     render_process.start()
 
     return server_process, render_process
+
+def freeze(directory):
+    freeze_file = Path(directory) / ".freeze"
+    freeze_file.touch(exist_ok=True)
+
+def check_freeze(directory):
+    freeze_file = Path(directory) / ".freeze"
+    return freeze_file.exists()
 
 def go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, iteration):
     scene = dataset_info.scene("test", iteration)
@@ -97,8 +125,7 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, it
         scene=scene_json,
         output_name="Path",
     )
-    path_process = Process(target=runner.run_renderer, args=(path_job_json,))
-    path_process.start()
+    path_process = run_path_tracer(path_job_json, path_out)
 
     gt_job_json = custom_json(
         spp=2 ** 12,
@@ -107,16 +134,20 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, it
         scene=scene_json,
         output_name="GT",
     )
-    gt_process = Process(target=runner.run_renderer, args=(gt_job_json,))
-    gt_process.start()
+    gt_process = run_path_tracer(gt_job_json, gt_out)
 
     p1.join()
     p2.join()
+    freeze(ours_out)
+
     # p3.join()
     # p4.join()
 
     path_process.join()
+    freeze(path_out)
+
     gt_process.join()
+    freeze(gt_out)
 
     print("We're done!")
     print("python error_reports.py {} --gt {}/auto.exr --includes {} --includes {}".format(
