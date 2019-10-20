@@ -15,6 +15,9 @@ class DatasetInfo:
 
         self.train_data = self.train / "data"
 
+        self.experiments = self.root / "experiments"
+        self.comparisons = self.experiments / "comparisons"
+
     def check_and_create(self):
         directories = [
             self.root,
@@ -25,6 +28,8 @@ class DatasetInfo:
             self.train_renders,
             self.test_renders,
             self.train_data,
+            self.experiments,
+            self.comparisons,
         ]
 
         for directory in directories:
@@ -50,8 +55,11 @@ class DatasetInfo:
 
         raise ValueError("Unsupported mode")
 
-    def experiment_path(self, experiment):
-        path = self.root / "experiments" / experiment
-        path.mkdir(parents=True, exist_ok=True)
+    def comparison_path(self, comparison):
+        return self.comparisons / comparison
 
-        return path
+    def experiment_path(self, experiment, iteration):
+        experiment_root = self.experiments / experiment
+        experiment_root.mkdir(exist_ok=True)
+
+        return experiment_root / str(iteration)

@@ -66,11 +66,10 @@ def go(experiment_name, dataset_info, server_directory, checkpoint_path, spp, it
     scene = dataset_info.scene("test", iteration)
     scene_json = str(scene) + ".json"
 
-    experiment_path = dataset_info.experiment_path(experiment_name)
+    ours_out = str(dataset_info.experiment_path(experiment_name, iteration))
     # ours_one_out = str(experiment_path / f"test-{iteration}-one")
-    ours_out = str(experiment_path / f"test-{iteration}-ours")
-    path_out = str(experiment_path / f"test-{iteration}-path")
-    gt_out = str(experiment_path / f"test-{iteration}-gt")
+    path_out = str(dataset_info.comparison_path(f"path-{iteration}"))
+    gt_out = str(dataset_info.comparison_path(f"gt-{iteration}"))
 
     p1, p2 = run_our_render(
         spp=spp,
@@ -133,7 +132,6 @@ if __name__ == "__main__":
     server_directory = str(nsf_path)
 
     experiment_name = "20191019-24-bins"
-    experiment_path = dataset_info.experiment_path(experiment_name)
     checkpoint_path = nsf_path / f"roots/tmp/decomposition-flows/checkpoints/{experiment_name}.t"
 
     iterations = [
