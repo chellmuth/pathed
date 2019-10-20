@@ -5,6 +5,7 @@ from pathlib import Path
 
 import cornell_randomizer
 import runner
+from dataset_info import DatasetInfo
 
 def custom_pdf_json(i, pdf_samples, render_path, scene_path):
     return {
@@ -72,6 +73,13 @@ def run(scene_count, pdf_samples, dataset_info, mode):
     for i in range(scene_count):
         cornell_randomizer.one(i, dataset_info.scene_path(mode))
 
+        path_job = custom_path_json(
+            i,
+            dataset_info.render_path(mode),
+            dataset_info.scene_path(mode)
+        )
+        runner.run_renderer(path_job)
+
         if mode == "test": continue
 
         pdf_job = custom_pdf_json(
@@ -82,55 +90,6 @@ def run(scene_count, pdf_samples, dataset_info, mode):
         )
         runner.run_renderer(pdf_job)
 
-        path_job = custom_path_json(
-            i,
-            dataset_info.render_path(mode),
-            dataset_info.scene_path(mode)
-        )
-        runner.run_renderer(path_job)
-
-class DatasetInfo:
-    def __init__(self, root):
-        self.root = Path(root)
-
-        self.train = self.root / "train"
-        self.test = self.root / "test"
-
-        self.train_scenes = self.train / "scenes"
-        self.test_scenes = self.test / "scenes"
-
-        self.train_renders = self.train / "renders"
-        self.test_renders = self.test / "renders"
-
-    def check_and_create(self):
-        directories = [
-            self.root,
-            self.train,
-            self.test,
-            self.train_scenes,
-            self.test_scenes,
-            self.train_renders,
-            self.test_renders
-        ]
-
-        for directory in directories:
-            directory.mkdir(exist_ok=True)
-
-    def scene_path(self, mode):
-        if mode == "train":
-            return self.train_scenes
-        if mode == "test":
-            return self.test_scenes
-
-        raise ValueError("Unsupported mode")
-
-    def render_path(self, mode):
-        if mode == "train":
-            return self.train_renders
-        if mode == "test":
-            return self.test_renders
-
-        raise ValueError("Unsupported mode")
 
 if __name__ == "__main__":
     training_scenes = 100

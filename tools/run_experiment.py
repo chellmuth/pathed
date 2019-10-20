@@ -4,6 +4,7 @@ from multiprocessing import Process
 from pathlib import Path
 
 import runner
+from dataset_info import DatasetInfo
 
 def custom_json(*, spp, port_offset=0, output_directory, integrator, scene, output_name):
     return {
@@ -61,21 +62,21 @@ def run_our_render(*, checkpoint_path, output_name, output_directory, scene, ser
 
     return server_process, render_process
 
-def go(scene_directory, server_directory, iteration):
-    experiment_root = Path("/home/cjh/workpad/cornell-dataset/20191018-streaming-dataset")
+def go(experiment_name, dataset_info, server_directory, checkpoint_path, iteration):
+    scene = dataset_info.scene("test", iteration)
+    scene_json = str(scene) + ".json"
 
-    scene = f"{scene_directory}/cornell-{iteration}"
-    scene_json = scene + ".json"
-    ours_one_out = str(experiment_root / f"test-{iteration}-one")
-    ours_many_out = str(experiment_root / f"test-{iteration}-many")
-    path_out = str(experiment_root / f"test-{iteration}-path")
-    gt_out = str(experiment_root / f"test-{iteration}-gt")
+    experiment_path = dataset_info.experiment_path(experiment_name)
+    # ours_one_out = str(experiment_path / f"test-{iteration}-one")
+    ours_out = str(experiment_path / f"test-{iteration}-ours")
+    path_out = str(experiment_path / f"test-{iteration}-path")
+    gt_out = str(experiment_path / f"test-{iteration}-gt")
 
     p1, p2 = run_our_render(
         scene=scene_json,
-        checkpoint_path="/home/cjh/src/nsf/roots/tmp/decomposition-flows/checkpoints/20191015-streaming-dataset.t",
+        checkpoint_path=checkpoint_path,
         output_name="Ours",
-        output_directory=ours_many_out,
+        output_directory=ours_out,
         server_directory=server_directory,
         port_offset=0,
     )
@@ -118,13 +119,19 @@ def go(scene_directory, server_directory, iteration):
     gt_process.join()
 
     print("We're done!")
-    print("python error_reports.py {} --gt {}/auto.exr --includes {} --includes {} --includes {}".format(
-        scene, gt_out, ours_many_out, ours_one_out, path_out
+    print("python error_reports.py {} --gt {}/auto.exr --includes {} --includes {}".format(
+        scene, gt_out, ours_out, path_out
     ))
 
 if __name__ == "__main__":
-    scene_directory = "procedural-test"
-    server_directory = "/home/cjh/src/nsf/"
+    dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset")
+    scene_directory = dataset_info.scene_path("test")
+    nsf_path = Path("/home/cjh/workpad/src/nsf/")
+    server_directory = str(nsf_path)
+
+    experiment_name = "20191019-both-blocks-random"
+    experiment_path = dataset_info.experiment_path(experiment_name)
+    checkpoint_path = nsf_path / f"roots/tmp/decomposition-flows/checkpoints/{experiment_name}.t"
 
     iterations = [
         f"{i:04d}"
@@ -133,4 +140,4 @@ if __name__ == "__main__":
     print(iterations)
 
     for iteration in iterations:
-        go(scene_directory, server_directory, iteration)
+        go(experiment_name, dataset_info, server_directory, checkpoint_path, iteration)
