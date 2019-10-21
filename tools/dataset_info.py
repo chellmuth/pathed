@@ -11,7 +11,7 @@ class DatasetInfo:
         self.test_scenes = self.test / "scenes"
 
         self.train_renders = self.train / "renders"
-        self.test_renders = self.train / "renders"
+        self.test_renders = self.test / "renders"
 
         self.train_data = self.train / "data"
 

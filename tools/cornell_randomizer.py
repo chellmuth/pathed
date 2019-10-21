@@ -145,7 +145,7 @@ def write_transformed_points(f, transformed_points):
         "f -4 -3 -2 -1",
         "f -4 -3 -2 -1",
         "f -4 -3 -2 -1",
-        "f -4 -3 -2 -1",
+        "f -1 -2 -3 -4",
     ]
 
     for i in range(len(transformed_points) // 4):
