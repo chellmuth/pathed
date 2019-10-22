@@ -42,7 +42,7 @@ private:
     std::vector<Vector3> m_normals;
     std::vector<UV> m_uvs;
 
-    /* std::vector<Vector3> m_vertexNormals; */
+    std::vector<Vector3> m_vertexNormals;
     std::vector<UV> m_vertexUVs;
 
     std::vector<std::shared_ptr<Surface>> m_surfaces;
@@ -60,12 +60,19 @@ private:
     void processUseMaterial(std::string &materialArgs);
 
     void processFace(Triangle *face);
-    void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
+
+    void processTriangle(
+        int vertexIndex0, int vertexIndex1, int vertexIndex2,
+        int normalIndex0, int normalIndex1, int normalIndex2,
+        int UVIndex0, int UVIndex1, int UVIndex2
+    );
     void processTriangle(
         int vertexIndex0, int vertexIndex1, int vertexIndex2,
         int UVIndex0, int UVIndex1, int UVIndex2
     );
+    void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
 
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
     bool processSingleFaceTriplets(std::string &faceArgs);
+    bool processSingleFaceTripletsVertexAndUV(std::string &faceArgs);
 };

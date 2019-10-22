@@ -58,7 +58,7 @@ Color PathTracer::L(
         float invPDF = 1.f / pdf;
 
         modulation *= f
-            * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
+            * fmaxf(0.f, bounceDirection.dot(lastIntersection.shadingNormal))
             * invPDF;
         lastIntersection = bounceIntersection;
 
@@ -123,7 +123,7 @@ Color PathTracer::direct(
 
     return light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection, wo)
-        * fmaxf(0.f, wo.dot(intersection.normal))
+        * fmaxf(0.f, wo.dot(intersection.shadingNormal))
         * invPDF;
 }
 

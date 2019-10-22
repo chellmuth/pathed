@@ -14,6 +14,7 @@ struct Intersection {
     Point3 point;
     Vector3 wi;
     Vector3 normal;
+    Vector3 shadingNormal;
     UV uv;
     Material *material;
 };
@@ -23,6 +24,7 @@ namespace IntersectionHelper {
         false,
         std::numeric_limits<float>::max(),
         Point3(0.f, 0.f, 0.f),
+        Vector3(0.f),
         Vector3(0.f),
         Vector3(0.f),
         { 0.f, 0.f },

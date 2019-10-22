@@ -93,11 +93,11 @@ def run(scene_count, pdf_samples, dataset_info, mode):
 
 if __name__ == "__main__":
     training_scenes = 100
-    test_scenes = 10
+    test_scenes = 100
     pdf_samples = 50
 
-    dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset")
+    dataset_info = DatasetInfo("/home/cjh/workpad/cornell-dataset--previz")
     dataset_info.check_and_create()
 
-    run(training_scenes, pdf_samples, dataset_info, "train")
+    # run(training_scenes, pdf_samples, dataset_info, "train")
     run(test_scenes, None, dataset_info, "test")

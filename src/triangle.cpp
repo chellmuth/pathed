@@ -88,6 +88,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .point = hitPoint,
         .wi = ray.direction(),
         .normal = e2.cross(e1).normalized(),
+        .shadingNormal = e2.cross(e1).normalized(),
         .uv = uv,
         .material = nullptr
     };
