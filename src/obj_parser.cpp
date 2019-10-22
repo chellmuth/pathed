@@ -82,8 +82,19 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         m_vertices.size()                 /* item count */
     );
 
-    for (i = 0; i < m_vertices.size() * 2; i++) {
-        rtcUVs[i] = 0.f;
+    const unsigned long vertexUVsSize = m_vertexUVs.size();
+    const unsigned long verticesSize = m_vertices.size();
+    if (vertexUVsSize < verticesSize) {
+        std::cout << "Reserving more vertex UVs (" << vertexUVsSize << ", " << verticesSize << ")" << std::endl;
+        m_vertexUVs.resize(m_vertices.size());
+        for (int i = vertexUVsSize; i < verticesSize; i++) {
+            m_vertexUVs[i] = {0.f, 0.f};
+        }
+    }
+
+    for (i = 0; i < m_vertices.size(); i++) {
+        rtcUVs[2 * i + 0] = m_vertexUVs[i].u;
+        rtcUVs[2 * i + 1] = m_vertexUVs[i].v;
     }
 
     // i = 0;
@@ -258,6 +269,11 @@ void ObjParser::processTriangle(
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
     m_faces.push_back(vertexIndex2);
+
+    m_vertexUVs.resize(m_vertices.size());
+    m_vertexUVs[vertexIndex0] = m_uvs[UVIndex0];
+    m_vertexUVs[vertexIndex1] = m_uvs[UVIndex1];
+    m_vertexUVs[vertexIndex2] = m_uvs[UVIndex2];
 }
 
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
