@@ -82,19 +82,23 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         m_vertices.size()                 /* item count */
     );
 
-    i = 0;
-    for (auto &uv : m_uvs) {
-        rtcUVs[2 * i + 0] = uv.u;
-        rtcUVs[2 * i + 1] = uv.v;
-        i += 1;
+    for (i = 0; i < m_vertices.size() * 2; i++) {
+        rtcUVs[i] = 0.f;
     }
 
-    // If this object doesn't do UVs, supply them anyway for now
-    if (i == 0) {
-        for (i = 0; i < m_vertices.size() * 2; i++) {
-            rtcUVs[i] = 0.f;
-        }
-    }
+    // i = 0;
+    // for (auto &uv : m_uvs) {
+    //     rtcUVs[2 * i + 0] = uv.u;
+    //     rtcUVs[2 * i + 1] = uv.v;
+    //     i += 1;
+    // }
+
+    // // If this object doesn't do UVs, supply them anyway for now
+    // if (i == 0) {
+    //     for (i = 0; i < m_vertices.size() * 2; i++) {
+    //         rtcUVs[i] = 0.f;
+    //     }
+    // }
 
     rtcCommitGeometry(rtcMesh);
 
@@ -296,7 +300,7 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 {
-    static std::regex expression("(\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+)\\s*");
+    static std::regex expression("(-?\\d+)/(-?\\d*)/(-?\\d+) (-?\\d+)/(-?\\d*)/(-?\\d+) (-?\\d+)/(-\\d*)/(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 

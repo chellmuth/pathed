@@ -1,0 +1,16 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "1", "6.8" ],
+      "target": [ "0", "1", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "19.5"
+  },
+  "models": [
+    {
+      "type": "obj",
+      "filename": "cornell-glossy/CornellBox-Glossy.obj"
+    }
+  ]
+}
