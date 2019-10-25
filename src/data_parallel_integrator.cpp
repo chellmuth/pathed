@@ -12,7 +12,8 @@
 
 #include <mutex>
 
-DataParallelIntegrator::DataParallelIntegrator()
+DataParallelIntegrator::DataParallelIntegrator(BounceController bounceController)
+    : m_bounceController(bounceController)
 {
     m_dataSource = std::make_shared<DataSource>();
 }
@@ -243,7 +244,7 @@ std::vector<float> DataParallelIntegrator::visualizePDF(
     return pdfs;
 }
 
-void DataParallelIntegrator::calculateLighting(
+void DataParallelIntegrator::generateBounceIntersections(
     int rows, int cols,
     const Scene &scene,
     RandomGenerator &random,
@@ -251,13 +252,14 @@ void DataParallelIntegrator::calculateLighting(
     std::vector<float> &thetas,
     std::vector<float> &pdfs,
     std::vector<Intersection> &intersections,
-    std::vector<Color> &colors
+    std::vector<Color> &modulations
 ) {
     for (int i = 0; i < rows * cols; i++) {
         int row = (int)floorf(i / cols);
         int col = i % cols;
 
-        const Intersection &intersection = intersections[i];
+        // copy since we're going to overwrite
+        const Intersection intersection = intersections[i];
         if (!intersection.hit) {
             continue;
         }
@@ -281,16 +283,39 @@ void DataParallelIntegrator::calculateLighting(
         );
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
-        if (!bounceIntersection.hit) { continue; }
+        intersections[i] = bounceIntersection;
+
+        if (!bounceIntersection.hit) {
+            continue;
+        }
 
         Color f = intersection.material->f(intersection, bounceDirection);
         float invPDF = 1.f / pdfs[i];
 
-        Color modulation = f
+        modulations[i] *= f
             * fmaxf(0.f, bounceDirection.dot(intersection.normal))
             * invPDF;
+    }
+}
 
-        colors[i] = direct(bounceIntersection, scene, random) * modulation;
+void DataParallelIntegrator::calculateDirectLighting(
+    int rows, int cols,
+    const Scene &scene,
+    RandomGenerator &random,
+    std::vector<Intersection> &intersections,
+    std::vector<Color> &modulations,
+    std::vector<Color> &colors
+) {
+    for (int i = 0; i < rows * cols; i++) {
+        int row = (int)floorf(i / cols);
+        int col = i % cols;
+
+        const Intersection &intersection = intersections[i];
+        if (!intersection.hit) {
+            continue;
+        }
+
+        colors[i] += direct(intersection, scene, random) * modulations[i];
     }
 }
 
@@ -310,6 +335,7 @@ void DataParallelIntegrator::sampleImage(
     std::vector<Color> results(rows * cols, Color(0.f));
 
     generateInitialIntersections(rows, cols, scene, intersections);
+
     generatePhotonBundles(rows, cols, scene, intersections, photonBundles);
 
     std::vector<float> phis(rows * cols, -1.f);
@@ -318,14 +344,38 @@ void DataParallelIntegrator::sampleImage(
 
     batchSamplePDFs(rows, cols, phis, thetas, pdfs, photonBundles);
 
-    calculateLighting(
-        rows, cols,
-        scene,
-        random,
-        phis, thetas, pdfs,
-        intersections,
-        results
-    );
+    if (m_bounceController.checkCounts(1)) {
+        calculateDirectLighting(
+            rows, cols,
+            scene,
+            random,
+            intersections,
+            modulations,
+            results
+        );
+    }
+
+    for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
+        generateBounceIntersections(
+            rows, cols,
+            scene,
+            random,
+            phis, thetas, pdfs,
+            intersections,
+            modulations
+        );
+
+        if (m_bounceController.checkCounts(bounce)) {
+            calculateDirectLighting(
+                rows, cols,
+                scene,
+                random,
+                intersections,
+                modulations,
+                results
+            );
+        }
+    }
 
     for (int i = 0; i < rows * cols; i++) {
         int row = (int)floorf(i / cols);
