@@ -334,15 +334,11 @@ void DataParallelIntegrator::sampleImage(
     std::vector<Color> modulations(rows * cols, Color(1.f));
     std::vector<Color> results(rows * cols, Color(0.f));
 
-    generateInitialIntersections(rows, cols, scene, intersections);
-
-    generatePhotonBundles(rows, cols, scene, intersections, photonBundles);
-
     std::vector<float> phis(rows * cols, -1.f);
     std::vector<float> thetas(rows * cols, -1.f);
     std::vector<float> pdfs(rows * cols, -1.f);
 
-    batchSamplePDFs(rows, cols, phis, thetas, pdfs, photonBundles);
+    generateInitialIntersections(rows, cols, scene, intersections);
 
     if (m_bounceController.checkCounts(1)) {
         calculateDirectLighting(
@@ -356,6 +352,9 @@ void DataParallelIntegrator::sampleImage(
     }
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
+        generatePhotonBundles(rows, cols, scene, intersections, photonBundles);
+        batchSamplePDFs(rows, cols, phis, thetas, pdfs, photonBundles);
+
         generateBounceIntersections(
             rows, cols,
             scene,
