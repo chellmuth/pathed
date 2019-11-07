@@ -52,7 +52,12 @@ def read_photon_file(photon_path):
     with open(photon_path, "rb") as f:
         data = f.read(3 * FloatSize)
         position = struct.unpack("3f", data)
+
+        data = f.read(3 * FloatSize)
+        normal = struct.unpack("3f", data)
+
         print(position)
+        print(normal)
 
         adapter = PhotonGridAdapter(Vector(*position))
 
