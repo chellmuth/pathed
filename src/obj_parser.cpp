@@ -296,7 +296,7 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 {
-    static std::regex expression("(\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+)\\s*");
+    static std::regex expression("(\\d+)/(\\d+)/(\\d*) (\\d+)/(\\d+)/(\\d*) (\\d+)/(\\d+)/(\\d*)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
@@ -308,9 +308,9 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     int vertexIndex1 = std::stoi(match[4]);
     int vertexIndex2 = std::stoi(match[7]);
 
-    int UVIndex0 = std::stoi(match[3]);
-    int UVIndex1 = std::stoi(match[6]);
-    int UVIndex2 = std::stoi(match[9]);
+    int UVIndex0 = std::stoi(match[2]);
+    int UVIndex1 = std::stoi(match[5]);
+    int UVIndex2 = std::stoi(match[7]);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
@@ -320,9 +320,29 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     return true;
 }
 
+bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
+{
+    static std::regex expression("(\\d+)//(\\d+) (\\d+)//(\\d+) (\\d+)//(\\d+)\\s*");
+    std::smatch match;
+    std::regex_match (faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[3]);
+    int vertexIndex2 = std::stoi(match[5]);
+
+    processTriangle(vertexIndex0, vertexIndex1, vertexIndex2);
+
+    return true;
+}
+
 void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
+    if (processSingleFaceTripletsVertexAndNormal(faceArgs)) { return; }
     if (processSingleFaceTriplets(faceArgs)) { return; }
 
     string::size_type index;

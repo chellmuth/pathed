@@ -118,7 +118,7 @@ def transform_points(points):
         translate(-center[0], -center[1], -center[2]),
         scale(
             rand_over(0.2, 1.3),
-            rand_over(0.8, 2),
+            rand_over(0.8, 1.6),
             rand_over(0.8, 2)
         ),
         rotate_x(2 * math.pi * random.random()),

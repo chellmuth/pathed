@@ -63,5 +63,6 @@ private:
     );
 
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
+    bool processSingleFaceTripletsVertexAndNormal(std::string &faceArgs);
     bool processSingleFaceTriplets(std::string &faceArgs);
 };

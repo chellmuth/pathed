@@ -76,7 +76,7 @@ std::shared_ptr<Integrator> Job::integrator() const
     } else if (integrator == "SelfIntegrator") {
         return std::make_shared<SelfIntegrator>(m_bounceController);
     } else if (integrator == "DataParallelIntegrator") {
-        return std::make_shared<DataParallelIntegrator>();
+        return std::make_shared<DataParallelIntegrator>(m_bounceController);
     }
     throw "Unimplemented";
 }
