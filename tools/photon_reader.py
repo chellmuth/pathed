@@ -24,10 +24,14 @@ class PhotonData:
 
     def __repr__(self):
         return " - ".join([
-            f"({self.position_x:f}, {self.position_y:f}, {self.position_z:f})",
-            f"({self.source_x:f}, {self.source_y:f}, {self.source_z:f})",
-            f"({self.power_r:f}, {self.power_g:f}, {self.power_b:f})"
+            f"position: ({self.position_x:f}, {self.position_y:f}, {self.position_z:f})",
+            f"source: ({self.source_x:f}, {self.source_y:f}, {self.source_z:f})",
+            f"power: ({self.power_r:f}, {self.power_g:f}, {self.power_b:f})"
         ])
+
+    @property
+    def position(self):
+        return Vector(self.position_x, self.position_y, self.position_z)
 
     @property
     def source(self):
@@ -56,10 +60,18 @@ def read_photon_file(photon_path):
         data = f.read(3 * FloatSize)
         normal = struct.unpack("3f", data)
 
-        print(position)
-        print(normal)
+        data = f.read(3 * FloatSize)
+        wi = struct.unpack("3f", data)
 
-        adapter = PhotonGridAdapter(Vector(*position))
+        print("position:", position)
+        print("normal:", normal)
+        print("wi:", wi)
+
+        adapter = PhotonGridAdapter(
+            Vector(*position),
+            Vector(*normal),
+            Vector(*wi),
+        )
 
         data = f.read(FloatSize)
         count, = struct.unpack("i", data)
@@ -68,7 +80,7 @@ def read_photon_file(photon_path):
         data = f.read(float_count * FloatSize)
         photons = struct.unpack(f"{float_count}f", data)
 
-        print(count)
+        print("photons:", count)
 
         for raw_photon in _chunker(photons):
             photon_data = PhotonData(*raw_photon)

@@ -16,6 +16,13 @@ class Vector:
     def normalized(self):
         return self / self.length()
 
+    def cross(self, other):
+        return Vector(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
+        )
+
     def __sub__(self, other):
         return Vector(
             self.x - other.x,

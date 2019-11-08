@@ -1,14 +1,21 @@
 import math
 
 import coordinates
+from transform import Transform
 from vector import Vector
 
 class PhotonGridAdapter:
-    def __init__(self, position):
+    def __init__(self, position, normal, wi):
         self.position = position
+        self.normal = normal
+        self.wi = wi
+
+        self.to_tangent = Transform.to_tangent(self.normal, self.wi)
+        self.to_world = Transform.to_world(self.normal, self.wi)
 
     def splat_params(self, photon_data):
-        direction = (photon_data.source - self.position).normalized()
+        direction_world = (photon_data.source - self.position).normalized()
+        direction = self.to_tangent.transform_direction(direction_world)
 
         phi, theta = coordinates.cartesian_to_spherical(direction)
         power = sum(photon_data.power) / 3.
