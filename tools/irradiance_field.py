@@ -1,11 +1,14 @@
 import math
 import json
+from pathlib import Path
 
 # This import registers the 3D projection, but is otherwise unused.
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+import photon_reader
 
 def normalized(x, y, z):
     length = math.sqrt(x**2 + y**2 + z**2)
@@ -150,4 +153,5 @@ def run(sample):
 
 
 if __name__ == "__main__":
-    run(json.load(open("../live-photons.json")))
+    run(photon_reader.as_json(Path("/home/cjh/src/mitsuba/photons.bin")))
+    # run(json.load(open("../live-photons.json")))
