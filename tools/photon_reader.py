@@ -68,7 +68,7 @@ def _chunker(raw_photons_data):
     photon_count = len(raw_photons_data) // PhotonSize
 
     return [
-        raw_photons_data[i:i + PhotonSize]
+        raw_photons_data[i * PhotonSize : (i + 1) * PhotonSize]
         for i in range(photon_count)
     ]
 

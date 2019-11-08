@@ -16,6 +16,11 @@ class Vector:
     def normalized(self):
         return self / self.length()
 
+    def dot(self, other):
+        return self.x * other.x \
+            + self.y * other.y \
+            + self.z * other.z
+
     def cross(self, other):
         return Vector(
             self.y * other.z - self.z * other.y,
