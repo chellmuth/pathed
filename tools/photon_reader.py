@@ -107,45 +107,20 @@ def read_photon_bundle(photon_path: Path):
             photons
         )
 
-def read_photon_file(photon_path):
+def build_grid(photon_path: Path):
+    bundle = read_photon_bundle(photon_path)
+
     grid = PhiThetaGrid(10, 10)
+    adapter = PhotonGridAdapter(
+        bundle.position,
+        bundle.normal,
+        bundle.wi,
+    )
 
-    with open(photon_path, "rb") as f:
-        data = f.read(3 * FloatSize)
-        position = struct.unpack("3f", data)
-
-        data = f.read(3 * FloatSize)
-        normal = struct.unpack("3f", data)
-
-        data = f.read(3 * FloatSize)
-        wi = struct.unpack("3f", data)
-
-        print("position:", position)
-        print("normal:", normal)
-        print("wi:", wi)
-
-        adapter = PhotonGridAdapter(
-            Vector(*position),
-            Vector(*normal),
-            Vector(*wi),
-        )
-
-        data = f.read(FloatSize)
-        count, = struct.unpack("i", data)
-
-        float_count = count * PhotonSize
-        data = f.read(float_count * FloatSize)
-        photons = struct.unpack(f"{float_count}f", data)
-
-        print("photons:", count)
-
-        for raw_photon in _chunker(photons):
-            photon_data = PhotonData(*raw_photon)
-            print(photon_data)
-
-            phi, theta, power = adapter.splat_params(photon_data)
-            grid.splat(phi, theta, power)
+    for photon_data in bundle.photons:
+        phi, theta, power = adapter.splat_params(photon_data)
+        grid.splat(phi, theta, power)
 
 
 if __name__ == "__main__":
-    read_photon_file(Path("/home/cjh/src/mitsuba/photons.bin"))
+    build_grid(Path("/home/cjh/src/mitsuba/photons.bin"))
