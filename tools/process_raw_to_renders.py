@@ -18,6 +18,7 @@ def run(raw_path, renders_path):
 
     for photon_path in raw_path.glob("photons*.bin"):
         grid = photon_reader.build_grid(photon_path, (10, 10))
+        grid.export_dat("output.dat")
 
 if __name__ == "__main__":
     run(

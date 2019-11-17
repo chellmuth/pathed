@@ -128,5 +128,7 @@ def build_grid(photon_path: Path, grid_size: Resolution):
 
     print("Splatted Ratio: ", splats / len(bundle.photons))
 
+    return grid
+
 if __name__ == "__main__":
     build_grid(Path("/home/cjh/workpad/src/mitsuba/photons.bin"), (10, 10))

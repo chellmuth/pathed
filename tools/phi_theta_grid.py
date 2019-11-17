@@ -1,4 +1,5 @@
 import math
+import struct
 
 import coordinates
 from transform import Transform
@@ -55,3 +56,15 @@ class PhiThetaGrid:
             return True
 
         return False
+
+    def export_dat(self, output_path):
+        grid_sum = sum(self.grid)
+        if grid_sum == 0:
+            pdf = [ 0 for cell in self.grid ]
+        else:
+            pdf = [ cell / grid_sum for cell in self.grid ]
+
+        output_file = open(str(output_path), mode="wb")
+        float_data = struct.pack(f"{self.length}f", *pdf)
+        output_file.write(float_data)
+        output_file.close()
