@@ -1,7 +1,7 @@
 import struct
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from phi_theta_grid import PhiThetaGrid, PhotonGridAdapter
 from vector import Vector
@@ -107,7 +107,8 @@ def read_photon_bundle(photon_path: Path):
             photons
         )
 
-def build_grid(photon_path: Path):
+Resolution = Tuple[int, int]
+def build_grid(photon_path: Path, grid_size: Resolution):
     bundle = read_photon_bundle(photon_path)
 
     grid = PhiThetaGrid(10, 10)
@@ -117,10 +118,15 @@ def build_grid(photon_path: Path):
         bundle.wi,
     )
 
+    splats = 0
     for photon_data in bundle.photons:
         phi, theta, power = adapter.splat_params(photon_data)
-        grid.splat(phi, theta, power)
+        success = grid.splat(phi, theta, power)
 
+        if success:
+            splats += 1
+
+    print("Splatted Ratio: ", splats / len(bundle.photons))
 
 if __name__ == "__main__":
-    build_grid(Path("/home/cjh/src/mitsuba/photons.bin"))
+    build_grid(Path("/home/cjh/workpad/src/mitsuba/photons.bin"), (10, 10))

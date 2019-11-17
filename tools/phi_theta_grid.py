@@ -50,4 +50,8 @@ class PhiThetaGrid:
     def splat(self, phi, theta, value):
         index = self._index(phi, theta)
 
-        self.grid[index] += value
+        if 0 <= index < self.length:
+            self.grid[index] += value
+            return True
+
+        return False

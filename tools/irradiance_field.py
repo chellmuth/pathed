@@ -153,5 +153,5 @@ def run(sample):
 
 
 if __name__ == "__main__":
-    run(photon_reader.as_json(Path("/home/cjh/src/mitsuba/photons.bin")))
+    run(photon_reader.as_json(Path("/home/cjh/workpad/src/mitsuba/photons.bin")))
     # run(json.load(open("../live-photons.json")))
