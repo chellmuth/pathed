@@ -1,14 +1,6 @@
-import subprocess
 from pathlib import Path
-from itertools import chain
 
-def run_mitsuba(mitsuba_path, scene_path, output_path, args):
-    args_list = chain.from_iterable(("-D", f"{key}={item}") for key, item in args.items() )
-    subprocess.check_output(
-        [
-            "mitsuba", str(scene_path), "-o", str(output_path), *args_list
-        ]
-    )
+from mitsuba import run_mitsuba
 
 def go(mitsuba_path, scene_path, spp_log_range, args_builder_fn, output_root):
     if not output_root.exists():
@@ -19,7 +11,7 @@ def go(mitsuba_path, scene_path, spp_log_range, args_builder_fn, output_root):
         print(f"Generating {output_path}")
 
         args = args_builder_fn(spp)
-        run_mitsuba(mitsuba_path, scene_path, output_path, args)
+        run_mitsuba(mitsuba_path, scene_path, output_path, [], args)
 
 def build_ppg_args(spp):
     return {
