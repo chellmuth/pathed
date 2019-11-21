@@ -4,6 +4,14 @@ import click
 
 from mitsuba import run_mitsuba
 
+class Context:
+    def __init__(self, scene):
+        self.mitsuba_path = Path("/home/cjh/src/mitsuba")
+        self.scene_path = self.mitsuba_path / scene
+
+        self.output_root = Path("/tmp/mitsuba-tests")
+        self.output_root.mkdir(exist_ok=True, parents=True)
+
 @click.group()
 def cli():
     pass
@@ -45,26 +53,20 @@ def pdf_compare():
         }
     )
 
-def go(mitsuba_path, scene_path, spp_log_range, args_builder_fn, output_root):
-    if not output_root.exists():
-        output_root.mkdir(parents=True)
+@cli.command()
+def render():
+    context = Context("cornell-box/scene-neural.xml")
 
-    for spp in [ 2**i for i in range(*spp_log_range) ]:
-        output_path = output_root / f"auto-{spp:05d}spp.exr"
-        print(f"Generating {output_path}")
-
-        args = args_builder_fn(spp)
-        run_mitsuba(mitsuba_path, scene_path, output_path, args)
-
-def build_ppg_args(spp):
-    return {
-        "budget": spp - 1
-    }
-
-def build_path_args(spp):
-    return {
-        "spp": spp
-    }
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path,
+        context.output_root / "render.exr",
+        [ "-p1" ],
+        {
+            "width": 20,
+            "height": 20,
+        }
+    )
 
 if __name__ == "__main__":
     cli()
