@@ -1,6 +1,49 @@
 from pathlib import Path
 
+import click
+
 from mitsuba import run_mitsuba
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+def pdf_compare():
+    mitsuba_path = Path("/home/cjh/src/mitsuba")
+    fisheye_scene_path = mitsuba_path / "cornell-box/scene-training.xml"
+    neural_scene_path = mitsuba_path / "cornell-box/scene-neural.xml"
+
+    output_root = Path("/tmp/mitsuba-tests")
+    output_root.mkdir(exist_ok=True, parents=True)
+
+    point = (246, 315)
+
+    run_mitsuba(
+        mitsuba_path,
+        fisheye_scene_path,
+        output_root / "training.exr",
+        [ "-p1" ],
+        {
+            "x": point[0],
+            "y": point[1],
+            "width": 400,
+            "height": 400,
+        }
+    )
+
+    run_mitsuba(
+        mitsuba_path,
+        neural_scene_path,
+        output_root / "neural.exr",
+        [ "-p1" ],
+        {
+            "x": point[0],
+            "y": point[1],
+            "width": 400,
+            "height": 400,
+        }
+    )
 
 def go(mitsuba_path, scene_path, spp_log_range, args_builder_fn, output_root):
     if not output_root.exists():
@@ -24,35 +67,4 @@ def build_path_args(spp):
     }
 
 if __name__ == "__main__":
-    mitsuba_path = Path("/home/cjh/workpad/src/mitsuba")
-    fisheye_scene_path = mitsuba_path / "cornell-box/scene-training.xml"
-    neural_scene_path = mitsuba_path / "cornell-box/scene-neural.xml"
-
-    output_root = Path("/tmp/test-fixed")
-    output_root.mkdir(exist_ok=True, parents=True)
-
-    run_mitsuba(
-        mitsuba_path,
-        fisheye_scene_path,
-        output_root / "training.exr",
-        [ "-p1" ],
-        {
-            "x": 100,
-            "y": 200,
-            "width": 400,
-            "height": 400,
-        }
-    )
-
-    run_mitsuba(
-        mitsuba_path,
-        neural_scene_path,
-        output_root / "neural.exr",
-        [ "-p1" ],
-        {
-            "x": 100,
-            "y": 200,
-            "width": 400,
-            "height": 400,
-        }
-    )
+    cli()
