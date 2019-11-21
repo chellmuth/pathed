@@ -11,6 +11,15 @@
     {
       "type": "obj",
       "filename": "cornell-glossy/CornellBox-Glossy.obj"
+    },
+    {
+      "type": "obj",
+      "filename": "cornell-glossy/box.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.97", "0.09", "0.13" ],
+        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+      }
     }
   ]
 }
