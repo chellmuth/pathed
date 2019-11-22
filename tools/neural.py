@@ -100,7 +100,7 @@ def render():
         context.mitsuba_path,
         context.scene_path("cornell-box/scene-path.xml"),
         context.output_root / "path.exr",
-        ["-p1"],
+        [],
         {
             "width": width,
             "height": height,
