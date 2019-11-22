@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -8,13 +9,13 @@ from mitsuba import run_mitsuba
 
 class Context:
     def __init__(self):
-        self.mitsuba_path = Path("/home/cjh/src/mitsuba")
+        self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
         self.output_root = Path("/tmp/mitsuba-tests")
         self.output_root.mkdir(exist_ok=True, parents=True)
 
-        self.server_path = Path("/home/cjh/src/nsf/")
-        self.dropbox_path = Path("/home/cjh/Dropbox/research")
+        self.server_path = Path(os.environ["NSF_ROOT"])
+        self.dropbox_path = Path(os.environ["DROPBOX_ROOT"])
         self.checkpoint_path = self.dropbox_path / "checkpoints/20191120-mitsuba-1.t"
 
     def scene_path(self, scene):
@@ -97,9 +98,9 @@ def render():
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("cornell-box/scene-training.xml"),
+        context.scene_path("cornell-box/scene-path.xml"),
         context.output_root / "path.exr",
-        [],
+        ["-p1"],
         {
             "width": width,
             "height": height,

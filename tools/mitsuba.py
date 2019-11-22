@@ -8,6 +8,8 @@ def run_mitsuba(mitsuba_path, scene_path, output_path, options, args):
         "mitsuba", str(scene_path), "-o", str(output_path), *options, *args_list
     ]
 
+    print(" ".join(program))
+
     try:
         subprocess.check_output(program)
     except subprocess.CalledProcessError as e:
