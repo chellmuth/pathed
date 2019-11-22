@@ -19,7 +19,7 @@ class Context:
         self.dropbox_path = Path(os.environ["DROPBOX_ROOT"])
 
         self.datasets_path = self.dropbox_path / "datasets"
-        self.checkpoint_path = self.dropbox_path / "checkpoints/20191120-mitsuba-1.t"
+        self.checkpoint_path = self.dropbox_path / "checkpoints/20191122-mitsuba-2.t"
 
     def scene_path(self, scene):
         return self.mitsuba_path / scene
@@ -32,46 +32,84 @@ def cli():
     pass
 
 @cli.command()
-def pdf_compare():
+@click.option("--all", is_flag=True)
+def pdf_compare(all):
     context = Context()
 
-    point = (246, 315)
+    if all:
+        points = [
+            (20, 134), # left wall
+            (268, 151), # back wall
+            (384, 240), # right wall
+            (114, 26), # ceiling
+            (313, 349), # short box - right side
+            (246, 315), # short box - front side
+            (228, 270), # short box - top side
+            (82, 388), # floor
+            (146, 210), # tall box - front side
+            (94, 175), # tall box - left side
+        ]
+    else:
+        points = [(246, 315)]
 
-    run_mitsuba(
-        context.mitsuba_path,
-        context.scene_path("cornell-box/scene-training.xml"),
-        context.output_root / "training.exr",
-        [ "-p1" ],
-        {
-            "x": point[0],
-            "y": point[1],
-            "width": 400,
-            "height": 400,
-        }
-    )
+    for point in points:
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("cornell-box/scene-training.xml"),
+            context.output_root / "training.exr",
+            [ "-p1" ],
+            {
+                "x": point[0],
+                "y": point[1],
+                "width": 400,
+                "height": 400,
+            }
+        )
 
-    server_process = runner.launch_server(
-        context.server_path,
-        0,
-        context.checkpoint_path
-    )
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
 
-    time.sleep(10) # make sure server starts up
+        time.sleep(10) # make sure server starts up
 
-    run_mitsuba(
-        context.mitsuba_path,
-        context.scene_path("cornell-box/scene-neural.xml"),
-        context.output_root / "neural.exr",
-        [ "-p1" ],
-        {
-            "x": point[0],
-            "y": point[1],
-            "width": 400,
-            "height": 400,
-        }
-    )
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("cornell-box/scene-neural.xml"),
+            context.output_root / "neural.exr",
+            [ "-p1" ],
+            {
+                "x": point[0],
+                "y": point[1],
+                "width": 400,
+                "height": 400,
+            }
+        )
 
-    server_process.join()
+        server_process.join()
+
+        pdf_out_path = context.output_root / f"pdf_{point[0]}_{point[1]}.exr"
+        photons_out_path = context.output_root / f"photon-bundle_{point[0]}_{point[1]}.dat"
+        process_raw_to_renders.execute(
+            Path(f"render_{point[0]}_{point[1]}.exr"),
+            Path(f"photons_{point[0]}_{point[1]}.bin"),
+            pdf_out_path,
+            photons_out_path
+        )
+
+        # run viz
+        viz_out_path = context.output_root / f"viz_{point[0]}_{point[1]}.png"
+
+        runner.run_nsf_command(
+            context.server_path,
+            "evaluate.py",
+            [
+                str(pdf_out_path),
+                str(photons_out_path),
+                str(viz_out_path)
+            ]
+        )
 
 @cli.command()
 def render():

@@ -14,11 +14,14 @@ def run_renderer(job_json):
             print("ERROR CALLING RENDERER!!")
             print(job_json)
 
-def run_server(server_path, port_offset, checkpoint_path):
+def run_nsf_command(nsf_root, command, args_list):
     subprocess.check_output(
-        ["pipenv", "run", "python", "server.py", str(port_offset), checkpoint_path],
-        cwd=str(server_path)
+        ["pipenv", "run", "python", command, *args_list],
+        cwd=str(nsf_root)
     )
+
+def run_server(server_path, port_offset, checkpoint_path):
+    run_nsf_command(server_path, "server.py", [str(port_offset), checkpoint_path])
 
 def launch_server(server_path, port_offset, checkpoint_path):
     server_process = Process(

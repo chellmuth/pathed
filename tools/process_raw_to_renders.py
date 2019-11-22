@@ -66,6 +66,14 @@ def run(raw_path, renders_path):
         grid = photon_reader.build_grid(photon_path, (10, 10))
         grid.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
 
+def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
+    pdf_exr = convert_rgb_to_single_channel(pdf_in_path)
+    pyexr.write(str(pdf_out_path), pdf_exr)
+
+    grid = photon_reader.build_grid(photon_in_path, (10, 10))
+    grid.export_dat(photon_out_path)
+
+
 if __name__ == "__main__":
     run(
         Path("/home/cjh/workpad/Dropbox/research/datasets/mitsuba/raw"),
