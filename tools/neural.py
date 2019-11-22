@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 
+import process_raw_to_renders
 import runner
 from mitsuba import run_mitsuba
 
@@ -16,11 +17,15 @@ class Context:
 
         self.server_path = Path(os.environ["NSF_ROOT"])
         self.dropbox_path = Path(os.environ["DROPBOX_ROOT"])
+
+        self.datasets_path = self.dropbox_path / "datasets"
         self.checkpoint_path = self.dropbox_path / "checkpoints/20191120-mitsuba-1.t"
 
     def scene_path(self, scene):
         return self.mitsuba_path / scene
 
+    def dataset_path(self, dataset_name):
+        return self.datasets_path / dataset_name
 
 @click.group()
 def cli():
@@ -70,8 +75,8 @@ def pdf_compare():
 
 @cli.command()
 def render():
-    width = 20
-    height = 20
+    width = 400
+    height = 400
 
     context = Context()
 
@@ -104,7 +109,31 @@ def render():
         {
             "width": width,
             "height": height,
+            "spp": 1,
         }
+    )
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("cornell-box/scene-path.xml"),
+        context.output_root / "gt.exr",
+        [],
+        {
+            "width": width,
+            "height": height,
+            "spp": 2**12,
+        }
+    )
+
+@cli.command()
+@click.argument("dataset_name")
+def process(dataset_name):
+    context = Context()
+    dataset_path = context.dataset_path(dataset_name)
+
+    process_raw_to_renders.run(
+        dataset_path / "raw",
+        dataset_path / "train/renders",
     )
 
 if __name__ == "__main__":
