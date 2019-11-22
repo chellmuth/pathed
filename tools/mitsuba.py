@@ -5,7 +5,7 @@ def run_mitsuba(mitsuba_path, scene_path, output_path, options, args):
     args_list = chain.from_iterable(("-D", f"{key}={item}") for key, item in args.items() )
 
     program = [
-        "mitsuba", str(scene_path), "-o", str(output_path), " ".join(options), *args_list
+        "mitsuba", str(scene_path), "-o", str(output_path), *options, *args_list
     ]
 
     try:

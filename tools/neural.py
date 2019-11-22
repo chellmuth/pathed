@@ -69,6 +69,9 @@ def pdf_compare():
 
 @cli.command()
 def render():
+    width = 20
+    height = 20
+
     context = Context()
 
     server_process = runner.launch_server(
@@ -85,12 +88,23 @@ def render():
         context.output_root / "render.exr",
         [ "-p1" ],
         {
-            "width": 20,
-            "height": 20,
+            "width": width,
+            "height": height,
         }
     )
 
     server_process.join()
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("cornell-box/scene-training.xml"),
+        context.output_root / "path.exr",
+        [],
+        {
+            "width": width,
+            "height": height,
+        }
+    )
 
 if __name__ == "__main__":
     cli()
