@@ -40,11 +40,10 @@ BSDFSample Lambertian::sample(
 
     Vector3 localSample = CosineSampleHemisphere(random);
 
-    float pdf;
     BSDFSample sample = {
         .wo = tangentToWorld.apply(localSample),
         .pdf = CosineHemispherePdf(localSample),
-        .throughput = f(intersection, localSample, &pdf)
+        .throughput = Material::f(intersection, localSample)
     };
 
     return sample;

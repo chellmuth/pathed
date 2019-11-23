@@ -23,7 +23,7 @@ public:
         float *pdf
     ) const = 0;
 
-    virtual Color f(const Intersection &intersection, const Vector3 &wo) const {
+    Color f(const Intersection &intersection, const Vector3 &wo) const {
         float pdf;
         return f(intersection, wo, &pdf);
     }

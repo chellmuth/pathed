@@ -18,6 +18,14 @@
       "bsdf": {
         "type": "mirror"
       }
+    },
+    {
+      "type": "obj",
+      "filename": "cornell-glossy/ball.obj",
+      "bsdf": {
+        "type": "mirror"
+      }
     }
+
   ]
 }
