@@ -1,3 +1,4 @@
+import math
 import re
 from collections import namedtuple
 from pathlib import Path
@@ -49,22 +50,32 @@ def valid_parts(raw_path):
     parts = pdf_parts.intersection(photon_parts)
     return sorted(parts)
 
-def run(raw_path, renders_path):
-    renders_path.mkdir(exist_ok=True, parents=True)
+def _chunker(iterator, chunk_size):
+    count = len(iterator)
 
-    iteration_root = renders_path / "iteration-0000"
-    iteration_root.mkdir(exist_ok=True)
+    return [
+        iterator[i * chunk_size : (i + 1) * chunk_size]
+        for i in range(math.ceil(count / chunk_size))
+    ]
+
+def run(chunk_size, raw_path, renders_path):
+    renders_path.mkdir(exist_ok=True, parents=True)
 
     parts_to_index = {}
 
-    for i, parts in enumerate(valid_parts(raw_path)):
-        pdf_path = build_pdf_path(raw_path, parts)
-        pdf_exr = convert_rgb_to_single_channel(pdf_path)
-        pyexr.write(str(iteration_root / f"pdf_{i:05d}.exr"), pdf_exr)
+    for iteration, chunk in enumerate(_chunker(valid_parts(raw_path), chunk_size)):
+        iteration_root = renders_path / f"iteration-{iteration:04d}"
+        iteration_root.mkdir(exist_ok=True)
+        print("CREATING:", iteration, iteration_root)
 
-        photon_path = build_photon_path(raw_path, parts)
-        grid = photon_reader.build_grid(photon_path, (10, 10))
-        grid.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
+        for i, parts in enumerate(chunk):
+            pdf_path = build_pdf_path(raw_path, parts)
+            pdf_exr = convert_rgb_to_single_channel(pdf_path)
+            pyexr.write(str(iteration_root / f"pdf_{i:05d}.exr"), pdf_exr)
+
+            photon_path = build_photon_path(raw_path, parts)
+            grid = photon_reader.build_grid(photon_path, (10, 10))
+            grid.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
 
 def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
     pdf_exr = convert_rgb_to_single_channel(pdf_in_path)
@@ -76,6 +87,7 @@ def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
 
 if __name__ == "__main__":
     run(
+        500,
         Path("/home/cjh/workpad/Dropbox/research/datasets/mitsuba/raw"),
         Path("/home/cjh/workpad/Dropbox/research/datasets/mitsuba/train/renders"),
     )

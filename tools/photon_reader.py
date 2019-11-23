@@ -11,6 +11,8 @@ from vector import Vector
 FloatSize = 4
 PhotonSize = 9
 
+Debug = False
+
 def as_json(photon_path: Path):
     bundle = read_photon_bundle(photon_path)
     return {
@@ -85,9 +87,10 @@ def read_photon_bundle(photon_path: Path):
         data = f.read(3 * FloatSize)
         wi = struct.unpack("3f", data)
 
-        print("position:", position)
-        print("normal:", normal)
-        print("wi:", wi)
+        if Debug:
+            print("position:", position)
+            print("normal:", normal)
+            print("wi:", wi)
 
         data = f.read(FloatSize)
         count, = struct.unpack("i", data)
@@ -128,7 +131,8 @@ def build_grid(photon_path: Path, grid_size: Resolution):
         if success:
             splats += 1
 
-    print("Splatted Ratio: ", splats / len(bundle.photons))
+    if Debug:
+        print("Splatted Ratio: ", splats / len(bundle.photons))
 
     return grid
 
