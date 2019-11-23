@@ -6,6 +6,7 @@ import click
 
 import process_raw_to_renders
 import runner
+import visualize
 from mitsuba import run_mitsuba
 
 class Context:
@@ -109,6 +110,13 @@ def pdf_compare(all):
                 str(photons_out_path),
                 str(viz_out_path)
             ]
+        )
+
+        batch_path = Path(f"batch_{point[0]}_{point[1]}.exr")
+        neural_out_path = context.output_root / f"neural_{point[0]}_{point[1]}.png"
+        visualize.convert_to_density_mesh(
+            batch_path,
+            neural_out_path
         )
 
 @cli.command()
