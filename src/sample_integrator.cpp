@@ -41,7 +41,7 @@ void SampleIntegrator::samplePixel(
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
 
-    // Vector3 normal = intersection.normal;
+    // Vector3 normal = intersection.shadingNormal;
     // radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
     // radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
     // radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);

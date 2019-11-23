@@ -91,18 +91,20 @@ Intersection Scene::testIntersect(const Ray &ray) const
         );
 
         Vector3 shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+        Vector3 geometricNormal = Vector3(
+            rayHit.hit.Ng_x,
+            rayHit.hit.Ng_y,
+            rayHit.hit.Ng_z
+        ).normalized() * -1.f;
 
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,
             .point = ray.at(rayHit.ray.tfar),
             .wi = ray.direction(),
-            .normal = Vector3(
-                rayHit.hit.Ng_x,
-                rayHit.hit.Ng_y,
-                rayHit.hit.Ng_z
-            ).normalized() * -1.f,
-            .shadingNormal = shadingNormal.normalized(),
+            .normal = geometricNormal,
+            // .shadingNormal = shadingNormal.normalized(),
+            .shadingNormal = geometricNormal,
             .uv = uv,
             .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
         };
