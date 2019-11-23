@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 
+import photon_reader
 import process_raw_to_renders
 import runner
 import visualize
@@ -51,14 +52,14 @@ def pdf_compare(all):
             (94, 175), # tall box - left side
         ]
     else:
-        points = [(246, 315)]
+        points = [(20, 134)]
 
     for point in points:
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("cornell-box/scene-training.xml"),
             context.output_root / "training.exr",
-            [ "-p1" ],
+            [], # "-p1" gives reproducible results
             {
                 "x": point[0],
                 "y": point[1],
@@ -118,6 +119,19 @@ def pdf_compare(all):
             batch_path,
             neural_out_path
         )
+
+        grid_path = Path(f"grid_{point[0]}_{point[1]}.bin")
+        grid = photon_reader.read_raw_grid(grid_path, (10, 10))
+
+        from matplotlib import cm, pyplot as plt
+
+        figure, axes = plt.subplots(1, 1)
+        visualize.photon_bundle(axes, grid)
+
+        plt.tight_layout()
+        plt.savefig(f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
+        plt.close()
+
 
 @cli.command()
 def render():

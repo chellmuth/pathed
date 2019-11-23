@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
 
+import numpy as np
+
 from phi_theta_grid import PhiThetaGrid, PhotonGridAdapter
 from vector import Vector
 
@@ -127,6 +129,17 @@ def build_grid(photon_path: Path, grid_size: Resolution):
             splats += 1
 
     print("Splatted Ratio: ", splats / len(bundle.photons))
+
+    return grid
+
+def read_raw_grid(grid_path: Path, grid_size: Resolution):
+    phi_steps, theta_steps = grid_size
+    grid_cells = phi_steps * theta_steps
+
+    with open(grid_path, "rb") as f:
+        data = f.read(grid_cells * FloatSize)
+        cells = struct.unpack(f"{grid_cells}f", data)
+        grid = np.array(cells).reshape(grid_size)
 
     return grid
 

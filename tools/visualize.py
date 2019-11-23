@@ -4,6 +4,16 @@ from matplotlib import cm, pyplot as plt
 
 cmap = cm.magma
 
+def photon_bundle(axes, bundle):
+    axes.imshow(
+        bundle,
+        origin="lower",
+        cmap=cmap
+    )
+    axes.set_xticks([])
+    axes.set_yticks([])
+    axes.set_aspect("equal")
+
 def density_mesh(axes, x, y, values, bounds):
     axes.pcolormesh(
         x,
