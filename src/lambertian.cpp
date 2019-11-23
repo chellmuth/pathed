@@ -1,6 +1,7 @@
 #include "lambertian.h"
 
 #include "monte_carlo.h"
+#include "transform.h"
 
 #include <math.h>
 
@@ -25,4 +26,21 @@ Color Lambertian::f(
     } else {
         return m_diffuse / M_PI;
     }
+}
+
+Vector3 Lambertian::sample(
+    const Intersection &intersection,
+    RandomGenerator &random,
+    float *pdf
+) const
+{
+    Transform tangentToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
+
+    Vector3 tangentSample = CosineSampleHemisphere(random);
+    *pdf = CosineHemispherePdf(tangentSample);
+
+    return tangentToWorld.apply(tangentSample);
 }

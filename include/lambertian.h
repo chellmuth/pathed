@@ -19,6 +19,12 @@ public:
         float *pdf
     ) const override;
 
+    Vector3 sample(
+        const Intersection &intersection,
+        RandomGenerator &random,
+        float *pdf
+    ) const override;
+
 private:
     Color m_diffuse;
     std::shared_ptr<Albedo> m_albedo;

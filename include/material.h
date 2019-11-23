@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "intersection.h"
+#include "random_generator.h"
 #include "vector.h"
 
 class Scene;
@@ -20,6 +21,12 @@ public:
         float pdf;
         return f(intersection, wo, &pdf);
     }
+
+    virtual Vector3 sample(
+        const Intersection &intersection,
+        RandomGenerator &random,
+        float *pdf
+    ) const = 0;
 
     Color emit() const;
 

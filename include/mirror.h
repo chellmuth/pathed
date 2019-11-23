@@ -3,11 +3,11 @@
 #include "color.h"
 #include "intersection.h"
 #include "material.h"
-#include "random_generator.h"
+#include "vector.h"
 
-class Phong : public Material {
+class Mirror : public Material {
 public:
-    Phong(Color kd, Color ks, float n, Color emit);
+    Mirror();
 
     Color f(
         const Intersection &intersection,
@@ -19,9 +19,7 @@ public:
         const Intersection &intersection,
         RandomGenerator &random,
         float *pdf
-    ) const override { return Vector3(0.f, 0.f, 0.f); }
+    ) const override;
 
 private:
-    Color m_kd, m_ks;
-    float m_n;
 };
