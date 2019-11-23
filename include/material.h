@@ -7,6 +7,12 @@
 
 class Scene;
 
+struct BSDFSample {
+    Vector3 wo;
+    float pdf;
+    Color throughput;
+};
+
 class Material {
 public:
     Material(Color emit);
@@ -17,15 +23,14 @@ public:
         float *pdf
     ) const = 0;
 
-    Color f(const Intersection &intersection, const Vector3 &wo) {
+    virtual Color f(const Intersection &intersection, const Vector3 &wo) const {
         float pdf;
         return f(intersection, wo, &pdf);
     }
 
-    virtual Vector3 sample(
+    virtual BSDFSample sample(
         const Intersection &intersection,
-        RandomGenerator &random,
-        float *pdf
+        RandomGenerator &random
     ) const = 0;
 
     Color emit() const;

@@ -16,14 +16,11 @@ Color Mirror::f(
     return Color(0.f);
 }
 
-Vector3 Mirror::sample(
+BSDFSample Mirror::sample(
     const Intersection &intersection,
-    RandomGenerator &random,
-    float *pdf
+    RandomGenerator &random
 ) const
 {
-    *pdf = 1.f;
-
     Transform worldToTangent = worldSpaceToNormal(
         intersection.normal,
         intersection.wi
@@ -37,5 +34,11 @@ Vector3 Mirror::sample(
         intersection.wi
     );
 
-    return tangentToWorld.apply(localWo);
+    BSDFSample sample = {
+        .wo = tangentToWorld.apply(localWo),
+        .pdf = 1.f,
+        .throughput = Color(1.f)
+    };
+
+    return sample;
 }

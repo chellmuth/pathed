@@ -15,10 +15,9 @@ public:
         float *pdf
     ) const override;
 
-    Vector3 sample(
+    BSDFSample sample(
         const Intersection &intersection,
-        RandomGenerator &random,
-        float *pdf
+        RandomGenerator &random
     ) const override;
 
 private:

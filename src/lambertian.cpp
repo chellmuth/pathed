@@ -28,10 +28,9 @@ Color Lambertian::f(
     }
 }
 
-Vector3 Lambertian::sample(
+BSDFSample Lambertian::sample(
     const Intersection &intersection,
-    RandomGenerator &random,
-    float *pdf
+    RandomGenerator &random
 ) const
 {
     Transform tangentToWorld = normalToWorldSpace(
@@ -39,8 +38,14 @@ Vector3 Lambertian::sample(
         intersection.wi
     );
 
-    Vector3 tangentSample = CosineSampleHemisphere(random);
-    *pdf = CosineHemispherePdf(tangentSample);
+    Vector3 localSample = CosineSampleHemisphere(random);
 
-    return tangentToWorld.apply(tangentSample);
+    float pdf;
+    BSDFSample sample = {
+        .wo = tangentToWorld.apply(localSample),
+        .pdf = CosineHemispherePdf(localSample),
+        .throughput = f(intersection, localSample, &pdf)
+    };
+
+    return sample;
 }

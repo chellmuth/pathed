@@ -24,3 +24,16 @@ Color Phong::f(const Intersection &intersection, const Vector3 &wo, float *pdf) 
 
     return diffuse + specular;
 }
+
+BSDFSample Phong::sample(
+    const Intersection &intersection,
+    RandomGenerator &random
+) const
+{
+    BSDFSample bs = {
+        .wo = Vector3(0.f, 0.f, 0.f),
+        .pdf = 0.f,
+        .throughput = Color(0.f)
+    };
+    return bs;
+}
