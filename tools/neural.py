@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from pathlib import Path
 
@@ -68,6 +69,7 @@ def pdf_compare(all):
             }
         )
 
+
         server_process = runner.launch_server(
             context.server_path,
             0,
@@ -109,7 +111,8 @@ def pdf_compare(all):
             [
                 str(pdf_out_path),
                 str(photons_out_path),
-                str(viz_out_path)
+                str(viz_out_path),
+                str(context.checkpoint_path)
             ]
         )
 
@@ -129,8 +132,20 @@ def pdf_compare(all):
         visualize.photon_bundle(axes, grid)
 
         plt.tight_layout()
-        plt.savefig(f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
+        plt.savefig(context.output_root / f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
         plt.close()
+
+
+        # Cleanup
+        render_filename = f"render_{point[0]}_{point[1]}.exr"
+        batch_filename = f"batch_{point[0]}_{point[1]}.exr"
+        shutil.move(render_filename, context.output_root / render_filename)
+        shutil.move(batch_filename, context.output_root / batch_filename)
+
+        grid_filename = f"grid_{point[0]}_{point[1]}.bin"
+        photons_filename = f"photons_{point[0]}_{point[1]}.bin"
+        shutil.move(grid_filename, context.output_root / grid_filename)
+        shutil.move(photons_filename, context.output_root / photons_filename)
 
 
 # Quick 1spp comparison between neural and path
