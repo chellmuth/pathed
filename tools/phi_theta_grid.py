@@ -1,6 +1,8 @@
 import math
 import struct
 
+import numpy as np
+
 import coordinates
 from transform import Transform
 from vector import Vector
@@ -68,3 +70,13 @@ class PhiThetaGrid:
         float_data = struct.pack(f"{self.length}f", *pdf)
         output_file.write(float_data)
         output_file.close()
+
+    def raw_grid(self):
+        grid_sum = sum(self.grid)
+        if grid_sum == 0:
+            pdf = [ 0 for cell in self.grid ]
+        else:
+            pdf = [ cell / grid_sum for cell in self.grid ]
+
+        raw_grid = np.array(pdf).reshape((self.phi_steps, self.theta_steps))
+        return raw_grid

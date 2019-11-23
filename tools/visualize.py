@@ -4,6 +4,16 @@ from matplotlib import cm, pyplot as plt
 
 cmap = cm.magma
 
+def render_photon_grids(grids, output_path):
+    figure, axes = plt.subplots(1, len(grids))
+    for i, grid in enumerate(grids):
+        photon_bundle(axes[i], grid)
+
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+
+
 def photon_bundle(axes, bundle):
     axes.imshow(
         bundle,

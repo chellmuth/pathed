@@ -14,7 +14,7 @@ class Context:
     def __init__(self):
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
-        self.output_root = Path("/tmp/mitsuba-tests")
+        self.output_root = Path("/tmp/test-mitsuba")
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
@@ -194,6 +194,22 @@ def process(dataset_name):
     process_raw_to_renders.run(
         dataset_path / "raw",
         dataset_path / "train/renders",
+    )
+
+# Compare final grids between:
+# * Photon digest on renderer + python splatting
+# * Direct renderer splatting
+@cli.command()
+@click.argument("bundle_path", type=Path)
+@click.argument("grid_path", type=Path)
+def compare_photons(bundle_path, grid_path):
+    grid = photon_reader.build_grid(bundle_path, (10, 10))
+    raw_grid_from_bundle = grid.raw_grid()
+    raw_grid_from_renderer = photon_reader.read_raw_grid(grid_path, (10, 10))
+
+    visualize.render_photon_grids(
+        [raw_grid_from_bundle, raw_grid_from_renderer],
+        "photon-comparison.png"
     )
 
 if __name__ == "__main__":
