@@ -37,7 +37,7 @@ BSDFSample Mirror::sample(
     BSDFSample sample = {
         .wo = tangentToWorld.apply(localWo),
         .pdf = 1.f,
-        .throughput = Color(1.f)
+        .throughput = Color(1.f) / localWo.y()
     };
 
     return sample;
