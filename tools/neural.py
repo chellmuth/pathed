@@ -151,9 +151,10 @@ def pdf_compare(all):
 # Quick 1spp comparison between neural and path
 @cli.command()
 @click.option("--include-gt", is_flag=True)
-def render(include_gt):
-    width = 80
-    height = 80
+@click.option("--size", type=int, default=10)
+def render(include_gt, size):
+    width = size
+    height = size
 
     context = Context()
 
@@ -230,6 +231,43 @@ def compare_photons(bundle_path, grid_path):
     visualize.render_photon_grids(
         [raw_grid_from_bundle, raw_grid_from_renderer],
         "photon-comparison.png"
+    )
+
+@cli.command()
+@click.argument("x", type=int)
+@click.argument("y", type=int)
+def debug_pixel(x, y):
+    context = Context()
+
+    server_process = runner.launch_server(
+        context.server_path,
+        0,
+        context.checkpoint_path
+    )
+
+    time.sleep(10) # make sure server starts up
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("cornell-box/scene-neural.xml"),
+        f"render_{x}_{y}.exr",
+        [ "-p1" ],
+        {
+            "x": x,
+            "y": y,
+            "width": 400,
+            "height": 400,
+        },
+        verbose=True
+    )
+
+    server_process.join()
+
+    grid_path = Path(f"grid_{x}_{y}.bin")
+    raw_grid_from_renderer = photon_reader.read_raw_grid(grid_path, (10, 10))
+    visualize.render_photon_grids(
+        [raw_grid_from_renderer],
+        f"grid_{x}_{y}.png"
     )
 
 if __name__ == "__main__":
