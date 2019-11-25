@@ -22,7 +22,7 @@ BSDFSample Mirror::sample(
 ) const
 {
     Transform worldToTangent = worldSpaceToNormal(
-        intersection.normal,
+        intersection.shadingNormal,
         intersection.wi
     );
 
@@ -30,7 +30,7 @@ BSDFSample Mirror::sample(
     Vector3 localWo = localWi.reflect(Vector3(0.f, 1.f, 0.f));
 
     Transform tangentToWorld = normalToWorldSpace(
-        intersection.normal,
+        intersection.shadingNormal,
         intersection.wi
     );
 
