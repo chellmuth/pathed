@@ -27,6 +27,15 @@ public:
     std::vector<std::shared_ptr<Surface> > parse();
 
 private:
+    struct FaceIndices {
+        struct VertexIndices {
+            int vertexIndex;
+            int normalIndex;
+            int UVIndex;
+        };
+        VertexIndices vertices[3];
+    };
+
     std::ifstream &m_objFile;
     Transform m_transform;
     Handedness m_handedness;
@@ -41,6 +50,7 @@ private:
     std::vector<unsigned int> m_faces;
     std::vector<Vector3> m_normals;
     std::vector<UV> m_uvs;
+    std::vector<FaceIndices> m_faceIndices;
 
     std::vector<Vector3> m_vertexNormals;
     std::vector<UV> m_vertexUVs;

@@ -103,8 +103,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
             .point = ray.at(rayHit.ray.tfar),
             .wi = ray.direction(),
             .normal = geometricNormal,
-            // .shadingNormal = shadingNormal.normalized(),
-            .shadingNormal = geometricNormal,
+            .shadingNormal = shadingNormal.normalized(),
+            // .shadingNormal = geometricNormal,
             .uv = uv,
             .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
         };

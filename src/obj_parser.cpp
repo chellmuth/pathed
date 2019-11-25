@@ -10,8 +10,10 @@
 #include "vector.h"
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <regex>
+#include <utility>
 #include <vector>
 
 using string = std::string;
@@ -38,6 +40,64 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         parseLine(line);
     }
 
+    std::map<int, int> normalLookup;
+    std::map<std::pair<int, int>, int> correctionLookup;
+
+    std::vector<FaceIndices> correctedFaces;
+
+    // Start "cube-normal" correction
+    // Look for re-used vertices with differing normals
+    // When found, create a new vertex (add to the back of m_vertices)
+    // In the next loop, update m_vertexNormals
+    //   * reverse overwritten normals
+    //   * associate new normals with created vertices
+    for (int i = 0; i < m_faceIndices.size(); i++) {
+        FaceIndices &faceIndices = m_faceIndices[i];
+        FaceIndices correctedFace;
+
+        for (int j = 0; j < 3; j++) {
+            FaceIndices::VertexIndices &vertexIndices = faceIndices.vertices[j];
+
+            if (normalLookup.count(vertexIndices.vertexIndex) == 0) {
+                normalLookup[vertexIndices.vertexIndex] = vertexIndices.normalIndex;
+
+                correctedFace.vertices[j] = vertexIndices;
+            } else if (normalLookup[vertexIndices.vertexIndex] != vertexIndices.normalIndex) {
+                std::pair<int, int> key(vertexIndices.vertexIndex, vertexIndices.normalIndex);
+                int correctedIndex;
+                if (correctionLookup.count(key) == 0) {
+                    m_vertices.push_back(m_vertices[vertexIndices.vertexIndex]);
+
+                    correctedIndex = m_vertices.size() - 1;
+                    correctionLookup[key] = correctedIndex;
+                } else {
+                    correctedIndex = correctionLookup[key];
+                }
+
+                correctedFace.vertices[j] = {
+                    .vertexIndex = correctedIndex,
+                    .normalIndex = vertexIndices.normalIndex,
+                    .UVIndex = vertexIndices.UVIndex
+                };
+            } else {
+                correctedFace.vertices[j] = vertexIndices;
+            }
+        }
+
+        correctedFaces.push_back(correctedFace);
+    }
+
+    m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    for (int i = 0; i < correctedFaces.size(); i++) {
+        FaceIndices &faceIndices = correctedFaces[i];
+
+        for (int j = 0; j < 3; j++) {
+            FaceIndices::VertexIndices &vertexIndices = faceIndices.vertices[j];
+            m_vertexNormals[vertexIndices.vertexIndex] = m_normals[vertexIndices.normalIndex];
+        }
+    }
+    // End "cube-normal" correction
+
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
     float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
         rtcMesh,                /* geometry */
@@ -63,13 +123,15 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         0,
         RTC_FORMAT_UINT3,
         3 * sizeof(unsigned int),
-        m_faces.size() / 3
+        correctedFaces.size()
     );
 
     i = 0;
-    for (auto face : m_faces) {
-        rtcFaces[i] = face;
-        i += 1;
+    for (auto face : correctedFaces) {
+        rtcFaces[i + 0] = face.vertices[0].vertexIndex;
+        rtcFaces[i + 1] = face.vertices[1].vertexIndex;
+        rtcFaces[i + 2] = face.vertices[2].vertexIndex;
+        i += 3;
     }
 
     rtcSetGeometryVertexAttributeCount(rtcMesh, 2);
@@ -289,6 +351,14 @@ void ObjParser::processTriangle(
     m_vertexNormals[vertexIndex0] = m_normals[normalIndex0];
     m_vertexNormals[vertexIndex1] = m_normals[normalIndex1];
     m_vertexNormals[vertexIndex2] = m_normals[normalIndex2];
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, normalIndex0, UVIndex0 },
+            { vertexIndex1, normalIndex1, UVIndex1 },
+            { vertexIndex2, normalIndex2, UVIndex2 }
+        }
+    });
 }
 
 void ObjParser::processTriangle(
