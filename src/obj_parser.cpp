@@ -372,13 +372,13 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     int vertexIndex1 = std::stoi(match[4]);
     int vertexIndex2 = std::stoi(match[7]);
 
-    int normalIndex0 = std::stoi(match[2]);
-    int normalIndex1 = std::stoi(match[5]);
-    int normalIndex2 = std::stoi(match[8]);
+    int UVIndex0 = std::stoi(match[2]);
+    int UVIndex1 = std::stoi(match[5]);
+    int UVIndex2 = std::stoi(match[8]);
 
-    int UVIndex0 = std::stoi(match[3]);
-    int UVIndex1 = std::stoi(match[6]);
-    int UVIndex2 = std::stoi(match[9]);
+    int normalIndex0 = std::stoi(match[3]);
+    int normalIndex1 = std::stoi(match[6]);
+    int normalIndex2 = std::stoi(match[9]);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
