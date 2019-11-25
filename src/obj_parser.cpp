@@ -391,7 +391,7 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTripletsVertexAndUV(std::string &faceArgs)
 {
-    static std::regex expression("(-?\\d+)/(-?\\d*)/(-?\\d+) (-?\\d+)/(-?\\d*)/(-?\\d+) (-?\\d+)/(-?\\d*)/(-?\\d+)\\s*");
+    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d*) (-?\\d+)/(-?\\d+)/(-?\\d*) (-?\\d+)/(-?\\d+)/(-?\\d*)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
@@ -403,9 +403,9 @@ bool ObjParser::processSingleFaceTripletsVertexAndUV(std::string &faceArgs)
     int vertexIndex1 = std::stoi(match[4]);
     int vertexIndex2 = std::stoi(match[7]);
 
-    int UVIndex0 = std::stoi(match[3]);
-    int UVIndex1 = std::stoi(match[6]);
-    int UVIndex2 = std::stoi(match[9]);
+    int UVIndex0 = std::stoi(match[2]);
+    int UVIndex1 = std::stoi(match[5]);
+    int UVIndex2 = std::stoi(match[8]);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
