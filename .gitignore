@@ -7,3 +7,5 @@ Makefile
 cmake_install.cmake
 
 job.json
+.env
+assets/
