@@ -363,19 +363,16 @@ void ObjParser::processTriangle(
 
 void ObjParser::processTriangle(
     int vertexIndex0, int vertexIndex1, int vertexIndex2,
-    int UVIndex0, int UVIndex1, int UVIndex2
+    int normalIndex0, int normalIndex1, int normalIndex2
 ) {
 
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
-    correctIndices(m_vertices, &UVIndex0, &UVIndex1, &UVIndex2);
+    correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
 
     Triangle *face = new Triangle(
         m_vertices[vertexIndex0],
         m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2],
-        m_uvs[UVIndex0],
-        m_uvs[UVIndex1],
-        m_uvs[UVIndex2]
+        m_vertices[vertexIndex2]
     );
 
     processFace(face);
@@ -384,10 +381,10 @@ void ObjParser::processTriangle(
     m_faces.push_back(vertexIndex1);
     m_faces.push_back(vertexIndex2);
 
-    m_vertexUVs.resize(m_vertices.size());
-    m_vertexUVs[vertexIndex0] = m_uvs[UVIndex0];
-    m_vertexUVs[vertexIndex1] = m_uvs[UVIndex1];
-    m_vertexUVs[vertexIndex2] = m_uvs[UVIndex2];
+    m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    m_vertexNormals[vertexIndex0] = m_normals[normalIndex0];
+    m_vertexNormals[vertexIndex1] = m_normals[normalIndex1];
+    m_vertexNormals[vertexIndex2] = m_normals[normalIndex2];
 }
 
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
@@ -459,9 +456,9 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     return true;
 }
 
-bool ObjParser::processSingleFaceTripletsVertexAndUV(std::string &faceArgs)
+bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
 {
-    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d*) (-?\\d+)/(-?\\d+)/(-?\\d*) (-?\\d+)/(-?\\d+)/(-?\\d*)\\s*");
+    static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
@@ -470,16 +467,16 @@ bool ObjParser::processSingleFaceTripletsVertexAndUV(std::string &faceArgs)
     }
 
     int vertexIndex0 = std::stoi(match[1]);
-    int vertexIndex1 = std::stoi(match[4]);
-    int vertexIndex2 = std::stoi(match[7]);
+    int vertexIndex1 = std::stoi(match[3]);
+    int vertexIndex2 = std::stoi(match[5]);
 
-    int UVIndex0 = std::stoi(match[2]);
-    int UVIndex1 = std::stoi(match[5]);
-    int UVIndex2 = std::stoi(match[8]);
+    int normalIndex0 = std::stoi(match[2]);
+    int normalIndex1 = std::stoi(match[4]);
+    int normalIndex2 = std::stoi(match[6]);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
-        UVIndex0, UVIndex1, UVIndex2
+        normalIndex0, normalIndex1, normalIndex2
     );
 
     return true;
@@ -489,7 +486,7 @@ void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
     if (processSingleFaceTriplets(faceArgs)) { return; }
-    if (processSingleFaceTripletsVertexAndUV(faceArgs)) { return; }
+    if (processSingleFaceTripletsVertexAndNormal(faceArgs)) { return; }
 
     string::size_type index;
     string rest = faceArgs;
