@@ -1,0 +1,42 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0", "60", "-30" ],
+      "origin": [ "277", "-240", "250" ],
+      "up": [ "0", "0", "1" ]
+    },
+    "fov": "33"
+  },
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "veach-ajar/models/Light.obj",
+      "transform": {
+        "scale": [ "10", "10", "50" ],
+        "rotate": [ "0", "90", "0" ],
+        "translate": [ "100", "40", "100" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "emit": [ "1000", "1000", "1000" ],
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
+        "specularReflectance": "0"
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "dragon.obj",
+      "transform": {
+        "scale": [ "1", "1", "1" ],
+        "rotate": [ "0", "53", "0" ],
+        "translate": [ "0", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": "0"
+      }
+    }
+  ]
+}
