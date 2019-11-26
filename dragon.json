@@ -26,7 +26,7 @@
     },
     {
       "type": "obj",
-      "filename": "dragon.obj",
+      "filename": "assets/dragon.obj",
       "transform": {
         "scale": [ "1", "1", "1" ],
         "rotate": [ "0", "53", "0" ],

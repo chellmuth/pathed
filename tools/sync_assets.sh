@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rsync -av "${ASSET_ROOT}" ../assets/
+rsync -av "${DROPBOX_ROOT}"/renderer/ ../assets/
