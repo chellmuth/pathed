@@ -97,6 +97,10 @@ Intersection Scene::testIntersect(const Ray &ray) const
             rayHit.hit.Ng_z
         ).normalized() * -1.f;
 
+        if (shadingNormal.length() == 0.f) {
+            shadingNormal = geometricNormal;
+        }
+
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,

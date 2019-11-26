@@ -93,7 +93,10 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 
         for (int j = 0; j < 3; j++) {
             FaceIndices::VertexIndices &vertexIndices = faceIndices.vertices[j];
-            m_vertexNormals[vertexIndices.vertexIndex] = m_normals[vertexIndices.normalIndex];
+            int normalIndex = vertexIndices.normalIndex;
+            if (normalIndex != -1) {
+                m_vertexNormals[vertexIndices.vertexIndex] = m_normals[normalIndex];
+            }
         }
     }
     // End "cube-normal" correction
@@ -385,6 +388,14 @@ void ObjParser::processTriangle(
     m_vertexNormals[vertexIndex0] = m_normals[normalIndex0];
     m_vertexNormals[vertexIndex1] = m_normals[normalIndex1];
     m_vertexNormals[vertexIndex2] = m_normals[normalIndex2];
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, normalIndex0, -1 },
+            { vertexIndex1, normalIndex1, -1 },
+            { vertexIndex2, normalIndex2, -1 }
+        }
+    });
 }
 
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
@@ -402,6 +413,14 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
     m_faces.push_back(vertexIndex2);
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, -1, -1 },
+            { vertexIndex1, -1, -1 },
+            { vertexIndex2, -1, -1 }
+        }
+    });
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
