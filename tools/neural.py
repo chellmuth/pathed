@@ -19,7 +19,7 @@ class Context:
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
-        self.dropbox_path = Path(os.environ["DROPBOX_ROOT"])
+        self.dropbox_path = Path(os.environ["RESEARCH_ROOT"])
 
         self.datasets_path = self.dropbox_path / "datasets"
         self.checkpoint_path = self.dropbox_path / "checkpoints/20191123-mitsuba-3.t"
