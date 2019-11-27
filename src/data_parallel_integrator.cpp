@@ -84,7 +84,7 @@ void DataParallelIntegrator::createPhotons(const Scene &scene, RandomGenerator &
 
         Ray lightRay(lightSample.point, bounceDirection);
 
-        Color throughput = lightSample.light->getMaterial()->emit();
+        Color throughput = lightSample.light->emit();
         for (int bounce = 0; bounce < photonBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
