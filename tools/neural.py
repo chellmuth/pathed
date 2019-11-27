@@ -11,21 +11,25 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
+scene_name = "ppg-cbox"
+checkpoint_name = "20191127-ppg-cbox-2.t"
+output_name = "test-cbox"
+
 class Context:
     def __init__(self):
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
-        self.output_root = Path("/tmp/test-cbox")
+        self.output_root = Path("/tmp") / output_name
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
         self.dropbox_path = Path(os.environ["RESEARCH_ROOT"])
 
         self.datasets_path = self.dropbox_path / "datasets"
-        self.checkpoint_path = self.dropbox_path / "checkpoints/20191127-ppg-cbox-2.t"
+        self.checkpoint_path = self.dropbox_path / "checkpoints" / checkpoint_name
 
-    def scene_path(self, scene):
-        return self.mitsuba_path / scene
+    def scene_path(self, scene_file):
+        return self.mitsuba_path / scene_name / scene_file
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
@@ -69,7 +73,7 @@ def pdf_compare(all, point):
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("ppg-cbox/scene-training.xml"),
+            context.scene_path("scene-training.xml"),
             context.output_root / "training.exr",
             [], # "-p1" gives reproducible results
             {
@@ -82,7 +86,7 @@ def pdf_compare(all, point):
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("ppg-cbox/scene-neural.xml"),
+            context.scene_path("scene-neural.xml"),
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
@@ -171,7 +175,7 @@ def render(include_gt, size):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("ppg-cbox/scene-neural.xml"),
+        context.scene_path("scene-neural.xml"),
         context.output_root / "render.exr",
         [ "-p1" ],
         {
@@ -186,7 +190,7 @@ def render(include_gt, size):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("ppg-cbox/scene-path.xml"),
+        context.scene_path("scene-path.xml"),
         context.output_root / "path.exr",
         [],
         {
@@ -199,7 +203,7 @@ def render(include_gt, size):
     if include_gt:
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("ppg-cbox/scene-path.xml"),
+            context.scene_path("scene-path.xml"),
             context.output_root / "gt.exr",
             [],
             {
@@ -254,7 +258,7 @@ def debug_pixel(x, y):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("ppg-cbox/scene-neural.xml"),
+        context.scene_path("scene-neural.xml"),
         f"render_{x}_{y}.exr",
         [ "-p1" ],
         {
