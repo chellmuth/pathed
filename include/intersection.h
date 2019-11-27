@@ -30,4 +30,9 @@ namespace IntersectionHelper {
         { 0.f, 0.f },
         nullptr
     };
+
+    inline bool checkBacksideIntersection(const Intersection &intersection)
+    {
+        return intersection.normal.dot(intersection.wi * -1.f) < 0.f;
+    }
 }

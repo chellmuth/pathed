@@ -37,12 +37,6 @@ def custom_json(*, spp, port_offset=0, output_directory, integrator, scene, outp
     }
 
 
-def run_server(server_directory, port_offset, checkpoint_path):
-    subprocess.check_output(
-        ["pipenv", "run", "python", "server.py", str(port_offset), checkpoint_path],
-        cwd=server_directory
-    )
-
 def run_path_tracer(job_json, output_directory):
     if check_freeze(output_directory):
         dummy = Process(target=runner.skip, args=(output_directory,))
@@ -64,7 +58,7 @@ def run_our_render(*, spp, checkpoint_path, output_name, output_directory, scene
 
         return dummy1, dummy2
 
-    server_process = Process(target=run_server, args=(server_directory, port_offset, checkpoint_path))
+    server_process = Process(target=runner.run_server, args=(server_directory, port_offset, checkpoint_path))
     server_process.start()
 
     time.sleep(10) # make sure server starts up

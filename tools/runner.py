@@ -1,6 +1,7 @@
 import json
 import subprocess
 import tempfile
+from multiprocessing import Process
 
 def run_renderer(job_json):
     with tempfile.NamedTemporaryFile("w") as f:
@@ -12,6 +13,23 @@ def run_renderer(job_json):
         except subprocess.CalledProcessError:
             print("ERROR CALLING RENDERER!!")
             print(job_json)
+
+def run_nsf_command(nsf_root, command, args_list):
+    subprocess.check_output(
+        ["pipenv", "run", "python", command, *args_list],
+        cwd=str(nsf_root)
+    )
+
+def run_server(server_path, port_offset, checkpoint_path):
+    run_nsf_command(server_path, "server.py", [str(port_offset), checkpoint_path])
+
+def launch_server(server_path, port_offset, checkpoint_path):
+    server_process = Process(
+        target=run_server,
+        args=(server_path, port_offset, checkpoint_path)
+    )
+    server_process.start()
+    return server_process
 
 def skip(directory):
     print(f"Skipping {directory}")

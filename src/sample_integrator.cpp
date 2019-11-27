@@ -26,7 +26,7 @@ void SampleIntegrator::samplePixel(
 
     if (g_job->bounceController().checkCounts(0)) {
         Color emit = intersection.material->emit();
-        if (!emit.isBlack()) {
+        if (!emit.isBlack() && !IntersectionHelper::checkBacksideIntersection(intersection)) {
             color += emit;
         }
 

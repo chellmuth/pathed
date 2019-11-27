@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bounce_controller.h"
 #include "integrator.h"
 #include "intersection.h"
 #include "kd_tree.h"
@@ -13,7 +14,7 @@
 
 class DataParallelIntegrator : public Integrator {
 public:
-    DataParallelIntegrator();
+    DataParallelIntegrator(BounceController bounceController);
 
 protected:
     void sampleImage(
@@ -61,7 +62,7 @@ private:
         std::vector<float> &photonBundles
     );
 
-    void calculateLighting(
+    void generateBounceIntersections(
         int rows, int cols,
         const Scene &scene,
         RandomGenerator &random,
@@ -69,6 +70,15 @@ private:
         std::vector<float> &thetas,
         std::vector<float> &pdfs,
         std::vector<Intersection> &intersections,
+        std::vector<Color> &modulations
+    );
+
+    void calculateDirectLighting(
+        int rows, int cols,
+        const Scene &scene,
+        RandomGenerator &random,
+        std::vector<Intersection> &intersections,
+        std::vector<Color> &modulations,
         std::vector<Color> &colors
     );
 
@@ -76,4 +86,6 @@ private:
     std::unique_ptr<KDTree> m_KDTree;
 
     MLPDF m_MLPDF;
+
+    BounceController m_bounceController;
 };

@@ -83,6 +83,6 @@ private:
     void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
 
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
-    bool processSingleFaceTriplets(std::string &faceArgs);
     bool processSingleFaceTripletsVertexAndNormal(std::string &faceArgs);
+    bool processSingleFaceTriplets(std::string &faceArgs);
 };

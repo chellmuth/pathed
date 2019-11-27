@@ -44,7 +44,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.ray.dir_y = ray.direction().y();
     rayHit.ray.dir_z = ray.direction().z();
 
-    rayHit.ray.tnear = 1e-5f;
+    rayHit.ray.tnear = 1e-3f;
     rayHit.ray.tfar = 1e5f;
 
     rayHit.ray.flags = 0;
@@ -131,8 +131,8 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
     rtcRay.dir_y = ray.direction().y();
     rtcRay.dir_z = ray.direction().z();
 
-    rtcRay.tnear = 1e-5f;
-    rtcRay.tfar = maxT - 1e-5f;
+    rtcRay.tnear = 1e-3f;
+    rtcRay.tfar = maxT - 1e-3f;
 
     rtcRay.flags = 0;
 
