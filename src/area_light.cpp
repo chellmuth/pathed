@@ -2,6 +2,15 @@
 
 #include <math.h>
 
+AreaLight::AreaLight(std::shared_ptr<Surface> surface)
+    : Light(), m_surface(surface)
+{}
+
+Color AreaLight::emit() const
+{
+    return m_surface->getMaterial()->emit();
+}
+
 SurfaceSample AreaLight::sample(RandomGenerator &random) const
 {
     return m_surface->sample(random);
