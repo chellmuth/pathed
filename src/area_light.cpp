@@ -2,11 +2,6 @@
 
 #include <math.h>
 
-std::shared_ptr<Material> AreaLight::getMaterial() const
-{
-    return m_surface->getMaterial();
-}
-
 SurfaceSample AreaLight::sample(RandomGenerator &random) const
 {
     return m_surface->sample(random);

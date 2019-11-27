@@ -11,7 +11,6 @@ class AreaLight : public Light {
 public:
     AreaLight(std::shared_ptr<Surface> surface) : Light(surface) {};
 
-    std::shared_ptr<Material> getMaterial() const override;
     SurfaceSample sample(RandomGenerator &random) const override;
     Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const override;
 };

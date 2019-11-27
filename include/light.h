@@ -12,7 +12,7 @@ class Light {
 public:
     Light(std::shared_ptr<Surface> surface);
 
-    virtual std::shared_ptr<Material> getMaterial() const = 0;
+    std::shared_ptr<Material> getMaterial() const;
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
     virtual Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const = 0;
 
