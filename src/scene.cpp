@@ -78,16 +78,37 @@ Intersection Scene::testIntersect(const Ray &ray) const
             2
         );
 
+        float normalRaw[3];
+        rtcInterpolate0(
+            geometry,
+            hit.primID,
+            hit.u,
+            hit.v,
+            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+            1,
+            &normalRaw[0],
+            3
+        );
+
+        Vector3 shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+        Vector3 geometricNormal = Vector3(
+            rayHit.hit.Ng_x,
+            rayHit.hit.Ng_y,
+            rayHit.hit.Ng_z
+        ).normalized() * -1.f;
+
+        if (shadingNormal.length() == 0.f) {
+            shadingNormal = geometricNormal;
+        }
+
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,
             .point = ray.at(rayHit.ray.tfar),
             .wi = ray.direction(),
-            .normal = Vector3(
-                rayHit.hit.Ng_x,
-                rayHit.hit.Ng_y,
-                rayHit.hit.Ng_z
-            ).normalized() * -1.f,
+            .normal = geometricNormal,
+            .shadingNormal = shadingNormal.normalized(),
+            // .shadingNormal = geometricNormal,
             .uv = uv,
             .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
         };

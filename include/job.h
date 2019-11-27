@@ -24,6 +24,17 @@ public:
     int width() const { return m_json["width"].get<int>(); }
     int height() const { return m_json["height"].get<int>(); }
 
+    int spp() const {
+        int spp = m_json["spp"].get<int>();
+        if (spp > 0) {
+            return spp;
+        }
+        return 99999;
+    }
+
+    int portOffset() const { return m_json["port_offset"].get<int>(); }
+    int pdfSamples() const { return m_json["pdf_samples"].get<int>(); }
+
     std::string outputDirectory() const {
         return m_json["output_directory"].get<std::string>() + "/";
     }
@@ -56,7 +67,7 @@ public:
     int lastBounce() const { return m_bounceController.lastBounce(); }
     BounceController bounceController() const { return m_bounceController; }
 
-    std::unique_ptr<Integrator> integrator() const;
+    std::shared_ptr<Integrator> integrator() const;
 
 private:
     nlohmann::json m_json;

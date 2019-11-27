@@ -12,3 +12,5 @@ typedef struct {
 
 
 QuadraticSolution solveQuadratic(const float a, const float b, const float c);
+
+float lerp(float x1, float x2, float t);

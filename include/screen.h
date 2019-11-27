@@ -2,6 +2,7 @@
 
 #include "canvas.h"
 #include "image.h"
+#include "integrator.h"
 #include "kd_tree.h"
 #include "render_status.h"
 #include "sample_widget.h"
@@ -40,6 +41,7 @@ private:
 class PathedScreen : public nanogui::Screen {
 public:
     PathedScreen(
+        std::shared_ptr<Integrator> integrator,
         Image &image,
         Scene &scene,
         int width,

@@ -37,3 +37,8 @@ QuadraticSolution solveQuadratic(const float a, const float b, const float c)
         return solve(solution2, solution1);
     }
 }
+
+float lerp(float x1, float x2, float t)
+{
+    return (1.f - t) * x1 + t * x2;
+}

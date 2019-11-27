@@ -14,12 +14,24 @@
 #include "vector.h"
 
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <sstream>
+
+static std::string zeroPad(int num, int fillCount)
+{
+    std::ostringstream stream;
+    stream << std::setfill('0') << std::setw(fillCount) << num;
+    return stream.str();
+}
 
 PDFIntegrator::PDFIntegrator()
 {
-    m_dataSource = std::make_shared<DataSource>();
+    m_dataSource1 = std::make_shared<DataSource>();
+    // m_dataSource2 = std::make_shared<DataSource>();
+    // m_dataSource3 = std::make_shared<DataSource>();
+    // m_dataSource4 = std::make_shared<DataSource>();
 }
 
 Vector3 PDFIntegrator::sample(const Vector3 &normal, RandomGenerator &random, float *pdf) {
@@ -29,13 +41,13 @@ Vector3 PDFIntegrator::sample(const Vector3 &normal, RandomGenerator &random, fl
     return hemisphereToWorld.apply(hemisphereSample);
 }
 
-void PDFIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
-{
+void PDFIntegrator::createPhotons(
+    std::shared_ptr<DataSource> dataSource,
+    const Scene &scene,
+    RandomGenerator &random
+) {
     const int photonSamples = g_job->photonSamples();
     const int photonBounces = g_job->photonBounces();
-
-    const int phiSteps = g_job->lightPhiSteps();
-    const int thetaSteps = g_job->lightThetaSteps();
 
     for (int i = 0; i < photonSamples; i++) {
         LightSample lightSample = scene.sampleLights(random);
@@ -59,7 +71,7 @@ void PDFIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
             if (throughput.isBlack()) { break; }
 
             if (bounce > 0) { // don't guide towards direct lights
-                m_dataSource->points.push_back({
+                dataSource->points.push_back({
                     intersection.point.x(),
                     intersection.point.y(),
                     intersection.point.z(),
@@ -83,10 +95,22 @@ void PDFIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
 
 void PDFIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
 {
-    createPhotons(scene, random);
+    createPhotons(m_dataSource1, scene, random);
+    // createPhotons(m_dataSource2, scene, random);
+    // createPhotons(m_dataSource3, scene, random);
+    // createPhotons(m_dataSource4, scene, random);
 
-    m_KDTree = std::make_unique<KDTree>(3, *m_dataSource, nanoflann::KDTreeSingleIndexAdaptorParams(10));
-    m_KDTree->buildIndex();
+    m_KDTree1 = std::make_unique<KDTree>(3, *m_dataSource1, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    m_KDTree1->buildIndex();
+
+    // m_KDTree2 = std::make_unique<KDTree>(3, *m_dataSource2, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree2->buildIndex();
+
+    // m_KDTree3 = std::make_unique<KDTree>(3, *m_dataSource3, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree3->buildIndex();
+
+    // m_KDTree4 = std::make_unique<KDTree>(3, *m_dataSource4, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+    // m_KDTree4->buildIndex();
 }
 
 void PDFIntegrator::run(
@@ -106,6 +130,43 @@ void PDFIntegrator::run(
         printf("Pre-process complete (%0.1fs elapsed)\n", elapsedSeconds);
     }
 
+    const int dataPoints = g_job->pdfSamples();
+    for (int i = 0; i < dataPoints; i ++) {
+        createAndSaveDataPoint(image, scene, random, i);
+        printf("Finished point %i/%i\n", i + 1, dataPoints);
+    }
+
+    *quit = true;
+}
+
+Intersection PDFIntegrator::generateIntersection(
+    const Scene &scene,
+    RandomGenerator &random
+) {
+    const int width = g_job->width();
+    const int height = g_job->height();
+
+    while (true) {
+        float x = random.next();
+        float y = random.next();
+
+        int row = (int)(y * height);
+        int col = (int)(x * width);
+
+        Ray ray = scene.getCamera()->generateRay(row, col);
+        Intersection intersection = scene.testIntersect(ray);
+        if (intersection.hit) {
+            return intersection;
+        }
+    }
+}
+
+void PDFIntegrator::createAndSaveDataPoint(
+    Image &image,
+    const Scene &scene,
+    RandomGenerator &random,
+    int pointID
+) {
     const int width = g_job->width();
     const int height = g_job->height();
 
@@ -114,10 +175,14 @@ void PDFIntegrator::run(
         radianceLookup[i] = 0.f;
     }
 
-    Ray ray = scene.getCamera()->generateRay(200, 200);
-    Intersection intersection = scene.testIntersect(ray);
+    Intersection intersection = generateIntersection(scene, random);
 
-    const int spp = 1024;
+    savePhotonBundle(m_dataSource1, m_KDTree1, intersection, pointID, "");
+    // savePhotonBundle(m_dataSource2, m_KDTree2, intersection, pointID, "b");
+    // savePhotonBundle(m_dataSource3, m_KDTree3, intersection, pointID, "c");
+    // savePhotonBundle(m_dataSource4, m_KDTree4, intersection, pointID, "d");
+
+    const int spp = 64;
     for (int i = 0; i < spp; i++) {
         renderPDF(radianceLookup, scene, intersection);
 
@@ -140,16 +205,51 @@ void PDFIntegrator::run(
         lock.unlock();
 
         image.setSpp(i + 1);
-
-        int maxJ = log2f(spp);
-        for (int j = 0; j <= maxJ; j++) {
-            if (1 << j == i + 1) {
-                image.save("auto");
-            }
-        }
     }
 
-    *quit = true;
+    std::ostringstream filenameStream;
+    filenameStream << "pdf_" << zeroPad(pointID, 5);
+    image.save(filenameStream.str());
+}
+
+void PDFIntegrator::savePhotonBundle(
+    std::shared_ptr<DataSource> dataSource,
+    std::unique_ptr<KDTree> &KDTree,
+    const Intersection &intersection,
+    int pointID,
+    const std::string &suffix
+) {
+    const int debugSearchCount = g_job->debugSearchCount();
+    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
+    std::vector<float> outDistanceSquared(debugSearchCount);
+
+    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
+    resultSet.init(resultIndices->data(), outDistanceSquared.data());
+
+    float queryPoint[3] = {
+        intersection.point.x(),
+        intersection.point.y(),
+        intersection.point.z()
+    };
+    KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
+
+    PhotonPDF photonPDF(
+        intersection.point,
+        dataSource,
+        resultIndices,
+        g_job->phiSteps(),
+        g_job->thetaSteps()
+    );
+
+    std::ostringstream filenameStream;
+    filenameStream << "photon-bundle_" << zeroPad(pointID, 5) << suffix;
+
+    Transform worldToNormal = worldSpaceToNormal(
+        intersection.normal,
+        intersection.wi
+    );
+    photonPDF.save(filenameStream.str(), worldToNormal);
+    // printf("Saved photon bundle\n");
 }
 
 void PDFIntegrator::renderPDF(
@@ -160,18 +260,21 @@ void PDFIntegrator::renderPDF(
     const int phiSteps = g_job->width();
     const int thetaSteps = g_job->height();
 
-    PathTracer pathTracer(g_job->bounceController());
+    BounceController bounceController(1, 1);
+    PathTracer pathTracer(bounceController);
 
     RandomGenerator random;
-    int bounceCount = 2;
 
-    Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
+    Transform hemisphereToWorld = normalToWorldSpace(
+        intersection.normal,
+        intersection.wi
+    );
 
     #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+            float phi = M_TWO_PI * (phiStep + random.next()) / phiSteps;
+            float theta = (M_PI / 2.f) * (thetaStep + random.next()) / thetaSteps;
 
             float y = cosf(theta);
             float x = sinf(theta) * cosf(phi);
@@ -212,29 +315,4 @@ void PDFIntegrator::renderPDF(
             radianceLookup[3 * (thetaStep * phiSteps + phiStep) + 2] += average;
         }
     }
-
-    const int debugSearchCount = g_job->debugSearchCount();
-    auto resultIndices = std::make_shared<std::vector<size_t>>(debugSearchCount);
-    std::vector<float> outDistanceSquared(debugSearchCount);
-
-    nanoflann::KNNResultSet<float> resultSet(debugSearchCount);
-    resultSet.init(resultIndices->data(), outDistanceSquared.data());
-
-    Transform worldToNormal = worldSpaceToNormal(intersection.normal);
-
-    float queryPoint[3] = {
-        intersection.point.x(),
-        intersection.point.y(),
-        intersection.point.z()
-    };
-    m_KDTree->findNeighbors(resultSet, queryPoint, nanoflann::SearchParams());
-
-    PhotonPDF photonPDF(
-        intersection.point,
-        m_dataSource,
-        resultIndices,
-        g_job->phiSteps(),
-        g_job->thetaSteps()
-    );
-    photonPDF.save(worldToNormal);
 }

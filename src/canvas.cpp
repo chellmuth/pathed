@@ -129,7 +129,7 @@ void Canvas::drawGL()
     glDisableVertexAttribArray(0);
 }
 
-void Canvas::save(char const *filestem)
+void Canvas::save(const std::string &filestem)
 {
     mImage.save(filestem);
 }

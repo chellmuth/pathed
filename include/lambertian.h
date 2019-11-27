@@ -19,6 +19,11 @@ public:
         float *pdf
     ) const override;
 
+    BSDFSample sample(
+        const Intersection &intersection,
+        RandomGenerator &random
+    ) const override;
+
 private:
     Color m_diffuse;
     std::shared_ptr<Albedo> m_albedo;

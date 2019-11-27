@@ -27,3 +27,4 @@ Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector
 Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection);
 Transform normalToWorldSpace(const Vector3 &normal);
 Transform worldSpaceToNormal(const Vector3 &normal);
+Transform worldSpaceToNormal(const Vector3 &normal, const Vector3 &rayDirection);

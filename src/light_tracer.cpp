@@ -39,11 +39,11 @@ void LightTracer::splat(
     bool occluded = scene.testOcclusion(shadowRay, distance);
     if (occluded) { return; }
 
-    const std::optional<Pixel> wrappedPixel = camera.calculatePixel(source);
-    if (!wrappedPixel) { return; }
+    Pixel *pixel = nullptr;
+    camera.calculatePixel(source, pixel);
+    if (!pixel) { return; }
 
-    const Pixel pixel = wrappedPixel.value();
-    const size_t index = 3 * (pixel.y * camera.getResolution().x + pixel.x);
+    const size_t index = 3 * (pixel->y * camera.getResolution().x + pixel->x);
 
     const Color brdf = intersection.material->f(intersection, wi);
     const float cosTheta = std::max(0.f, intersection.normal.dot(wi));

@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "job.h"
 
+#include "omp.h"
+
 void SampleIntegrator::samplePixel(
     int row, int col,
     int width, int height,
@@ -39,7 +41,7 @@ void SampleIntegrator::samplePixel(
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
 
-    // Vector3 normal = intersection.normal;
+    // Vector3 normal = intersection.shadingNormal;
     // radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);
     // radianceLookup[3 * (row * width + col) + 1] += 0.5f * (normal.y() + 1.f);
     // radianceLookup[3 * (row * width + col) + 2] += 0.5f * (normal.z() + 1.f);
@@ -54,6 +56,16 @@ void SampleIntegrator::sampleImage(
     const int width = g_job->width();
     const int height = g_job->height();
 
+    // samplePixel(
+    //     400 - 184 - 1, 97, // 0.0827, 0.0068, 0.0017
+    //     width, height,
+    //     radianceLookup,
+    //     sampleLookup,
+    //     scene,
+    //     random
+    // );
+    // std::cout << "DONE!" << std::endl;
+
     #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -65,6 +77,7 @@ void SampleIntegrator::sampleImage(
                 scene,
                 random
             );
+            // std::cout << "row: " << row << " col: " << col << std::endl;
         }
     }
 }

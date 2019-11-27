@@ -4,6 +4,7 @@
 #include "image.h"
 #include "integrator.h"
 #include "job.h"
+#include "ml_pdf.h"
 #include "render_status.h"
 #include "scene.h"
 #include "scene_parser.h"
@@ -27,9 +28,13 @@ Job *g_job;
 RTCDevice g_rtcDevice;
 RTCScene g_rtcScene;
 
-void run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
-{
-    std::unique_ptr<Integrator> integrator = g_job->integrator();
+void run(
+    std::shared_ptr<Integrator> integrator,
+    Image &image,
+    Scene &scene,
+    std::function<void(RenderStatus)> callback,
+    bool *quit
+) {
     integrator->run(image, scene, callback, quit);
 }
 
@@ -70,8 +75,11 @@ int main(int argc, char *argv[]) {
     ifstream jsonScene(g_job->scene());
     Scene scene = parseScene(jsonScene);
 
+    std::shared_ptr<Integrator> integrator = g_job->integrator();
+
     nanogui::init();
     nanogui::ref<PathedScreen> screen = new PathedScreen(
+        integrator,
         image,
         scene,
         width,
@@ -83,7 +91,7 @@ int main(int argc, char *argv[]) {
     });
 
     bool quit = false;
-    std::thread renderThread(run, std::ref(image), std::ref(scene), callback, &quit);
+    std::thread renderThread(run, integrator, std::ref(image), std::ref(scene), callback, &quit);
 
     try {
        if (g_job->showUI()) {

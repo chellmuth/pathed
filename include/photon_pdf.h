@@ -6,6 +6,7 @@
 #include "vector.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 class PhotonPDF {
@@ -20,10 +21,12 @@ public:
     Vector3 sample(RandomGenerator &random, const Transform &worldToNormal, float *pdf, bool debug = false);
     float pdf(const Vector3 &wiWorld, const Transform &worldToNormal);
 
-    void save(const Transform &worldToNormal);
+    void save(const std::string &filestem, const Transform &worldToNormal);
+    std::vector<float> asVector(const Transform &worldToNormal);
 
 private:
     void buildCDF(const Transform &worldToNormal);
+    bool m_built;
 
     std::vector<float> m_CDF;
     bool m_emptyCDF;

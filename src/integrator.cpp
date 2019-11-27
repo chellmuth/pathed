@@ -13,14 +13,15 @@
 #include <iomanip>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <stdio.h>
-
-static const int primarySamples = 99999;
 
 void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus)> callback, bool *quit)
 {
     const int width = g_job->width();
     const int height = g_job->height();
+
+    const int primarySamples = g_job->spp();
 
     RandomGenerator random;
 
@@ -86,7 +87,7 @@ void Integrator::run(Image &image, Scene &scene, std::function<void(RenderStatus
         int maxJ = log2f(primarySamples);
         for (int j = 0; j <= maxJ; j++) {
             if (1 << j == i + 1) {
-                image.save("auto");
+                image.saveCheckpoint("auto");
             }
         }
 

@@ -10,8 +10,10 @@
 #include "vector.h"
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <regex>
+#include <utility>
 #include <vector>
 
 using string = std::string;
@@ -38,6 +40,67 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         parseLine(line);
     }
 
+    std::map<int, int> normalLookup;
+    std::map<std::pair<int, int>, int> correctionLookup;
+
+    std::vector<FaceIndices> correctedFaces;
+
+    // Start "cube-normal" correction
+    // Look for re-used vertices with differing normals
+    // When found, create a new vertex (add to the back of m_vertices)
+    // In the next loop, update m_vertexNormals
+    //   * reverse overwritten normals
+    //   * associate new normals with created vertices
+    for (int i = 0; i < m_faceIndices.size(); i++) {
+        FaceIndices &faceIndices = m_faceIndices[i];
+        FaceIndices correctedFace;
+
+        for (int j = 0; j < 3; j++) {
+            FaceIndices::VertexIndices &vertexIndices = faceIndices.vertices[j];
+
+            if (normalLookup.count(vertexIndices.vertexIndex) == 0) {
+                normalLookup[vertexIndices.vertexIndex] = vertexIndices.normalIndex;
+
+                correctedFace.vertices[j] = vertexIndices;
+            } else if (normalLookup[vertexIndices.vertexIndex] != vertexIndices.normalIndex) {
+                std::pair<int, int> key(vertexIndices.vertexIndex, vertexIndices.normalIndex);
+                int correctedIndex;
+                if (correctionLookup.count(key) == 0) {
+                    m_vertices.push_back(m_vertices[vertexIndices.vertexIndex]);
+
+                    correctedIndex = m_vertices.size() - 1;
+                    correctionLookup[key] = correctedIndex;
+                } else {
+                    correctedIndex = correctionLookup[key];
+                }
+
+                correctedFace.vertices[j] = {
+                    .vertexIndex = correctedIndex,
+                    .normalIndex = vertexIndices.normalIndex,
+                    .UVIndex = vertexIndices.UVIndex
+                };
+            } else {
+                correctedFace.vertices[j] = vertexIndices;
+            }
+        }
+
+        correctedFaces.push_back(correctedFace);
+    }
+
+    m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    for (int i = 0; i < correctedFaces.size(); i++) {
+        FaceIndices &faceIndices = correctedFaces[i];
+
+        for (int j = 0; j < 3; j++) {
+            FaceIndices::VertexIndices &vertexIndices = faceIndices.vertices[j];
+            int normalIndex = vertexIndices.normalIndex;
+            if (normalIndex != -1) {
+                m_vertexNormals[vertexIndices.vertexIndex] = m_normals[normalIndex];
+            }
+        }
+    }
+    // End "cube-normal" correction
+
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
     float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
         rtcMesh,                /* geometry */
@@ -63,16 +126,19 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         0,
         RTC_FORMAT_UINT3,
         3 * sizeof(unsigned int),
-        m_faces.size() / 3
+        correctedFaces.size()
     );
 
     i = 0;
-    for (auto face : m_faces) {
-        rtcFaces[i] = face;
-        i += 1;
+    for (auto face : correctedFaces) {
+        rtcFaces[i + 0] = face.vertices[0].vertexIndex;
+        rtcFaces[i + 1] = face.vertices[1].vertexIndex;
+        rtcFaces[i + 2] = face.vertices[2].vertexIndex;
+        i += 3;
     }
 
-    rtcSetGeometryVertexAttributeCount(rtcMesh, 1);
+    rtcSetGeometryVertexAttributeCount(rtcMesh, 2);
+
     float *rtcUVs = (float *)rtcSetNewGeometryBuffer(
         rtcMesh,                          /* geometry */
         RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
@@ -82,18 +148,38 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
         m_vertices.size()                 /* item count */
     );
 
-    i = 0;
-    for (auto &uv : m_uvs) {
-        rtcUVs[2 * i + 0] = uv.u;
-        rtcUVs[2 * i + 1] = uv.v;
-        i += 1;
+    float *rtcNormals = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                          /* geometry */
+        RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
+        1,                                /* slot */
+        RTC_FORMAT_FLOAT3,                /* format */
+        3 * sizeof(float),                /* byte stride */
+        m_vertices.size()                 /* item count */
+    );
+
+    const unsigned long verticesSize = m_vertices.size();
+
+    const unsigned long vertexUVsSize = m_vertexUVs.size();
+    if (vertexUVsSize < verticesSize) {
+        std::cout << "Reserving more vertex UVs (" << vertexUVsSize << ", " << verticesSize << ")" << std::endl;
+        m_vertexUVs.resize(m_vertices.size(), {0.f, 0.f});
     }
 
-    // If this object doesn't do UVs, supply them anyway for now
-    if (i == 0) {
-        for (i = 0; i < m_vertices.size() * 2; i++) {
-            rtcUVs[i] = 0.f;
-        }
+    for (i = 0; i < m_vertices.size(); i++) {
+        rtcUVs[2 * i + 0] = m_vertexUVs[i].u;
+        rtcUVs[2 * i + 1] = m_vertexUVs[i].v;
+    }
+
+    const unsigned long vertexNormalsSize = m_vertexNormals.size();
+    if (vertexNormalsSize < verticesSize) {
+        std::cout << "Reserving more vertex normals (" << vertexNormalsSize << ", " << verticesSize << ")" << std::endl;
+        m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    }
+
+    for (i = 0; i < m_vertices.size(); i++) {
+        rtcNormals[3 * i + 0] = m_vertexNormals[i].x();
+        rtcNormals[3 * i + 1] = m_vertexNormals[i].y();
+        rtcNormals[3 * i + 2] = m_vertexNormals[i].z();
     }
 
     rtcCommitGeometry(rtcMesh);
@@ -159,6 +245,9 @@ void ObjParser::processNormal(string &normalArgs)
     string rest = normalArgs;
 
     float x = std::stof(rest, &index);
+    if (m_handedness == Handedness::Left) {
+        x *= -1.f;
+    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -234,11 +323,12 @@ void ObjParser::processFace(Triangle *face)
 
 void ObjParser::processTriangle(
     int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int normalIndex0, int normalIndex1, int normalIndex2,
     int UVIndex0, int UVIndex1, int UVIndex2
 ) {
-
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
-    correctIndices(m_vertices, &UVIndex0, &UVIndex1, &UVIndex2);
+    correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
+    correctIndices(m_uvs, &UVIndex0, &UVIndex1, &UVIndex2);
 
     Triangle *face = new Triangle(
         m_vertices[vertexIndex0],
@@ -254,6 +344,58 @@ void ObjParser::processTriangle(
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
     m_faces.push_back(vertexIndex2);
+
+    m_vertexUVs.resize(m_vertices.size(), {0.f, 0.f});
+    m_vertexUVs[vertexIndex0] = m_uvs[UVIndex0];
+    m_vertexUVs[vertexIndex1] = m_uvs[UVIndex1];
+    m_vertexUVs[vertexIndex2] = m_uvs[UVIndex2];
+
+    m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    m_vertexNormals[vertexIndex0] = m_normals[normalIndex0];
+    m_vertexNormals[vertexIndex1] = m_normals[normalIndex1];
+    m_vertexNormals[vertexIndex2] = m_normals[normalIndex2];
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, normalIndex0, UVIndex0 },
+            { vertexIndex1, normalIndex1, UVIndex1 },
+            { vertexIndex2, normalIndex2, UVIndex2 }
+        }
+    });
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int normalIndex0, int normalIndex1, int normalIndex2
+) {
+
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+    correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
+
+    Triangle *face = new Triangle(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
+
+    processFace(face);
+
+    m_faces.push_back(vertexIndex0);
+    m_faces.push_back(vertexIndex1);
+    m_faces.push_back(vertexIndex2);
+
+    m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
+    m_vertexNormals[vertexIndex0] = m_normals[normalIndex0];
+    m_vertexNormals[vertexIndex1] = m_normals[normalIndex1];
+    m_vertexNormals[vertexIndex2] = m_normals[normalIndex2];
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, normalIndex0, -1 },
+            { vertexIndex1, normalIndex1, -1 },
+            { vertexIndex2, normalIndex2, -1 }
+        }
+    });
 }
 
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
@@ -271,6 +413,14 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
     m_faces.push_back(vertexIndex2);
+
+    m_faceIndices.push_back({
+        .vertices = {
+            { vertexIndex0, -1, -1 },
+            { vertexIndex1, -1, -1 },
+            { vertexIndex2, -1, -1 }
+        }
+    });
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
@@ -296,7 +446,7 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 {
-    static std::regex expression("(\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+) (\\d+)/(\\d*)/(\\d+)\\s*");
+    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-\\d+)/(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
@@ -308,13 +458,44 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
     int vertexIndex1 = std::stoi(match[4]);
     int vertexIndex2 = std::stoi(match[7]);
 
-    int UVIndex0 = std::stoi(match[3]);
-    int UVIndex1 = std::stoi(match[6]);
-    int UVIndex2 = std::stoi(match[9]);
+    int UVIndex0 = std::stoi(match[2]);
+    int UVIndex1 = std::stoi(match[5]);
+    int UVIndex2 = std::stoi(match[8]);
+
+    int normalIndex0 = std::stoi(match[3]);
+    int normalIndex1 = std::stoi(match[6]);
+    int normalIndex2 = std::stoi(match[9]);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
+        normalIndex0, normalIndex1, normalIndex2,
         UVIndex0, UVIndex1, UVIndex2
+    );
+
+    return true;
+}
+
+bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
+{
+    static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
+    std::smatch match;
+    std::regex_match (faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[3]);
+    int vertexIndex2 = std::stoi(match[5]);
+
+    int normalIndex0 = std::stoi(match[2]);
+    int normalIndex1 = std::stoi(match[4]);
+    int normalIndex2 = std::stoi(match[6]);
+
+    processTriangle(
+        vertexIndex0, vertexIndex1, vertexIndex2,
+        normalIndex0, normalIndex1, normalIndex2
     );
 
     return true;
@@ -324,6 +505,7 @@ void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
     if (processSingleFaceTriplets(faceArgs)) { return; }
+    if (processSingleFaceTripletsVertexAndNormal(faceArgs)) { return; }
 
     string::size_type index;
     string rest = faceArgs;

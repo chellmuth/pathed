@@ -7,6 +7,7 @@
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "mirror.h"
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
@@ -173,6 +174,8 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
             1000,
             Color(0.f, 0.f, 0.f)
         );
+    } else if (bsdfJson["type"] == "mirror") {
+        return std::make_shared<Mirror>();
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

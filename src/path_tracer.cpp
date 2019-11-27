@@ -35,30 +35,19 @@ Color PathTracer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        Transform hemisphereToWorld = normalToWorldSpace(
-            lastIntersection.normal,
-            lastIntersection.wi
+        BSDFSample bsdfSample = lastIntersection.material->sample(
+            lastIntersection, random
         );
-
-        Vector3 hemisphereSample = CosineSampleHemisphere(random);
-        float pdf = CosineHemispherePdf(hemisphereSample);
-
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
-        Ray bounceRay(
-            lastIntersection.point,
-            bounceDirection
-        );
+        Ray bounceRay(lastIntersection.point, bsdfSample.wo);
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        Color f = lastIntersection.material->f(lastIntersection, bounceDirection);
-        float invPDF = 1.f / pdf;
-
-        modulation *= f
-            * fmaxf(0.f, bounceDirection.dot(lastIntersection.normal))
+        const float invPDF = 1.f / bsdfSample.pdf;
+        modulation *= bsdfSample.throughput
+            * fmaxf(0.f, bsdfSample.wo.dot(lastIntersection.shadingNormal))
             * invPDF;
         lastIntersection = bounceIntersection;
 
@@ -123,7 +112,7 @@ Color PathTracer::direct(
 
     return light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection, wo)
-        * fmaxf(0.f, wo.dot(intersection.normal))
+        * fmaxf(0.f, wo.dot(intersection.shadingNormal))
         * invPDF;
 }
 

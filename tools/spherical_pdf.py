@@ -36,7 +36,6 @@ def run():
 
             estimator += pdf * math.sin(step_theta) * d_phi * d_theta
 
-
     monte_carlo_samples = 100000
     monte_carlo_estimator = 0
     for _ in range(monte_carlo_samples):

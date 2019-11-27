@@ -1,10 +1,15 @@
 #include "photon_pdf.h"
 
+#include "coordinate.h"
+#include "globals.h"
+#include "job.h"
 #include "monte_carlo.h"
 #include "util.h"
 
 #include <assert.h>
 #include <math.h>
+#include <fstream>
+#include <sstream>
 
 PhotonPDF::PhotonPDF(
     const Point3 &origin,
@@ -19,24 +24,15 @@ PhotonPDF::PhotonPDF(
       m_indices(indices),
       m_phiSteps(phiSteps),
       m_thetaSteps(thetaSteps),
-      m_emptyCDF(false)
+      m_emptyCDF(false),
+      m_built(false)
 {}
-
-void cartesianToSpherical(Vector3 cartesian, float *phi, float *theta)
-{
-    *phi = atan2f(cartesian.z(), cartesian.x());
-    if (*phi < 0.f) {
-        *phi += 2 * M_PI;
-    }
-    if (*phi == M_TWO_PI) {
-        *phi = 0;
-    }
-
-    *theta = acosf(cartesian.y());
-}
 
 void PhotonPDF::buildCDF(const Transform &worldToNormal)
 {
+    if (m_built) { return; }
+    m_built = true;
+
     float massLookup[m_phiSteps][m_thetaSteps];
     float totalMass = 0.f;
 
@@ -157,6 +153,7 @@ Vector3 PhotonPDF::sample(RandomGenerator &random, const Transform &worldToNorma
     }
 
     assert(false);
+    return Vector3(0.f, 0.f, 0.f);
 }
 
 float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
@@ -201,7 +198,51 @@ float PhotonPDF::pdf(const Vector3 &wiWorld, const Transform &worldToNormal)
     return pdf;
 }
 
-void PhotonPDF::save(const Transform &worldToNormal)
+std::vector<float> PhotonPDF::asVector(const Transform &worldToNormal)
+{
+    buildCDF(worldToNormal);
+
+    std::vector<float> result(m_thetaSteps * m_phiSteps, 0.f);
+
+    if (m_emptyCDF) {
+        return result;
+    }
+
+    for (int index = 0; index < m_thetaSteps * m_phiSteps; index++) {
+        float pdf = m_CDF[index];
+        if (index > 0) {
+            pdf -= m_CDF[index - 1];
+        }
+
+        result[index] = pdf;
+    }
+
+    // for (int thetaStep = 0; thetaStep < m_thetaSteps; thetaStep++) {
+    //     for (int phiStep = 0; phiStep < m_phiSteps; phiStep++) {
+    //         int CDFIndex = phiStep * m_thetaSteps + thetaStep;
+    //         int resultIndex = (m_thetaSteps - thetaStep - 1) * m_phiSteps + phiStep;
+
+    //         float pdf = m_CDF[CDFIndex];
+    //         if (CDFIndex > 0) {
+    //             pdf -= m_CDF[CDFIndex - 1];
+    //         }
+
+    //         result[resultIndex] = pdf;
+    //     }
+    // }
+
+    return result;
+}
+
+static std::string pathFromFilename(const std::string &filename)
+{
+    std::string outputDirectory = g_job->outputDirectory();
+    std::ostringstream outputStream;
+    outputStream << outputDirectory << filename;
+    return outputStream.str();
+}
+
+void PhotonPDF::save(const std::string &filestem, const Transform &worldToNormal)
 {
     buildCDF(worldToNormal);
 
@@ -219,5 +260,18 @@ void PhotonPDF::save(const Transform &worldToNormal)
         }
     }
 
-    image.write("testing.bmp");
+    std::ofstream out;
+    std::string path = pathFromFilename(filestem + ".dat");
+    out.open(path, std::ios::out | std::ios::binary);
+    for (int i = 0; i < m_phiSteps * m_thetaSteps; i++) {
+        float pdf = m_CDF[i];
+        if (i > 0) {
+            pdf -= m_CDF[i - 1];
+        }
+
+        out.write(reinterpret_cast<const char*>(&pdf), sizeof(float));
+    }
+    out.close();
+
+    image.write(filestem + ".bmp");
 }

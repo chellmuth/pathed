@@ -3,6 +3,7 @@
 #include "color.h"
 #include "intersection.h"
 #include "material.h"
+#include "random_generator.h"
 
 class Phong : public Material {
 public:
@@ -12,6 +13,11 @@ public:
         const Intersection &intersection,
         const Vector3 &wo,
         float *pdf
+    ) const override;
+
+    BSDFSample sample(
+        const Intersection &intersection,
+        RandomGenerator &random
     ) const override;
 
 private:
