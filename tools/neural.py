@@ -15,14 +15,14 @@ class Context:
     def __init__(self):
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
-        self.output_root = Path("/tmp/test-mitsuba")
+        self.output_root = Path("/tmp/test-cbox")
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
         self.dropbox_path = Path(os.environ["RESEARCH_ROOT"])
 
         self.datasets_path = self.dropbox_path / "datasets"
-        self.checkpoint_path = self.dropbox_path / "checkpoints/20191123-mitsuba-3.t"
+        self.checkpoint_path = self.dropbox_path / "checkpoints/20191127-ppg-cbox-2.t"
 
     def scene_path(self, scene):
         return self.mitsuba_path / scene
@@ -36,7 +36,8 @@ def cli():
 
 @cli.command()
 @click.option("--all", is_flag=True)
-def pdf_compare(all):
+@click.option("--point", type=int, nargs=2)
+def pdf_compare(all, point):
     context = Context()
 
     if all:
@@ -52,24 +53,12 @@ def pdf_compare(all):
             (146, 210), # tall box - front side
             (94, 175), # tall box - left side
         ]
+    elif point:
+        points = [point]
     else:
         points = [(20, 134)]
 
     for point in points:
-        run_mitsuba(
-            context.mitsuba_path,
-            context.scene_path("cornell-box/scene-training.xml"),
-            context.output_root / "training.exr",
-            [], # "-p1" gives reproducible results
-            {
-                "x": point[0],
-                "y": point[1],
-                "width": 400,
-                "height": 400,
-            }
-        )
-
-
         server_process = runner.launch_server(
             context.server_path,
             0,
@@ -80,7 +69,20 @@ def pdf_compare(all):
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("cornell-box/scene-neural.xml"),
+            context.scene_path("ppg-cbox/scene-training.xml"),
+            context.output_root / "training.exr",
+            [], # "-p1" gives reproducible results
+            {
+                "x": point[0],
+                "y": point[1],
+                "width": 400,
+                "height": 400,
+            }
+        )
+
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("ppg-cbox/scene-neural.xml"),
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
@@ -88,7 +90,8 @@ def pdf_compare(all):
                 "y": point[1],
                 "width": 400,
                 "height": 400,
-            }
+            },
+            verbose=True
         )
 
         server_process.join()
@@ -168,20 +171,22 @@ def render(include_gt, size):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("cornell-box/scene-neural.xml"),
+        context.scene_path("ppg-cbox/scene-neural.xml"),
         context.output_root / "render.exr",
         [ "-p1" ],
         {
             "width": width,
             "height": height,
-        }
+            "spp": 1,
+        },
+        verbose=True
     )
 
     server_process.join()
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("cornell-box/scene-path.xml"),
+        context.scene_path("ppg-cbox/scene-path.xml"),
         context.output_root / "path.exr",
         [],
         {
@@ -194,7 +199,7 @@ def render(include_gt, size):
     if include_gt:
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("cornell-box/scene-path.xml"),
+            context.scene_path("ppg-cbox/scene-path.xml"),
             context.output_root / "gt.exr",
             [],
             {
@@ -249,7 +254,7 @@ def debug_pixel(x, y):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("cornell-box/scene-neural.xml"),
+        context.scene_path("ppg-cbox/scene-neural.xml"),
         f"render_{x}_{y}.exr",
         [ "-p1" ],
         {
