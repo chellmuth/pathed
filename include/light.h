@@ -12,10 +12,10 @@ class Light {
 public:
     Light(std::shared_ptr<Surface> surface);
 
-    std::shared_ptr<Material> getMaterial() const;
-    SurfaceSample sample(RandomGenerator &random) const;
-    Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const;
+    virtual std::shared_ptr<Material> getMaterial() const = 0;
+    virtual SurfaceSample sample(RandomGenerator &random) const = 0;
+    virtual Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const = 0;
 
-private:
+protected:
     std::shared_ptr<Surface> m_surface;
 };

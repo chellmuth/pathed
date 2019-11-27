@@ -1,5 +1,6 @@
 #include "obj_parser.h"
 
+#include "area_light.h"
 #include "camera.h"
 #include "color.h"
 #include "globals.h"
@@ -316,7 +317,7 @@ void ObjParser::processFace(Triangle *face)
 
     if (emit.isBlack()) { return; }
 
-    std::shared_ptr<Light> light(new Light(surface));
+    std::shared_ptr<Light> light(new AreaLight(surface));
 
     m_lights.push_back(light);
 }

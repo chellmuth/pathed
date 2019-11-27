@@ -1,5 +1,6 @@
 #include "scene_parser.h"
 
+#include "area_light.h"
 #include "camera.h"
 #include "checkerboard.h"
 #include "globals.h"
@@ -69,7 +70,7 @@ Scene parseScene(std::ifstream &sceneFile)
                 continue;
             }
 
-            auto light = std::make_shared<Light>(surfacePtr);
+            auto light = std::make_shared<AreaLight>(surfacePtr);
             lights.push_back(light);
         }
     }
