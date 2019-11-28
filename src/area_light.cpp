@@ -11,7 +11,12 @@ Color AreaLight::emit() const
     return m_surface->getMaterial()->emit();
 }
 
-SurfaceSample AreaLight::sample(RandomGenerator &random) const
+SurfaceSample AreaLight::sample(const Intersection &intersection, RandomGenerator &random) const
+{
+    return m_surface->sample(random);
+}
+
+SurfaceSample AreaLight::sampleEmit(RandomGenerator &random) const
 {
     return m_surface->sample(random);
 }

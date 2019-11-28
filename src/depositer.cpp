@@ -317,7 +317,7 @@ Color Depositer::direct(
     int lightIndex = (int)floorf(random.next() * lightCount);
 
     std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(random);
+    SurfaceSample lightSample = light->sample(intersection, random);
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();

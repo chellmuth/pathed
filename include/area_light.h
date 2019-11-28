@@ -13,7 +13,13 @@ public:
 
     Color emit() const override;
 
-    SurfaceSample sample(RandomGenerator &random) const override;
+    SurfaceSample sample(
+        const Intersection &intersection,
+        RandomGenerator &random
+    ) const override;
+
+    SurfaceSample sampleEmit(RandomGenerator &random) const override;
+
     Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const override;
 
 private:

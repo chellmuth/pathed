@@ -154,7 +154,7 @@ LightSample Scene::sampleLights(RandomGenerator &random) const
     int lightIndex = (int)floorf(random.next() * lightCount);
 
     std::shared_ptr<Light> light = m_lights[lightIndex];
-    SurfaceSample surfaceSample = light->sample(random);
+    SurfaceSample surfaceSample = light->sampleEmit(random);
     LightSample lightSample(
         light,
         surfaceSample.point,
