@@ -29,7 +29,11 @@ Color EnvironmentLight::emit() const
 Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
-    cartesianToSpherical(direction, &phi, &theta);
+    Vector3 ugh();
+    cartesianToSpherical(
+        Vector3(direction.x(), direction.z(), direction.y()),
+        &phi, &theta
+    );
 
     const float phiCanonical = phi / M_TWO_PI;
     const float thetaCanonical = theta / M_PI;
