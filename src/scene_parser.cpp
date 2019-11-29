@@ -92,6 +92,7 @@ Scene parseScene(std::ifstream &sceneFile)
         primitives,
         surfaces,
         lights,
+        environmentLight,
         camera
     );
 

@@ -17,9 +17,14 @@ Scene::Scene(
     std::vector<std::shared_ptr<Primitive> > primitives,
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
     std::vector<std::shared_ptr<Light> > lights,
+    std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
-    : m_surfaces(surfaces), m_lights(lights), m_camera(camera), m_bvh(new BVH())
+    : m_surfaces(surfaces),
+      m_lights(lights),
+      m_environmentLight(environmentLight),
+      m_camera(camera),
+      m_bvh(new BVH())
 {
     printf("BAKING...\n");
     m_bvh->bake(primitives);
@@ -162,4 +167,12 @@ LightSample Scene::sampleLights(RandomGenerator &random) const
         surfaceSample.invPDF
     );
     return lightSample;
+}
+
+Color Scene::environmentL(const Vector3 &direction) const
+{
+    if (m_environmentLight) {
+        return m_environmentLight->emit(direction);
+    }
+    return Color(1.f);
 }

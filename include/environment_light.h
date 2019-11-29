@@ -17,6 +17,7 @@ public:
     EnvironmentLight(std::string filename) : Light(), m_filename(filename) {};
 
     Color emit() const override;
+    Color emit(const Vector3 &direction) const;
 
     SurfaceSample sample(
         const Intersection &intersection,
