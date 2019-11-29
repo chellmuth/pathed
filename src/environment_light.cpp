@@ -1,5 +1,6 @@
 #include "environment_light.h"
 
+#include "coordinate.h"
 #include "monte_carlo.h"
 
 #include <math.h>
@@ -33,5 +34,14 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
 
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
 {
-    return emit();
+    Vector3 direction = (lightSample.point - surfacePoint).toVector();
+
+    float phi, theta;
+    cartesianToSpherical(direction, &phi, &theta);
+
+    if (phi > M_PI) {
+        return emit();
+    }
+
+    return Color(20.f, 0.f, 0.f);
 }
