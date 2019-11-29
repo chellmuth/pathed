@@ -39,3 +39,19 @@ float CosineHemispherePdf(const Vector3 &v)
 {
     return v.y() * INV_PI;
 }
+
+Vector3 UniformSampleSphere(RandomGenerator &random)
+{
+    float z = random.next() * 2.f - 1;
+    float r = sqrtf(fmaxf(0.f, 1.f - z*z));
+    float phi = 2 * M_PI * random.next();
+    float x = r * cosf(phi);
+    float y = r * sinf(phi);
+
+    return Vector3(x, z, y);
+}
+
+float UniformSampleSpherePDF(const Vector3 &v)
+{
+    return INV_TWO_PI / 2.f;
+}

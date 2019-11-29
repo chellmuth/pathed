@@ -1,18 +1,22 @@
 #include "environment_light.h"
 
+#include "monte_carlo.h"
+
 #include <math.h>
 
 Color EnvironmentLight::emit() const
 {
-    return Color(0.f, 0.f, 1.f);
+    return Color(0.f, 0.f, 20.f);
 }
 
 SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomGenerator &random) const
 {
+    Vector3 direction = UniformSampleSphere(random);
+
     SurfaceSample fake = {
-        .point = Point3(0.f, 0.f, 0.f),
-        .normal = Vector3(0.f),
-        .invPDF = 0.f
+        .point = intersection.point + (direction * 10000.f),
+        .normal = direction * -1.f,
+        .invPDF = UniformSampleSpherePDF(direction)
     };
     return fake;
 }

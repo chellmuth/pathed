@@ -8,3 +8,6 @@ float UniformHemispherePdf(const Vector3 &v);
 
 Vector3 CosineSampleHemisphere(RandomGenerator &random);
 float CosineHemispherePdf(const Vector3 &v);
+
+Vector3 UniformSampleSphere(RandomGenerator &random);
+float UniformSampleSpherePDF(const Vector3 &v);

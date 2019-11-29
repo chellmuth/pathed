@@ -3,6 +3,7 @@
 #include "area_light.h"
 #include "camera.h"
 #include "checkerboard.h"
+#include "environment_light.h"
 #include "globals.h"
 #include "job.h"
 #include "lambertian.h"
@@ -39,7 +40,10 @@ static void parseObjects(
 );
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
-
+static void parseEnvironmentLight(
+    json environmentLightJson,
+    std::shared_ptr<EnvironmentLight> &environmentLight
+);
 
 Scene parseScene(std::ifstream &sceneFile)
 {
@@ -73,6 +77,14 @@ Scene parseScene(std::ifstream &sceneFile)
             auto light = std::make_shared<AreaLight>(surfacePtr);
             lights.push_back(light);
         }
+    }
+
+    std::shared_ptr<EnvironmentLight> environmentLight;
+    std::shared_ptr<EnvironmentLight> environmentLight2;
+    auto environmentLightJson = sceneJson["environmentLight"];
+    parseEnvironmentLight(environmentLightJson, environmentLight);
+    if (environmentLight) {
+        lights.push_back(environmentLight);
     }
 
     std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
@@ -164,6 +176,16 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     surfaces.push_back(surface);
 }
 
+static void parseEnvironmentLight(
+    json environmentLightJson,
+    std::shared_ptr<EnvironmentLight> &environmentLight
+) {
+    if (environmentLightJson.is_object()) {
+        environmentLight.reset(new EnvironmentLight(
+            environmentLightJson["filename"].get<std::string>()
+        ));
+    }
+}
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 {
     if (bsdfJson["type"] == "phong") {

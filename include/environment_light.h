@@ -8,9 +8,13 @@
 #include "random_generator.h"
 #include "surface.h"
 
+#include <iostream>
+#include <sstream>
+#include <string>
+
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight() : Light() {};
+    EnvironmentLight(std::string filename) : Light(), m_filename(filename) {};
 
     Color emit() const override;
 
@@ -25,4 +29,13 @@ public:
         const SurfaceSample &lightSample,
         const Point3 &surfacePoint
     ) const override;
+
+    std::string toString() const {
+        std::ostringstream oss;
+        oss << "[EnvironmentLight file=" << m_filename << "]";
+        return oss.str();
+    }
+
+private:
+    std::string m_filename;
 };
