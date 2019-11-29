@@ -174,5 +174,5 @@ Color Scene::environmentL(const Vector3 &direction) const
     if (m_environmentLight) {
         return m_environmentLight->emit(direction);
     }
-    return Color(1.f);
+    return Color(0.f);
 }
