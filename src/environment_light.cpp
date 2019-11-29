@@ -4,7 +4,22 @@
 #include "monte_carlo.h"
 #include "util.h"
 
-#include <math.h>
+#include "tinyexr.h"
+
+#include <assert.h>
+#include <cmath>
+
+EnvironmentLight::EnvironmentLight(std::string filename)
+: Light(), m_filename(filename)
+{
+    const char *error = nullptr;
+
+    int code = LoadEXR(&m_data, &m_width, &m_height, m_filename.c_str(), &error);
+    if (code != TINYEXR_SUCCESS) {
+        fprintf(stderr, "ERROR: %s\n", error);
+        FreeEXRErrorMessage(error);
+    }
+}
 
 Color EnvironmentLight::emit() const
 {
@@ -16,11 +31,17 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
     float phi, theta;
     cartesianToSpherical(direction, &phi, &theta);
 
-    if (phi > M_PI) {
-        return Color(0.f, 0.f, 20.f);
-    }
+    const float phiCanonical = phi / M_TWO_PI;
+    const float thetaCanonical = theta / M_PI;
 
-    return Color(20.f, 0.f, 0.f);
+    assert(0.f <= phiCanonical && phiCanonical <= 1.f);
+    assert(0.f <= thetaCanonical && thetaCanonical <= 1.f);
+
+    int phiStep = (int)floorf(m_width * phiCanonical);
+    int thetaStep = (int)floorf(m_height * thetaCanonical);
+
+    int index = thetaStep * m_width + phiStep;
+    return Color(m_data[4*index + 0], m_data[4*index + 1], m_data[4*index + 2]);
 }
 
 SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomGenerator &random) const
@@ -49,5 +70,5 @@ Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point
 {
     Vector3 direction = (lightSample.point - surfacePoint).toVector();
 
-    return emit(direction);
+    return emit(direction.normalized());
 }

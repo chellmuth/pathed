@@ -15,6 +15,8 @@
 #include "stb_image_write.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
 
 #include <assert.h>
 #include <memory>

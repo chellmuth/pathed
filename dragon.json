@@ -41,6 +41,6 @@
   ],
 
   "environmentLight": {
-    "filename": "fake.exr"
+    "filename": "assets/skylight-sunset.exr"
   }
 }

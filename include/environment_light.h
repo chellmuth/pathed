@@ -14,7 +14,7 @@
 
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight(std::string filename) : Light(), m_filename(filename) {};
+    EnvironmentLight(std::string filename);
 
     Color emit() const override;
     Color emit(const Vector3 &direction) const;
@@ -39,4 +39,6 @@ public:
 
 private:
     std::string m_filename;
+    float *m_data;
+    int m_width, m_height;
 };
