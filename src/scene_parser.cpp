@@ -27,6 +27,7 @@ using json = nlohmann::json;
 typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 
 static float parseFloat(json floatJson);
+static float parseFloat(json floatJson, float defaultValue);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
@@ -205,7 +206,7 @@ static void parseEnvironmentLight(
     if (environmentLightJson.is_object()) {
         environmentLight.reset(new EnvironmentLight(
             environmentLightJson["filename"].get<std::string>(),
-            environmentLightJson.value("scale", 1.f)
+            parseFloat(environmentLightJson["scale"], 1.f)
         ));
 
         std::cout << environmentLight->toString() << std::endl;
@@ -299,6 +300,15 @@ static Transform parseTransform(json transformJson)
     }
 
     return Transform(matrix);
+}
+
+static float parseFloat(json floatJson, float defaultValue)
+{
+    try {
+        return parseFloat(floatJson);
+    } catch (nlohmann::detail::type_error) {
+        return defaultValue;
+    }
 }
 
 static float parseFloat(json floatJson)

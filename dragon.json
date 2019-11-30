@@ -51,6 +51,7 @@
   ],
 
   "environmentLight": {
-    "filename": "assets/20060807_wells6_hd.exr"
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "3"
   }
 }
