@@ -29,10 +29,6 @@ void Quad::parse(
         transform.apply(Point3(1.f, -1.f, 0.f))
     };
 
-    for (int i = 0; i < 6; i++) {
-        points[i].debug();
-    }
-
     std::shared_ptr<Shape> triangle1 = std::make_shared<Triangle>(
         points[0],
         points[1],

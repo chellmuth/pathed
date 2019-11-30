@@ -19,7 +19,7 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "emit": [ "10", "10", "10" ],
+        "emit": [ "20", "20", "20" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }
@@ -27,13 +27,13 @@
     {
       "type": "quad",
       "transform": {
-        "scale": [ "100", "100", "1" ],
+        "scale": [ "145", "110", "1" ],
         "rotate": [ "0", "0", "0" ],
-        "translate": [ "0", "0", "0" ]
+        "translate": [ "0", "0", "-44" ]
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "0.0" ],
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
         "specularReflectance": "0"
       }
     },
