@@ -31,7 +31,7 @@ public:
     void debug() const;
     std::string toString() const {
         std::ostringstream oss;
-        oss << "[Vector x=" << m_x << " y=" << m_y << " z=" << m_z << "]";
+        oss << "[Vector3 x=" << m_x << " y=" << m_y << " z=" << m_z << "]";
         return oss.str();
     }
 
