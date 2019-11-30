@@ -13,6 +13,7 @@
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
+#include "quad.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
@@ -40,6 +41,7 @@ static void parseObjects(
 );
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseEnvironmentLight(
     json environmentLightJson,
     std::shared_ptr<EnvironmentLight> &environmentLight
@@ -110,6 +112,8 @@ static void parseObjects(
             parseObj(objectJson, localSurfaces);
         } else if (objectJson["type"] == "sphere") {
             parseSphere(objectJson, localSurfaces);
+        } else if (objectJson["type"] == "quad") {
+            parseQuad(objectJson, localSurfaces);
         }
 
         auto bvh = std::make_shared<BVH>();
@@ -175,6 +179,23 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     auto surface = std::make_shared<Surface>(sphere, material);
 
     surfaces.push_back(surface);
+}
+
+static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces)
+{
+    std::shared_ptr<Material> material;
+    auto bsdf = quadJson["bsdf"];
+    if (bsdf.is_object()) {
+        material = parseMaterial(bsdf);
+    }
+
+    Transform transform;
+    auto transformJson = quadJson["transform"];
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    Quad::parse(transform, material, surfaces);
 }
 
 static void parseEnvironmentLight(

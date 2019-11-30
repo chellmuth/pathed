@@ -257,7 +257,7 @@ void ObjParser::processNormal(string &normalArgs)
     float z = std::stof(rest, &index);
 
     Vector3 normal(x, y, z);
-    m_normals.push_back(normal);
+    m_normals.push_back(m_transform.apply(normal));
 }
 
 void ObjParser::processUV(string &uvArgs)

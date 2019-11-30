@@ -25,6 +25,19 @@
       }
     },
     {
+      "type": "quad",
+      "transform": {
+        "scale": [ "100", "100", "1" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "0", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "0.0" ],
+        "specularReflectance": "0"
+      }
+    },
+    {
       "type": "obj",
       "filename": "assets/dragon.obj",
       "transform": {
