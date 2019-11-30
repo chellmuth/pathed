@@ -20,8 +20,7 @@
       "bsdf": {
         "type": "lambertian",
         "emit": [ "20", "20", "20" ],
-        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
-        "specularReflectance": "0"
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ]
       }
     },
     {
@@ -33,8 +32,7 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
-        "specularReflectance": "0"
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     },
     {
@@ -47,8 +45,7 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
-        "specularReflectance": "0"
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     }
   ],
