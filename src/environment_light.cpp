@@ -56,7 +56,7 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
     SurfaceSample inProgress = {
         .point = intersection.point + (direction * 10000.f),
         .normal = direction * -1.f,
-        .invPDF = UniformSampleSpherePDF(direction)
+        .invPDF = 1.f / UniformSampleSpherePDF(direction)
     };
     return inProgress;
 }
