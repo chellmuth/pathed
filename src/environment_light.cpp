@@ -29,7 +29,6 @@ Color EnvironmentLight::emit() const
 Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
-    Vector3 ugh();
     cartesianToSpherical(
         Vector3(direction.x(), direction.z(), direction.y()),
         &phi, &theta
