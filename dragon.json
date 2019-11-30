@@ -26,7 +26,7 @@
     {
       "type": "quad",
       "transform": {
-        "scale": [ "145", "110", "1" ],
+        "scale": [ "1000", "1000", "1" ],
         "rotate": [ "0", "0", "0" ],
         "translate": [ "0", "0", "-44" ]
       },
@@ -51,6 +51,6 @@
   ],
 
   "environmentLight": {
-    "filename": "assets/skylight-sunset.exr"
+    "filename": "assets/20060807_wells6_hd.exr"
   }
 }

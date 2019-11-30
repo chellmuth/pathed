@@ -14,7 +14,7 @@
 
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight(std::string filename);
+    EnvironmentLight(std::string filename, float scale);
 
     Color emit() const override;
     Color emit(const Vector3 &direction) const;
@@ -33,12 +33,15 @@ public:
 
     std::string toString() const {
         std::ostringstream oss;
-        oss << "[EnvironmentLight file=" << m_filename << "]";
+        oss << "[EnvironmentLight scale=" << m_scale << " file=" << m_filename << "]";
         return oss.str();
     }
 
 private:
-    std::string m_filename;
+    float m_scale;
+
     float *m_data;
     int m_width, m_height;
+
+    std::string m_filename;
 };

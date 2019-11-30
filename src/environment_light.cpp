@@ -9,12 +9,12 @@
 #include <assert.h>
 #include <cmath>
 
-EnvironmentLight::EnvironmentLight(std::string filename)
-: Light(), m_filename(filename)
+EnvironmentLight::EnvironmentLight(std::string filename, float scale)
+    : Light(), m_filename(filename), m_scale(scale)
 {
     const char *error = nullptr;
 
-    int code = LoadEXR(&m_data, &m_width, &m_height, m_filename.c_str(), &error);
+    int code = LoadEXR(&m_data, &m_width, &m_height, filename.c_str(), &error);
     if (code != TINYEXR_SUCCESS) {
         fprintf(stderr, "ERROR: %s\n", error);
         FreeEXRErrorMessage(error);
@@ -44,19 +44,21 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
     int thetaStep = (int)floorf(m_height * thetaCanonical);
 
     int index = thetaStep * m_width + phiStep;
-    return Color(m_data[4*index + 0], m_data[4*index + 1], m_data[4*index + 2]);
+    Color result(m_data[4*index + 0], m_data[4*index + 1], m_data[4*index + 2]);
+
+    return result * m_scale;
 }
 
 SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomGenerator &random) const
 {
     Vector3 direction = UniformSampleSphere(random);
 
-    SurfaceSample fake = {
+    SurfaceSample inProgress = {
         .point = intersection.point + (direction * 10000.f),
         .normal = direction * -1.f,
         .invPDF = UniformSampleSpherePDF(direction)
     };
-    return fake;
+    return inProgress;
 }
 
 SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const

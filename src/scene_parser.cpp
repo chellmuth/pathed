@@ -204,8 +204,11 @@ static void parseEnvironmentLight(
 ) {
     if (environmentLightJson.is_object()) {
         environmentLight.reset(new EnvironmentLight(
-            environmentLightJson["filename"].get<std::string>()
+            environmentLightJson["filename"].get<std::string>(),
+            environmentLightJson.value("scale", 1.f)
         ));
+
+        std::cout << environmentLight->toString() << std::endl;
     }
 }
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
