@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "color.h"
+#include "intersection.h"
 #include "material.h"
 #include "point.h"
 #include "random_generator.h"
@@ -10,12 +11,17 @@
 
 class Light {
 public:
-    Light(std::shared_ptr<Surface> surface);
+    virtual Color emit() const = 0;
 
-    std::shared_ptr<Material> getMaterial() const;
-    SurfaceSample sample(RandomGenerator &random) const;
-    Color biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const;
+    virtual SurfaceSample sample(
+        const Intersection &intersection,
+        RandomGenerator &random
+    ) const = 0;
 
-private:
-    std::shared_ptr<Surface> m_surface;
+    virtual SurfaceSample sampleEmit(RandomGenerator &random) const = 0;
+
+    virtual Color biradiance(
+        const SurfaceSample &lightSample,
+        const Point3 &surfacePoint
+    ) const = 0;
 };

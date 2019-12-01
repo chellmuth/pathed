@@ -16,30 +16,37 @@ void SampleIntegrator::samplePixel(
 ) {
     Ray ray = scene.getCamera()->generateRay(row, col);
 
-    Intersection intersection = scene.testIntersect(ray);
-    if (!intersection.hit) { return; }
-
-    Sample sample;
-    sample.eyePoints.push_back(ray.origin());
-
     Color color(0.f);
 
-    if (g_job->bounceController().checkCounts(0)) {
-        Color emit = intersection.material->emit();
-        if (!emit.isBlack() && !IntersectionHelper::checkBacksideIntersection(intersection)) {
-            color += emit;
+    Intersection intersection = scene.testIntersect(ray);
+    if (intersection.hit) {
+        Sample sample;
+        sample.eyePoints.push_back(ray.origin());
+
+        if (g_job->bounceController().checkCounts(0)) {
+            Color emit = intersection.material->emit();
+            if (!emit.isBlack() && !IntersectionHelper::checkBacksideIntersection(intersection)) {
+                color += emit;
+            }
+
+            sample.contributions.push_back({color, 1.f});
         }
 
-        sample.contributions.push_back({color, 1.f});
+        color += L(intersection, scene, random, sample);
+
+        sampleLookup[row * width + col] = sample;
+    } else {
+        color += scene.environmentL(ray.direction());
     }
-
-    color += L(intersection, scene, random, sample);
-
-    sampleLookup[row * width + col] = sample;
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
+
+    // Point3 point = intersection.point;
+    // radianceLookup[3 * (row * width + col) + 0] += point.x();
+    // radianceLookup[3 * (row * width + col) + 1] += point.y();
+    // radianceLookup[3 * (row * width + col) + 2] += point.z();
 
     // Vector3 normal = intersection.shadingNormal;
     // radianceLookup[3 * (row * width + col) + 0] += 0.5f * (normal.x() + 1.f);

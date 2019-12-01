@@ -29,19 +29,19 @@ struct PathPoint {
     Point3 point;
     Vector3 normal;
     float pdf;
-    Material *material;
+    Color emit;
 
     PathPoint(
         PointType _pointType,
         Point3 _point,
         Vector3 _normal,
         float _pdf,
-        Material *_material
+        Color _emit
     ) : pointType(_pointType),
         point(_point),
         normal(_normal),
         pdf(_pdf),
-        material(_material)
+        emit(_emit)
     {}
 };
 
@@ -154,7 +154,7 @@ static Color pathRadiance(const Scene &scene, const std::vector<PathPoint> &path
         assert(t >= minT);
     }
 
-    Color emitted = path[0].material->emit();
+    Color emitted = path[0].emit;
     return emitted * pathThroughput(scene, path) / pathPDF(path);
 }
 
@@ -189,7 +189,7 @@ Color BDPT::L(
         scene.getCamera()->getOrigin(),
         Vector3(0.f), // not needed!
         -1.f,         // not needed!
-        nullptr       // not needed!
+        Color(0.f)    // not needed!
     );
 
     PathPoint eyeBouncePoint(
@@ -197,7 +197,7 @@ Color BDPT::L(
         intersection.point,
         intersection.normal,
         1.f,
-        intersection.material
+        intersection.material->emit()
     );
 
     PathPoint lightBouncePoint(
@@ -205,7 +205,7 @@ Color BDPT::L(
         lightIntersection.point,
         lightIntersection.normal,
         UniformHemispherePdf(bounceDirection),
-        lightIntersection.material
+        lightIntersection.material->emit()
     );
 
     PathPoint lightPoint(
@@ -213,7 +213,7 @@ Color BDPT::L(
         lightSample.point,
         lightSample.normal,
         1.f / (lightSample.invPDF * scene.lights().size()),
-        lightSample.light->getMaterial().get()
+        lightSample.light->emit()
     );
 
     std::vector<PathPoint> path3 = {

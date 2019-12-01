@@ -66,7 +66,7 @@ void LightTracer::measure(
 
     const float sampleInvPDF = lightSample.invPDF * scene.lights().size();
 
-    Color throughput = lightSample.light->getMaterial()->emit() * sampleInvPDF;
+    Color throughput = lightSample.light->emit() * sampleInvPDF;
     // splat(throughput, lightSample.point, scene, radianceLookup);
 
     const Vector3 hemisphereSample = UniformSampleHemisphere(random);

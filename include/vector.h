@@ -1,5 +1,8 @@
 #pragma once
 
+#include <sstream>
+#include <string>
+
 class Point3;
 
 class Vector3 {
@@ -26,6 +29,11 @@ public:
     bool operator==(const Vector3 &v) const;
 
     void debug() const;
+    std::string toString() const {
+        std::ostringstream oss;
+        oss << "[Vector3 x=" << m_x << " y=" << m_y << " z=" << m_z << "]";
+        return oss.str();
+    }
 
 private:
     float m_x, m_y, m_z;

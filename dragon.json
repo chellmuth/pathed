@@ -19,9 +19,20 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "emit": [ "1000", "1000", "1000" ],
-        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
-        "specularReflectance": "0"
+        "emit": [ "20", "20", "20" ],
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ]
+      }
+    },
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "1000", "1000", "1" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "0", "0", "-44" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     },
     {
@@ -34,9 +45,13 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
-        "specularReflectance": "0"
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     }
-  ]
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
 }

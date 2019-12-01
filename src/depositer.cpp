@@ -135,7 +135,7 @@ void Depositer::createLightPaths(const Scene &scene, RandomGenerator &random)
 
         Ray lightRay(lightSample.point, bounceDirection);
 
-        Color throughput = lightSample.light->getMaterial()->emit();
+        Color throughput = lightSample.light->emit();
         for (int bounce = 0; bounce < photonBounces; bounce++) {
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
@@ -317,7 +317,7 @@ Color Depositer::direct(
     int lightIndex = (int)floorf(random.next() * lightCount);
 
     std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(random);
+    SurfaceSample lightSample = light->sample(intersection, random);
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();

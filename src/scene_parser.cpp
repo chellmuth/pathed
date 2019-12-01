@@ -1,7 +1,9 @@
 #include "scene_parser.h"
 
+#include "area_light.h"
 #include "camera.h"
 #include "checkerboard.h"
+#include "environment_light.h"
 #include "globals.h"
 #include "job.h"
 #include "lambertian.h"
@@ -11,6 +13,7 @@
 #include "obj_parser.h"
 #include "phong.h"
 #include "point.h"
+#include "quad.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
@@ -24,6 +27,7 @@ using json = nlohmann::json;
 typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 
 static float parseFloat(json floatJson);
+static float parseFloat(json floatJson, float defaultValue);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
@@ -38,7 +42,11 @@ static void parseObjects(
 );
 static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
-
+static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseEnvironmentLight(
+    json environmentLightJson,
+    std::shared_ptr<EnvironmentLight> &environmentLight
+);
 
 Scene parseScene(std::ifstream &sceneFile)
 {
@@ -69,9 +77,17 @@ Scene parseScene(std::ifstream &sceneFile)
                 continue;
             }
 
-            auto light = std::make_shared<Light>(surfacePtr);
+            auto light = std::make_shared<AreaLight>(surfacePtr);
             lights.push_back(light);
         }
+    }
+
+    std::shared_ptr<EnvironmentLight> environmentLight;
+    std::shared_ptr<EnvironmentLight> environmentLight2;
+    auto environmentLightJson = sceneJson["environmentLight"];
+    parseEnvironmentLight(environmentLightJson, environmentLight);
+    if (environmentLight) {
+        lights.push_back(environmentLight);
     }
 
     std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
@@ -79,6 +95,7 @@ Scene parseScene(std::ifstream &sceneFile)
         primitives,
         surfaces,
         lights,
+        environmentLight,
         camera
     );
 
@@ -96,6 +113,8 @@ static void parseObjects(
             parseObj(objectJson, localSurfaces);
         } else if (objectJson["type"] == "sphere") {
             parseSphere(objectJson, localSurfaces);
+        } else if (objectJson["type"] == "quad") {
+            parseQuad(objectJson, localSurfaces);
         }
 
         auto bvh = std::make_shared<BVH>();
@@ -163,6 +182,36 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     surfaces.push_back(surface);
 }
 
+static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces)
+{
+    std::shared_ptr<Material> material;
+    auto bsdf = quadJson["bsdf"];
+    if (bsdf.is_object()) {
+        material = parseMaterial(bsdf);
+    }
+
+    Transform transform;
+    auto transformJson = quadJson["transform"];
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    Quad::parse(transform, material, surfaces);
+}
+
+static void parseEnvironmentLight(
+    json environmentLightJson,
+    std::shared_ptr<EnvironmentLight> &environmentLight
+) {
+    if (environmentLightJson.is_object()) {
+        environmentLight.reset(new EnvironmentLight(
+            environmentLightJson["filename"].get<std::string>(),
+            parseFloat(environmentLightJson["scale"], 1.f)
+        ));
+
+        std::cout << environmentLight->toString() << std::endl;
+    }
+}
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 {
     if (bsdfJson["type"] == "phong") {
@@ -251,6 +300,15 @@ static Transform parseTransform(json transformJson)
     }
 
     return Transform(matrix);
+}
+
+static float parseFloat(json floatJson, float defaultValue)
+{
+    try {
+        return parseFloat(floatJson);
+    } catch (nlohmann::detail::type_error) {
+        return defaultValue;
+    }
 }
 
 static float parseFloat(json floatJson)

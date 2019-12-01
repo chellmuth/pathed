@@ -1,5 +1,6 @@
 #include "obj_parser.h"
 
+#include "area_light.h"
 #include "camera.h"
 #include "color.h"
 #include "globals.h"
@@ -28,7 +29,8 @@ ObjParser::ObjParser(
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
-      m_currentGroup("")
+      m_currentGroup(""),
+      m_boundingBox()
 {
     m_geometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
 }
@@ -187,6 +189,8 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
     rtcReleaseGeometry(rtcMesh);
 
+    std::cout << "Added object: " << m_boundingBox.toString() << std::endl;
+
     return m_surfaces;
 }
 
@@ -235,8 +239,9 @@ void ObjParser::processVertex(string &vertexArgs)
     rest = rest.substr(index);
     float z = std::stof(rest, &index);
 
-    Point3 vertex(x, y, z);
-    m_vertices.push_back(m_transform.apply(vertex));
+    Point3 vertex = m_transform.apply(Point3(x, y, z));
+    m_vertices.push_back(vertex);
+    m_boundingBox.update(vertex);
 }
 
 void ObjParser::processNormal(string &normalArgs)
@@ -256,7 +261,7 @@ void ObjParser::processNormal(string &normalArgs)
     float z = std::stof(rest, &index);
 
     Vector3 normal(x, y, z);
-    m_normals.push_back(normal);
+    m_normals.push_back(m_transform.apply(normal));
 }
 
 void ObjParser::processUV(string &uvArgs)
@@ -316,7 +321,7 @@ void ObjParser::processFace(Triangle *face)
 
     if (emit.isBlack()) { return; }
 
-    std::shared_ptr<Light> light(new Light(surface));
+    std::shared_ptr<Light> light(new AreaLight(surface));
 
     m_lights.push_back(light);
 }

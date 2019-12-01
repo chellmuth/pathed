@@ -3,7 +3,6 @@
 #include "globals.h"
 
 #include "stb_image_write.h"
-#define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"
 
 #include <iomanip>
