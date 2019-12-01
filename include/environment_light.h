@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color.h"
+#include "distribution.h"
 #include "intersection.h"
 #include "light.h"
 #include "material.h"
@@ -47,4 +48,7 @@ private:
     int m_width, m_height;
 
     std::string m_filename;
+
+    std::unique_ptr<Distribution> m_thetaDistribution;
+    std::vector<Distribution> m_phiDistributions;
 };

@@ -20,28 +20,30 @@ EnvironmentLight::EnvironmentLight(std::string filename, float scale)
         FreeEXRErrorMessage(error);
     }
 
-    m_cdf.resize(m_width * m_height, 0.f);
-    float sum = 0.f;
+    std::vector<float> data(m_width * m_height);
     for (int i = 0; i < m_width * m_height; i++) {
-        m_cdf[i] += m_data[4 * i + 0];
-        m_cdf[i] += m_data[4 * i + 1];
-        m_cdf[i] += m_data[4 * i + 2];
+        data[i] += m_data[4 * i + 0];
+        data[i] += m_data[4 * i + 1];
+        data[i] += m_data[4 * i + 2];
+    }
 
-        if (i > 0) {
-            m_cdf[i] += m_cdf[i - 1];
+    std::vector<float> thetaData(m_height, 0.f);
+    for (int thetaStep = 0; thetaStep < m_height; thetaStep++) {
+        float thetaSum = 0.f;
+        std::vector<float> phiData(m_width, 0.f);
+        for (int phiStep = 0; phiStep < m_width; phiStep++) {
+            int index = thetaStep * m_width + phiStep;
+            float value = data[index];
+
+            thetaSum += value;
+            phiData[phiStep] = value;
         }
 
-        sum += m_data[4 * i + 0];
-        sum += m_data[4 * i + 1];
-        sum += m_data[4 * i + 2];
+        m_phiDistributions.push_back(Distribution(phiData));
+        thetaData[thetaStep] = thetaSum;
     }
 
-    for (int i = 0; i < m_width * m_height; i++) {
-        m_cdf[i] /= sum;
-    }
-
-    assert(fabs(m_cdf[m_width * m_height - 1] - 1.f) < 1e-5);
-    m_cdf[m_width * m_height - 1] = 1.f;
+    m_thetaDistribution.reset(new Distribution(thetaData));
 }
 
 Color EnvironmentLight::emit() const
@@ -74,21 +76,9 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
 
 SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomGenerator &random) const
 {
-    float xi = random.next();
-
-    const int cdfIndex = binarySearchCDF(m_cdf, xi);
-    const int phiStep = cdfIndex % m_width;
-    const int thetaStep = (int)floorf(cdfIndex / m_width);
-
-    assert(xi <= m_cdf[cdfIndex]);
-    if (cdfIndex > 0) {
-        assert(xi > m_cdf[cdfIndex - 1]);
-    }
-
-    float pdf = m_cdf[cdfIndex];
-    if (cdfIndex > 0) {
-        pdf -= m_cdf[cdfIndex - 1];
-    }
+    float thetaPDF, phiPDF;
+    const int thetaStep = m_thetaDistribution->sample(&thetaPDF, random);
+    const int phiStep = m_phiDistributions[thetaStep].sample(&phiPDF, random);
 
     const float phiCanonical = (phiStep + 0.5f) / m_width;
     const float thetaCanonical = (thetaStep + 0.5f) / m_height;
@@ -96,7 +86,7 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
     const float phi = phiCanonical * M_TWO_PI;
     const float theta = thetaCanonical * M_PI;
 
-    pdf = pdf * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
+    const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
 
     const Vector3 directionLocal = sphericalToCartesian(phi, theta);
     const Vector3 direction(directionLocal.x(), directionLocal.z(), directionLocal.y());
