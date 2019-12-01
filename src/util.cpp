@@ -42,3 +42,21 @@ float lerp(float x1, float x2, float t)
 {
     return (1.f - t) * x1 + t * x2;
 }
+
+unsigned int binarySearchCDF(std::vector<float> cdf, float xi)
+{
+    unsigned int min = 0;
+    unsigned int max = cdf.size() - 1;
+
+    while (min < max) {
+        int searchIndex = (int)floorf((max + min) / 2);
+
+        if (xi <= cdf[searchIndex]) {
+            max = searchIndex;
+        } else if (xi > cdf[searchIndex]) {
+            min = searchIndex + 1;
+        }
+    }
+
+    return min;
+}

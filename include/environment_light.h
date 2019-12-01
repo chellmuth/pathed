@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 class EnvironmentLight : public Light {
 public:
@@ -39,6 +40,8 @@ public:
 
 private:
     float m_scale;
+
+    std::vector<float> m_cdf;
 
     float *m_data;
     int m_width, m_height;
