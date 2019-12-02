@@ -19,7 +19,7 @@ void SampleIntegrator::samplePixel(
     Color color(0.f);
 
     Intersection intersection = scene.testIntersect(ray);
-    if (intersection.hit && intersection.normal.dot(-intersection.wi) >= 0.f) {
+    if (intersection.hit && intersection.normal.dot(intersection.wo) >= 0.f) {
         Sample sample;
         sample.eyePoints.push_back(ray.origin());
 
@@ -73,7 +73,7 @@ void SampleIntegrator::sampleImage(
     // );
     // std::cout << "DONE!" << std::endl;
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             samplePixel(

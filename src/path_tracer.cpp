@@ -42,7 +42,7 @@ Color PathTracer::L(
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
-        if (bounceIntersection.shadingNormal.dot(-bounceIntersection.wi) < 0.f) { break; }
+        if (bounceIntersection.shadingNormal.dot(bounceIntersection.wo) < 0.f) { break; }
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
