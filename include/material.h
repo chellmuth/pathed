@@ -8,7 +8,7 @@
 class Scene;
 
 struct BSDFSample {
-    Vector3 wo;
+    Vector3 wi;
     float pdf;
     Color throughput;
 };
@@ -19,13 +19,13 @@ public:
 
     virtual Color f(
         const Intersection &intersection,
-        const Vector3 &wo,
+        const Vector3 &wi,
         float *pdf
     ) const = 0;
 
-    Color f(const Intersection &intersection, const Vector3 &wo) const {
+    Color f(const Intersection &intersection, const Vector3 &wi) const {
         float pdf;
-        return f(intersection, wo, &pdf);
+        return f(intersection, wi, &pdf);
     }
 
     virtual BSDFSample sample(

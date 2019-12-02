@@ -15,11 +15,11 @@ Lambertian::Lambertian(std::shared_ptr<Albedo> albedo, Color emit)
 
 Color Lambertian::f(
     const Intersection &intersection,
-    const Vector3 &wo,
+    const Vector3 &wi,
     float *pdf
 ) const
 {
-    *pdf = UniformHemispherePdf(wo);
+    *pdf = UniformHemispherePdf(wi);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection.uv) / M_PI;
@@ -35,13 +35,13 @@ BSDFSample Lambertian::sample(
 {
     Transform tangentToWorld = normalToWorldSpace(
         intersection.normal,
-        intersection.wi
+        intersection.wo
     );
 
     Vector3 localSample = CosineSampleHemisphere(random);
 
     BSDFSample sample = {
-        .wo = tangentToWorld.apply(localSample),
+        .wi = tangentToWorld.apply(localSample),
         .pdf = CosineHemispherePdf(localSample),
         .throughput = Material::f(intersection, localSample)
     };
