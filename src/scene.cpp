@@ -111,6 +111,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
             .t = rayHit.ray.tfar,
             .point = ray.at(rayHit.ray.tfar),
             .wi = ray.direction(),
+            .wo = -ray.direction(),
             .normal = geometricNormal,
             .shadingNormal = shadingNormal.normalized(),
             // .shadingNormal = geometricNormal,
