@@ -11,12 +11,14 @@
 #include "matrix.h"
 #include "mirror.h"
 #include "obj_parser.h"
+#include "oren_nayar.h"
 #include "phong.h"
 #include "point.h"
 #include "quad.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
+#include "texture.h"
 #include "transform.h"
 #include "uv.h"
 #include "vector.h"
@@ -225,6 +227,8 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         );
     } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
+    } else if (bsdfJson["type"] == "oren-nayar") {
+        return std::make_shared<OrenNayar>();
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

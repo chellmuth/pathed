@@ -44,7 +44,7 @@
         "translate": [ "0", "0", "0" ]
       },
       "bsdf": {
-        "type": "lambertian",
+        "type": "oren-nayar",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     }
