@@ -42,20 +42,31 @@ Color PathTracer::L(
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
+        if (bounceIntersection.shadingNormal.dot(-bounceIntersection.wi) < 0.f) { break; }
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
         const float invPDF = 1.f / bsdfSample.pdf;
+        // std::cout << "&&&&&&" << std::endl;
+        // std::cout << modulation << std::endl;
+        // std::cout << "throughput: " << bsdfSample.throughput << std::endl;
+        // std::cout << "cos theta: " << fmaxf(0.f, bsdfSample.wo.dot(lastIntersection.shadingNormal)) << std::endl;
+        // std::cout << "invPDF: " << invPDF << " (pdf): " << bsdfSample.pdf << std::endl;
         modulation *= bsdfSample.throughput
             * fmaxf(0.f, bsdfSample.wi.dot(lastIntersection.shadingNormal))
             * invPDF;
+        // std::cout << modulation << std::endl;
         lastIntersection = bounceIntersection;
 
         if (m_bounceController.checkCounts(bounce)) {
             const Color previous = result;
 
-            result += direct(bounceIntersection, scene, random, sample) * modulation;
-
+            Color Ld = direct(bounceIntersection, scene, random, sample);
+            // std::cout << "<<><><><><><" << std::endl;
+            // std::cout << Ld << std::endl;
+            // std::cout << modulation << std::endl;
+            result += Ld * modulation;
+            // std::cout << result << std::endl;
             sample.contributions.push_back({result - previous, invPDF});
         }
     }
@@ -109,7 +120,6 @@ Color PathTracer::direct(
     }
 
     float invPDF = lightSample.invPDF * lightCount;
-
     return light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.shadingNormal))

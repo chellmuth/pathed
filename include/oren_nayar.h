@@ -1,22 +1,18 @@
 #pragma once
 
-#include "albedo.h"
 #include "color.h"
 #include "intersection.h"
 #include "material.h"
 #include "random_generator.h"
 #include "vector.h"
 
-#include <memory>
-
-class Lambertian : public Material {
+class OrenNayar : public Material {
 public:
-    Lambertian(Color diffuse, Color emit);
-    Lambertian(std::shared_ptr<Albedo> albedo, Color emit);
+    OrenNayar();
 
     Color f(
         const Intersection &intersection,
-        const Vector3 &wi,
+        const Vector3 &wo,
         float *pdf
     ) const override;
 
@@ -26,6 +22,6 @@ public:
     ) const override;
 
 private:
-    Color m_diffuse;
-    std::shared_ptr<Albedo> m_albedo;
+    float m_A;
+    float m_B;
 };

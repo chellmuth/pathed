@@ -3,6 +3,7 @@
 #include "monte_carlo.h"
 #include "transform.h"
 
+#include <iostream>
 #include <math.h>
 
 Lambertian::Lambertian(Color diffuse, Color emit)
@@ -44,11 +45,15 @@ BSDFSample Lambertian::sample(
     );
 
     Vector3 localSample = CosineSampleHemisphere(random);
+    // std::cout << "local sample: " << localSample.toString() << std::endl;
+    // std::cout << "world sample: " << tangentToWorld.apply(localSample).toString() << std::endl;
+
+    Vector3 worldSample = tangentToWorld.apply(localSample);
 
     BSDFSample sample = {
-        .wi = tangentToWorld.apply(localSample),
+        .wi = worldSample,
         .pdf = CosineHemispherePdf(localSample),
-        .throughput = Material::f(intersection, localSample)
+        .throughput = Material::f(intersection, worldSample)
     };
 
     return sample;
