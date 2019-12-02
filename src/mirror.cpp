@@ -2,6 +2,8 @@
 
 #include "transform.h"
 
+#include <cmath>
+
 Mirror::Mirror()
     : Material(0.f)
 {}
@@ -37,7 +39,7 @@ BSDFSample Mirror::sample(
     BSDFSample sample = {
         .wi = tangentToWorld.apply(localWi),
         .pdf = 1.f,
-        .throughput = Color(1.f) / localWi.y()
+        .throughput = Color(std::max(0.f, 1.f / localWi.y()))
     };
 
     return sample;

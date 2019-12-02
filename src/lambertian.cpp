@@ -19,6 +19,11 @@ Color Lambertian::f(
     float *pdf
 ) const
 {
+    if (intersection.wo.dot(intersection.shadingNormal) < 0.f) {
+        *pdf = 0.f;
+        return Color(0.f);
+    }
+
     *pdf = UniformHemispherePdf(wi);
 
     if (m_albedo) {

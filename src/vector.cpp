@@ -54,9 +54,8 @@ Vector3 Vector3::normalized() const
 
 Vector3 Vector3::reflect(const Vector3& normal) const
 {
-    return *this - normal * dot(normal) * 2;
+    return (normal * dot(normal) * 2) - *this;
 }
-
 
 Vector3 Vector3::operator* (const float t) const
 {
@@ -73,6 +72,15 @@ Vector3 Vector3::operator- (const Vector3& v) const
         m_x - v.x(),
         m_y - v.y(),
         m_z - v.z()
+    );
+}
+
+Vector3 Vector3::operator+ (const Vector3& v) const
+{
+    return Vector3(
+        m_x + v.x(),
+        m_y + v.y(),
+        m_z + v.z()
     );
 }
 
