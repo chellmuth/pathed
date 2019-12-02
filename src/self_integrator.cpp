@@ -77,7 +77,7 @@ void SelfIntegrator::renderPDF(
 
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
-        intersection.wi
+        intersection.wo
     );
 
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
@@ -148,7 +148,7 @@ Color SelfIntegrator::L(
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(
             lastIntersection.normal,
-            lastIntersection.wi
+            lastIntersection.wo
         );
 
         float pdf;

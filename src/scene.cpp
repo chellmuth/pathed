@@ -110,7 +110,6 @@ Intersection Scene::testIntersect(const Ray &ray) const
             .hit = true,
             .t = rayHit.ray.tfar,
             .point = ray.at(rayHit.ray.tfar),
-            .wi = ray.direction(),
             .wo = -ray.direction(),
             .normal = geometricNormal,
             .shadingNormal = shadingNormal.normalized(),

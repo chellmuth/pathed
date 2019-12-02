@@ -12,7 +12,6 @@ struct Intersection {
     bool hit;
     float t;
     Point3 point;
-    Vector3 wi; // phase this out
     Vector3 wo;
     Vector3 normal;
     Vector3 shadingNormal;
@@ -28,13 +27,12 @@ namespace IntersectionHelper {
         Vector3(0.f),
         Vector3(0.f),
         Vector3(0.f),
-        Vector3(0.f),
         { 0.f, 0.f },
         nullptr
     };
 
     inline bool checkBacksideIntersection(const Intersection &intersection)
     {
-        return intersection.normal.dot(intersection.wi * -1.f) < 0.f;
+        return intersection.normal.dot(intersection.wo) < 0.f;
     }
 }

@@ -46,7 +46,6 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .hit = true,
             .t = solution.solution1,
             .point = hitPoint,
-            .wi = ray.direction(),
             .wo = -ray.direction(),
             .normal = (hitPoint - m_center).toVector().normalized(),
             .shadingNormal = (hitPoint - m_center).toVector().normalized(),

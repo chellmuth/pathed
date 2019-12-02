@@ -60,7 +60,7 @@ void MLIntegrator::createPhotons(const Scene &scene, RandomGenerator &random)
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 
-            throughput *= fmaxf(0.f, intersection.wi.dot(intersection.normal * -1.f));
+            throughput *= fmaxf(0.f, intersection.wo.dot(intersection.normal));
             if (throughput.isBlack()) { break; }
 
             if (bounce > 0) { // don't guide towards direct lights
@@ -114,7 +114,7 @@ void MLIntegrator::renderPDF(
 
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
-        intersection.wi
+        intersection.wo
     );
 
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
@@ -191,7 +191,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
 
     Transform worldToNormal = worldSpaceToNormal(
         intersection.normal,
-        intersection.wi
+        intersection.wo
     );
     std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
     //photonPDF.save("photons", worldToNormal);
@@ -305,7 +305,7 @@ Color MLIntegrator::L(
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         Transform hemisphereToWorld = normalToWorldSpace(
             lastIntersection.normal,
-            lastIntersection.wi
+            lastIntersection.wo
         );
 
         float pdf;
