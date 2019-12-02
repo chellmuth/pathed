@@ -38,7 +38,7 @@ Color PathTracer::L(
         BSDFSample bsdfSample = lastIntersection.material->sample(
             lastIntersection, random
         );
-        Ray bounceRay(lastIntersection.point, bsdfSample.wo);
+        Ray bounceRay(lastIntersection.point, bsdfSample.wi);
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
@@ -47,7 +47,7 @@ Color PathTracer::L(
 
         const float invPDF = 1.f / bsdfSample.pdf;
         modulation *= bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wo.dot(lastIntersection.shadingNormal))
+            * fmaxf(0.f, bsdfSample.wi.dot(lastIntersection.shadingNormal))
             * invPDF;
         lastIntersection = bounceIntersection;
 

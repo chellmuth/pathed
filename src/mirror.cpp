@@ -2,6 +2,8 @@
 
 #include "transform.h"
 
+#include <cmath>
+
 Mirror::Mirror()
     : Material(0.f)
 {}
@@ -23,21 +25,21 @@ BSDFSample Mirror::sample(
 {
     Transform worldToTangent = worldSpaceToNormal(
         intersection.shadingNormal,
-        intersection.wi
+        intersection.wo
     );
 
-    Vector3 localWi = worldToTangent.apply(intersection.wi);
-    Vector3 localWo = localWi.reflect(Vector3(0.f, 1.f, 0.f));
+    Vector3 localWo = worldToTangent.apply(intersection.wo);
+    Vector3 localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
     Transform tangentToWorld = normalToWorldSpace(
         intersection.shadingNormal,
-        intersection.wi
+        intersection.wo
     );
 
     BSDFSample sample = {
-        .wo = tangentToWorld.apply(localWo),
+        .wi = tangentToWorld.apply(localWi),
         .pdf = 1.f,
-        .throughput = Color(1.f) / localWo.y()
+        .throughput = Color(std::max(0.f, 1.f / localWi.y()))
     };
 
     return sample;
