@@ -45,7 +45,8 @@
       },
       "bsdf": {
         "type": "oren-nayar",
-        "diffuseReflectance": [ "0.4", "0.5", "0.8" ]
+        "diffuseReflectance": [ "0.4", "0.5", "0.8" ],
+        "sigma": "0.8"
       }
     }
   ],

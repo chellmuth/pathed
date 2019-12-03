@@ -8,7 +8,7 @@
 
 class OrenNayar : public Material {
 public:
-    OrenNayar(Color diffuse);
+    OrenNayar(Color diffuse, float sigma);
 
     Color f(
         const Intersection &intersection,

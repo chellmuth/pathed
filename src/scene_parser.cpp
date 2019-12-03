@@ -230,8 +230,9 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         return std::make_shared<Mirror>();
     } else if (bsdfJson["type"] == "oren-nayar") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
+        float sigma = parseFloat(bsdfJson["sigma"]);
 
-        return std::make_shared<OrenNayar>(diffuse);
+        return std::make_shared<OrenNayar>(diffuse, sigma);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

@@ -8,10 +8,9 @@
 #include <algorithm>
 #include <cmath>
 
-OrenNayar::OrenNayar(Color diffuse)
+OrenNayar::OrenNayar(Color diffuse, float sigma)
     : Material(0.f), m_diffuse(diffuse)
 {
-    const float sigma = 0.8f;
     const float sigma2 = sigma * sigma;
 
     m_A = 1.f - (sigma2 / (2.f * (sigma2 + 0.33f)));
