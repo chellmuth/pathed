@@ -451,7 +451,7 @@ bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 {
-    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-\\d+)/(-?\\d+)\\s*");
+    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
