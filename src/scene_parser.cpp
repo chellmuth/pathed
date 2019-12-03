@@ -33,6 +33,7 @@ static float parseFloat(json floatJson, float defaultValue);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
+static Color parseColor(json colorJson, Color defaultColor);
 static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
@@ -228,7 +229,9 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
     } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
     } else if (bsdfJson["type"] == "oren-nayar") {
-        return std::make_shared<OrenNayar>();
+        Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
+
+        return std::make_shared<OrenNayar>(diffuse);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
@@ -354,6 +357,19 @@ static Color parseColor(json colorJson, bool required)
         throw "Color required!";
     } else {
         return Color(0.f);
+    }
+}
+
+static Color parseColor(json colorJson, Color defaultColor)
+{
+    if (colorJson.is_array()) {
+        return Color(
+            stof(colorJson[0].get<std::string>()),
+            stof(colorJson[1].get<std::string>()),
+            stof(colorJson[2].get<std::string>())
+        );
+    } else {
+        return defaultColor;
     }
 }
 

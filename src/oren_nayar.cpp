@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <cmath>
 
-OrenNayar::OrenNayar()
-    : Material(0.f)
+OrenNayar::OrenNayar(Color diffuse)
+    : Material(0.f), m_diffuse(diffuse)
 {
     const float sigma = 0.8f;
     const float sigma2 = sigma * sigma;
@@ -69,8 +69,7 @@ Color OrenNayar::f(
             * sinf(alpha) \
             * tanf(beta));
 
-    Color albedo = Color(0.8f, 0.5f, 0.4f);
-    return albedo * throughput;
+    return m_diffuse * throughput;
 }
 
 BSDFSample OrenNayar::sample(
