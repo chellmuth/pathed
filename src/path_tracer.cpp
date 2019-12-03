@@ -54,7 +54,8 @@ Color PathTracer::L(
         if (m_bounceController.checkCounts(bounce)) {
             const Color previous = result;
 
-            result += direct(bounceIntersection, scene, random, sample) * modulation;
+            Color Ld = direct(bounceIntersection, scene, random, sample);
+            result += Ld * modulation;
 
             sample.contributions.push_back({result - previous, invPDF});
         }
@@ -109,7 +110,6 @@ Color PathTracer::direct(
     }
 
     float invPDF = lightSample.invPDF * lightCount;
-
     return light->biradiance(lightSample, intersection.point)
         * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.shadingNormal))

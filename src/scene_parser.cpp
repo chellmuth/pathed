@@ -11,12 +11,14 @@
 #include "matrix.h"
 #include "mirror.h"
 #include "obj_parser.h"
+#include "oren_nayar.h"
 #include "phong.h"
 #include "point.h"
 #include "quad.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
+#include "texture.h"
 #include "transform.h"
 #include "uv.h"
 #include "vector.h"
@@ -31,6 +33,7 @@ static float parseFloat(json floatJson, float defaultValue);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
+static Color parseColor(json colorJson, Color defaultColor);
 static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
@@ -225,6 +228,11 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         );
     } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
+    } else if (bsdfJson["type"] == "oren-nayar") {
+        Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
+        float sigma = parseFloat(bsdfJson["sigma"]);
+
+        return std::make_shared<OrenNayar>(diffuse, sigma);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
@@ -350,6 +358,19 @@ static Color parseColor(json colorJson, bool required)
         throw "Color required!";
     } else {
         return Color(0.f);
+    }
+}
+
+static Color parseColor(json colorJson, Color defaultColor)
+{
+    if (colorJson.is_array()) {
+        return Color(
+            stof(colorJson[0].get<std::string>()),
+            stof(colorJson[1].get<std::string>()),
+            stof(colorJson[2].get<std::string>())
+        );
+    } else {
+        return defaultColor;
     }
 }
 
