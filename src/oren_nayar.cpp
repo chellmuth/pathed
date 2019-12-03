@@ -40,8 +40,8 @@ Color OrenNayar::f(
         intersection.wo
     );
 
-    const Vector3 localWo = worldToTangent.apply(intersection.wo);
-    const Vector3 localWi = worldToTangent.apply(wi);
+    const Vector3 localWo = worldToTangent.apply(intersection.wo).normalized();
+    const Vector3 localWi = worldToTangent.apply(wi).normalized();
 
     if (localWo.y() < 0.f) {
         *pdf = 1.f;
