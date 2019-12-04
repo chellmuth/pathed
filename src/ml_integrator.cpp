@@ -184,12 +184,8 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
         g_job->thetaSteps()
     );
 
-    Transform worldToNormal = worldSpaceToNormal(
-        intersection.normal,
-        intersection.woWorld
-    );
-    std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
-    //photonPDF.save("photons", worldToNormal);
+    std::vector<float> photonBundle = photonPDF.asVector(intersection.worldToTangent);
+    //photonPDF.save("photons", intersection.worldToTangent);
 
     float phi, theta;
     m_MLPDF.sample(&phi, &theta, pdf, photonBundle);
@@ -199,7 +195,7 @@ Vector3 MLIntegrator::nextBounce(const Intersection &intersection, const Scene &
     Vector3 hemisphereSample = sphericalToCartesian(phi, theta);
     // hemisphereSample.debug();
 
-    // Vector3 bounceDirection = worldToNormal.transposed().apply(hemisphereSample);
+    // Vector3 bounceDirection = intersection.worldToTangent.transposed().apply(hemisphereSample);
 
     // if (imageIndex == 0) {
     //     const int width = g_job->width();

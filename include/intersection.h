@@ -20,6 +20,7 @@ struct Intersection {
     Material *material;
 
     Transform tangentToWorld;
+    Transform worldToTangent;
 
     Intersection(
         bool hit_,
@@ -40,6 +41,7 @@ struct Intersection {
         material(material)
     {
         tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
+        worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
     }
 };
 

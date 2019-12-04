@@ -33,13 +33,8 @@ Color OrenNayar::f(
         return Color(0.f);
     }
 
-    const Transform worldToTangent = worldSpaceToNormal(
-        intersection.shadingNormal,
-        intersection.woWorld
-    );
-
-    const Vector3 localWo = worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 localWi = worldToTangent.apply(wi).normalized();
+    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
+    const Vector3 localWi = intersection.worldToTangent.apply(wi).normalized();
 
     if (localWo.y() < 0.f) {
         *pdf = 1.f;

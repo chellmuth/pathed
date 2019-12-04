@@ -23,12 +23,7 @@ BSDFSample Mirror::sample(
     RandomGenerator &random
 ) const
 {
-    Transform worldToTangent = worldSpaceToNormal(
-        intersection.shadingNormal,
-        intersection.woWorld
-    );
-
-    Vector3 localWo = worldToTangent.apply(intersection.woWorld);
+    Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
     Vector3 localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
     BSDFSample sample = {

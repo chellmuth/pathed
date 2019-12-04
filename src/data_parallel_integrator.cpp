@@ -181,12 +181,7 @@ void DataParallelIntegrator::generatePhotonBundles(
             g_job->thetaSteps()
         );
 
-        Transform worldToNormal = worldSpaceToNormal(
-            intersection.normal,
-            intersection.woWorld
-        );
-
-        std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
+        std::vector<float> photonBundle = photonPDF.asVector(intersection.worldToTangent);
 
         const int photonOffset = debugSearchCount * ((row * cols) + col);
         for (int j = 0; j < debugSearchCount; j++) {
@@ -263,11 +258,6 @@ void DataParallelIntegrator::generateBounceIntersections(
         if (!intersection.hit) {
             continue;
         }
-
-        Transform worldToNormal = worldSpaceToNormal(
-            intersection.normal,
-            intersection.woWorld
-        );
 
         Vector3 hemisphereSample = sphericalToCartesian(phis[i], thetas[i]);
         Vector3 bounceDirection = intersection.tangentToWorld.apply(hemisphereSample);

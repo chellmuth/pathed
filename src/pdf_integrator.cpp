@@ -244,11 +244,7 @@ void PDFIntegrator::savePhotonBundle(
     std::ostringstream filenameStream;
     filenameStream << "photon-bundle_" << zeroPad(pointID, 5) << suffix;
 
-    Transform worldToNormal = worldSpaceToNormal(
-        intersection.normal,
-        intersection.woWorld
-    );
-    photonPDF.save(filenameStream.str(), worldToNormal);
+    photonPDF.save(filenameStream.str(), intersection.worldToTangent);
     // printf("Saved photon bundle\n");
 }
 
