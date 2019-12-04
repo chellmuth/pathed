@@ -76,13 +76,8 @@ BSDFSample OrenNayar::sample(
     RandomGenerator &random
 ) const
 {
-    Transform tangentToWorld = normalToWorldSpace(
-        intersection.shadingNormal,
-        intersection.woWorld
-    );
-
     Vector3 localSample = CosineSampleHemisphere(random);
-    Vector3 worldSample = tangentToWorld.apply(localSample);
+    Vector3 worldSample = intersection.tangentToWorld.apply(localSample);
 
     BSDFSample sample = {
         .wi = worldSample,

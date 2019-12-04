@@ -269,13 +269,8 @@ void DataParallelIntegrator::generateBounceIntersections(
             intersection.woWorld
         );
 
-        Transform hemisphereToWorld = normalToWorldSpace(
-            intersection.normal,
-            intersection.woWorld
-        );
-
         Vector3 hemisphereSample = sphericalToCartesian(phis[i], thetas[i]);
-        Vector3 bounceDirection = hemisphereToWorld.apply(hemisphereSample);
+        Vector3 bounceDirection = intersection.tangentToWorld.apply(hemisphereSample);
 
         Ray bounceRay(
             intersection.point,

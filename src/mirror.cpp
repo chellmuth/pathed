@@ -31,13 +31,8 @@ BSDFSample Mirror::sample(
     Vector3 localWo = worldToTangent.apply(intersection.woWorld);
     Vector3 localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
-    Transform tangentToWorld = normalToWorldSpace(
-        intersection.shadingNormal,
-        intersection.woWorld
-    );
-
     BSDFSample sample = {
-        .wi = tangentToWorld.apply(localWi),
+        .wi = intersection.tangentToWorld.apply(localWi),
         .pdf = 1.f,
         .throughput = Color(std::max(0.f, 1.f / localWi.y()))
     };

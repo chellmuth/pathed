@@ -125,8 +125,6 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
     Sample sample;
     int bounceCount = 5;
 
-    Transform hemisphereToWorld = normalToWorldSpace(intersection.normal);
-
     json j;
     j["QueryPoint"] = {
         intersection.point.x(),
@@ -146,7 +144,7 @@ void PathTracer::debug(const Intersection &intersection, const Scene &scene) con
             float z = sinf(theta) * sinf(phi);
 
             Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+            Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
 
             Ray ray = Ray(intersection.point, wiWorld);
             const Intersection fisheyeIntersection = scene.testIntersect(ray);

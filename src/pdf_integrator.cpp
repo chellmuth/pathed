@@ -265,11 +265,6 @@ void PDFIntegrator::renderPDF(
 
     RandomGenerator random;
 
-    Transform hemisphereToWorld = normalToWorldSpace(
-        intersection.normal,
-        intersection.woWorld
-    );
-
     #pragma omp parallel for
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
@@ -281,7 +276,7 @@ void PDFIntegrator::renderPDF(
             float z = sinf(theta) * sinf(phi);
 
             Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+            Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
 
             Ray ray = Ray(intersection.point, wiWorld);
             const Intersection fisheyeIntersection = scene.testIntersect(ray);

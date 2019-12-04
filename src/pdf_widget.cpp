@@ -28,11 +28,6 @@ std::shared_ptr<Image> renderPDF(
 
     RandomGenerator random;
 
-    Transform hemisphereToWorld = normalToWorldSpace(
-        intersection.normal,
-        intersection.woWorld
-    );
-
     const int spp = 16;
 
     #pragma omp parallel for
@@ -49,7 +44,7 @@ std::shared_ptr<Image> renderPDF(
                 float z = sinf(theta) * sinf(phi);
 
                 Vector3 wiHemisphere(x, y, z);
-                Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+                Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
 
                 Ray ray = Ray(intersection.point, wiWorld);
                 const Intersection fisheyeIntersection = scene.testIntersect(ray);

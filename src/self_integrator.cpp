@@ -75,11 +75,6 @@ void SelfIntegrator::renderPDF(
     RandomGenerator random;
     int bounceCount = 2;
 
-    Transform hemisphereToWorld = normalToWorldSpace(
-        intersection.normal,
-        intersection.woWorld
-    );
-
     for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
         for (int cosThetaStep = 0; cosThetaStep < cosThetaSteps; cosThetaStep++) {
             float phi = m_gtPDF.phiAtStep(phiStep);
@@ -90,7 +85,7 @@ void SelfIntegrator::renderPDF(
             float z = sinf(theta) * sinf(phi);
 
             Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = hemisphereToWorld.apply(wiHemisphere);
+            Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
 
             Ray ray = Ray(intersection.point, wiWorld);
             const Intersection fisheyeIntersection = scene.testIntersect(ray);
