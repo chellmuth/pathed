@@ -89,7 +89,7 @@ void DataParallelIntegrator::createPhotons(const Scene &scene, RandomGenerator &
             Intersection intersection = scene.testIntersect(lightRay);
             if (!intersection.hit) { break; }
 
-            throughput *= fmaxf(0.f, intersection.wo.dot(intersection.normal));
+            throughput *= fmaxf(0.f, intersection.woWorld.dot(intersection.normal));
             if (throughput.isBlack()) { break; }
 
             if (bounce > 0) { // don't guide towards direct lights
@@ -183,7 +183,7 @@ void DataParallelIntegrator::generatePhotonBundles(
 
         Transform worldToNormal = worldSpaceToNormal(
             intersection.normal,
-            intersection.wo
+            intersection.woWorld
         );
 
         std::vector<float> photonBundle = photonPDF.asVector(worldToNormal);
@@ -266,12 +266,12 @@ void DataParallelIntegrator::generateBounceIntersections(
 
         Transform worldToNormal = worldSpaceToNormal(
             intersection.normal,
-            intersection.wo
+            intersection.woWorld
         );
 
         Transform hemisphereToWorld = normalToWorldSpace(
             intersection.normal,
-            intersection.wo
+            intersection.woWorld
         );
 
         Vector3 hemisphereSample = sphericalToCartesian(phis[i], thetas[i]);

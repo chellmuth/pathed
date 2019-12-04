@@ -86,7 +86,7 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .hit = true,
         .t = t,
         .point = hitPoint,
-        .wo = -ray.direction(),
+        .woWorld = -ray.direction(),
         .normal = e2.cross(e1).normalized(),
         .shadingNormal = e2.cross(e1).normalized(),
         .uv = uv,

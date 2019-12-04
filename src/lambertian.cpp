@@ -19,7 +19,7 @@ Color Lambertian::f(
     float *pdf
 ) const
 {
-    if (intersection.wo.dot(intersection.shadingNormal) < 0.f) {
+    if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
         *pdf = 0.f;
         return Color(0.f);
     }
@@ -40,7 +40,7 @@ BSDFSample Lambertian::sample(
 {
     Transform tangentToWorld = normalToWorldSpace(
         intersection.normal,
-        intersection.wo
+        intersection.woWorld
     );
 
     Vector3 localSample = CosineSampleHemisphere(random);

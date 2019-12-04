@@ -23,22 +23,22 @@ Color OrenNayar::f(
     float *pdf
 ) const
 {
-    if (intersection.normal.dot(intersection.wo) < 0.f) {
+    if (intersection.normal.dot(intersection.woWorld) < 0.f) {
         *pdf = 1.f;
         return Color(0.f);
     }
 
-    if (intersection.shadingNormal.dot(intersection.wo) < 0.f) {
+    if (intersection.shadingNormal.dot(intersection.woWorld) < 0.f) {
         *pdf = 1.f;
         return Color(0.f);
     }
 
     const Transform worldToTangent = worldSpaceToNormal(
         intersection.shadingNormal,
-        intersection.wo
+        intersection.woWorld
     );
 
-    const Vector3 localWo = worldToTangent.apply(intersection.wo).normalized();
+    const Vector3 localWo = worldToTangent.apply(intersection.woWorld).normalized();
     const Vector3 localWi = worldToTangent.apply(wi).normalized();
 
     if (localWo.y() < 0.f) {
@@ -78,7 +78,7 @@ BSDFSample OrenNayar::sample(
 {
     Transform tangentToWorld = normalToWorldSpace(
         intersection.shadingNormal,
-        intersection.wo
+        intersection.woWorld
     );
 
     Vector3 localSample = CosineSampleHemisphere(random);

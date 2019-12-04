@@ -11,7 +11,7 @@ Phong::Phong(Color kd, Color ks, float n, Color emit)
 
 Color Phong::f(const Intersection &intersection, const Vector3 &wi, float *pdf) const
 {
-    const Vector3 &wo = intersection.wo;
+    const Vector3 &wo = intersection.woWorld;
     const Vector3 &normal = intersection.normal;
 
     Color diffuse = m_kd / M_PI;

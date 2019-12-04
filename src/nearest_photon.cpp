@@ -39,7 +39,7 @@ void NearestPhoton::preprocess(const Scene &scene, RandomGenerator &random)
             if (!intersection.hit) { break; }
 
             // This means hitting the back of a triangle kills the photon
-            throughput *= fmaxf(0.f, intersection.wo.dot(intersection.normal));
+            throughput *= fmaxf(0.f, intersection.woWorld.dot(intersection.normal));
             if (throughput.isBlack()) { break; }
 
             m_dataSource->points.push_back({

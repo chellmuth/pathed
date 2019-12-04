@@ -30,7 +30,7 @@ std::shared_ptr<Image> renderPDF(
 
     Transform hemisphereToWorld = normalToWorldSpace(
         intersection.normal,
-        intersection.wo
+        intersection.woWorld
     );
 
     const int spp = 16;
