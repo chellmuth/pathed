@@ -11,9 +11,14 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-scene_name = "ppg-cbox"
-checkpoint_name = "20191127-ppg-cbox-2.t"
-output_name = "test-cbox"
+scene_name = "kitchen"
+checkpoint_name = "20191203-kitchen-diffuse-1.t"
+output_name = "kitchen"
+
+dimensions = {
+    "kitchen": (1280, 720),
+    "ppg-cbox": (400, 400),
+}
 
 class Context:
     def __init__(self):
@@ -29,7 +34,7 @@ class Context:
         self.checkpoint_path = self.dropbox_path / "checkpoints" / checkpoint_name
 
     def scene_path(self, scene_file):
-        return self.mitsuba_path / scene_name / scene_file
+        return self.dropbox_path / "bitterli" / scene_name / scene_file
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
@@ -73,27 +78,27 @@ def pdf_compare(all, point):
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("scene-training.xml"),
+            context.scene_path("diffuse-training.xml"),
             context.output_root / "training.exr",
             [], # "-p1" gives reproducible results
             {
                 "x": point[0],
                 "y": point[1],
-                "width": 400,
-                "height": 400,
+                "width": dimensions[scene_name][0],
+                "height": dimensions[scene_name][1],
             }
         )
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("scene-neural.xml"),
+            context.scene_path("diffuse-neural.xml"),
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
                 "x": point[0],
                 "y": point[1],
-                "width": 400,
-                "height": 400,
+                "width": dimensions[scene_name][0],
+                "height": dimensions[scene_name][1],
             },
             verbose=True
         )
@@ -159,9 +164,12 @@ def pdf_compare(all, point):
 @cli.command()
 @click.option("--include-gt", is_flag=True)
 @click.option("--size", type=int, default=10)
-def render(include_gt, size):
+@click.option("--spp", type=int, default=1)
+def render(include_gt, size, spp):
+    aspect_ratio = dimensions[scene_name][1] / dimensions[scene_name][0]
+
     width = size
-    height = size
+    height = int(size * aspect_ratio)
 
     context = Context()
 
@@ -175,13 +183,13 @@ def render(include_gt, size):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("scene-neural.xml"),
+        context.scene_path("diffuse-neural.xml"),
         context.output_root / "render.exr",
         [ "-p1" ],
         {
             "width": width,
             "height": height,
-            "spp": 1,
+            "spp": spp,
         },
         verbose=True
     )
@@ -190,7 +198,7 @@ def render(include_gt, size):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("scene-path.xml"),
+        context.scene_path("diffuse-path.xml"),
         context.output_root / "path.exr",
         [],
         {
@@ -203,7 +211,7 @@ def render(include_gt, size):
     if include_gt:
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("scene-path.xml"),
+            context.scene_path("diffuse-path.xml"),
             context.output_root / "gt.exr",
             [],
             {
@@ -258,14 +266,14 @@ def debug_pixel(x, y):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("scene-neural.xml"),
+        context.scene_path("diffuse-neural.xml"),
         f"render_{x}_{y}.exr",
         [ "-p1" ],
         {
             "x": x,
             "y": y,
-            "width": 400,
-            "height": 400,
+            "width": dimensions[scene_name][0],
+            "height": dimensions[scene_name][1],
         },
         verbose=True
     )
