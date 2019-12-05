@@ -11,30 +11,34 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-scene_name = "kitchen"
-checkpoint_name = "20191203-kitchen-diffuse-1.t"
-output_name = "kitchen"
+default_scene_name = "kitchen"
+default_checkpoint_name = "20191203-kitchen-diffuse-1.t"
+default_output_name = "end_to_end"
 
 dimensions = {
     "kitchen": (1280, 720),
-    "ppg-cbox": (400, 400),
+    "cbox-ppg": (400, 400),
 }
 
 class Context:
-    def __init__(self):
+    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None):
+        self.scene_name = scene_name or default_scene_name
+
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
-        self.output_root = Path("/tmp") / output_name
+        self.output_root = Path("/tmp") / (output_name or default_output_name)
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
-        self.dropbox_path = Path(os.environ["RESEARCH_ROOT"])
+        self.research_path = Path(os.environ["RESEARCH_ROOT"])
 
-        self.datasets_path = self.dropbox_path / "datasets"
-        self.checkpoint_path = self.dropbox_path / "checkpoints" / checkpoint_name
+        self.scenes_path = self.research_path / "scenes" / self.scene_name
+        self.datasets_path = self.research_path / "datasets"
+
+        self.checkpoint_path = self.research_path / "checkpoints" / (checkpoint_name or default_scene_name)
 
     def scene_path(self, scene_file):
-        return self.dropbox_path / "bitterli" / scene_name / scene_file
+        return self.scenes_path / scene_file
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
@@ -84,8 +88,8 @@ def pdf_compare(all, point):
             {
                 "x": point[0],
                 "y": point[1],
-                "width": dimensions[scene_name][0],
-                "height": dimensions[scene_name][1],
+                "width": dimensions[default_scene_name][0],
+                "height": dimensions[default_scene_name][1],
             }
         )
 
@@ -97,8 +101,8 @@ def pdf_compare(all, point):
             {
                 "x": point[0],
                 "y": point[1],
-                "width": dimensions[scene_name][0],
-                "height": dimensions[scene_name][1],
+                "width": dimensions[default_scene_name][0],
+                "height": dimensions[default_scene_name][1],
             },
             verbose=True
         )
@@ -166,12 +170,14 @@ def pdf_compare(all, point):
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
 def render(include_gt, size, spp):
+    _render(Context(), include_gt, size, spp)
+
+def _render(context, include_gt, size, spp):
+    scene_name = context.scene_name
     aspect_ratio = dimensions[scene_name][1] / dimensions[scene_name][0]
 
     width = size
     height = int(size * aspect_ratio)
-
-    context = Context()
 
     server_process = runner.launch_server(
         context.server_path,
@@ -183,7 +189,7 @@ def render(include_gt, size, spp):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("diffuse-neural.xml"),
+        context.scene_path("scene-neural.xml"),
         context.output_root / "render.exr",
         [ "-p1" ],
         {
@@ -198,7 +204,7 @@ def render(include_gt, size, spp):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("diffuse-path.xml"),
+        context.scene_path("scene-path.xml"),
         context.output_root / "path.exr",
         [],
         {
@@ -211,7 +217,7 @@ def render(include_gt, size, spp):
     if include_gt:
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("diffuse-path.xml"),
+            context.scene_path("scene-path.xml"),
             context.output_root / "gt.exr",
             [],
             {
@@ -272,8 +278,8 @@ def debug_pixel(x, y):
         {
             "x": x,
             "y": y,
-            "width": dimensions[scene_name][0],
-            "height": dimensions[scene_name][1],
+            "width": dimensions[default_scene_name][0],
+            "height": dimensions[default_scene_name][1],
         },
         verbose=True
     )
@@ -286,6 +292,64 @@ def debug_pixel(x, y):
         [raw_grid_from_renderer],
         f"grid_{x}_{y}.png"
     )
+
+@cli.command()
+@click.argument("scene_name")
+@click.argument("pdf_count", type=int)
+@click.argument("checkpoint_name", type=str)
+def everything(scene_name, pdf_count, checkpoint_name):
+    dataset_name = scene_name
+    context = Context(scene_name=scene_name, checkpoint_name=checkpoint_name)
+
+    results_path = Path("./results").absolute()
+    results_path.mkdir(exist_ok=True)
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("scene-training.xml"),
+        "whatever.exr",
+        [], # "-p1" gives reproducible results
+        {
+            "pdfCount": pdf_count,
+        }
+    )
+
+    dataset_path = context.dataset_path(dataset_name)
+    raw_path = dataset_path / "raw"
+    raw_path.mkdir(parents=True)
+
+    for artifact_path in results_path.glob("*"):
+        shutil.move(str(artifact_path), str(raw_path))
+
+    dataset_path = context.dataset_path(dataset_name)
+    process_raw_to_renders.run(
+        500,
+        dataset_path / "raw",
+        dataset_path / "train/renders",
+    )
+
+    runner.run_nsf_command(
+        context.server_path,
+        "build_render_dataset.py",
+        [ dataset_name ]
+    )
+
+    runner.run_nsf_command(
+        context.server_path,
+        "experiments/plane.py",
+        [
+            "--dataset_name", checkpoint_name,
+            "--dataset_path", dataset_path,
+            "--num_training_steps", "50000",
+        ]
+    )
+
+    shutil.move(
+        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / checkpoint_name,
+        context.checkpoint_path
+    )
+
+    _render(context, True, 10, 1)
 
 if __name__ == "__main__":
     cli()
