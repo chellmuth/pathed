@@ -11,16 +11,18 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-default_scene_name = "cbox-ppg"
-default_output_name = "direct-pdf"
+default_scene_name = "kitchen-diffuse"
+default_output_name = "kitchen-better-trained"
 
 default_checkpoints = {
     "kitchen": None,
-    "cbox-ppg": "20191204-cbox-ppg-1"
+    "kitchen-diffuse": None,
+    "cbox-ppg": "20191205-cbox-ppg-2"
 }
 
 dimensions = {
     "kitchen": (1280, 720),
+    "kitchen-diffuse": (1280, 720),
     "cbox-ppg": (400, 400),
 }
 
@@ -353,7 +355,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "20001",
+            "--num_training_steps", "500000",
         ]
     )
 
