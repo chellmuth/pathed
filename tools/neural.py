@@ -11,8 +11,8 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-default_scene_name = "kitchen-diffuse"
-default_output_name = "kitchen-better-trained"
+default_scene_name = "cbox-ppg"
+default_output_name = "cbox-ppg--indirect1"
 
 default_checkpoints = {
     "kitchen": None,
@@ -220,7 +220,7 @@ def _render(context, include_gt, size, spp):
         {
             "width": width,
             "height": height,
-            "spp": 1,
+            "spp": spp,
         }
     )
 
