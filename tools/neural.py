@@ -35,7 +35,8 @@ class Context:
         self.scenes_path = self.research_path / "scenes" / self.scene_name
         self.datasets_path = self.research_path / "datasets"
 
-        self.checkpoint_path = self.research_path / "checkpoints" / (checkpoint_name or default_scene_name)
+        self.checkpoint_name = checkpoint_name or default_scene_Name
+        self.checkpoint_path = self.research_path / "checkpoints" / f"{self.checkpoint_name}.t"
 
     def scene_path(self, scene_file):
         return self.scenes_path / scene_file
@@ -297,7 +298,7 @@ def debug_pixel(x, y):
 @click.argument("scene_name")
 @click.argument("pdf_count", type=int)
 @click.argument("checkpoint_name", type=str)
-def everything(scene_name, pdf_count, checkpoint_name):
+def pipeline(scene_name, pdf_count, checkpoint_name):
     dataset_name = scene_name
     context = Context(scene_name=scene_name, checkpoint_name=checkpoint_name)
 
@@ -308,7 +309,7 @@ def everything(scene_name, pdf_count, checkpoint_name):
         context.mitsuba_path,
         context.scene_path("scene-training.xml"),
         "whatever.exr",
-        [], # "-p1" gives reproducible results
+        [],
         {
             "pdfCount": pdf_count,
         }
@@ -338,18 +339,18 @@ def everything(scene_name, pdf_count, checkpoint_name):
         context.server_path,
         "experiments/plane.py",
         [
-            "--dataset_name", checkpoint_name,
+            "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
             "--num_training_steps", "50000",
         ]
     )
 
     shutil.move(
-        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / checkpoint_name,
+        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{context.checkpoint_name}.t",
         context.checkpoint_path
     )
 
-    _render(context, True, 10, 1)
+    _render(context, True, 80, 1)
 
 if __name__ == "__main__":
     cli()
