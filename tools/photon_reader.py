@@ -1,3 +1,4 @@
+import math
 import struct
 from dataclasses import dataclass
 from pathlib import Path
@@ -5,13 +6,15 @@ from typing import List, Tuple
 
 import numpy as np
 
+import coordinates
 from phi_theta_grid import PhiThetaGrid, PhotonGridAdapter
+from transform import Transform
 from vector import Vector
 
 FloatSize = 4
 PhotonSize = 9
 
-Debug = False
+Debug = True
 
 def as_json(photon_path: Path):
     bundle = read_photon_bundle(photon_path)
@@ -88,9 +91,16 @@ def read_photon_bundle(photon_path: Path):
         wi = struct.unpack("3f", data)
 
         if Debug:
-            print("position:", position)
-            print("normal:", normal)
-            print("wi:", wi)
+            print("DEBUG READ PHOTON BUNDLE")
+            print("  photon_path:", photon_path)
+            print("  position:", position)
+            print("  normal:", normal)
+            print("  wi:", wi)
+
+            to_tangent = Transform.to_tangent(Vector(*normal), Vector(*wi))
+            local_wi = to_tangent.transform_direction(Vector(*wi))
+            phi, theta = coordinates.cartesian_to_spherical(local_wi)
+            print(f"  phi: {phi} ({phi/(2*math.pi)}), theta: {theta} ({theta/(math.pi/2)})")
 
         data = f.read(FloatSize)
         count, = struct.unpack("i", data)

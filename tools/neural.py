@@ -166,8 +166,10 @@ def pdf_compare(all, point):
 
         grid_filename = f"grid_{point[0]}_{point[1]}.bin"
         photons_filename = f"photons_{point[0]}_{point[1]}.bin"
+        neural_filename = f"neural_{point[0]}_{point[1]}.bin"
         shutil.move(grid_filename, context.output_root / grid_filename)
         shutil.move(photons_filename, context.output_root / photons_filename)
+        shutil.move(neural_filename, context.output_root / neural_filename)
 
 
 # Quick 1spp comparison between neural and path
@@ -250,15 +252,20 @@ def process(dataset_name):
 # * Photon digest on renderer + python splatting
 # * Direct renderer splatting
 @cli.command()
-@click.argument("bundle_path", type=Path)
-@click.argument("grid_path", type=Path)
+@click.option("--bundle-path", type=Path, multiple=True)
+@click.option("--grid-path", type=Path, multiple=True)
 def compare_photons(bundle_path, grid_path):
-    grid = photon_reader.build_grid(bundle_path, (10, 10))
-    raw_grid_from_bundle = grid.raw_grid()
-    raw_grid_from_renderer = photon_reader.read_raw_grid(grid_path, (10, 10))
+    raw_grids = []
+
+    for path in bundle_path:
+        grid = photon_reader.build_grid(path, (10, 10))
+        raw_grids.append(grid.raw_grid())
+
+    for path in grid_path:
+        raw_grids.append(photon_reader.read_raw_grid(path, (10, 10)))
 
     visualize.render_photon_grids(
-        [raw_grid_from_bundle, raw_grid_from_renderer],
+        raw_grids,
         "photon-comparison.png"
     )
 
