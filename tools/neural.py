@@ -11,9 +11,13 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-default_scene_name = "kitchen"
-default_checkpoint_name = "20191203-kitchen-diffuse-1.t"
-default_output_name = "end_to_end"
+default_scene_name = "cbox-ppg"
+default_output_name = "direct-pdf"
+
+default_checkpoints = {
+    "kitchen": None,
+    "cbox-ppg": "20191204-cbox-ppg-1"
+}
 
 dimensions = {
     "kitchen": (1280, 720),
@@ -35,7 +39,7 @@ class Context:
         self.scenes_path = self.research_path / "scenes" / self.scene_name
         self.datasets_path = self.research_path / "datasets"
 
-        self.checkpoint_name = checkpoint_name or default_scene_Name
+        self.checkpoint_name = checkpoint_name or default_checkpoints[self.scene_name]
         self.checkpoint_path = self.research_path / "checkpoints" / f"{self.checkpoint_name}.t"
 
     def scene_path(self, scene_file):
@@ -83,7 +87,7 @@ def pdf_compare(all, point):
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("diffuse-training.xml"),
+            context.scene_path("scene-training.xml"),
             context.output_root / "training.exr",
             [], # "-p1" gives reproducible results
             {
@@ -91,12 +95,13 @@ def pdf_compare(all, point):
                 "y": point[1],
                 "width": dimensions[default_scene_name][0],
                 "height": dimensions[default_scene_name][1],
-            }
+            },
+            verbose=True
         )
 
         run_mitsuba(
             context.mitsuba_path,
-            context.scene_path("diffuse-neural.xml"),
+            context.scene_path("scene-neural.xml"),
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
@@ -273,7 +278,7 @@ def debug_pixel(x, y):
 
     run_mitsuba(
         context.mitsuba_path,
-        context.scene_path("diffuse-neural.xml"),
+        context.scene_path("scene-neural.xml"),
         f"render_{x}_{y}.exr",
         [ "-p1" ],
         {
