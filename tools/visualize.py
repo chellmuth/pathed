@@ -20,19 +20,22 @@ def render_photon_grids(grids, output_path):
 def photon_bundle(axes, bundle):
     axes.imshow(
         bundle,
-        origin="lower",
+        origin="upper",
         cmap=cmap
     )
     axes.set_xticks([])
     axes.set_yticks([])
     axes.set_aspect("equal")
 
-def density_mesh(axes, x, y, values, bounds):
+def density_mesh(axes, x, y, values, bounds, flip_y=False):
+    if flip_y:
+        values = np.flip(values, 0)
+
     axes.pcolormesh(
         x,
         y,
         values,
-        cmap=cmap
+        cmap=cmap,
     )
 
     axes.set_xlim(bounds[0])
@@ -55,7 +58,7 @@ def convert_to_density_mesh(input_path, output_path):
 
     image = pyexr.read(str(input_path))
 
-    density_mesh(axes, x, y, image[:, :, 0], bounds)
+    density_mesh(axes, x, y, image[:, :, 0], bounds, flip_y=True)
 
     plt.tight_layout()
     plt.savefig(str(output_path), bbox_inches='tight')

@@ -12,7 +12,7 @@ import visualize
 from mitsuba import run_mitsuba
 
 default_scene_name = "cbox-ppg"
-default_output_name = "cbox-ppg--indirect1"
+default_output_name = "cbox-ppg--debug"
 
 default_checkpoints = {
     "kitchen": None,
