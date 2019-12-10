@@ -11,18 +11,20 @@ import runner
 import visualize
 from mitsuba import run_mitsuba
 
-default_scene_name = "cbox-ppg"
-default_output_name = "cbox-ppg--debug"
+default_scene_name = "cbox-bw"
+default_output_name = "cbox-bw"
 
 default_checkpoints = {
     "kitchen": None,
     "kitchen-diffuse": None,
+    "cbox-bw": None,
     "cbox-ppg": "20191205-cbox-ppg-2"
 }
 
 dimensions = {
     "kitchen": (1280, 720),
     "kitchen-diffuse": (1280, 720),
+    "cbox-bw": (400, 400),
     "cbox-ppg": (400, 400),
 }
 
