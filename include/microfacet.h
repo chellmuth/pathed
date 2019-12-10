@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-
 float beckmannD(const float alpha, const Vector3 &wh)
 {
     const float tan2Theta = TangentFrame::tan2Theta(wh);
@@ -41,4 +40,9 @@ float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
 
     return (1 - 1.259f * a + 0.396f * a * a)
         / (3.535f * a + 2.181f * a * a);
+}
+
+float G1(float alphaX, float alphaY, const Vector3 &w)
+{
+    return 1.f / (1.f + beckmannLambda(alphaX, alphaY, w));
 }
