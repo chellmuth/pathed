@@ -1,6 +1,7 @@
 #include "microfacet.h"
 
 #include "beckmann.h"
+#include "fresnel.h"
 #include "monte_carlo.h"
 #include "tangent_frame.h"
 #include "transform.h"
@@ -29,7 +30,7 @@ Color Microfacet::f(
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.x() == 0.f || wh.y() == 0.f || wh.z() == 0.f) { return Color(0.f); }
 
-    Color fresnel(1.f);
+    Color fresnel(Fresnel::dielectricReflectance(wo, 1.f, 1.4f));
     Color albedo(1.f);
     const float alpha = 1.f;
 
