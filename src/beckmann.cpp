@@ -42,7 +42,7 @@ float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
         / (3.535f * a + 2.181f * a * a);
 }
 
-float beckmannG(float alphaX, float alphaY, const Vector3 &wi, const Vector3 &wo)
+float beckmannG(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi)
 {
     return 1.f / (1.f + beckmannLambda(alphaX, alphaY, wo) + beckmannLambda(alphaX, alphaY, wi));
 }
