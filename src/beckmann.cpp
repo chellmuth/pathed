@@ -1,8 +1,37 @@
 #include "beckmann.h"
 
+#include "coordinate.h"
 #include "tangent_frame.h"
+#include "trig.h"
 
 #include <cmath>
+
+static Vector3 cartestianFromTan2Theta(float tan2Theta, float phi)
+{
+    const float cosTheta = 1.f / sqrtf(1.f + tan2Theta);
+    const float sinTheta = Trig::sinFromCos(cosTheta);
+
+    return sphericalToCartesian(phi, cosTheta, sinTheta);
+}
+
+static float sampleTan2Theta(float alpha, Vector3 &wo, RandomGenerator &random)
+{
+    const float xi = random.next();
+
+    float logXi = std::log(xi);
+    if (std::isinf(logXi)) { logXi = 0.f; }
+
+    return -alpha * alpha * logXi;
+}
+
+Vector3 beckmannSampleWh(float alpha, Vector3 &wo, RandomGenerator &random)
+{
+    const float phi = random.next() * M_PI * 2.f;
+    const float tan2Theta = sampleTan2Theta(alpha, wo, random);
+
+    const Vector3 sample = cartestianFromTan2Theta(tan2Theta, phi);
+    return sample;
+}
 
 float beckmannD(const float alpha, const Vector3 &wh)
 {
