@@ -30,6 +30,8 @@ public:
         std::shared_ptr<Material> material
     );
 
+    bool useBackwardsNormals() const override { return false; }
+
 private:
     Point3 m_center;
     float m_radius;

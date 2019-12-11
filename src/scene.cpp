@@ -71,44 +71,57 @@ Intersection Scene::testIntersect(const Ray &ray) const
     // need parallel arrays of geometry and materials
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
         RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+
+        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &shapePtr = surfacePtr->getShape();
+
         UV uv;
-        rtcInterpolate0(
-            geometry,
-            hit.primID,
-            hit.u,
-            hit.v,
-            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
-            0,
-            &uv.u,
-            2
-        );
+        Vector3 geometricNormal(0.f, 0.f, 0.f);
+        Vector3 shadingNormal(0.f, 0.f, 0.f);
+        if (shapePtr->useBackwardsNormals()) {
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                0,
+                &uv.u,
+                2
+            );
 
-        float normalRaw[3];
-        rtcInterpolate0(
-            geometry,
-            hit.primID,
-            hit.u,
-            hit.v,
-            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
-            1,
-            &normalRaw[0],
-            3
-        );
+            float normalRaw[3];
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                1,
+                &normalRaw[0],
+                3
+            );
 
-        Vector3 shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
-        Vector3 geometricNormal = Vector3(
-            rayHit.hit.Ng_x,
-            rayHit.hit.Ng_y,
-            rayHit.hit.Ng_z
-        ).normalized() * -1.f;
+            shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f;
+        } else {
+            // spheres
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized();
+        }
 
         if (shadingNormal.length() == 0.f) {
             shadingNormal = geometricNormal;
         }
 
-        if (!m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()) {
-            std::cout << "NO MATERIAL!" << std::endl;
-        }
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,

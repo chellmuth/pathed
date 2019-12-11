@@ -35,4 +35,6 @@ public:
     virtual float area() const = 0;
 
     virtual void debug() const { printf("Debug not implemented!\n"); };
+
+    virtual bool useBackwardsNormals() const { return true; } // fixme
 };
