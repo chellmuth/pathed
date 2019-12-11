@@ -111,16 +111,37 @@ Color PathTracer::direct(
         occluded
     });
 
-    if (occluded) {
-        return Color(0.f);
-    }
+    Color result(0.f);
 
     const float invPDF = lightSample.invPDF * lightCount;
-    const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, 0.f);
 
-    return light->biradiance(lightSample, intersection.point)
-        * lightWeight
-        * intersection.material->f(intersection, wo)
-        * fmaxf(0.f, wo.dot(intersection.shadingNormal))
-        * invPDF;
+    if (!occluded) {
+        const float brdfPDF = bsdfSample.material->pdf(intersection, wo);
+        const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, 0.f);
+
+        const Color lightContribution = light->biradiance(lightSample, intersection.point)
+            * lightWeight
+            * intersection.material->f(intersection, wo)
+            * fmaxf(0.f, wo.dot(intersection.shadingNormal))
+            * invPDF;
+
+        result += lightContribution;
+    }
+
+    const Ray bounceRay(intersection.point, bsdfSample.wi);
+    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
+        const float lightPDF = 1.f / invPDF;
+        const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+
+        const Color brdfContribution = bounceIntersection.material->emit()
+            * brdfWeight
+            * intersection.material->f(intersection, bsdfSample.wi)
+            * fmaxf(0.f, bsdfSample.wi.dot(intersection.shadingNormal))
+            * (1.f / bsdfSample.pdf);
+
+        result += brdfContribution;
+    }
+
+    return result;
 }

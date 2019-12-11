@@ -45,7 +45,8 @@ BSDFSample Lambertian::sample(
     BSDFSample sample = {
         .wi = worldSample,
         .pdf = CosineHemispherePdf(localSample),
-        .throughput = Material::f(intersection, worldSample)
+        .throughput = Material::f(intersection, worldSample),
+        .material = this
     };
 
     return sample;

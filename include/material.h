@@ -4,6 +4,7 @@
 #include "random_generator.h"
 #include "vector.h"
 
+class Material;
 class Scene;
 struct Intersection;
 
@@ -11,6 +12,7 @@ struct BSDFSample {
     Vector3 wi;
     float pdf;
     Color throughput;
+    const Material *material;
 };
 
 class Material {
@@ -26,6 +28,15 @@ public:
     Color f(const Intersection &intersection, const Vector3 &wiWorld) const {
         float pdf;
         return f(intersection, wiWorld, &pdf);
+    }
+
+    float pdf(
+        const Intersection &intersection,
+        const Vector3 &wiWorld
+    ) const {
+        float pdf;
+        f(intersection, wiWorld, &pdf);
+        return pdf;
     }
 
     virtual BSDFSample sample(

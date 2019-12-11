@@ -69,7 +69,8 @@ BSDFSample Microfacet::sample(
     BSDFSample sample = {
         .wi = wiWorld,
         .pdf = beckmannPDF(m_alpha, wh),
-        .throughput = Material::f(intersection, wiWorld)
+        .throughput = Material::f(intersection, wiWorld),
+        .material = this
     };
 
     return sample;
