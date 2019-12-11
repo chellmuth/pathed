@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <cmath>
+#include <iostream>
 
 static float divide(const float a, const float b)
 {

@@ -14,7 +14,7 @@ static Vector3 cartestianFromTan2Theta(float tan2Theta, float phi)
     return sphericalToCartesian(phi, cosTheta, sinTheta);
 }
 
-static float sampleTan2Theta(float alpha, Vector3 &wo, RandomGenerator &random)
+static float sampleTan2Theta(float alpha, const Vector3 &wo, RandomGenerator &random)
 {
     const float xi = random.next();
 
@@ -24,13 +24,18 @@ static float sampleTan2Theta(float alpha, Vector3 &wo, RandomGenerator &random)
     return -alpha * alpha * logXi;
 }
 
-Vector3 beckmannSampleWh(float alpha, Vector3 &wo, RandomGenerator &random)
+Vector3 beckmannSampleWh(float alpha, const Vector3 &wo, RandomGenerator &random)
 {
     const float phi = random.next() * M_PI * 2.f;
     const float tan2Theta = sampleTan2Theta(alpha, wo, random);
 
     const Vector3 sample = cartestianFromTan2Theta(tan2Theta, phi);
     return sample;
+}
+
+float beckmannPDF(float alpha, const Vector3 &wh)
+{
+    return beckmannD(alpha, wh) * std::abs(TangentFrame::cosTheta(wh));
 }
 
 float beckmannD(const float alpha, const Vector3 &wh)
