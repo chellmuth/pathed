@@ -32,9 +32,8 @@ Color Microfacet::f(
 
     Color fresnel(Fresnel::dielectricReflectance(wo, 1.f, 1.4f));
     Color albedo(1.f);
-    const float alpha = 1.f;
 
-    return albedo * beckmannD(alpha, wh) * beckmannG(alpha, alpha, wi, wo) * fresnel
+    return albedo * beckmannD(m_alpha, wh) * beckmannG(m_alpha, m_alpha, wi, wo) * fresnel
         / (4 * cosThetaI * cosThetaO);
 }
 

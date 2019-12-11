@@ -10,7 +10,10 @@
 
 class Microfacet : public Material {
 public:
-    Microfacet(float alphaX, float alphaY, Color emit) : Material(emit) {};
+    Microfacet(float alpha)
+    : Material(0.f),
+        m_alpha(alpha)
+    {}
 
     Color f(
         const Intersection &intersection,
@@ -24,6 +27,5 @@ public:
     ) const override;
 
 private:
-    float m_alphaX;
-    float m_alphaY;
+    float m_alpha;
 };

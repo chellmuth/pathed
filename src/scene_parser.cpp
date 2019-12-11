@@ -9,6 +9,7 @@
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "microfacet.h"
 #include "mirror.h"
 #include "obj_parser.h"
 #include "oren_nayar.h"
@@ -233,6 +234,10 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         float sigma = parseFloat(bsdfJson["sigma"]);
 
         return std::make_shared<OrenNayar>(diffuse, sigma);
+    } else if (bsdfJson["type"] == "beckmann") {
+        float alpha = parseFloat(bsdfJson["alpha"]);
+
+        return std::make_shared<Microfacet>(alpha);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
