@@ -1,11 +1,11 @@
 #pragma once
 
 #include "color.h"
-#include "intersection.h"
 #include "random_generator.h"
 #include "vector.h"
 
 class Scene;
+struct Intersection;
 
 struct BSDFSample {
     Vector3 wi;

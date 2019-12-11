@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "job.h"
 #include "light.h"
+#include "mis.h"
 #include "monte_carlo.h"
 #include "ray.h"
 #include "transform.h"
@@ -25,9 +26,11 @@ Color PathTracer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
+    BSDFSample bsdfSample = intersection.material->sample(intersection, random);
+
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
-        result = direct(intersection, scene, random, sample);
+        result = direct(intersection, bsdfSample, scene, random, sample);
         sample.contributions.push_back({result, 1.f});
     }
 
@@ -35,9 +38,6 @@ Color PathTracer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        BSDFSample bsdfSample = lastIntersection.material->sample(
-            lastIntersection, random
-        );
         Ray bounceRay(lastIntersection.point, bsdfSample.wi);
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
@@ -49,12 +49,17 @@ Color PathTracer::L(
         modulation *= bsdfSample.throughput
             * fmaxf(0.f, bsdfSample.wi.dot(lastIntersection.shadingNormal))
             * invPDF;
+
+        bsdfSample = bounceIntersection.material->sample(
+            bounceIntersection, random
+        );
+
         lastIntersection = bounceIntersection;
 
         if (m_bounceController.checkCounts(bounce)) {
             const Color previous = result;
 
-            Color Ld = direct(bounceIntersection, scene, random, sample);
+            Color Ld = direct(bounceIntersection, bsdfSample, scene, random, sample);
             result += Ld * modulation;
 
             sample.contributions.push_back({result - previous, invPDF});
@@ -66,6 +71,7 @@ Color PathTracer::L(
 
 Color PathTracer::direct(
     const Intersection &intersection,
+    const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -109,75 +115,12 @@ Color PathTracer::direct(
         return Color(0.f);
     }
 
-    float invPDF = lightSample.invPDF * lightCount;
+    const float invPDF = lightSample.invPDF * lightCount;
+    const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, 0.f);
+
     return light->biradiance(lightSample, intersection.point)
+        * lightWeight
         * intersection.material->f(intersection, wo)
         * fmaxf(0.f, wo.dot(intersection.shadingNormal))
         * invPDF;
-}
-
-void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
-{
-    const int phiSteps = 300;
-    const int thetaSteps = 300;
-
-    RandomGenerator random;
-    Sample sample;
-    int bounceCount = 5;
-
-    json j;
-    j["QueryPoint"] = {
-        intersection.point.x(),
-        intersection.point.y(),
-        intersection.point.z()
-    };
-    j["Steps"] = { { "phi", phiSteps }, { "theta", thetaSteps } };
-    j["Gt"] = json::array();
-
-    for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
-
-            float y = cosf(theta);
-            float x = sinf(theta) * cosf(phi);
-            float z = sinf(theta) * sinf(phi);
-
-            Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
-
-            Ray ray = Ray(intersection.point, wiWorld);
-            const Intersection fisheyeIntersection = scene.testIntersect(ray);
-            Color sampleL(0.f);
-            if (fisheyeIntersection.hit) {
-                sampleL = L(
-                    fisheyeIntersection,
-                    scene,
-                    random,
-                    sample
-                );
-
-                Color emit = fisheyeIntersection.material->emit();
-                sampleL += emit;
-            }
-
-            // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
-            // std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
-            // std::cout << sampleL << std::endl;
-
-            j["Gt"].push_back({
-                { "wi", { x, y, z } },
-                { "phiStep", phiStep },
-                { "thetaStep", thetaStep },
-                { "phi", phi },
-                { "theta", theta },
-                { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
-                { "luminance", { sampleL.luminance() } }
-            });
-        }
-    }
-
-    std::ofstream jsonFile("live.json");
-    jsonFile << j.dump(4) << std::endl;
-    std::cout << "Wrote to live.json" << std::endl;
 }

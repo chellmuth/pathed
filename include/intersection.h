@@ -1,13 +1,12 @@
 #pragma once
 
+#include "material.h"
 #include "point.h"
 #include "transform.h"
 #include "uv.h"
 #include "vector.h"
 
 #include <limits>
-
-class Material;
 
 struct Intersection {
     bool hit;
@@ -42,6 +41,10 @@ struct Intersection {
     {
         tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
         worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
+    }
+
+    bool isEmitter() {
+        return !(material->emit().isBlack());
     }
 };
 
