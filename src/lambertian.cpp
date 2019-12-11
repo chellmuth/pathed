@@ -24,7 +24,7 @@ Color Lambertian::f(
         return Color(0.f);
     }
 
-    *pdf = UniformHemispherePdf(wi);
+    *pdf = CosineHemispherePdf(wi);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection.uv) / M_PI;
