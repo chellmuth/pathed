@@ -10,7 +10,7 @@ Mirror::Mirror()
 
 Color Mirror::f(
     const Intersection &intersection,
-    const Vector3 &wo,
+    const Vector3 &wiWorld,
     float *pdf
 ) const
 {

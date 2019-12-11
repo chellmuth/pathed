@@ -3,7 +3,7 @@
 #include "monte_carlo.h"
 #include "transform.h"
 
-#include <math.h>
+#include <cmath>
 
 Lambertian::Lambertian(Color diffuse, Color emit)
     : Material(emit), m_diffuse(diffuse), m_albedo(nullptr)
@@ -15,7 +15,7 @@ Lambertian::Lambertian(std::shared_ptr<Albedo> albedo, Color emit)
 
 Color Lambertian::f(
     const Intersection &intersection,
-    const Vector3 &wi,
+    const Vector3 &wiWorld,
     float *pdf
 ) const
 {
@@ -24,6 +24,7 @@ Color Lambertian::f(
         return Color(0.f);
     }
 
+    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
     *pdf = CosineHemispherePdf(wi);
 
     if (m_albedo) {

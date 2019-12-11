@@ -10,13 +10,19 @@
 
 Color Microfacet::f(
     const Intersection &intersection,
-    const Vector3 &wi,
+    const Vector3 &wiWorld,
     float *pdf
 ) const
 {
     const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld);
+    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
 
     if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
+        *pdf = 0.f;
+        return Color(0.f);
+    }
+
+    if (wiWorld.dot(intersection.shadingNormal) < 0.f) {
         *pdf = 0.f;
         return Color(0.f);
     }

@@ -17,7 +17,7 @@ public:
 
     Color f(
         const Intersection &intersection,
-        const Vector3 &wi,
+        const Vector3 &wiWorld,
         float *pdf
     ) const override;
 

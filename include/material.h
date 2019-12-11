@@ -19,13 +19,13 @@ public:
 
     virtual Color f(
         const Intersection &intersection,
-        const Vector3 &wi,
+        const Vector3 &wiWorld,
         float *pdf
     ) const = 0;
 
-    Color f(const Intersection &intersection, const Vector3 &wi) const {
+    Color f(const Intersection &intersection, const Vector3 &wiWorld) const {
         float pdf;
-        return f(intersection, wi, &pdf);
+        return f(intersection, wiWorld, &pdf);
     }
 
     virtual BSDFSample sample(

@@ -19,7 +19,7 @@ OrenNayar::OrenNayar(Color diffuse, float sigma)
 
 Color OrenNayar::f(
     const Intersection &intersection,
-    const Vector3 &wi,
+    const Vector3 &wiWorld,
     float *pdf
 ) const
 {
@@ -34,7 +34,7 @@ Color OrenNayar::f(
     }
 
     const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 localWi = intersection.worldToTangent.apply(wi).normalized();
+    const Vector3 localWi = intersection.worldToTangent.apply(wiWorld).normalized();
 
     if (localWo.y() < 0.f) {
         *pdf = 1.f;

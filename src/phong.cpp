@@ -9,7 +9,7 @@ Phong::Phong(Color kd, Color ks, float n, Color emit)
     : Material(emit), m_kd(kd), m_ks(ks), m_n(n)
 {}
 
-Color Phong::f(const Intersection &intersection, const Vector3 &wi, float *pdf) const
+Color Phong::f(const Intersection &intersection, const Vector3 &wiWorld, float *pdf) const
 {
     const Vector3 &wo = intersection.woWorld;
     const Vector3 &normal = intersection.normal;
@@ -17,10 +17,10 @@ Color Phong::f(const Intersection &intersection, const Vector3 &wi, float *pdf) 
     Color diffuse = m_kd / M_PI;
 
     Vector3 reflected = wo.reflect(normal);
-    float cosAlpha = fmaxf(0.f, wi.dot(reflected));
+    float cosAlpha = fmaxf(0.f, wiWorld.dot(reflected));
     Color specular = m_ks * (m_n + 2) / M_TWO_PI * powf(cosAlpha, m_n);
 
-    *pdf = UniformHemispherePdf(wi);
+    *pdf = UniformHemispherePdf(wiWorld);
 
     return diffuse + specular;
 }
