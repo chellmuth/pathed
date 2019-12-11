@@ -3,6 +3,7 @@
 #include "aabb.h"
 #include "color.h"
 #include "intersection.h"
+#include "material.h"
 #include "point.h"
 #include "shape.h"
 #include "transform.h"
@@ -24,6 +25,11 @@ public:
     std::shared_ptr<Shape> transform(const Transform &transform) const override;
 
     float area() const override;
+
+    void create(
+        const Transform &transform,
+        std::shared_ptr<Material> material
+    );
 
 private:
     Point3 m_center;

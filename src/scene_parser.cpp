@@ -184,6 +184,13 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
     auto surface = std::make_shared<Surface>(sphere, material);
 
     surfaces.push_back(surface);
+
+    Transform transform;
+    auto transformJson = sphereJson["transform"];
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+    sphere->create(transform, material);
 }
 
 static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces)

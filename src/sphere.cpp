@@ -1,11 +1,48 @@
-#include "math.h"
-#include <limits>
-
 #include "sphere.h"
 
 #include "color.h"
+#include "globals.h"
 #include "ray.h"
 #include "util.h"
+
+#include <embree3/rtcore.h>
+
+#include <cmath>
+#include <limits>
+
+void Sphere::create(
+    const Transform &transform,
+    std::shared_ptr<Material> material
+) {
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_SPHERE_POINT);
+    float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                /* geometry */
+        RTC_BUFFER_TYPE_VERTEX, /* type */
+        0,                      /* slot */
+        RTC_FORMAT_FLOAT4,      /* format */
+        4 * sizeof(float),      /* byte stride */
+        1                       /* item count */
+    );
+
+    float data[] = {
+        transform.apply(m_center).x(),
+        transform.apply(m_center).y(),
+        transform.apply(m_center).z(),
+        m_radius
+    };
+
+    for (int i = 0; i < 1; i++) {
+        rtcVertices[i * 4 + 0] = data[i * 4  + 0];
+        rtcVertices[i * 4 + 1] = data[i * 4  + 1];
+        rtcVertices[i * 4 + 2] = data[i * 4  + 2];
+        rtcVertices[i * 4 + 3] = data[i * 4  + 3];
+    }
+
+    rtcCommitGeometry(rtcMesh);
+
+    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
+    rtcReleaseGeometry(rtcMesh);
+}
 
 Sphere::Sphere(Point3 center, float radius, Color color)
     : m_center(center), m_radius(radius), m_color(color)
