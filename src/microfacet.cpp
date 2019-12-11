@@ -7,6 +7,7 @@
 #include "transform.h"
 
 #include <cmath>
+#include <iostream>
 
 Color Microfacet::f(
     const Intersection &intersection,
@@ -36,11 +37,22 @@ Color Microfacet::f(
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.x() == 0.f || wh.y() == 0.f || wh.z() == 0.f) { return Color(0.f); }
 
-    Color fresnel(Fresnel::dielectricReflectance(wo, 1.f, 1.4f));
+    Color fresnel(Fresnel::dielectricReflectance(wo.dot(wh), 1.f, 1.4f));
+    Color distribution = beckmannD(m_alpha, wh);
+    Color masking = beckmannG(m_alpha, m_alpha, wi, wo);
     Color albedo(1.f);
 
-    return albedo * beckmannD(m_alpha, wh) * beckmannG(m_alpha, m_alpha, wi, wo) * fresnel
+    // std::cout << "D: " << distribution << std::endl;
+    // std::cout << "G: " << masking << std::endl;
+    // std::cout << "F: " << fresnel << std::endl;
+    // std::cout << "cos's: " << cosThetaI << " " << cosThetaO << std::endl;
+
+    const Color value = albedo * distribution * masking * fresnel
         / (4 * cosThetaI * cosThetaO);
+
+    // std::cout << "value: " << value << std::endl;
+
+    return value;
 }
 
 BSDFSample Microfacet::sample(

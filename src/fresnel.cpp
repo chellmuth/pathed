@@ -12,12 +12,29 @@ static float divide(const float a, const float b)
     return a / b;
 }
 
+static float sinThetaFromCosTheta(float cosTheta)
+{
+    return sqrtf(1.f - cosTheta * cosTheta);
+}
+
 float Snell::transmittedSinTheta(
     const Vector3 &incidentDirection,
     float etaIncident,
     float etaTransmitted
 ) {
-    return (etaIncident / etaTransmitted) * TangentFrame::sinTheta(incidentDirection);
+    return transmittedSinTheta(
+        TangentFrame::sinTheta(incidentDirection),
+        etaIncident,
+        etaTransmitted
+    );
+}
+
+float Snell::transmittedSinTheta(
+    float cosThetaIncident,
+    float etaIncident,
+    float etaTransmitted
+) {
+    return (etaIncident / etaTransmitted) * sinThetaFromCosTheta(cosThetaIncident);
 }
 
 float Fresnel::dielectricReflectance(
@@ -26,8 +43,20 @@ float Fresnel::dielectricReflectance(
     float etaTransmitted
 ) {
     const float cosThetaIncident = TangentFrame::cosTheta(incidentDirection);
+    return dielectricReflectance(
+        cosThetaIncident,
+        etaIncident,
+        etaTransmitted
+    );
+}
+
+float Fresnel::dielectricReflectance(
+    float cosThetaIncident,
+    float etaIncident,
+    float etaTransmitted
+) {
     const float sinThetaTransmitted = Snell::transmittedSinTheta(
-        incidentDirection,
+        cosThetaIncident,
         etaIncident,
         etaTransmitted
     );

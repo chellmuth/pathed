@@ -8,6 +8,12 @@ namespace Snell {
         float etaIncident,
         float etaTransmitted
     );
+
+    float transmittedSinTheta(
+        float cosThetaIncident,
+        float etaIncident,
+        float etaTransmitted
+    );
 }
 
 namespace Fresnel {
@@ -16,4 +22,11 @@ namespace Fresnel {
         float etaIncident,
         float etaTransmitted
     );
+
+    float dielectricReflectance(
+        float cosThetaIncident,
+        float etaIncident,
+        float etaTransmitted
+    );
+
 }
