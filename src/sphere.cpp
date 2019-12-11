@@ -1,6 +1,5 @@
 #include "sphere.h"
 
-#include "color.h"
 #include "globals.h"
 #include "ray.h"
 #include "util.h"
@@ -44,8 +43,8 @@ void Sphere::create(
     rtcReleaseGeometry(rtcMesh);
 }
 
-Sphere::Sphere(Point3 center, float radius, Color color)
-    : m_center(center), m_radius(radius), m_color(color)
+Sphere::Sphere(Point3 center, float radius)
+    : m_center(center), m_radius(radius)
 {}
 
 SurfaceSample Sphere::sample(RandomGenerator &random) const

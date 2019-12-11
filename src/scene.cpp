@@ -106,6 +106,9 @@ Intersection Scene::testIntersect(const Ray &ray) const
             shadingNormal = geometricNormal;
         }
 
+        if (!m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()) {
+            std::cout << "NO MATERIAL!" << std::endl;
+        }
         Intersection hit = {
             .hit = true,
             .t = rayHit.ray.tfar,

@@ -177,8 +177,7 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
-        parseFloat(sphereJson["radius"]),
-        Color(0.f, 1.f, 0.f)
+        parseFloat(sphereJson["radius"])
     );
 
     auto surface = std::make_shared<Surface>(sphere, material);
