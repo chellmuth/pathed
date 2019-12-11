@@ -14,7 +14,8 @@ static float divide(const float a, const float b)
 
 static float sinThetaFromCosTheta(float cosTheta)
 {
-    return sqrtf(1.f - cosTheta * cosTheta);
+    const float result = sqrtf(std::max(0.f, 1.f - cosTheta * cosTheta));
+    return result;
 }
 
 float Snell::transmittedSinTheta(
@@ -55,17 +56,29 @@ float Fresnel::dielectricReflectance(
     float etaIncident,
     float etaTransmitted
 ) {
+    if (std::isnan(cosThetaIncident)) {
+        std::cout << "INPUT NAN!" << std::endl;
+        assert(false);
+        exit(1);
+    }
+
     const float sinThetaTransmitted = Snell::transmittedSinTheta(
         cosThetaIncident,
         etaIncident,
         etaTransmitted
     );
 
+    if (std::isnan(sinThetaTransmitted)) {
+        std::cout << "sin(theta) transmitted nan" << std::endl;
+        assert(false);
+        exit(1);
+    }
+
     if (sinThetaTransmitted > 1.f) {
         return 1.f; // Total internal reflection
     }
 
-    const float cosThetaTransmitted = sqrtf(1.f - sinThetaTransmitted * sinThetaTransmitted);
+    const float cosThetaTransmitted = sqrtf(std::max(0.f, 1.f - sinThetaTransmitted * sinThetaTransmitted));
 
     assert (cosThetaIncident >= 0.f);
     assert (cosThetaIncident <= 1.f);

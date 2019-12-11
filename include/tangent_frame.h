@@ -23,7 +23,7 @@ namespace TangentFrame {
 
     inline float sinTheta(const Vector3 &vector)
     {
-        return sqrtf(1.f - cos2Theta(vector));
+        return sqrtf(std::max(0.f, 1.f - cos2Theta(vector)));
     }
 
     inline float sin2Theta(const Vector3 &vector)

@@ -45,7 +45,7 @@
       },
       "bsdf": {
         "type": "beckmann",
-        "alpha": "0.8"
+        "alpha": "0.1"
       }
     }
   ],

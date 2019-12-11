@@ -37,9 +37,9 @@ Color Microfacet::f(
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.x() == 0.f || wh.y() == 0.f || wh.z() == 0.f) { return Color(0.f); }
 
-    Color fresnel(Fresnel::dielectricReflectance(wi.dot(wh), 1.f, 1.4f));
-    Color distribution = beckmannD(m_alpha, wh);
-    Color masking = beckmannG(m_alpha, m_alpha, wo, wi);
+    float fresnel(Fresnel::dielectricReflectance(wi.dot(wh), 1.f, 1.4f));
+    float distribution = beckmannD(m_alpha, wh);
+    float masking = beckmannG(m_alpha, m_alpha, wo, wi);
     Color albedo(1.f);
 
     // std::cout << "D: " << distribution << std::endl;
