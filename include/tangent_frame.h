@@ -64,7 +64,7 @@ namespace TangentFrame {
         const float _sinTheta = sinTheta(vector);
         if (_sinTheta == 0.f) { return 0.f; }
 
-        const float result = vector.y() / _sinTheta;
+        const float result = vector.z() / _sinTheta;
 
         assert(result >= -1.f);
         assert(result <= 1.f);
