@@ -15,11 +15,11 @@ float beckmannD(const float alpha, const Vector3 &wh)
 
     const float numerator = std::exp(
         -tan2Theta * (
-            TangentFrame::cos2Phi(wh) / alpha2
-            + TangentFrame::sin2Phi(wh) / alpha2
+            (TangentFrame::cos2Phi(wh) / alpha2)
+            + (TangentFrame::sin2Phi(wh) / alpha2)
         )
     );
-    const float denominator = M_PI * alpha2 * cos2Theta;
+    const float denominator = M_PI * alpha2 * cos4Theta;
 
     return numerator / denominator;
 }
@@ -44,5 +44,5 @@ float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
 
 float beckmannG(float alphaX, float alphaY, const Vector3 &wi, const Vector3 &wo)
 {
-    return 1.f / (beckmannLambda(alphaX, alphaY, wo) + beckmannLambda(alphaX, alphaY, wi));
+    return 1.f / (1.f + beckmannLambda(alphaX, alphaY, wo) + beckmannLambda(alphaX, alphaY, wi));
 }
