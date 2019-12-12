@@ -21,6 +21,11 @@ SurfaceSample AreaLight::sampleEmit(RandomGenerator &random) const
     return m_surface->sample(random);
 }
 
+float AreaLight::emitPDF(const Point3 &point, const Vector3 &direction) const
+{
+    return m_surface->pdf(point);
+}
+
 Color AreaLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
 {
     Point3 lightPoint = lightSample.point;

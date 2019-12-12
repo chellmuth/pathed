@@ -25,6 +25,8 @@ public:
     virtual void pushIndices(std::vector<uint> &indices, int offset) {};
 
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
+    virtual float pdf(const Point3 &point) const = 0;
+
     virtual Intersection testIntersect(const Ray &ray) = 0;
 
     virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;

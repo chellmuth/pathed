@@ -19,6 +19,7 @@ public:
     ) const = 0;
 
     virtual SurfaceSample sampleEmit(RandomGenerator &random) const = 0;
+    virtual float emitPDF(const Point3 &point, const Vector3 &direction) const = 0;
 
     virtual Color biradiance(
         const SurfaceSample &lightSample,

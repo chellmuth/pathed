@@ -64,6 +64,11 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     return sample;
 }
 
+float Sphere::pdf(const Point3 &point) const
+{
+    return 1.f / area();
+}
+
 Intersection Sphere::testIntersect(const Ray &ray)
 {
     Point3 origin = ray.origin();
@@ -86,7 +91,8 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .normal = (hitPoint - m_center).toVector().normalized(),
             .shadingNormal = (hitPoint - m_center).toVector().normalized(),
             .uv = { 0.f, 0.f },
-            .material = nullptr
+            .material = nullptr,
+            .surface = nullptr
         };
         return result;
     } else {

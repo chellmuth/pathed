@@ -45,6 +45,11 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     return sample;
 }
 
+float Triangle::pdf(const Point3 &point) const
+{
+    return 1.f / area();
+}
+
 Intersection Triangle::testIntersect(const Ray &ray)
 {
     Intersection miss = IntersectionHelper::miss;
@@ -90,7 +95,8 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .normal = e2.cross(e1).normalized(),
         .shadingNormal = e2.cross(e1).normalized(),
         .uv = uv,
-        .material = nullptr
+        .material = nullptr,
+        .surface = nullptr
     };
 
     return hit;

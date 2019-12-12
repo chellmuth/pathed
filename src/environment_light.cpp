@@ -109,6 +109,11 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
     return fake;
 }
 
+float EnvironmentLight::emitPDF(const Point3 &point, const Vector3 &direction) const
+{
+    return 0.f;
+}
+
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
 {
     Vector3 direction = (lightSample.point - surfacePoint).toVector();

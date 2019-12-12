@@ -131,7 +131,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
             .shadingNormal = shadingNormal.normalized(),
             // .shadingNormal = geometricNormal,
             .uv = uv,
-            .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
+            .material = surfacePtr->getMaterial().get(),
+            .surface = surfacePtr.get()
         };
         return hit;
     } else {

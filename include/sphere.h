@@ -16,6 +16,7 @@ public:
     Sphere(Point3 center, float radius);
 
     SurfaceSample sample(RandomGenerator &random) const;
+    float pdf(const Point3 &point) const override;
     Intersection testIntersect(const Ray &ray);
 
     Point3 centroid() const override { return m_center; }
