@@ -25,7 +25,7 @@ Color Lambertian::f(
     }
 
     const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
-    *pdf = CosineHemispherePdf(wi);
+    *pdf = UniformHemispherePdf(wi);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection.uv) / M_PI;
@@ -44,7 +44,7 @@ BSDFSample Lambertian::sample(
 
     BSDFSample sample = {
         .wiWorld = worldSample,
-        .pdf = CosineHemispherePdf(localSample),
+        .pdf = UniformHemispherePdf(localSample),
         .throughput = Material::f(intersection, worldSample),
         .material = this
     };

@@ -131,9 +131,14 @@ Color PathTracer::direct(
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     Intersection bounceIntersection = scene.testIntersect(bounceRay);
     if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
+        const float distance = (bounceIntersection.point - intersection.point).toVector().length();
         const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
-            * (1.f / lightCount);
+            * distance * distance
+            / bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld)
+            / lightCount;
+
         const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+        // std::cout << brdfWeight << " " << lightPDF << " " << bsdfSample.pdf << " " << 1.f / M_PI << std::endl;
 
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
