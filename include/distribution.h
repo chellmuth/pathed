@@ -9,6 +9,7 @@ public:
     Distribution(const std::vector<float> &values);
 
     int sample(float *pdf, RandomGenerator &random) const;
+    float pdf(int index) const;
 
 private:
     std::vector<float> m_cdf;
