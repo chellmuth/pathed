@@ -117,7 +117,7 @@ Color PathTracer::direct(
 
     if (!occluded) {
         const float brdfPDF = bsdfSample.material->pdf(intersection, wo);
-        const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, 0.f);
+        const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
 
         const Color lightContribution = light->biradiance(lightSample, intersection.point)
             * lightWeight
