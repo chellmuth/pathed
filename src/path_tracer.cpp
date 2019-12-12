@@ -91,6 +91,7 @@ Color PathTracer::direct(
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();
 
+    bool skipLight = false;
     if (lightSample.normal.dot(wo) >= 0.f) {
         sample.shadowTests.push_back({
             intersection.point,
@@ -98,7 +99,7 @@ Color PathTracer::direct(
             true
         });
 
-        return Color(0.f);
+        skipLight = true;
     }
 
     Ray shadowRay = Ray(intersection.point, wo);
@@ -115,7 +116,7 @@ Color PathTracer::direct(
 
     const float invPDF = lightSample.invPDF * lightCount;
 
-    if (!occluded) {
+    if (!occluded && !skipLight) {
         const float brdfPDF = bsdfSample.material->pdf(intersection, wo);
         const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
 
