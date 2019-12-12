@@ -111,7 +111,19 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
 
 float EnvironmentLight::emitPDF(const Point3 &point, const Vector3 &direction) const
 {
-    return 0.f;
+    float phi, theta;
+    cartesianToSpherical(direction, &phi, &theta);
+
+    const float phiCanonical = phi / (M_TWO_PI);
+    const float thetaCanonical = theta / M_PI;
+
+    const int phiStep = (int)floorf(phiCanonical * m_width);
+    const int thetaStep = (int)floorf(thetaCanonical * m_height);
+
+    const float thetaPDF = m_thetaDistribution->pdf(thetaStep);
+    const float phiPDF = m_phiDistributions[thetaStep].pdf(phiStep);
+
+    return thetaPDF * phiPDF;
 }
 
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
