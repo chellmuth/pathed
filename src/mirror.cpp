@@ -27,7 +27,7 @@ BSDFSample Mirror::sample(
     Vector3 localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
     BSDFSample sample = {
-        .wi = intersection.tangentToWorld.apply(localWi),
+        .wiWorld = intersection.tangentToWorld.apply(localWi),
         .pdf = 1.f,
         .throughput = Color(std::max(0.f, 1.f / localWi.y())),
         .material = this

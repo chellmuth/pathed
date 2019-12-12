@@ -38,7 +38,7 @@ Color PathTracer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        Ray bounceRay(lastIntersection.point, bsdfSample.wi);
+        Ray bounceRay(lastIntersection.point, bsdfSample.wiWorld);
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
@@ -47,7 +47,7 @@ Color PathTracer::L(
 
         const float invPDF = 1.f / bsdfSample.pdf;
         modulation *= bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wi.dot(lastIntersection.shadingNormal))
+            * fmaxf(0.f, bsdfSample.wiWorld.dot(lastIntersection.shadingNormal))
             * invPDF;
 
         bsdfSample = bounceIntersection.material->sample(
@@ -89,10 +89,10 @@ Color PathTracer::direct(
     SurfaceSample lightSample = light->sample(intersection, random);
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    Vector3 wo = lightDirection.normalized();
+    Vector3 wiWorld = lightDirection.normalized();
 
     bool skipLight = false;
-    if (lightSample.normal.dot(wo) >= 0.f) {
+    if (lightSample.normal.dot(wiWorld) >= 0.f) {
         sample.shadowTests.push_back({
             intersection.point,
             lightSample.point,
@@ -102,7 +102,7 @@ Color PathTracer::direct(
         skipLight = true;
     }
 
-    Ray shadowRay = Ray(intersection.point, wo);
+    Ray shadowRay = Ray(intersection.point, wiWorld);
     float lightDistance = lightDirection.length();
     bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
@@ -116,19 +116,19 @@ Color PathTracer::direct(
 
     if (!occluded && !skipLight) {
         const float invPDF = lightSample.invPDF * lightCount;
-        const float brdfPDF = bsdfSample.material->pdf(intersection, wo);
+        const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
         const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
 
         const Color lightContribution = light->biradiance(lightSample, intersection.point)
             * lightWeight
-            * intersection.material->f(intersection, wo)
-            * fmaxf(0.f, wo.dot(intersection.shadingNormal))
+            * intersection.material->f(intersection, wiWorld)
+            * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
             * invPDF;
 
         result += lightContribution;
     }
 
-    const Ray bounceRay(intersection.point, bsdfSample.wi);
+    const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     Intersection bounceIntersection = scene.testIntersect(bounceRay);
     if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
         const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
@@ -138,7 +138,7 @@ Color PathTracer::direct(
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
             * bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wi.dot(intersection.shadingNormal))
+            * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
             * (1.f / bsdfSample.pdf);
 
         result += brdfContribution;

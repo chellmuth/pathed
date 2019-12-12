@@ -9,7 +9,7 @@ class Scene;
 struct Intersection;
 
 struct BSDFSample {
-    Vector3 wi;
+    Vector3 wiWorld;
     float pdf;
     Color throughput;
     const Material *material;

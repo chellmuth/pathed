@@ -43,7 +43,7 @@ BSDFSample Lambertian::sample(
     Vector3 worldSample = intersection.tangentToWorld.apply(localSample);
 
     BSDFSample sample = {
-        .wi = worldSample,
+        .wiWorld = worldSample,
         .pdf = CosineHemispherePdf(localSample),
         .throughput = Material::f(intersection, worldSample),
         .material = this

@@ -67,7 +67,7 @@ BSDFSample Microfacet::sample(
     const Vector3 wiWorld = intersection.tangentToWorld.apply(wi);
 
     BSDFSample sample = {
-        .wi = wiWorld,
+        .wiWorld = wiWorld,
         .pdf = beckmannPDF(m_alpha, wh),
         .throughput = Material::f(intersection, wiWorld),
         .material = this

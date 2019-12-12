@@ -31,7 +31,7 @@ BSDFSample Phong::sample(
 ) const
 {
     BSDFSample bs = {
-        .wi = Vector3(0.f, 0.f, 0.f),
+        .wiWorld = Vector3(0.f, 0.f, 0.f),
         .pdf = 0.f,
         .throughput = Color(0.f),
         .material = this
