@@ -137,7 +137,7 @@ Color PathTracer::direct(
 
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
-            * intersection.material->f(intersection, bsdfSample.wi)
+            * bsdfSample.throughput
             * fmaxf(0.f, bsdfSample.wi.dot(intersection.shadingNormal))
             * (1.f / bsdfSample.pdf);
 
