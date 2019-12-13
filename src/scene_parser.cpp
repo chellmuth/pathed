@@ -172,7 +172,7 @@ static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &
         stof(bsdfJson["diffuseReflectance"][1].get<std::string>()),
         stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
     );
-    Color radiance = parseColor(sphereJson["radiance"]);
+    Color radiance = parseColor(sphereJson["radiance"], false);
     auto material = std::make_shared<Lambertian>(diffuse, radiance);
 
     auto sphere = std::make_shared<Sphere>(

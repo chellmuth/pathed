@@ -1,11 +1,12 @@
 #include "transform.h"
 
-#include <math.h>
-#include <stdio.h>
-
 #include "point.h"
 #include "ray.h"
 #include "vector.h"
+
+#include <iostream>
+#include <math.h>
+#include <stdio.h>
 
 static const float identity[4][4] = {
     1.f, 0.f, 0.f, 0.f,
@@ -101,6 +102,12 @@ void Transform::debug() const
 Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
 {
     Vector3 direction = (target - source).toVector().normalized();
+
+    if (direction == up) {
+        std::cout << "Look direction cannot equal up vector - quitting!" << std::endl;
+        exit(1);
+    }
+
     Vector3 xAxis = up.normalized().cross(direction).normalized();
     Vector3 yAxis = direction.cross(xAxis);
 
