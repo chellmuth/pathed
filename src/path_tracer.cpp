@@ -147,6 +147,22 @@ Color PathTracer::direct(
             * (1.f / bsdfSample.pdf);
 
         result += brdfContribution;
+    } else if (!bounceIntersection.hit) {
+        const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
+        if (!environmentL.isBlack()) {
+            // const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
+            //     * distance * distance
+            //     / bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld)
+            //     / lightCount;
+
+            const Color brdfContribution = environmentL
+                * 1.f
+                * bsdfSample.throughput
+                * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
+                * (1.f / bsdfSample.pdf);
+
+            result += brdfContribution;
+        }
     }
 
     return result;
