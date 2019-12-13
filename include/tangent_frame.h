@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.h"
 #include "vector.h"
 
 #include <assert.h>
@@ -47,11 +48,7 @@ namespace TangentFrame {
         if (_sinTheta == 0.f) { return 1.f; }
 
         const float result = vector.x() / _sinTheta;
-
-        assert(result >= -1.f);
-        assert(result <= 1.f);
-
-        return result;
+        return util::clamp(result, -1.f, 1.f);
     }
 
     inline float cos2Phi(const Vector3 &vector)
@@ -65,11 +62,7 @@ namespace TangentFrame {
         if (_sinTheta == 0.f) { return 0.f; }
 
         const float result = vector.z() / _sinTheta;
-
-        assert(result >= -1.f);
-        assert(result <= 1.f);
-
-        return result;
+        return util::clampClose(result, -1.f, 1.f);
     }
 
     inline float sin2Phi(const Vector3 &vector)

@@ -59,11 +59,8 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
         &phi, &theta
     );
 
-    const float phiCanonical = phi / M_TWO_PI;
-    const float thetaCanonical = theta / M_PI;
-
-    assert(0.f <= phiCanonical && phiCanonical <= 1.f);
-    assert(0.f <= thetaCanonical && thetaCanonical <= 1.f);
+    const float phiCanonical = util::clampClose(phi / M_TWO_PI, 0.f, 1.f);
+    const float thetaCanonical = util::clampClose(theta / M_PI, 0.f, 1.f);
 
     int phiStep = (int)floorf(m_width * phiCanonical);
     int thetaStep = (int)floorf(m_height * thetaCanonical);
