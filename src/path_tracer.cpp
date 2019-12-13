@@ -150,13 +150,11 @@ Color PathTracer::direct(
     } else if (!bounceIntersection.hit) {
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
-            // const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
-            //     * distance * distance
-            //     / bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld)
-            //     / lightCount;
+            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld) / lightCount;
+            const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
             const Color brdfContribution = environmentL
-                * 1.f
+                * brdfWeight
                 * bsdfSample.throughput
                 * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
                 * (1.f / bsdfSample.pdf);

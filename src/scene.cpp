@@ -193,3 +193,9 @@ Color Scene::environmentL(const Vector3 &direction) const
     }
     return Color(0.f);
 }
+
+float Scene::environmentPDF(const Vector3 &direction) const
+{
+    assert(m_environmentLight);
+    return m_environmentLight->emitPDF(direction);
+}

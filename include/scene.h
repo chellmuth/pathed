@@ -54,6 +54,7 @@ public:
 
     LightSample sampleLights(RandomGenerator &random) const;
     Color environmentL(const Vector3 &direction) const;
+    float environmentPDF(const Vector3 &direction) const;
 
 private:
     std::unique_ptr<BVH> m_bvh;

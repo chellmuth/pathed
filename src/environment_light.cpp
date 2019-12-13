@@ -109,7 +109,7 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
     return fake;
 }
 
-float EnvironmentLight::emitPDF(const Point3 &point, const Vector3 &direction) const
+float EnvironmentLight::emitPDF(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(direction, &phi, &theta);
