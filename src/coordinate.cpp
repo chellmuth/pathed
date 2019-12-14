@@ -14,7 +14,7 @@ void cartesianToSpherical(Vector3 cartesian, float *phi, float *theta)
         *phi = 0;
     }
 
-    *theta = acosf(cartesian.y());
+    *theta = acosf(util::clampClose(cartesian.y(), -1.f, 1.f));
 }
 
 Vector3 sphericalToCartesian(float phi, float theta)
