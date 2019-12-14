@@ -139,6 +139,10 @@ Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector
 
 Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection)
 {
+    if (normal == rayDirection) {
+        return normalToWorldSpace(normal);
+    }
+
     Vector3 xAxis = normal.cross(rayDirection).normalized();
     Vector3 zAxis = normal.cross(xAxis).normalized();
 

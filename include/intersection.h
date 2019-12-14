@@ -44,8 +44,10 @@ struct Intersection {
         material(material_),
         surface(surface_)
     {
-        tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
-        worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
+        if (hit) {
+            tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
+            worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
+        }
     }
 
     bool isEmitter() {

@@ -69,8 +69,8 @@ float Fresnel::dielectricReflectance(
 
     const float cosThetaTransmitted = sqrtf(std::max(0.f, 1.f - sinThetaTransmitted * sinThetaTransmitted));
 
-    assert (cosThetaIncident >= 0.f);
-    assert (cosThetaIncident <= 1.f);
+    assert(cosThetaIncident >= 0.f);
+    assert(cosThetaIncident <= 1.f);
 
     assert (cosThetaTransmitted >= 0.f);
     assert (cosThetaTransmitted <= 1.f);

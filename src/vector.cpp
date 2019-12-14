@@ -1,13 +1,19 @@
-#include <stdio.h>
-#include <math.h>
-
 #include "vector.h"
 
 #include "point.h"
 
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+
+
 Vector3::Vector3(float x, float y, float z)
     : m_x(x), m_y(y), m_z(z)
-{}
+{
+    assert(!std::isnan(m_x));
+    assert(!std::isnan(m_y));
+    assert(!std::isnan(m_z));
+}
 
 float Vector3::dot(const Vector3& v) const
 {
@@ -39,17 +45,32 @@ Vector3 Vector3::cross(const Vector3& v) const
 
 Vector3 Vector3::normalized() const
 {
-    float norm = sqrt(
+    const float norm = sqrt(
         m_x * m_x +
         m_y * m_y +
         m_z * m_z
     );
 
-    return Vector3(
+    assert(norm > 0.f);
+
+    const Vector3 normalized = Vector3(
         m_x / norm,
         m_y / norm,
         m_z / norm
     );
+
+    const float max = 0.9999f;
+    if (normalized.x() >= max) {
+        return Vector3(1.f, 0.f, 0.f);
+    }
+    if (normalized.y() >= max) {
+        return Vector3(0.f, 1.f, 0.f);
+    }
+    if (normalized.z() >= max) {
+        return Vector3(0.f, 0.f, 1.f);
+    }
+
+    return normalized;
 }
 
 Vector3 Vector3::reflect(const Vector3& normal) const

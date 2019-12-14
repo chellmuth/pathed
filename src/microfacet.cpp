@@ -5,6 +5,7 @@
 #include "monte_carlo.h"
 #include "tangent_frame.h"
 #include "transform.h"
+#include "util.h"
 
 #include <cmath>
 #include <iostream>
@@ -37,7 +38,8 @@ Color Microfacet::f(
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.x() == 0.f || wh.y() == 0.f || wh.z() == 0.f) { return Color(0.f); }
 
-    float fresnel(Fresnel::dielectricReflectance(wi.dot(wh), 1.f, 1.4f));
+    float cosThetaIncident = util::clampClose(wi.dot(wh), 0.f, 1.f);
+    float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.4f));
     float distribution = beckmannD(m_alpha, wh);
     float masking = beckmannG(m_alpha, m_alpha, wo, wi);
     Color albedo(1.f);
