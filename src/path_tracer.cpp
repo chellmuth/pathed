@@ -83,68 +83,15 @@ Color PathTracer::direct(
     }
 
     int lightCount = scene.lights().size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
-
-    std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(intersection, random);
-
-    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    Vector3 wiWorld = lightDirection.normalized();
-
-    bool skipLight = false;
-    if (lightSample.normal.dot(wiWorld) >= 0.f) {
-        sample.shadowTests.push_back({
-            intersection.point,
-            lightSample.point,
-            true
-        });
-
-        skipLight = true;
-    }
-
-    Ray shadowRay = Ray(intersection.point, wiWorld);
-    float lightDistance = lightDirection.length();
-    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
-
-    sample.shadowTests.push_back({
-        intersection.point,
-        lightSample.point,
-        occluded
-    });
-
     Color result(0.f);
 
-    if (!occluded && !skipLight) {
-        Point3 lightPoint = lightSample.point;
-        Vector3 lightDirection = (intersection.point - lightPoint).toVector();
-        float distance = lightDirection.length();
-
-        Vector3 wo = lightDirection.normalized();
-
-        float cosineAttenuation = fmaxf(0.f, wo.dot(lightSample.normal));
-
-        const float invPDF = lightSample.invPDF * lightCount * cosineAttenuation / (distance * distance);
-        if (invPDF > 0.f) {
-            const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-            const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
-
-            const Color lightContribution = light->emit()
-                * lightWeight
-                * intersection.material->f(intersection, wiWorld)
-                * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
-                * invPDF;
-
-        if (lightContribution.r() < 0.f) {
-            std::cout << light->emit() << std::endl
-                      << invPDF << std::endl
-                      << lightWeight << std::endl
-                      << cosineAttenuation << std::endl
-                      << distance << std::endl
-                      << "$$$$$$$$$$$$$$$$$$$$" << std::endl;
-        }
-            result += lightContribution;
-        }
-    }
+    result += directSampleLights(
+        intersection,
+        bsdfSample,
+        scene,
+        random,
+        sample
+    );
 
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     Intersection bounceIntersection = scene.testIntersect(bounceRay);
@@ -192,4 +139,59 @@ Color PathTracer::direct(
     }
 
     return result;
+}
+
+Color PathTracer::directSampleLights(
+    const Intersection &intersection,
+    const BSDFSample &bsdfSample,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    int lightCount = scene.lights().size();
+    int lightIndex = (int)floorf(random.next() * lightCount);
+
+    std::shared_ptr<Light> light = scene.lights()[lightIndex];
+    SurfaceSample lightSample = light->sample(intersection, random);
+
+    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
+    Vector3 wiWorld = lightDirection.normalized();
+
+    if (lightSample.normal.dot(wiWorld) >= 0.f) {
+        // Sample hit back of light
+        sample.shadowTests.push_back({
+            intersection.point,
+            lightSample.point,
+            true
+        });
+
+        return Color(0.f);
+    }
+
+    Ray shadowRay = Ray(intersection.point, wiWorld);
+    float lightDistance = lightDirection.length();
+    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+
+    sample.shadowTests.push_back({
+        intersection.point,
+        lightSample.point,
+        occluded
+    });
+
+    if (occluded) {
+        return Color(0.f);
+    }
+
+
+    const float invPDF = lightSample.invPDF * lightCount;
+    const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
+    const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
+    
+    const Color lightContribution = light->biradiance(lightSample, intersection.point)
+        * lightWeight
+        * intersection.material->f(intersection, wiWorld)
+        * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
+        * invPDF;
+    
+    return lightContribution;
 }

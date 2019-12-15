@@ -25,5 +25,13 @@ private:
         Sample &sample
     ) const;
 
+    Color directSampleLights(
+        const Intersection &intersection,
+        const BSDFSample &bsdfSample,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
     BounceController m_bounceController;
 };
