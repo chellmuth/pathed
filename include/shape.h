@@ -2,6 +2,7 @@
 
 #include "aabb.h"
 #include "intersection.h"
+#include "measure.h"
 #include "point.h"
 #include "random_generator.h"
 #include "transform.h"
@@ -16,6 +17,7 @@ typedef struct {
     Point3 point;
     Vector3 normal;
     float invPDF;
+    Measure measure;
 } SurfaceSample;
 
 class Shape {

@@ -115,17 +115,35 @@ Color PathTracer::direct(
     Color result(0.f);
 
     if (!occluded && !skipLight) {
-        const float invPDF = lightSample.invPDF * lightCount;
-        const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-        const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
+        Point3 lightPoint = lightSample.point;
+        Vector3 lightDirection = (intersection.point - lightPoint).toVector();
+        float distance = lightDirection.length();
 
-        const Color lightContribution = light->biradiance(lightSample, intersection.point)
-            * lightWeight
-            * intersection.material->f(intersection, wiWorld)
-            * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
-            * invPDF;
+        Vector3 wo = lightDirection.normalized();
 
-        result += lightContribution;
+        float cosineAttenuation = fmaxf(0.f, wo.dot(lightSample.normal));
+
+        const float invPDF = lightSample.invPDF * lightCount * cosineAttenuation / (distance * distance);
+        if (invPDF > 0.f) {
+            const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
+            const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
+
+            const Color lightContribution = light->emit()
+                * lightWeight
+                * intersection.material->f(intersection, wiWorld)
+                * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
+                * invPDF;
+
+        if (lightContribution.r() < 0.f) {
+            std::cout << light->emit() << std::endl
+                      << invPDF << std::endl
+                      << lightWeight << std::endl
+                      << cosineAttenuation << std::endl
+                      << distance << std::endl
+                      << "$$$$$$$$$$$$$$$$$$$$" << std::endl;
+        }
+            result += lightContribution;
+        }
     }
 
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
@@ -134,7 +152,7 @@ Color PathTracer::direct(
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();
         const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
             * distance * distance
-            / bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld)
+            / fmaxf(0.f, bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld))
             / lightCount;
 
         const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
@@ -145,6 +163,16 @@ Color PathTracer::direct(
             * bsdfSample.throughput
             * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
             * (1.f / bsdfSample.pdf);
+
+        if (brdfContribution.r() < 0.f) {
+            std::cout << brdfWeight << std::endl
+                      << lightPDF << std::endl
+                      << bsdfSample.throughput << std::endl
+                      << bsdfSample.pdf << std::endl
+                      << bounceIntersection.material->emit() << std::endl
+                      << fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal)) << std::endl
+                      << "$$$$$$$$$$$$$$$$$$$$" << std::endl;
+        }
 
         result += brdfContribution;
     } else if (!bounceIntersection.hit) {

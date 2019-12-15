@@ -1,5 +1,6 @@
 #include "triangle.h"
 
+#include "measure.h"
 #include "point.h"
 #include "ray.h"
 #include "vector.h"
@@ -40,7 +41,8 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     SurfaceSample sample = {
         .point = point,
         .normal = normal,
-        .invPDF = area()
+        .invPDF = area(),
+        .measure = Measure::Area
     };
     return sample;
 }

@@ -1,6 +1,7 @@
 #include "sphere.h"
 
 #include "globals.h"
+#include "measure.h"
 #include "ray.h"
 #include "util.h"
 
@@ -58,7 +59,8 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     SurfaceSample sample = {
         .point = m_center + v * m_radius,
         .normal = v.normalized(),
-        .invPDF = area()
+        .invPDF = area(),
+        .measure = Measure::Area
     };
 
     return sample;
