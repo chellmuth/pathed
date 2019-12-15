@@ -58,18 +58,6 @@ Vector3 Vector3::normalized() const
         m_y / norm,
         m_z / norm
     );
-
-    const float max = 0.9999f;
-    if (normalized.x() >= max) {
-        return Vector3(1.f, 0.f, 0.f);
-    }
-    if (normalized.y() >= max) {
-        return Vector3(0.f, 1.f, 0.f);
-    }
-    if (normalized.z() >= max) {
-        return Vector3(0.f, 0.f, 1.f);
-    }
-
     return normalized;
 }
 

@@ -21,9 +21,25 @@ float lerp(float x1, float x2, float t);
 unsigned int binarySearchCDF(std::vector<float> cdf, float xi);
 
 namespace util {
+    const float eta = 1e-3; // todo: should be lower
+
     inline void AssertLEClose(float bound, float value) {
-        const float eta = 0.5f; // todo: this should be closer to 1e-5
         assert(bound <= value + eta);
+    }
+
+    inline void AssertClose(float value, float target) {
+        assert(value - eta <= target);
+        assert(value <= target + eta);
+    }
+
+    inline void AssertBetween(float value, float lowest, float highest) {
+        assert(value <= highest);
+        assert(value >= lowest);
+    }
+
+    inline void AssertBetweenClose(float value, float lowest, float highest) {
+        assert(value <= highest + eta);
+        assert(value + eta >= lowest);
     }
 
     inline float clamp(float value, float lowest, float highest) {
@@ -31,9 +47,7 @@ namespace util {
     }
 
     inline float clampClose(float value, float lowest, float highest) {
-        AssertLEClose(lowest, value);
-        AssertLEClose(value, highest);
-
+        AssertBetweenClose(value, lowest, highest);
         return clamp(value, lowest, highest);
     }
 };

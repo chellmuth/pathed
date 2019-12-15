@@ -7,6 +7,34 @@
 #include <cmath>
 
 namespace TangentFrame {
+    inline Vector3 clamp(const Vector3 &vector)
+    {
+        util::AssertClose(vector.length(), 1.f);
+
+        const float max = 0.9999f;
+        if (vector.x() >= max) {
+            return Vector3(1.f, 0.f, 0.f);
+        }
+        if (vector.y() >= max) {
+            return Vector3(0.f, 1.f, 0.f);
+        }
+        if (vector.z() >= max) {
+            return Vector3(0.f, 0.f, 1.f);
+        }
+
+        if (vector.x() <= -max) {
+            return Vector3(-1.f, 0.f, 0.f);
+        }
+        if (vector.y() <= -max) {
+            return Vector3(0.f, -1.f, 0.f);
+        }
+        if (vector.z() <= -max) {
+            return Vector3(0.f, 0.f, -1.f);
+        }
+
+        return vector;
+    }
+
     inline float cosTheta(const Vector3 &vector)
     {
         return vector.y();
@@ -58,10 +86,12 @@ namespace TangentFrame {
 
     inline float sinPhi(const Vector3 &vector)
     {
-        const float _sinTheta = sinTheta(vector);
+        const Vector3 clamped = clamp(vector);
+
+        const float _sinTheta = sinTheta(clamped);
         if (_sinTheta == 0.f) { return 0.f; }
 
-        const float result = vector.z() / _sinTheta;
+        const float result = clamped.z() / _sinTheta;
         return util::clampClose(result, -1.f, 1.f);
     }
 
