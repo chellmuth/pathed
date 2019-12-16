@@ -172,16 +172,20 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
 
 LightSample Scene::sampleLights(RandomGenerator &random) const
 {
-    int lightCount = m_lights.size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
+    const int lightCount = m_lights.size();
+    const int lightIndex = (int)floorf(random.next() * lightCount);
 
-    std::shared_ptr<Light> light = m_lights[lightIndex];
-    SurfaceSample surfaceSample = light->sampleEmit(random);
+    const std::shared_ptr<Light> light = m_lights[lightIndex];
+    const SurfaceSample surfaceSample = light->sampleEmit(random);
+
+    const float lightChoicePDF = 1.f / lightCount;
+
     LightSample lightSample(
         light,
         surfaceSample.point,
         surfaceSample.normal,
-        surfaceSample.invPDF
+        surfaceSample.invPDF * (1.f / lightChoicePDF),
+        surfaceSample.measure
     );
     return lightSample;
 }

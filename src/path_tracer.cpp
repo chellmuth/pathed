@@ -110,10 +110,10 @@ Color PathTracer::directSampleLights(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    LightSample lightSample = scene.sampleLights(random);
+    const LightSample lightSample = scene.sampleLights(random);
 
-    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    Vector3 wiWorld = lightDirection.normalized();
+    const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
+    const Vector3 wiWorld = lightDirection.normalized();
 
     if (lightSample.normal.dot(wiWorld) >= 0.f) {
         // Sample hit back of light
@@ -126,9 +126,9 @@ Color PathTracer::directSampleLights(
         return Color(0.f);
     }
 
-    Ray shadowRay = Ray(intersection.point, wiWorld);
-    float lightDistance = lightDirection.length();
-    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+    const Ray shadowRay = Ray(intersection.point, wiWorld);
+    const float lightDistance = lightDirection.length();
+    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
     sample.shadowTests.push_back({
         intersection.point,

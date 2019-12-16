@@ -29,12 +29,16 @@ struct LightSample {
         std::shared_ptr<Light> _light,
         Point3 _point,
         Vector3 _normal,
-        float _invPDF
-    ) : light(_light), point(_point), normal(_normal), invPDF(_invPDF),
-        measure(Measure::Area)
+        float _invPDF,
+        Measure _measure
+    ) : light(_light),
+        point(_point),
+        normal(_normal),
+        invPDF(_invPDF),
+        measure(_measure)
     {}
 
-    float solidAnglePDF(Point3 referencePoint)
+    float solidAnglePDF(const Point3 &referencePoint) const
     {
         if (measure == Measure::SolidAngle) {
             return 1.f / invPDF;
