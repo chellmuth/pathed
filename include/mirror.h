@@ -20,5 +20,7 @@ public:
         RandomGenerator &random
     ) const override;
 
+    bool isDelta() const { return true; }
+
 private:
 };

@@ -44,6 +44,8 @@ public:
         RandomGenerator &random
     ) const = 0;
 
+    virtual bool isDelta() const { return false; }
+
     Color emit() const;
 
 protected:

@@ -108,6 +108,8 @@ Color PathTracer::directSampleLights(
     RandomGenerator &random,
     Sample &sample
 ) const {
+    if (bsdfSample.material->isDelta()) { return 0.f; }
+
     const LightSample lightSample = scene.sampleDirectLights(intersection, random);
 
     const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
@@ -170,7 +172,9 @@ Color PathTracer::directSampleBSDF(
             bounceIntersection,
             Measure::SolidAngle
         );
-        const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+        const float brdfWeight = bsdfSample.material->isDelta()
+            ? 0.f
+            : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
@@ -183,7 +187,9 @@ Color PathTracer::directSampleBSDF(
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
             const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
-            const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+            const float brdfWeight = bsdfSample.material->isDelta()
+                ? 1.f
+                : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
             const Color brdfContribution = environmentL
                 * brdfWeight
