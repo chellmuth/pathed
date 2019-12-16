@@ -173,7 +173,7 @@ Color PathTracer::directSampleBSDF(
             Measure::SolidAngle
         );
         const float brdfWeight = bsdfSample.material->isDelta()
-            ? 0.f
+            ? 1.f
             : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
         const Color brdfContribution = bounceIntersection.material->emit()
