@@ -45,7 +45,7 @@ Color PathTracer::L(
 
         const float invPDF = 1.f / bsdfSample.pdf;
         modulation *= bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wiWorld.dot(lastIntersection.shadingNormal))
+            * WorldFrame::cosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld)
             * invPDF;
 
         bsdfSample = bounceIntersection.material->sample(
@@ -145,7 +145,7 @@ Color PathTracer::directSampleLights(
     const Color lightContribution = lightSample.light->emit()
         * lightWeight
         * intersection.material->f(intersection, wiWorld)
-        * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
+        * WorldFrame::cosTheta(intersection.shadingNormal, wiWorld)
         / pdf;
 
     return lightContribution;
@@ -173,8 +173,8 @@ Color PathTracer::directSampleBSDF(
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
             * bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
-            * (1.f / bsdfSample.pdf);
+            * WorldFrame::cosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+            / bsdfSample.pdf;
 
         return brdfContribution;
     } else if (!bounceIntersection.hit) {
@@ -186,8 +186,8 @@ Color PathTracer::directSampleBSDF(
             const Color brdfContribution = environmentL
                 * brdfWeight
                 * bsdfSample.throughput
-                * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
-                * (1.f / bsdfSample.pdf);
+                * WorldFrame::cosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+                / bsdfSample.pdf;
 
             return brdfContribution;
         }
