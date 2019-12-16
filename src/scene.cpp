@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "util.h"
 #include "uv.h"
+#include "world_frame.h"
 
 #include <embree3/rtcore.h>
 
@@ -188,6 +189,31 @@ LightSample Scene::sampleLights(RandomGenerator &random) const
         surfaceSample.measure
     );
     return lightSample;
+}
+
+float Scene::lightsPDF(
+    const Point3 &referencePoint,
+    const Intersection &lightIntersection,
+    Measure measure
+) const
+{
+    assert(measure == Measure::SolidAngle);
+    if (measure == Measure::Area) { return 0.f; }
+
+    const Point3 lightPoint = lightIntersection.point;
+
+    const int lightCount = m_lights.size();
+    const float areaMeasurePDF = lightIntersection.surface->pdf(lightPoint) / lightCount;
+
+    const Vector3 lightDirection = (referencePoint - lightPoint).toVector();
+    const Vector3 lightWo = lightDirection.normalized();
+    const float distance = lightDirection.length();
+
+    const float distance2 = distance * distance;
+    const float projectedArea = WorldFrame::cosTheta(lightIntersection.normal, lightWo);
+
+    const float solidAngleMeasurePDF = areaMeasurePDF * distance2 / projectedArea;
+    return solidAngleMeasurePDF;
 }
 
 Color Scene::environmentL(const Vector3 &direction) const

@@ -5,11 +5,11 @@
 #include <algorithm>
 
 namespace WorldFrame {
-    inline float cosine(Vector3 vector1, Vector3 vector2)
+    inline float cosTheta(Vector3 normal, Vector3 w)
     {
         return std::max(
             0.f,
-            vector1.dot(vector2)
+            normal.dot(w)
         );
     }
 };

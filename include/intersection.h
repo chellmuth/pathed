@@ -50,7 +50,7 @@ struct Intersection {
         }
     }
 
-    bool isEmitter() {
+    bool isEmitter() const {
         return !(material->emit().isBlack());
     }
 };

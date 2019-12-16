@@ -5,15 +5,13 @@
 #include "globals.h"
 #include "job.h"
 #include "light.h"
+#include "measure.h"
 #include "mis.h"
 #include "monte_carlo.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
 #include "vector.h"
-
-#include "json.hpp"
-using json = nlohmann::json;
 
 #include <fstream>
 #include <iostream>
@@ -160,19 +158,17 @@ Color PathTracer::directSampleBSDF(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    int lightCount = scene.lights().size();
-
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
-    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    const Intersection bounceIntersection = scene.testIntersect(bounceRay);
+
     if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();
-        const float lightPDF = bounceIntersection.surface->pdf(bounceIntersection.point)
-            * distance * distance
-            / fmaxf(0.f, bounceIntersection.shadingNormal.dot(bounceIntersection.woWorld))
-            / lightCount;
-
+        const float lightPDF = scene.lightsPDF(
+            intersection.point,
+            bounceIntersection,
+            Measure::SolidAngle
+        );
         const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
-        // std::cout << brdfWeight << " " << lightPDF << " " << bsdfSample.pdf << " " << 1.f / M_PI << std::endl;
 
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
@@ -180,20 +176,11 @@ Color PathTracer::directSampleBSDF(
             * fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal))
             * (1.f / bsdfSample.pdf);
 
-        if (brdfContribution.r() < 0.f) {
-            std::cout << brdfWeight << std::endl
-                      << lightPDF << std::endl
-                      << bsdfSample.throughput << std::endl
-                      << bsdfSample.pdf << std::endl
-                      << bounceIntersection.material->emit() << std::endl
-                      << fmaxf(0.f, bsdfSample.wiWorld.dot(intersection.shadingNormal)) << std::endl
-                      << "$$$$$$$$$$$$$$$$$$$$" << std::endl;
-        }
-
         return brdfContribution;
     } else if (!bounceIntersection.hit) {
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
+            const int lightCount = scene.lights().size();
             const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld) / lightCount;
             const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 

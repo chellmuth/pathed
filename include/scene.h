@@ -46,8 +46,10 @@ struct LightSample {
 
         const Vector3 lightDirection = (point - referencePoint).toVector();
         const Vector3 lightWo = -lightDirection.normalized();
-        const float projectedArea = WorldFrame::cosine(normal, lightWo);
-        const float distance2 = lightDirection.length() * lightDirection.length();
+        const float distance = lightDirection.length();
+
+        const float distance2 = distance * distance;
+        const float projectedArea = WorldFrame::cosTheta(normal, lightWo);
 
         return (1.f / invPDF) * distance2 / projectedArea;
     }
@@ -75,6 +77,12 @@ public:
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
+    float lightsPDF(
+        const Point3 &referencePoint,
+        const Intersection &lightIntersection,
+        Measure measure
+    ) const;
+
     Color environmentL(const Vector3 &direction) const;
     float environmentPDF(const Vector3 &direction) const;
 
