@@ -12,6 +12,7 @@
 class Light {
 public:
     virtual Color emit() const = 0;
+    virtual Color emit(const Vector3 &direction) const { return emit(); }
 
     virtual SurfaceSample sample(
         const Intersection &intersection,

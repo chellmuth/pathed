@@ -77,6 +77,11 @@ public:
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
+    LightSample sampleDirectLights(
+        const Intersection &intersection,
+        RandomGenerator &random
+    ) const;
+
     float lightsPDF(
         const Point3 &referencePoint,
         const Intersection &lightIntersection,

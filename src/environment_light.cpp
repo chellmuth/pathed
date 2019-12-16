@@ -1,6 +1,7 @@
 #include "environment_light.h"
 
 #include "coordinate.h"
+#include "measure.h"
 #include "monte_carlo.h"
 #include "util.h"
 
@@ -92,7 +93,8 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
     SurfaceSample inProgress = {
         .point = intersection.point + direction * 10000.f,
         .normal = direction * -1.f,
-        .invPDF = 1.f / pdf
+        .invPDF = 1.f / pdf,
+        .measure = Measure::SolidAngle
     };
     return inProgress;
 }

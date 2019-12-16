@@ -108,7 +108,7 @@ Color PathTracer::directSampleLights(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    const LightSample lightSample = scene.sampleLights(random);
+    const LightSample lightSample = scene.sampleDirectLights(intersection, random);
 
     const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     const Vector3 wiWorld = lightDirection.normalized();
@@ -142,7 +142,9 @@ Color PathTracer::directSampleLights(
     const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
     const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
 
-    const Color lightContribution = lightSample.light->emit()
+    const Vector3 lightWo = -lightDirection.normalized();
+
+    const Color lightContribution = lightSample.light->emit(lightWo)
         * lightWeight
         * intersection.material->f(intersection, wiWorld)
         * WorldFrame::cosTheta(intersection.shadingNormal, wiWorld)
