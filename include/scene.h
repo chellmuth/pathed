@@ -7,10 +7,12 @@
 #include "environment_light.h"
 #include "intersection.h"
 #include "light.h"
+#include "measure.h"
 #include "point.h"
 #include "primitive.h"
 #include "random_generator.h"
 #include "surface.h"
+#include "world_frame.h"
 #include "vector.h"
 
 class Camera;
@@ -21,14 +23,30 @@ struct LightSample {
     Point3 point;
     Vector3 normal;
     float invPDF;
+    Measure measure;
 
     LightSample(
         std::shared_ptr<Light> _light,
         Point3 _point,
         Vector3 _normal,
         float _invPDF
-    ) : light(_light), point(_point), normal(_normal), invPDF(_invPDF)
+    ) : light(_light), point(_point), normal(_normal), invPDF(_invPDF),
+        measure(Measure::Area)
     {}
+
+    float solidAnglePDF(Point3 referencePoint)
+    {
+        if (measure == Measure::SolidAngle) {
+            return 1.f / invPDF;
+        }
+
+        const Vector3 lightDirection = (point - referencePoint).toVector();
+        const Vector3 lightWo = -lightDirection.normalized();
+        const float projectedArea = WorldFrame::cosine(normal, lightWo);
+        const float distance2 = lightDirection.length() * lightDirection.length();
+
+        return (1.f / invPDF) * distance2 / projectedArea;
+    }
 };
 
 class Scene {

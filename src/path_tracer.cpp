@@ -110,11 +110,7 @@ Color PathTracer::directSampleLights(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    int lightCount = scene.lights().size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
-
-    std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(intersection, random);
+    LightSample lightSample = scene.sampleLights(random);
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wiWorld = lightDirection.normalized();
@@ -144,16 +140,15 @@ Color PathTracer::directSampleLights(
         return Color(0.f);
     }
 
-
-    const float invPDF = lightSample.invPDF * lightCount;
+    const float pdf = lightSample.solidAnglePDF(intersection.point);
     const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-    const float lightWeight = MIS::balanceWeight(1, 1, 1.f / invPDF, brdfPDF);
+    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
 
-    const Color lightContribution = light->biradiance(lightSample, intersection.point)
+    const Color lightContribution = lightSample.light->emit()
         * lightWeight
         * intersection.material->f(intersection, wiWorld)
         * fmaxf(0.f, wiWorld.dot(intersection.shadingNormal))
-        * invPDF;
+        / pdf;
 
     return lightContribution;
 }
