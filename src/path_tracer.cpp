@@ -180,8 +180,7 @@ Color PathTracer::directSampleBSDF(
     } else if (!bounceIntersection.hit) {
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
-            const int lightCount = scene.lights().size();
-            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld) / lightCount;
+            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
             const float brdfWeight = MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
             const Color brdfContribution = environmentL

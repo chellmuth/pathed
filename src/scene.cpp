@@ -227,5 +227,5 @@ Color Scene::environmentL(const Vector3 &direction) const
 float Scene::environmentPDF(const Vector3 &direction) const
 {
     assert(m_environmentLight);
-    return m_environmentLight->emitPDF(direction);
+    return m_environmentLight->emitPDF(direction) / lights().size();
 }
