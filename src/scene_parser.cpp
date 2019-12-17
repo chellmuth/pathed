@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "checkerboard.h"
 #include "environment_light.h"
+#include "glass.h"
 #include "globals.h"
 #include "job.h"
 #include "lambertian.h"
@@ -230,6 +231,8 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         return std::make_shared<Mirror>();
     } else if (bsdfJson["type"] == "perfect-transmission") {
         return std::make_shared<PerfectTransmission>();
+    } else if (bsdfJson["type"] == "glass") {
+        return std::make_shared<Glass>();
     } else if (bsdfJson["type"] == "oren-nayar") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
         float sigma = parseFloat(bsdfJson["sigma"]);
