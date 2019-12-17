@@ -355,7 +355,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "500000",
+            "--num_training_steps", "50000",
         ]
     )
 
