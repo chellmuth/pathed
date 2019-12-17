@@ -1,5 +1,6 @@
 #include "fresnel.h"
 
+#include "snell.h"
 #include "tangent_frame.h"
 
 #include <assert.h>
@@ -11,32 +12,6 @@ static float divide(const float a, const float b)
     assert(b != 0.f);
 
     return a / b;
-}
-
-static float sinThetaFromCosTheta(float cosTheta)
-{
-    const float result = sqrtf(std::max(0.f, 1.f - cosTheta * cosTheta));
-    return result;
-}
-
-float Snell::transmittedSinTheta(
-    const Vector3 &incidentDirection,
-    float etaIncident,
-    float etaTransmitted
-) {
-    return transmittedSinTheta(
-        TangentFrame::sinTheta(incidentDirection),
-        etaIncident,
-        etaTransmitted
-    );
-}
-
-float Snell::transmittedSinTheta(
-    float cosThetaIncident,
-    float etaIncident,
-    float etaTransmitted
-) {
-    return (etaIncident / etaTransmitted) * sinThetaFromCosTheta(cosThetaIncident);
 }
 
 float Fresnel::dielectricReflectance(

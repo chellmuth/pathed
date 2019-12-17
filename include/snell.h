@@ -2,14 +2,14 @@
 
 #include "vector.h"
 
-namespace Fresnel {
-    float dielectricReflectance(
+namespace Snell {
+    float transmittedSinTheta(
         const Vector3 &incidentDirection,
         float etaIncident,
         float etaTransmitted
     );
 
-    float dielectricReflectance(
+    float transmittedSinTheta(
         float cosThetaIncident,
         float etaIncident,
         float etaTransmitted
