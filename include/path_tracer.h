@@ -16,11 +16,26 @@ public:
         Sample &sample
     ) const override;
 
-    void debug(const Intersection &intersection, const Scene &scene) const override;
-
 private:
     Color direct(
         const Intersection &intersection,
+        const BSDFSample &bsdfSample,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
+    Color directSampleLights(
+        const Intersection &intersection,
+        const BSDFSample &bsdfSample,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
+    Color directSampleBSDF(
+        const Intersection &intersection,
+        const BSDFSample &bsdfSample,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample

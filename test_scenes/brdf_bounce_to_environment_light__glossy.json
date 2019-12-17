@@ -1,0 +1,27 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0", "0", "5" ],
+      "origin": [ "0", "0", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "33"
+  },
+
+  "models": [
+    {
+      "type": "sphere",
+      "center": [ "0", "0", "5" ],
+      "radius": "1",
+      "bsdf": {
+        "type": "beckmann",
+        "alpha": "0.05"
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
+}

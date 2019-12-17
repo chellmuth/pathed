@@ -14,14 +14,19 @@ void cartesianToSpherical(Vector3 cartesian, float *phi, float *theta)
         *phi = 0;
     }
 
-    *theta = acosf(cartesian.y());
+    *theta = acosf(util::clampClose(cartesian.y(), -1.f, 1.f));
 }
 
 Vector3 sphericalToCartesian(float phi, float theta)
 {
-    const float y = cosf(theta);
-    const float x = sinf(theta) * cosf(phi);
-    const float z = sinf(theta) * sinf(phi);
+    return sphericalToCartesian(phi, cosf(theta), sinf(theta));
+}
+
+Vector3 sphericalToCartesian(float phi, float cosTheta, float sinTheta)
+{
+    const float y = cosTheta;
+    const float x = sinTheta * cosf(phi);
+    const float z = sinTheta * sinf(phi);
 
     return Vector3(x, y, z);
 }

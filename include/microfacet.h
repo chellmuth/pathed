@@ -6,9 +6,14 @@
 #include "random_generator.h"
 #include "vector.h"
 
-class OrenNayar : public Material {
+#include <memory>
+
+class Microfacet : public Material {
 public:
-    OrenNayar(Color diffuse, float sigma);
+    Microfacet(float alpha)
+    : Material(0.f),
+        m_alpha(alpha)
+    {}
 
     Color f(
         const Intersection &intersection,
@@ -22,8 +27,5 @@ public:
     ) const override;
 
 private:
-    Color m_diffuse;
-
-    float m_A;
-    float m_B;
+    float m_alpha;
 };

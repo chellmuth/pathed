@@ -9,6 +9,7 @@
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "microfacet.h"
 #include "mirror.h"
 #include "obj_parser.h"
 #include "oren_nayar.h"
@@ -146,16 +147,13 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     ObjParser objParser(objFile, transform, false, Handedness::Left);
     auto objSurfaces = objParser.parse();
 
-    std::shared_ptr<Material> jsonMaterial;
-    auto bsdf = objJson["bsdf"];
-    if (bsdf.is_object()) {
-        jsonMaterial = parseMaterial(bsdf);
-    }
+    auto bsdfJson = objJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
 
     for (auto surfacePtr : objSurfaces) {
         auto shape = surfacePtr->getShape();
-        if (jsonMaterial) {
-            auto surface = std::make_shared<Surface>(shape, jsonMaterial);
+        if (materialPtr) {
+            auto surface = std::make_shared<Surface>(shape, materialPtr);
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -166,32 +164,29 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
 static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces)
 {
     auto bsdfJson = sphereJson["bsdf"];
-    Color diffuse(
-        stof(bsdfJson["diffuseReflectance"][0].get<std::string>()),
-        stof(bsdfJson["diffuseReflectance"][1].get<std::string>()),
-        stof(bsdfJson["diffuseReflectance"][2].get<std::string>())
-    );
-    Color radiance = parseColor(sphereJson["radiance"]);
-    auto material = std::make_shared<Lambertian>(diffuse, radiance);
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
-        parseFloat(sphereJson["radius"]),
-        Color(0.f, 1.f, 0.f)
+        parseFloat(sphereJson["radius"])
     );
 
-    auto surface = std::make_shared<Surface>(sphere, material);
+    auto surface = std::make_shared<Surface>(sphere, materialPtr);
 
     surfaces.push_back(surface);
+
+    Transform transform;
+    auto transformJson = sphereJson["transform"];
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+    sphere->create(transform, materialPtr);
 }
 
 static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces)
 {
-    std::shared_ptr<Material> material;
-    auto bsdf = quadJson["bsdf"];
-    if (bsdf.is_object()) {
-        material = parseMaterial(bsdf);
-    }
+    auto bsdfJson = quadJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
 
     Transform transform;
     auto transformJson = quadJson["transform"];
@@ -199,7 +194,7 @@ static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surf
         transform = parseTransform(transformJson);
     }
 
-    Quad::parse(transform, material, surfaces);
+    Quad::parse(transform, materialPtr, surfaces);
 }
 
 static void parseEnvironmentLight(
@@ -217,6 +212,10 @@ static void parseEnvironmentLight(
 }
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 {
+    if (!bsdfJson.is_object()) {
+        return std::shared_ptr<Material>(nullptr);
+    }
+
     if (bsdfJson["type"] == "phong") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color specular = parseColor(bsdfJson["specularReflectance"]);
@@ -233,6 +232,10 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         float sigma = parseFloat(bsdfJson["sigma"]);
 
         return std::make_shared<OrenNayar>(diffuse, sigma);
+    } else if (bsdfJson["type"] == "beckmann") {
+        float alpha = parseFloat(bsdfJson["alpha"]);
+
+        return std::make_shared<Microfacet>(alpha);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

@@ -1,12 +1,14 @@
 #include "environment_light.h"
 
 #include "coordinate.h"
+#include "measure.h"
 #include "monte_carlo.h"
 #include "util.h"
 
 #include "tinyexr.h"
 
 #include <assert.h>
+#include <algorithm>
 #include <cmath>
 
 EnvironmentLight::EnvironmentLight(std::string filename, float scale)
@@ -59,16 +61,13 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
         &phi, &theta
     );
 
-    const float phiCanonical = phi / M_TWO_PI;
-    const float thetaCanonical = theta / M_PI;
+    const float phiCanonical = util::clampClose(phi / M_TWO_PI, 0.f, 1.f);
+    const float thetaCanonical = util::clampClose(theta / M_PI, 0.f, 1.f);
 
-    assert(0.f <= phiCanonical && phiCanonical <= 1.f);
-    assert(0.f <= thetaCanonical && thetaCanonical <= 1.f);
+    const int phiStep = std::min((int)floorf(m_width * phiCanonical), m_width - 1);
+    const int thetaStep = std::min((int)floorf(m_height * thetaCanonical), m_height - 1);
 
-    int phiStep = (int)floorf(m_width * phiCanonical);
-    int thetaStep = (int)floorf(m_height * thetaCanonical);
-
-    int index = thetaStep * m_width + phiStep;
+    const int index = thetaStep * m_width + phiStep;
     Color result(m_data[4*index + 0], m_data[4*index + 1], m_data[4*index + 2]);
 
     return result * m_scale;
@@ -94,7 +93,8 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
     SurfaceSample inProgress = {
         .point = intersection.point + direction * 10000.f,
         .normal = direction * -1.f,
-        .invPDF = 1.f / pdf
+        .invPDF = 1.f / pdf,
+        .measure = Measure::SolidAngle
     };
     return inProgress;
 }
@@ -107,6 +107,23 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
         .invPDF = 0.f
     };
     return fake;
+}
+
+float EnvironmentLight::emitPDF(const Vector3 &direction) const
+{
+    float phi, theta;
+    cartesianToSpherical(direction, &phi, &theta);
+
+    const float phiCanonical = phi / M_TWO_PI;
+    const float thetaCanonical = theta / M_PI;
+
+    const int phiStep = std::min((int)floorf(phiCanonical * m_width), m_width - 1);
+    const int thetaStep = std::min((int)floorf(thetaCanonical * m_height), m_height - 1);
+
+    const float thetaPDF = m_thetaDistribution->pdf(thetaStep);
+    const float phiPDF = m_phiDistributions[thetaStep].pdf(phiStep);
+
+    return thetaPDF * phiPDF;
 }
 
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const

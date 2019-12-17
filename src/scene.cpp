@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "util.h"
 #include "uv.h"
+#include "world_frame.h"
 
 #include <embree3/rtcore.h>
 
@@ -71,36 +72,52 @@ Intersection Scene::testIntersect(const Ray &ray) const
     // need parallel arrays of geometry and materials
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
         RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+
+        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &shapePtr = surfacePtr->getShape();
+
         UV uv;
-        rtcInterpolate0(
-            geometry,
-            hit.primID,
-            hit.u,
-            hit.v,
-            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
-            0,
-            &uv.u,
-            2
-        );
+        Vector3 geometricNormal(0.f, 0.f, 0.f);
+        Vector3 shadingNormal(0.f, 0.f, 0.f);
+        if (shapePtr->useBackwardsNormals()) {
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                0,
+                &uv.u,
+                2
+            );
 
-        float normalRaw[3];
-        rtcInterpolate0(
-            geometry,
-            hit.primID,
-            hit.u,
-            hit.v,
-            RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
-            1,
-            &normalRaw[0],
-            3
-        );
+            float normalRaw[3];
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                1,
+                &normalRaw[0],
+                3
+            );
 
-        Vector3 shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
-        Vector3 geometricNormal = Vector3(
-            rayHit.hit.Ng_x,
-            rayHit.hit.Ng_y,
-            rayHit.hit.Ng_z
-        ).normalized() * -1.f;
+            shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f;
+        } else {
+            // spheres
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized();
+        }
 
         if (shadingNormal.length() == 0.f) {
             shadingNormal = geometricNormal;
@@ -115,7 +132,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
             .shadingNormal = shadingNormal.normalized(),
             // .shadingNormal = geometricNormal,
             .uv = uv,
-            .material = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID]->getMaterial().get()
+            .material = surfacePtr->getMaterial().get(),
+            .surface = surfacePtr.get()
         };
         return hit;
     } else {
@@ -155,18 +173,70 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
 
 LightSample Scene::sampleLights(RandomGenerator &random) const
 {
-    int lightCount = m_lights.size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
+    const int lightCount = m_lights.size();
+    const int lightIndex = (int)floorf(random.next() * lightCount);
 
-    std::shared_ptr<Light> light = m_lights[lightIndex];
-    SurfaceSample surfaceSample = light->sampleEmit(random);
+    const std::shared_ptr<Light> light = m_lights[lightIndex];
+    const SurfaceSample surfaceSample = light->sampleEmit(random);
+
+    const float lightChoicePDF = 1.f / lightCount;
+
     LightSample lightSample(
         light,
         surfaceSample.point,
         surfaceSample.normal,
-        surfaceSample.invPDF
+        surfaceSample.invPDF * (1.f / lightChoicePDF),
+        surfaceSample.measure
     );
     return lightSample;
+}
+
+LightSample Scene::sampleDirectLights(
+    const Intersection &intersection,
+    RandomGenerator &random
+) const
+{
+    const int lightCount = m_lights.size();
+    const int lightIndex = (int)floorf(random.next() * lightCount);
+
+    const std::shared_ptr<Light> light = m_lights[lightIndex];
+    const SurfaceSample surfaceSample = light->sample(intersection, random);
+
+    const float lightChoicePDF = 1.f / lightCount;
+
+    LightSample lightSample(
+        light,
+        surfaceSample.point,
+        surfaceSample.normal,
+        surfaceSample.invPDF * (1.f / lightChoicePDF),
+        surfaceSample.measure
+    );
+    return lightSample;
+}
+
+float Scene::lightsPDF(
+    const Point3 &referencePoint,
+    const Intersection &lightIntersection,
+    Measure measure
+) const
+{
+    assert(measure == Measure::SolidAngle);
+    if (measure == Measure::Area) { return 0.f; }
+
+    const Point3 lightPoint = lightIntersection.point;
+
+    const int lightCount = m_lights.size();
+    const float areaMeasurePDF = lightIntersection.surface->pdf(lightPoint) / lightCount;
+
+    const Vector3 lightDirection = (referencePoint - lightPoint).toVector();
+    const Vector3 lightWo = lightDirection.normalized();
+    const float distance = lightDirection.length();
+
+    const float distance2 = distance * distance;
+    const float projectedArea = WorldFrame::cosTheta(lightIntersection.normal, lightWo);
+
+    const float solidAngleMeasurePDF = areaMeasurePDF * distance2 / projectedArea;
+    return solidAngleMeasurePDF;
 }
 
 Color Scene::environmentL(const Vector3 &direction) const
@@ -175,4 +245,10 @@ Color Scene::environmentL(const Vector3 &direction) const
         return m_environmentLight->emit(direction);
     }
     return Color(0.f);
+}
+
+float Scene::environmentPDF(const Vector3 &direction) const
+{
+    assert(m_environmentLight);
+    return m_environmentLight->emitPDF(direction) / lights().size();
 }

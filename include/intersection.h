@@ -1,5 +1,6 @@
 #pragma once
 
+#include "material.h"
 #include "point.h"
 #include "transform.h"
 #include "uv.h"
@@ -7,7 +8,7 @@
 
 #include <limits>
 
-class Material;
+class Surface;
 
 struct Intersection {
     bool hit;
@@ -18,6 +19,7 @@ struct Intersection {
     Vector3 shadingNormal;
     UV uv;
     Material *material;
+    Surface *surface;
 
     Transform tangentToWorld;
     Transform worldToTangent;
@@ -30,7 +32,8 @@ struct Intersection {
         Vector3 normal_,
         Vector3 shadingNormal_,
         UV uv_,
-        Material *material
+        Material *material_,
+        Surface *surface_
     ) : hit(hit_),
         t(t_),
         point(point_),
@@ -38,10 +41,17 @@ struct Intersection {
         normal(normal_),
         shadingNormal(shadingNormal_),
         uv(uv_),
-        material(material)
+        material(material_),
+        surface(surface_)
     {
-        tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
-        worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
+        if (hit) {
+            tangentToWorld = normalToWorldSpace(shadingNormal, woWorld);
+            worldToTangent = worldSpaceToNormal(shadingNormal, woWorld);
+        }
+    }
+
+    bool isEmitter() const {
+        return !(material->emit().isBlack());
     }
 };
 
@@ -54,6 +64,7 @@ namespace IntersectionHelper {
         Vector3(0.f),
         Vector3(0.f),
         { 0.f, 0.f },
+        nullptr,
         nullptr
     );
 
