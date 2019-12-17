@@ -55,10 +55,9 @@ static json testFresnel()
     return jsonData;
 }
 
-static json testSnell(float etaTransmitted)
+static json testSnell(float etaIncident, float etaTransmitted)
 {
-    const float theta = M_PI / 6.f;
-    const float etaIncident = 1.f;
+    const float theta = 0.7f * (M_PI / 2.f);
 
     const float cosTheta = std::cos(theta);
     const Vector3 incident(-std::sqrt(std::max(0.f, 1.f - cosTheta * cosTheta)), cosTheta, 0.f);
@@ -66,7 +65,8 @@ static json testSnell(float etaTransmitted)
 
     Vector3 transmitted(0.f);
     const bool doesRefract = Snell::refract(incident, &transmitted, etaIncident, etaTransmitted);
-    std::cout << transmitted.toString() << std::endl;
+    std::cout << doesRefract << std::endl;
+    std::cout << incident.toString() << " " << transmitted.toString() << std::endl;
 
     json jsonData;
     jsonData["incident"] = { incident.x(), incident.y(), incident.z() };
@@ -79,9 +79,9 @@ static json testSnell()
 {
     json jsonData = json::array();
 
-    jsonData.push_back({ { "legend", "1.1" }, { "data", testSnell(1.1f) } });
-    jsonData.push_back({ { "legend", "1.5" }, { "data", testSnell(1.5f) } });
-    jsonData.push_back({ { "legend", "2.0" }, { "data", testSnell(2.f) } });
+    jsonData.push_back({ { "legend", "1.1" }, { "data", testSnell(1.1f, 1.f) } });
+    jsonData.push_back({ { "legend", "1.5" }, { "data", testSnell(1.5f, 1.f) } });
+    jsonData.push_back({ { "legend", "2.0" }, { "data", testSnell(2.f, 1.f) } });
 
     return jsonData;
 }

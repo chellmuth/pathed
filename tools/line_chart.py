@@ -22,6 +22,8 @@ def vectors(data):
     figure = plt.figure()
 
     axes = figure.add_subplot()
+    axes.set_xlim((-1, 1))
+    axes.set_ylim((-1, 1))
 
     for line in data:
         d = line["data"]
