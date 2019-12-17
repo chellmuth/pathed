@@ -3,6 +3,7 @@
 #include "util.h"
 #include "vector.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <cmath>
 
@@ -38,6 +39,11 @@ namespace TangentFrame {
     inline float cosTheta(const Vector3 &vector)
     {
         return vector.y();
+    }
+
+    inline float absCosTheta(const Vector3 &vector)
+    {
+        return std::abs(vector.y());
     }
 
     inline float cos2Theta(const Vector3 &vector)

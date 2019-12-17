@@ -45,7 +45,7 @@ Color PathTracer::L(
 
         const float invPDF = 1.f / bsdfSample.pdf;
         modulation *= bsdfSample.throughput
-            * WorldFrame::cosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld)
+            * WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld)
             * invPDF;
 
         bsdfSample = bounceIntersection.material->sample(
@@ -149,7 +149,7 @@ Color PathTracer::directSampleLights(
     const Color lightContribution = lightSample.light->emit(lightWo)
         * lightWeight
         * intersection.material->f(intersection, wiWorld)
-        * WorldFrame::cosTheta(intersection.shadingNormal, wiWorld)
+        * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld)
         / pdf;
 
     return lightContribution;
@@ -179,7 +179,7 @@ Color PathTracer::directSampleBSDF(
         const Color brdfContribution = bounceIntersection.material->emit()
             * brdfWeight
             * bsdfSample.throughput
-            * WorldFrame::cosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+            * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
             / bsdfSample.pdf;
 
         return brdfContribution;
@@ -194,7 +194,7 @@ Color PathTracer::directSampleBSDF(
             const Color brdfContribution = environmentL
                 * brdfWeight
                 * bsdfSample.throughput
-                * WorldFrame::cosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+                * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
                 / bsdfSample.pdf;
 
             return brdfContribution;

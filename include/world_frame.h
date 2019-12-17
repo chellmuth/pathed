@@ -12,4 +12,9 @@ namespace WorldFrame {
             normal.dot(w)
         );
     }
+
+    inline float absCosTheta(Vector3 normal, Vector3 w)
+    {
+        return std::abs(normal.dot(w));
+    }
 };

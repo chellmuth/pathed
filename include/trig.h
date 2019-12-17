@@ -15,4 +15,9 @@ namespace Trig {
         const float result = sqrtf(std::max(0.f, 1.f - cosTheta * cosTheta));
         return result;
     }
+
+    inline float sin2FromCos(float cosTheta)
+    {
+        return std::max(0.f, 1.f - (cosTheta * cosTheta));
+    }
 };
