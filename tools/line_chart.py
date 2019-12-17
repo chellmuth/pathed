@@ -10,10 +10,12 @@ def chart(data):
 
     axes = figure.add_subplot()
 
-    xs = [ d["x"] for d in data ]
-    ys = [ d["y"] for d in data ]
-    axes.plot(xs, ys)
+    for line in data:
+        xs = [ d["x"] for d in line["data"] ]
+        ys = [ d["y"] for d in line["data"] ]
+        axes.plot(xs, ys)
 
+    plt.legend([d["legend"] for d in data])
     plt.show()
 
 if __name__ == "__main__":

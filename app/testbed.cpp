@@ -19,12 +19,11 @@ Job *g_job;
 RTCDevice g_rtcDevice;
 RTCScene g_rtcScene;
 
-static void testFresnel()
+static json testFresnel(float etaTransmitted)
 {
     json jsonData = json::array();
 
     const float etaIncident = 1.f;
-    const float etaTransmitted = 1.4;
 
     const int steps = 100;
     for (int i = 0; i < steps; i++) {
@@ -39,10 +38,20 @@ static void testFresnel()
         jsonData.push_back({{"x", theta}, {"y", reflectance }});
     }
 
+    return jsonData;
+}
+
+static void testFresnel()
+{
+    json jsonData = json::array();
+
+    jsonData.push_back({ { "legend", "1.1" }, { "data", testFresnel(1.1f) } });
+    jsonData.push_back({ { "legend", "1.5" }, { "data", testFresnel(1.5f) } });
+    jsonData.push_back({ { "legend", "2.0" }, { "data", testFresnel(2.f) } });
+
     std::ofstream jsonFile("testbed-fresnel.json");
     jsonFile << jsonData.dump(4) << std::endl;
     std::cout << "Wrote to testbed-fresnel.json" << std::endl;
-
 }
 
 int main(int argc, char *argv[])
