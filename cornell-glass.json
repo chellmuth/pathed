@@ -23,7 +23,10 @@
       "type": "obj",
       "filename": "cornell-glossy/ball.obj",
       "bsdf": {
-        "type": "mirror"
+        "type": "glass"
+      },
+      "transform": {
+        "translate": [ "0", "0", "1" ]
       }
     }
 
