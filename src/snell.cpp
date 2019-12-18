@@ -28,7 +28,7 @@ bool Snell::refract(
     const float eta2 = (etaIncident / etaTransmitted) * (etaIncident / etaTransmitted);
     const float sin2ThetaTransmitted = eta2 * sin2ThetaIncident;
 
-    *transmittedLocal = (wTransmittedParallel - wTransmittedPerpendicular).normalized();
+    *transmittedLocal = (wTransmittedParallel + wTransmittedPerpendicular).normalized();
 
     if (sin2ThetaTransmitted >= 1.f) { // total internal reflection
         return false;

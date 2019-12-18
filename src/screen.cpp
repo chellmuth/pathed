@@ -207,59 +207,61 @@ PathedScreen::PathedScreen(
 
         integrator->helloWorld();
 
-        const int rows = 400;
-        const int cols = 400;
+        if (false) {
+            const int rows = 400;
+            const int cols = 400;
 
-        auto popup = new nanogui::Screen(
-            Eigen::Vector2i(cols * 2 + 20, rows + 100), "", false
-        );
-        popup->setVisible(true);
+            auto popup = new nanogui::Screen(
+                Eigen::Vector2i(cols * 2 + 20, rows + 100), "", false
+                );
+            popup->setVisible(true);
 
-        std::shared_ptr<Image> image = renderPDF(cols, rows, (400 - y - 1), x, scene);
-        const std::vector<unsigned char> imageData = image->data();
+            std::shared_ptr<Image> image = renderPDF(cols, rows, (400 - y - 1), x, scene);
+            const std::vector<unsigned char> imageData = image->data();
 
-        unsigned char *data = (unsigned char *)malloc(rows * cols * 4 * sizeof(char));
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int sourceOffset = 3 * (row * cols + col);
+            unsigned char *data = (unsigned char *)malloc(rows * cols * 4 * sizeof(char));
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    int sourceOffset = 3 * (row * cols + col);
 
-                int targetOffset = 4 * (row * cols + col);
-                data[targetOffset + 0] = imageData[sourceOffset + 0];
-                data[targetOffset + 1] = imageData[sourceOffset + 1];
-                data[targetOffset + 2] = imageData[sourceOffset + 2];
-                data[targetOffset + 3] = 255;
+                    int targetOffset = 4 * (row * cols + col);
+                    data[targetOffset + 0] = imageData[sourceOffset + 0];
+                    data[targetOffset + 1] = imageData[sourceOffset + 1];
+                    data[targetOffset + 2] = imageData[sourceOffset + 2];
+                    data[targetOffset + 3] = 255;
+                }
             }
-        }
 
-        const int phiSteps = 400;
-        const int thetaSteps = 400;
+            const int phiSteps = 400;
+            const int thetaSteps = 400;
 
-        std::vector<float> pdfs = integrator->visualizePDF(thetaSteps, phiSteps, (400 - y - 1), x, scene);
+            std::vector<float> pdfs = integrator->visualizePDF(thetaSteps, phiSteps, (400 - y - 1), x, scene);
 
-        unsigned char *data2 = (unsigned char *)malloc(phiSteps * thetaSteps * 4 * sizeof(char));
-        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-                int sourceOffset = thetaStep * phiSteps + phiStep;
+            unsigned char *data2 = (unsigned char *)malloc(phiSteps * thetaSteps * 4 * sizeof(char));
+            for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
+                for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
+                    int sourceOffset = thetaStep * phiSteps + phiStep;
 
-                int targetOffset = 4 * (thetaStep * phiSteps + phiStep);
-                data2[targetOffset + 0] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
-                data2[targetOffset + 1] = 255 * fminf(1.f, pdfs[sourceOffset + 1]);
-                data2[targetOffset + 2] = 255 * fminf(1.f, pdfs[sourceOffset + 2]);
-                data2[targetOffset + 3] = 255;
+                    int targetOffset = 4 * (thetaStep * phiSteps + phiStep);
+                    data2[targetOffset + 0] = 255 * fminf(1.f, pdfs[sourceOffset + 0]);
+                    data2[targetOffset + 1] = 255 * fminf(1.f, pdfs[sourceOffset + 1]);
+                    data2[targetOffset + 2] = 255 * fminf(1.f, pdfs[sourceOffset + 2]);
+                    data2[targetOffset + 3] = 255;
+                }
             }
+
+            int imageID1 = nvgCreateImageRGBA(popup->nvgContext(), rows, cols, 0, data);
+            int imageID2 = nvgCreateImageRGBA(popup->nvgContext(), phiSteps, thetaSteps, 0, data2);
+
+            auto window = new nanogui::Window(popup, "PDF");
+            window->setPosition({0, 0});
+            window->setLayout(new GridLayout(Orientation::Horizontal, 2));
+
+            auto imageView1 = new nanogui::ImageView(window, imageID1);
+            auto imageView2 = new nanogui::ImageView(window, imageID2);
+
+            popup->performLayout();
         }
-
-        int imageID1 = nvgCreateImageRGBA(popup->nvgContext(), rows, cols, 0, data);
-        int imageID2 = nvgCreateImageRGBA(popup->nvgContext(), phiSteps, thetaSteps, 0, data2);
-
-        auto window = new nanogui::Window(popup, "PDF");
-        window->setPosition({0, 0});
-        window->setLayout(new GridLayout(Orientation::Horizontal, 2));
-
-        auto imageView1 = new nanogui::ImageView(window, imageID1);
-        auto imageView2 = new nanogui::ImageView(window, imageID2);
-
-        popup->performLayout();
 
         setCurrentSample(
             0,
