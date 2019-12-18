@@ -37,6 +37,7 @@ BSDFSample Glass::sample(
     if (localWo.y() < 0.f) {
         std::swap(etaIncident, etaTransmitted);
     }
+
     bool doesRefract = Snell::refract(
         localWo,
         &localWi,
@@ -44,17 +45,13 @@ BSDFSample Glass::sample(
         etaTransmitted
     );
 
-    if (!doesRefract) {
-        localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
-    }
-
     const float fresnelReflectance = Fresnel::dielectricReflectance(
-        TangentFrame::cosTheta(localWi),
+        TangentFrame::absCosTheta(localWo),
         etaIncident, etaTransmitted
     );
 
     if (random.next() < fresnelReflectance) {
-        // localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
+        localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
         BSDFSample sample = {
             .wiWorld = intersection.tangentToWorld.apply(localWi),
@@ -67,11 +64,11 @@ BSDFSample Glass::sample(
     } else {
         if (!doesRefract) {
             assert(false);
-            std::cout << "NOT HERE!" << std::endl;
-            localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
+            exit(1);
         }
 
         const float fresnelTransmittance = 1.f - fresnelReflectance;
+
         BSDFSample sample = {
             .wiWorld = intersection.tangentToWorld.apply(localWi),
             .pdf = fresnelTransmittance,

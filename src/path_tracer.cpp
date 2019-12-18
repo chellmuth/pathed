@@ -44,9 +44,15 @@ Color PathTracer::L(
         sample.eyePoints.push_back(bounceIntersection.point);
 
         const float invPDF = 1.f / bsdfSample.pdf;
+        const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
+
         modulation *= bsdfSample.throughput
-            * WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld)
+            * cosTheta
             * invPDF;
+
+        if (modulation.isBlack()) {
+            break;
+        }
 
         bsdfSample = bounceIntersection.material->sample(
             bounceIntersection, random
