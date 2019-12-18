@@ -81,6 +81,8 @@ void gl::Scene::draw()
 {
     glBindVertexArray(mEntityIDs.vertexArrayID);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, mEntityIDs.vertexBufferID);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
@@ -95,6 +97,8 @@ void gl::Scene::draw()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEntityIDs.vertexIndexBufferID);
     glDrawElements(GL_TRIANGLES, mTriangleCount * 3, GL_UNSIGNED_INT, 0);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);

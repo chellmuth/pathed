@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 project (pathed)
 project (pathed_tests)
+project (testbed)
 
 # Compiler settings
 set (CMAKE_CXX_STANDARD 14)
@@ -49,3 +50,6 @@ target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree)
 
 # add_executable(pathed_tests ${TESTS} ${SOURCES})
 # target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree)
+
+add_executable(testbed app/testbed.cpp ${SOURCES})
+target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree)

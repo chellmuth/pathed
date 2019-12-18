@@ -11,6 +11,11 @@ SurfaceSample Surface::sample(RandomGenerator &random) const
     return m_shape->sample(random);
 }
 
+float Surface::pdf(const Point3 &point) const
+{
+    return m_shape->pdf(point);
+}
+
 Intersection Surface::testIntersect(const Ray &ray) const
 {
     Intersection intersection = m_shape->testIntersect(ray);

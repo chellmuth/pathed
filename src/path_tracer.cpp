@@ -5,14 +5,13 @@
 #include "globals.h"
 #include "job.h"
 #include "light.h"
+#include "measure.h"
+#include "mis.h"
 #include "monte_carlo.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
 #include "vector.h"
-
-#include "json.hpp"
-using json = nlohmann::json;
 
 #include <fstream>
 #include <iostream>
@@ -25,9 +24,11 @@ Color PathTracer::L(
 ) const {
     sample.eyePoints.push_back(intersection.point);
 
+    BSDFSample bsdfSample = intersection.material->sample(intersection, random);
+
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
-        result = direct(intersection, scene, random, sample);
+        result = direct(intersection, bsdfSample, scene, random, sample);
         sample.contributions.push_back({result, 1.f});
     }
 
@@ -35,10 +36,7 @@ Color PathTracer::L(
     Intersection lastIntersection = intersection;
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        BSDFSample bsdfSample = lastIntersection.material->sample(
-            lastIntersection, random
-        );
-        Ray bounceRay(lastIntersection.point, bsdfSample.wi);
+        Ray bounceRay(lastIntersection.point, bsdfSample.wiWorld);
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
@@ -46,15 +44,26 @@ Color PathTracer::L(
         sample.eyePoints.push_back(bounceIntersection.point);
 
         const float invPDF = 1.f / bsdfSample.pdf;
+        const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
+
         modulation *= bsdfSample.throughput
-            * fmaxf(0.f, bsdfSample.wi.dot(lastIntersection.shadingNormal))
+            * cosTheta
             * invPDF;
+
+        if (modulation.isBlack()) {
+            break;
+        }
+
+        bsdfSample = bounceIntersection.material->sample(
+            bounceIntersection, random
+        );
+
         lastIntersection = bounceIntersection;
 
         if (m_bounceController.checkCounts(bounce)) {
             const Color previous = result;
 
-            Color Ld = direct(bounceIntersection, scene, random, sample);
+            Color Ld = direct(bounceIntersection, bsdfSample, scene, random, sample);
             result += Ld * modulation;
 
             sample.contributions.push_back({result - previous, invPDF});
@@ -66,6 +75,7 @@ Color PathTracer::L(
 
 Color PathTracer::direct(
     const Intersection &intersection,
+    const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -76,16 +86,43 @@ Color PathTracer::direct(
         return Color(0.f, 0.f, 0.f);
     }
 
-    int lightCount = scene.lights().size();
-    int lightIndex = (int)floorf(random.next() * lightCount);
+    Color result(0.f);
 
-    std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(intersection, random);
+    result += directSampleLights(
+        intersection,
+        bsdfSample,
+        scene,
+        random,
+        sample
+    );
 
-    Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    Vector3 wo = lightDirection.normalized();
+    result += directSampleBSDF(
+        intersection,
+        bsdfSample,
+        scene,
+        random,
+        sample
+    );
 
-    if (lightSample.normal.dot(wo) >= 0.f) {
+    return result;
+}
+
+Color PathTracer::directSampleLights(
+    const Intersection &intersection,
+    const BSDFSample &bsdfSample,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    if (bsdfSample.material->isDelta()) { return 0.f; }
+
+    const LightSample lightSample = scene.sampleDirectLights(intersection, random);
+
+    const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
+    const Vector3 wiWorld = lightDirection.normalized();
+
+    if (lightSample.normal.dot(wiWorld) >= 0.f) {
+        // Sample hit back of light
         sample.shadowTests.push_back({
             intersection.point,
             lightSample.point,
@@ -95,9 +132,9 @@ Color PathTracer::direct(
         return Color(0.f);
     }
 
-    Ray shadowRay = Ray(intersection.point, wo);
-    float lightDistance = lightDirection.length();
-    bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+    const Ray shadowRay = Ray(intersection.point, wiWorld);
+    const float lightDistance = lightDirection.length();
+    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
     sample.shadowTests.push_back({
         intersection.point,
@@ -109,75 +146,66 @@ Color PathTracer::direct(
         return Color(0.f);
     }
 
-    float invPDF = lightSample.invPDF * lightCount;
-    return light->biradiance(lightSample, intersection.point)
-        * intersection.material->f(intersection, wo)
-        * fmaxf(0.f, wo.dot(intersection.shadingNormal))
-        * invPDF;
+    const float pdf = lightSample.solidAnglePDF(intersection.point);
+    const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
+    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
+
+    const Vector3 lightWo = -lightDirection.normalized();
+
+    const Color lightContribution = lightSample.light->emit(lightWo)
+        * lightWeight
+        * intersection.material->f(intersection, wiWorld)
+        * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld)
+        / pdf;
+
+    return lightContribution;
 }
 
-void PathTracer::debug(const Intersection &intersection, const Scene &scene) const
-{
-    const int phiSteps = 300;
-    const int thetaSteps = 300;
+Color PathTracer::directSampleBSDF(
+    const Intersection &intersection,
+    const BSDFSample &bsdfSample,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
+    const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 
-    RandomGenerator random;
-    Sample sample;
-    int bounceCount = 5;
+    if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
+        const float distance = (bounceIntersection.point - intersection.point).toVector().length();
+        const float lightPDF = scene.lightsPDF(
+            intersection.point,
+            bounceIntersection,
+            Measure::SolidAngle
+        );
+        const float brdfWeight = bsdfSample.material->isDelta()
+            ? 1.f
+            : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
-    json j;
-    j["QueryPoint"] = {
-        intersection.point.x(),
-        intersection.point.y(),
-        intersection.point.z()
-    };
-    j["Steps"] = { { "phi", phiSteps }, { "theta", thetaSteps } };
-    j["Gt"] = json::array();
+        const Color brdfContribution = bounceIntersection.material->emit()
+            * brdfWeight
+            * bsdfSample.throughput
+            * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+            / bsdfSample.pdf;
 
-    for (int phiStep = 0; phiStep < phiSteps; phiStep++) {
-        for (int thetaStep = 0; thetaStep < thetaSteps; thetaStep++) {
-            float phi = M_TWO_PI * phiStep / phiSteps;
-            float theta = (M_PI / 2.f) * thetaStep / thetaSteps;
+        return brdfContribution;
+    } else if (!bounceIntersection.hit) {
+        const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
+        if (!environmentL.isBlack()) {
+            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
+            const float brdfWeight = bsdfSample.material->isDelta()
+                ? 1.f
+                : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
 
-            float y = cosf(theta);
-            float x = sinf(theta) * cosf(phi);
-            float z = sinf(theta) * sinf(phi);
+            const Color brdfContribution = environmentL
+                * brdfWeight
+                * bsdfSample.throughput
+                * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
+                / bsdfSample.pdf;
 
-            Vector3 wiHemisphere(x, y, z);
-            Vector3 wiWorld = intersection.tangentToWorld.apply(wiHemisphere);
-
-            Ray ray = Ray(intersection.point, wiWorld);
-            const Intersection fisheyeIntersection = scene.testIntersect(ray);
-            Color sampleL(0.f);
-            if (fisheyeIntersection.hit) {
-                sampleL = L(
-                    fisheyeIntersection,
-                    scene,
-                    random,
-                    sample
-                );
-
-                Color emit = fisheyeIntersection.material->emit();
-                sampleL += emit;
-            }
-
-            // std::cout << "phi: " << phi << " theta: " << theta << std::endl;
-            // std::cout << "x: " << x << " y: " << y << " z: " << z << std::endl;
-            // std::cout << sampleL << std::endl;
-
-            j["Gt"].push_back({
-                { "wi", { x, y, z } },
-                { "phiStep", phiStep },
-                { "thetaStep", thetaStep },
-                { "phi", phi },
-                { "theta", theta },
-                { "radiance", { sampleL.r(), sampleL.g(), sampleL.b() } },
-                { "luminance", { sampleL.luminance() } }
-            });
+            return brdfContribution;
         }
     }
 
-    std::ofstream jsonFile("live.json");
-    jsonFile << j.dump(4) << std::endl;
-    std::cout << "Wrote to live.json" << std::endl;
+    return Color(0.f);
 }

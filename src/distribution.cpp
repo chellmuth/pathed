@@ -43,3 +43,12 @@ int Distribution::sample(float *pdf, RandomGenerator &random) const
     }
     assert(false);
 }
+
+float Distribution::pdf(int index) const
+{
+    float cdf = m_cdf[index];
+    if (index == 0) {
+        return cdf;
+    }
+    return cdf - m_cdf[index - 1];
+}

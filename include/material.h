@@ -1,16 +1,18 @@
 #pragma once
 
 #include "color.h"
-#include "intersection.h"
 #include "random_generator.h"
 #include "vector.h"
 
+class Material;
 class Scene;
+struct Intersection;
 
 struct BSDFSample {
-    Vector3 wi;
+    Vector3 wiWorld;
     float pdf;
     Color throughput;
+    const Material *material;
 };
 
 class Material {
@@ -19,19 +21,30 @@ public:
 
     virtual Color f(
         const Intersection &intersection,
-        const Vector3 &wi,
+        const Vector3 &wiWorld,
         float *pdf
     ) const = 0;
 
-    Color f(const Intersection &intersection, const Vector3 &wi) const {
+    Color f(const Intersection &intersection, const Vector3 &wiWorld) const {
         float pdf;
-        return f(intersection, wi, &pdf);
+        return f(intersection, wiWorld, &pdf);
+    }
+
+    float pdf(
+        const Intersection &intersection,
+        const Vector3 &wiWorld
+    ) const {
+        float pdf;
+        f(intersection, wiWorld, &pdf);
+        return pdf;
     }
 
     virtual BSDFSample sample(
         const Intersection &intersection,
         RandomGenerator &random
     ) const = 0;
+
+    virtual bool isDelta() const { return false; }
 
     Color emit() const;
 

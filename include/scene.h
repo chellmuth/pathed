@@ -7,10 +7,12 @@
 #include "environment_light.h"
 #include "intersection.h"
 #include "light.h"
+#include "measure.h"
 #include "point.h"
 #include "primitive.h"
 #include "random_generator.h"
 #include "surface.h"
+#include "world_frame.h"
 #include "vector.h"
 
 class Camera;
@@ -21,14 +23,36 @@ struct LightSample {
     Point3 point;
     Vector3 normal;
     float invPDF;
+    Measure measure;
 
     LightSample(
         std::shared_ptr<Light> _light,
         Point3 _point,
         Vector3 _normal,
-        float _invPDF
-    ) : light(_light), point(_point), normal(_normal), invPDF(_invPDF)
+        float _invPDF,
+        Measure _measure
+    ) : light(_light),
+        point(_point),
+        normal(_normal),
+        invPDF(_invPDF),
+        measure(_measure)
     {}
+
+    float solidAnglePDF(const Point3 &referencePoint) const
+    {
+        if (measure == Measure::SolidAngle) {
+            return 1.f / invPDF;
+        }
+
+        const Vector3 lightDirection = (point - referencePoint).toVector();
+        const Vector3 lightWo = -lightDirection.normalized();
+        const float distance = lightDirection.length();
+
+        const float distance2 = distance * distance;
+        const float projectedArea = WorldFrame::cosTheta(normal, lightWo);
+
+        return (1.f / invPDF) * distance2 / projectedArea;
+    }
 };
 
 class Scene {
@@ -53,7 +77,19 @@ public:
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
+    LightSample sampleDirectLights(
+        const Intersection &intersection,
+        RandomGenerator &random
+    ) const;
+
+    float lightsPDF(
+        const Point3 &referencePoint,
+        const Intersection &lightIntersection,
+        Measure measure
+    ) const;
+
     Color environmentL(const Vector3 &direction) const;
+    float environmentPDF(const Vector3 &direction) const;
 
 private:
     std::unique_ptr<BVH> m_bvh;

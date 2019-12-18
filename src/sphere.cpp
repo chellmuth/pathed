@@ -1,14 +1,51 @@
-#include "math.h"
-#include <limits>
-
 #include "sphere.h"
 
-#include "color.h"
+#include "globals.h"
+#include "measure.h"
 #include "ray.h"
 #include "util.h"
 
-Sphere::Sphere(Point3 center, float radius, Color color)
-    : m_center(center), m_radius(radius), m_color(color)
+#include <embree3/rtcore.h>
+
+#include <cmath>
+#include <limits>
+
+void Sphere::create(
+    const Transform &transform,
+    std::shared_ptr<Material> material
+) {
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_SPHERE_POINT);
+    float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                /* geometry */
+        RTC_BUFFER_TYPE_VERTEX, /* type */
+        0,                      /* slot */
+        RTC_FORMAT_FLOAT4,      /* format */
+        4 * sizeof(float),      /* byte stride */
+        1                       /* item count */
+    );
+
+    float data[] = {
+        transform.apply(m_center).x(),
+        transform.apply(m_center).y(),
+        transform.apply(m_center).z(),
+        m_radius
+    };
+
+    for (int i = 0; i < 1; i++) {
+        rtcVertices[i * 4 + 0] = data[i * 4  + 0];
+        rtcVertices[i * 4 + 1] = data[i * 4  + 1];
+        rtcVertices[i * 4 + 2] = data[i * 4  + 2];
+        rtcVertices[i * 4 + 3] = data[i * 4  + 3];
+    }
+
+    rtcCommitGeometry(rtcMesh);
+
+    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
+    rtcReleaseGeometry(rtcMesh);
+}
+
+Sphere::Sphere(Point3 center, float radius)
+    : m_center(center), m_radius(radius)
 {}
 
 SurfaceSample Sphere::sample(RandomGenerator &random) const
@@ -22,10 +59,16 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     SurfaceSample sample = {
         .point = m_center + v * m_radius,
         .normal = v.normalized(),
-        .invPDF = area()
+        .invPDF = area(),
+        .measure = Measure::Area
     };
 
     return sample;
+}
+
+float Sphere::pdf(const Point3 &point) const
+{
+    return 1.f / area();
 }
 
 Intersection Sphere::testIntersect(const Ray &ray)
@@ -50,7 +93,8 @@ Intersection Sphere::testIntersect(const Ray &ray)
             .normal = (hitPoint - m_center).toVector().normalized(),
             .shadingNormal = (hitPoint - m_center).toVector().normalized(),
             .uv = { 0.f, 0.f },
-            .material = nullptr
+            .material = nullptr,
+            .surface = nullptr
         };
         return result;
     } else {

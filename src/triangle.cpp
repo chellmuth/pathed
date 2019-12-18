@@ -1,5 +1,6 @@
 #include "triangle.h"
 
+#include "measure.h"
 #include "point.h"
 #include "ray.h"
 #include "vector.h"
@@ -40,9 +41,15 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     SurfaceSample sample = {
         .point = point,
         .normal = normal,
-        .invPDF = area()
+        .invPDF = area(),
+        .measure = Measure::Area
     };
     return sample;
+}
+
+float Triangle::pdf(const Point3 &point) const
+{
+    return 1.f / area();
 }
 
 Intersection Triangle::testIntersect(const Ray &ray)
@@ -90,7 +97,8 @@ Intersection Triangle::testIntersect(const Ray &ray)
         .normal = e2.cross(e1).normalized(),
         .shadingNormal = e2.cross(e1).normalized(),
         .uv = uv,
-        .material = nullptr
+        .material = nullptr,
+        .surface = nullptr
     };
 
     return hit;

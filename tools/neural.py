@@ -12,20 +12,20 @@ import visualize
 from mitsuba import run_mitsuba
 
 default_scene_name = "cbox-bw"
-default_output_name = "cbox-bw"
+default_output_name = "cbox-bw--debug"
 
 default_checkpoints = {
     "kitchen": None,
     "kitchen-diffuse": None,
-    "cbox-bw": None,
-    "cbox-ppg": "20191205-cbox-ppg-2"
+    "cbox-ppg": "20191205-cbox-ppg-2",
+    "cbox-bw": "20191216-cbox-bw-2",
 }
 
 dimensions = {
     "kitchen": (1280, 720),
     "kitchen-diffuse": (1280, 720),
-    "cbox-bw": (400, 400),
     "cbox-ppg": (400, 400),
+    "cbox-bw": (400, 400),
 }
 
 class Context:
@@ -357,7 +357,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "500000",
+            "--num_training_steps", "50000",
         ]
     )
 

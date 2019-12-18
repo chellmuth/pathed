@@ -2,6 +2,7 @@
 
 #include "aabb.h"
 #include "intersection.h"
+#include "measure.h"
 #include "point.h"
 #include "random_generator.h"
 #include "transform.h"
@@ -16,6 +17,7 @@ typedef struct {
     Point3 point;
     Vector3 normal;
     float invPDF;
+    Measure measure;
 } SurfaceSample;
 
 class Shape {
@@ -25,6 +27,8 @@ public:
     virtual void pushIndices(std::vector<uint> &indices, int offset) {};
 
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
+    virtual float pdf(const Point3 &point) const = 0;
+
     virtual Intersection testIntersect(const Ray &ray) = 0;
 
     virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;
@@ -35,4 +39,6 @@ public:
     virtual float area() const = 0;
 
     virtual void debug() const { printf("Debug not implemented!\n"); };
+
+    virtual bool useBackwardsNormals() const { return true; } // fixme
 };

@@ -71,6 +71,10 @@ def run(chunk_size, raw_path, renders_path):
         for i, parts in enumerate(chunk):
             pdf_path = build_pdf_path(raw_path, parts)
             pdf_exr = convert_rgb_to_single_channel(pdf_path)
+
+            if np.all(pdf_exr == 0.):
+                continue
+
             pyexr.write(str(iteration_root / f"pdf_{i:05d}.exr"), pdf_exr)
 
             photon_path = build_photon_path(raw_path, parts)

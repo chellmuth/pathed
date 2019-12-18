@@ -22,6 +22,7 @@ public:
     Point3 p2() const { return m_p2; }
 
     SurfaceSample sample(RandomGenerator &random) const override;
+    float pdf(const Point3 &point) const override;
     Intersection testIntersect(const Ray &ray) override;
 
     Point3 centroid() const override;

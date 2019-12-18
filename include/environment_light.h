@@ -27,6 +27,11 @@ public:
     ) const override;
 
     SurfaceSample sampleEmit(RandomGenerator &random) const override;
+    float emitPDF(const Point3 &point, const Vector3 &direction) const override
+    {
+        return emitPDF(direction);
+    }
+    float emitPDF(const Vector3 &direction) const;
 
     Color biradiance(
         const SurfaceSample &lightSample,
