@@ -29,6 +29,15 @@ void Quad::parse(
         transform.apply(Point3(1.f, -1.f, 0.f))
     };
 
+    UV uvs[] = {
+        { 0.f, 0.f, },
+        { 0.f, 1.f, },
+        { 1.f, 0.f, },
+        { 0.f, 1.f, },
+        { 1.f, 1.f, },
+        { 1.f, 0.f, },
+    };
+
     std::shared_ptr<Shape> triangle1 = std::make_shared<Triangle>(
         points[0],
         points[1],
@@ -76,8 +85,10 @@ void Quad::parse(
         3 * 2                             /* item count */
     );
     for (int i = 0; i < 3 * 2; i++) {
-        rtcUVs[2 * i + 0] = 0.f;
-        rtcUVs[2 * i + 1] = 0.f;
+        UV uv = uvs[i];
+
+        rtcUVs[2 * i + 0] = uv.u;
+        rtcUVs[2 * i + 1] = uv.v;
     }
 
     float *rtcNormals = (float *)rtcSetNewGeometryBuffer(

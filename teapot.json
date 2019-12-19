@@ -13,7 +13,7 @@
       "type": "obj",
       "filename": "assets/teapot/Mesh000.obj",
       "bsdf": {
-        "type": "beckmann",
+        "type": "glass",
         "alpha": "0.01",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
@@ -22,7 +22,7 @@
       "type": "obj",
       "filename": "assets/teapot/Mesh001.obj",
       "bsdf": {
-        "type": "beckmann",
+        "type": "glass",
         "alpha": "0.01",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
@@ -36,6 +36,12 @@
       },
       "bsdf": {
         "type": "lambertian",
+        "albedo": {
+          "type": "checkerboard",
+          "onColor": [ "0.8", "0.8", "0.8" ],
+          "offColor": [ "0.2", "0.2", "0.2" ],
+          "resolution": { "u": "40", "v": "160" }
+        },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     }
