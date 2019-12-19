@@ -18,7 +18,7 @@ default_checkpoints = {
     "kitchen": None,
     "kitchen-diffuse": None,
     "cbox-ppg": "20191205-cbox-ppg-2",
-    "cbox-bw": "20191216-cbox-bw-2",
+    "cbox-bw": "20191217-cbox-bw-4",
 }
 
 dimensions = {
@@ -321,35 +321,38 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    run_mitsuba(
-        context.mitsuba_path,
-        context.scene_path("scene-training.xml"),
-        "whatever.exr",
-        [],
-        {
-            "pdfCount": pdf_count,
-        }
-    )
-
     dataset_path = context.dataset_path(dataset_name)
-    raw_path = dataset_path / "raw"
-    raw_path.mkdir(parents=True)
 
-    for artifact_path in results_path.glob("*"):
-        shutil.move(str(artifact_path), str(raw_path))
+    phases = [ "train", "test" ]
+    for phase in phases:
+        raw_path = dataset_path / phase / "raw"
+        renders_path = dataset_path / phase / "renders"
+        raw_path.mkdir(parents=True, exist_ok=True)
 
-    dataset_path = context.dataset_path(dataset_name)
-    process_raw_to_renders.run(
-        500,
-        dataset_path / "raw",
-        dataset_path / "train/renders",
-    )
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-training.xml"),
+            "whatever.exr",
+            [],
+            {
+                "pdfCount": pdf_count,
+            }
+        )
 
-    runner.run_nsf_command(
-        context.server_path,
-        "build_render_dataset.py",
-        [ dataset_name ]
-    )
+        for artifact_path in results_path.glob("*"):
+            shutil.move(str(artifact_path), str(raw_path))
+
+        process_raw_to_renders.run(
+            500,
+            raw_path,
+            renders_path
+        )
+
+        runner.run_nsf_command(
+            context.server_path,
+            "build_render_dataset.py",
+            [ phase, dataset_name ]
+        )
 
     runner.run_nsf_command(
         context.server_path,
