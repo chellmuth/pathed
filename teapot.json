@@ -13,7 +13,8 @@
       "type": "obj",
       "filename": "assets/teapot/Mesh000.obj",
       "bsdf": {
-        "type": "lambertian",
+        "type": "beckmann",
+        "alpha": "0.01",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
     },
@@ -21,10 +22,22 @@
       "type": "obj",
       "filename": "assets/teapot/Mesh001.obj",
       "bsdf": {
-        "type": "lambertian",
+        "type": "beckmann",
+        "alpha": "0.01",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
-
+    },
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "113.071", "113.071", "113.071" ],
+        "rotate": [ "90", "45", "0" ],
+        "translate": [ "0", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
+      }
     }
   ],
 
