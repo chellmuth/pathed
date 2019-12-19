@@ -13,6 +13,7 @@ numpy = "*"
 pyexr = "*"
 click = "*"
 pillow = "*"
+imageio = "*"
 
 [requires]
 python_version = "3.7"

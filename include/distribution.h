@@ -13,4 +13,5 @@ public:
 
 private:
     std::vector<float> m_cdf;
+    bool m_empty;
 };

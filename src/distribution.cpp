@@ -4,6 +4,7 @@
 #include <cmath>
 
 Distribution::Distribution(const std::vector<float> &values)
+    : m_empty(false)
 {
     const size_t size = values.size();
 
@@ -12,6 +13,11 @@ Distribution::Distribution(const std::vector<float> &values)
     float sum = 0.f;
     for (int i = 0; i < size; i++) {
         sum += values[i];
+    }
+
+    if (sum == 0.f) {
+        m_empty = true;
+        return;
     }
 
     for (int i = 0; i < size; i++) {
@@ -28,6 +34,8 @@ Distribution::Distribution(const std::vector<float> &values)
 
 int Distribution::sample(float *pdf, RandomGenerator &random) const
 {
+    assert(!m_empty);
+
     float xi = random.next();
 
     for (int i = 0; i < m_cdf.size(); i++) {
@@ -46,6 +54,8 @@ int Distribution::sample(float *pdf, RandomGenerator &random) const
 
 float Distribution::pdf(int index) const
 {
+    if (m_empty) { return 0.f; }
+
     float cdf = m_cdf[index];
     if (index == 0) {
         return cdf;
