@@ -91,9 +91,11 @@ void Quad::parse(
 
     Vector3 normal = Vector3(0.f, 0.f, 1.f);
     for (int i = 0; i < 3 * 2; i++) {
-        rtcNormals[3 * i + 0] = normal.x();
-        rtcNormals[3 * i + 1] = normal.y();
-        rtcNormals[3 * i + 2] = normal.z();
+        Vector3 transformedNormal = transform.apply(normal).normalized();
+
+        rtcNormals[3 * i + 0] = transformedNormal.x();
+        rtcNormals[3 * i + 1] = transformedNormal.y();
+        rtcNormals[3 * i + 2] = transformedNormal.z();
     }
 
     rtcCommitGeometry(rtcMesh);
