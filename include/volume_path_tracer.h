@@ -19,7 +19,8 @@ public:
 
 private:
     Color transmittance(
-        const Material *material,
+        const Material *materialOut,
+        const Material *materialIn,
         const Point3 &source,
         const Point3 &target
     ) const;
