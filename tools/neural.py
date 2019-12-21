@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 
+import compare_pdfs
 import photon_reader
 import process_raw_to_renders
 import runner
@@ -80,6 +81,9 @@ def pdf_compare(all, point):
     else:
         points = [(20, 134)]
 
+    print(f"Processing points: {points}")
+
+    kl_divergences = []
     for point in points:
         server_process = runner.launch_server(
             context.server_path,
@@ -161,10 +165,12 @@ def pdf_compare(all, point):
         plt.savefig(context.output_root / f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
         plt.close()
 
-
-        # Cleanup
         render_filename = f"render_{point[0]}_{point[1]}.exr"
         batch_filename = f"batch_{point[0]}_{point[1]}.exr"
+
+        kl_divergences.append(compare_pdfs.run(render_filename, batch_filename))
+
+        # Cleanup
         shutil.move(render_filename, context.output_root / render_filename)
         shutil.move(batch_filename, context.output_root / batch_filename)
 
@@ -175,6 +181,7 @@ def pdf_compare(all, point):
         shutil.move(photons_filename, context.output_root / photons_filename)
         shutil.move(neural_filename, context.output_root / neural_filename)
 
+    print(kl_divergences)
 
 # Quick 1spp comparison between neural and path
 @cli.command()
