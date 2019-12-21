@@ -9,8 +9,12 @@
 #include <cmath>
 #include <iostream>
 
+Glass::Glass(float ior)
+    : Material(0.f), m_ior(ior)
+{}
+
 Glass::Glass()
-    : Material(0.f)
+    : Glass(1.4f)
 {}
 
 Color Glass::f(
@@ -32,7 +36,7 @@ BSDFSample Glass::sample(
     Vector3 localWi(0.f);
 
     float etaIncident = 1.f;
-    float etaTransmitted = 1.15f;
+    float etaTransmitted = m_ior;
 
     if (localWo.y() < 0.f) {
         std::swap(etaIncident, etaTransmitted);

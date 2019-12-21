@@ -31,6 +31,7 @@ using json = nlohmann::json;
 
 typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 
+static bool checkFloat(json floatJson, float *value);
 static float parseFloat(json floatJson);
 static float parseFloat(json floatJson, float defaultValue);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
@@ -232,7 +233,12 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
     } else if (bsdfJson["type"] == "perfect-transmission") {
         return std::make_shared<PerfectTransmission>();
     } else if (bsdfJson["type"] == "glass") {
-        return std::make_shared<Glass>();
+        float ior;
+        if (checkFloat(bsdfJson["ior"], &ior)) {
+            return std::make_shared<Glass>(ior);
+        } else {
+            return std::make_shared<Glass>();
+        }
     } else if (bsdfJson["type"] == "oren-nayar") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
         float sigma = parseFloat(bsdfJson["sigma"]);
@@ -317,6 +323,16 @@ static Transform parseTransform(json transformJson)
     }
 
     return Transform(matrix);
+}
+
+static bool checkFloat(json floatJson, float *value)
+{
+    try {
+        *value = parseFloat(floatJson);
+        return true;
+    } catch (nlohmann::detail::type_error) {
+        return false;
+    }
 }
 
 static float parseFloat(json floatJson, float defaultValue)

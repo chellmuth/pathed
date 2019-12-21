@@ -14,7 +14,7 @@
       "filename": "assets/teapot-full/Mesh000.obj",
       "bsdf": {
         "type": "glass",
-        "alpha": "0.01",
+        "ior": "1.15",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
     },
@@ -23,7 +23,7 @@
       "filename": "assets/teapot-full/Mesh002.obj",
       "bsdf": {
         "type": "glass",
-        "alpha": "0.01",
+        "ior": "1.15",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
        }
     },

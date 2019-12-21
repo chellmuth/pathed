@@ -7,6 +7,7 @@
 
 class Glass : public Material {
 public:
+    Glass(float ior);
     Glass();
 
     Color f(
@@ -24,4 +25,5 @@ public:
     bool isVolume() const override { return true; }
 
 private:
+    float m_ior;
 };
