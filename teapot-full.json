@@ -28,6 +28,20 @@
        }
     },
     {
+      "type": "obj",
+      "filename": "assets/teapot-full/Mesh001.obj",
+      "bsdf": {
+        "type": "glass"
+       }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/teapot-full/Mesh003.obj",
+      "bsdf": {
+        "type": "glass"
+       }
+    },
+    {
       "type": "quad",
       "transform": {
         "scale": [ "113.071", "113.071", "113.071" ],
