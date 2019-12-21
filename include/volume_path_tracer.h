@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bounce_controller.h"
+#include "material.h"
 #include "sample_integrator.h"
 
 class VolumePathTracer : public SampleIntegrator {
@@ -17,7 +18,11 @@ public:
     ) const override;
 
 private:
-    Color transmittance(const Point3 &source, const Point3 &target) const;
+    Color transmittance(
+        const Material *material,
+        const Point3 &source,
+        const Point3 &target
+    ) const;
 
     Color direct(
         const Intersection &intersection,

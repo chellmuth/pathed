@@ -1,6 +1,9 @@
 #pragma once
 
+#include "color.h"
+
 #include <assert.h>
+#include <cmath>
 #include <vector>
 
 #define INV_TWO_PI 0.15915494309189533577f
@@ -49,5 +52,13 @@ namespace util {
     inline float clampClose(float value, float lowest, float highest) {
         AssertBetweenClose(value, lowest, highest);
         return clamp(value, lowest, highest);
+    }
+
+    inline Color exp(const Color &color) {
+        return Color(
+            std::exp(color.r()),
+            std::exp(color.g()),
+            std::exp(color.b())
+        );
     }
 };

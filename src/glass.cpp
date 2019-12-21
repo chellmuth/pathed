@@ -32,7 +32,7 @@ BSDFSample Glass::sample(
     Vector3 localWi(0.f);
 
     float etaIncident = 1.f;
-    float etaTransmitted = 1.4f;
+    float etaTransmitted = 1.15f;
 
     if (localWo.y() < 0.f) {
         std::swap(etaIncident, etaTransmitted);

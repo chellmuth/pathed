@@ -47,7 +47,11 @@ Color VolumePathTracer::L(
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
 
         modulation *= bsdfSample.throughput
-            * transmittance(lastIntersection.point, bounceIntersection.point)
+            * transmittance(
+                lastIntersection.material,
+                lastIntersection.point,
+                bounceIntersection.point
+            )
             * cosTheta
             * invPDF;
 
@@ -74,9 +78,17 @@ Color VolumePathTracer::L(
     return result;
 }
 
-Color VolumePathTracer::transmittance(const Point3 &source, const Point3 &target) const
-{
-    return Color(1.f);
+Color VolumePathTracer::transmittance(
+    const Material *material,
+    const Point3 &source,
+    const Point3 &target
+) const {
+    if (!material->isVolume()) { return Color(1.f); }
+
+    const Color sigmaT(0.1486f, 0.321f, 0.736f);
+
+    const float distance = (target - source).toVector().length();
+    return util::exp(-sigmaT * distance);
 }
 
 Color VolumePathTracer::direct(

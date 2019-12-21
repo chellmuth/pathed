@@ -20,7 +20,8 @@ public:
         RandomGenerator &random
     ) const override;
 
-    bool isDelta() const { return true; }
+    bool isDelta() const override { return true; }
+    bool isVolume() const override { return true; }
 
 private:
 };

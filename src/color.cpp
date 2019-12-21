@@ -33,6 +33,11 @@ Color Color::operator- (const Color c) const
     );
 }
 
+Color Color::operator- () const
+{
+    return Color(-m_r, -m_g, -m_b);
+}
+
 Color& Color::operator+= (const Color &c)
 {
     m_r += c.r();
