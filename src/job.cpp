@@ -8,6 +8,7 @@
 #include "path_tracer.h"
 #include "pdf_integrator.h"
 #include "self_integrator.h"
+#include "volume_path_tracer.h"
 
 #include <errno.h>
 #include <iomanip>
@@ -63,6 +64,8 @@ std::shared_ptr<Integrator> Job::integrator() const
 
     if (integrator == "PathTracer") {
         return std::make_shared<PathTracer>(m_bounceController);
+    } else if (integrator == "VolumePathTracer") {
+        return std::make_shared<VolumePathTracer>(m_bounceController);
     } else if (integrator == "Depositer") {
         return std::make_shared<Depositer>(m_bounceController);
     } else if (integrator == "NearestPhoton") {
