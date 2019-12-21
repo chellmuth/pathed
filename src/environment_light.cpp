@@ -57,7 +57,7 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(
-        Vector3(direction.x(), direction.z(), direction.y()),
+        direction,
         &phi, &theta
     );
 
@@ -87,8 +87,7 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
 
     const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
 
-    const Vector3 directionLocal = sphericalToCartesian(phi, theta);
-    const Vector3 direction(directionLocal.x(), directionLocal.z(), directionLocal.y());
+    const Vector3 direction = sphericalToCartesian(phi, theta);
 
     SurfaceSample inProgress = {
         .point = intersection.point + direction * 10000.f,
