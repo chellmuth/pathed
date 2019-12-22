@@ -22,7 +22,6 @@ public:
     ) const override;
 
     bool isDelta() const override { return true; }
-    bool isVolume() const override { return m_ior != 1.4f; }
 
 private:
     float m_ior;

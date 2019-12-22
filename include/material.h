@@ -48,8 +48,6 @@ public:
 
     Color emit() const;
 
-    virtual bool isVolume() const { return false; }
-
 protected:
     Color m_emit;
 };
