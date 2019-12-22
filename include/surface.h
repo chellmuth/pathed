@@ -27,6 +27,8 @@ public:
 
     std::shared_ptr<Shape> getShape() const;
     std::shared_ptr<Material> getMaterial() const;
+    std::shared_ptr<Medium> getInternalMedium() const { return m_internalMedium; }
+
     Color getRadiance() const;
 
     Point3 centroid() const override { return m_shape->centroid(); }
@@ -36,4 +38,5 @@ public:
 private:
     std::shared_ptr<Shape> m_shape;
     std::shared_ptr<Material> m_material;
+    std::shared_ptr<Medium> m_internalMedium;
 };

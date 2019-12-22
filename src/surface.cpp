@@ -7,7 +7,7 @@ Surface::Surface(
     std::shared_ptr<Material> material,
     std::shared_ptr<Medium> internalMedium
 )
-    : m_shape(shape), m_material(material)
+    : m_shape(shape), m_material(material), m_internalMedium(internalMedium)
 {}
 
 SurfaceSample Surface::sample(RandomGenerator &random) const

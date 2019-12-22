@@ -48,10 +48,8 @@ Color VolumePathTracer::L(
 
         modulation *= bsdfSample.throughput
             * transmittance(
-                lastIntersection.material,
-                bounceIntersection.material,
-                lastIntersection.point,
-                bounceIntersection.point
+                lastIntersection,
+                bounceIntersection
             )
             * cosTheta
             * invPDF;
@@ -80,14 +78,21 @@ Color VolumePathTracer::L(
 }
 
 Color VolumePathTracer::transmittance(
-    const Material *materialOut,
-    const Material *materialIn,
-    const Point3 &source,
-    const Point3 &target
+    const Intersection &sourceIntersection,
+    const Intersection &targetIntersection
 ) const {
-    if (!(materialOut->isVolume() && materialIn->isVolume())) { return Color(1.f); }
+    std::shared_ptr<Medium> sourceMedium;
+    std::shared_ptr<Medium> targetMedium;
+
+    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
+    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
+
+    if (!mediumIn || !mediumOut) { return Color(1.f); }
 
     const Color sigmaT(0.1486f, 0.321f, 0.736f);
+
+    const Point3 &source = sourceIntersection.point;
+    const Point3 &target = targetIntersection.point;
 
     const float distance = (target - source).toVector().length();
     return util::exp(-sigmaT * distance);

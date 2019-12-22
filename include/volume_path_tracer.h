@@ -19,10 +19,8 @@ public:
 
 private:
     Color transmittance(
-        const Material *materialOut,
-        const Material *materialIn,
-        const Point3 &source,
-        const Point3 &target
+        const Intersection &sourceIntersection,
+        const Intersection &targetIntersection
     ) const;
 
     Color direct(
