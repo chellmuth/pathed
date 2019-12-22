@@ -253,56 +253,66 @@ def pdf_analyze(all, point):
         divergence_list.append(divergences)
         error_list.append(errors)
 
+        compare_pdfs.generate_zero_map(render_path, batch_path, f"zero_{point[0]}_{point[1]}.exr")
+
         print(point)
         print(divergences)
         print(errors)
 
-    simple_chart.scatter(
-        [ d["kl"] for d in divergence_list ],
-        [ e["variance"] for e in error_list ],
-        title="Correlation between KL divergence and variance",
-        x_label="KL divergence",
-        y_label="Variance"
-    )
+    # simple_chart.scatter(
+    #     [ d["kl"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between KL divergence and variance",
+    #     x_label="KL divergence",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["chi2"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between Chi-squared divergence and variance",
+    #     x_label="Chi-squared",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["abs"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between squared pdf difference and variance",
+    #     x_label="Squared pdf distance",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["kl"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between KL divergence and MrSE",
+    #     x_label="KL divergence",
+    #     y_label="MrSE"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["chi2"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between Chi-squared divergence and MrSE",
+    #     x_label="Chi-squared",
+    #     y_label="MrSE"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["squared"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between squared pdf difference and MrSE",
+    #     x_label="Squared pdf distance",
+    #     y_label="MrSE"
+    # )
 
     simple_chart.scatter(
         [ d["chi2"] for d in divergence_list ],
-        [ e["variance"] for e in error_list ],
-        title="Correlation between Chi-squared divergence and variance",
+        [ e["bias"] for e in error_list ],
+        title="Correlation between Chi-squared divergence and bias",
         x_label="Chi-squared",
-        y_label="Variance"
-    )
-
-    simple_chart.scatter(
-        [ d["squared"] for d in divergence_list ],
-        [ e["variance"] for e in error_list ],
-        title="Correlation between squared pdf difference and variance",
-        x_label="Squared pdf distance",
-        y_label="Variance"
-    )
-
-    simple_chart.scatter(
-        [ d["kl"] for d in divergence_list ],
-        [ e["mrse"] for e in error_list ],
-        title="Correlation between KL divergence and MrSE",
-        x_label="KL divergence",
-        y_label="MrSE"
-    )
-
-    simple_chart.scatter(
-        [ d["chi2"] for d in divergence_list ],
-        [ e["mrse"] for e in error_list ],
-        title="Correlation between Chi-squared divergence and MrSE",
-        x_label="Chi-squared",
-        y_label="MrSE"
-    )
-
-    simple_chart.scatter(
-        [ d["squared"] for d in divergence_list ],
-        [ e["mrse"] for e in error_list ],
-        title="Correlation between squared pdf difference and MrSE",
-        x_label="Squared pdf distance",
-        y_label="MrSE"
+        y_label="Bias"
     )
 
 # Quick 1spp comparison between neural and path
@@ -452,8 +462,8 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
 
     dataset_path = context.dataset_path(dataset_name)
 
-    phases = [ "train", "test" ]
-    for phase in phases:
+    phases = [ ("train", pdf_count), ("test", 1)  ]
+    for phase, count in phases:
         raw_path = dataset_path / phase / "raw"
         renders_path = dataset_path / phase / "renders"
         raw_path.mkdir(parents=True, exist_ok=True)
@@ -464,7 +474,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
             "whatever.exr",
             [],
             {
-                "pdfCount": pdf_count,
+                "pdfCount": count,
             }
         )
 
@@ -489,7 +499,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "50000",
+            "--num_training_steps", "500000",
         ]
     )
 

@@ -25,12 +25,17 @@ def mse(samples, gt):
     measurement = sample_mean(samples)
     return (measurement - gt) ** 2
 
+def relative_bias(samples, gt):
+    measurement = sample_mean(samples)
+    return abs(measurement - gt) / gt
+
 def errors(samples, count, gt):
     return {
         "ae": ae(samples[:count], gt),
         "mrse": mrse(samples[:count], gt),
         "mse": mse(samples[:count], gt),
-        "variance": sample_variance(samples)
+        "variance": sample_variance(samples),
+        "bias": relative_bias(samples, gt)
     }
 
 def read_bin(filename):

@@ -62,6 +62,26 @@ def compare(exr1, exr2):
         "squared": squared_distance(exr1, exr2),
     }
 
+def generate_zero_map(source_path, inferred_path, out_path):
+    generated_map = zero_map(
+        pyexr.read(str(source_path)),
+        pyexr.read(str(inferred_path)),
+    )
+    pyexr.write(str(out_path), generated_map)
+
+def zero_map(source_exr, inferred_exr):
+    h, w, _ = source_exr.shape
+
+    source_exr = reshape(source_exr)
+    inferred_exr = reshape(inferred_exr)
+
+    zero_map = np.zeros(source_exr.shape)
+    for i, (p, q) in enumerate(zip(source_exr, inferred_exr)):
+        if q != 0. and p == 0.:
+            zero_map[i] = q
+
+    return zero_map.reshape((h, w, 1))
+
 def run(filename1, filename2):
     return compare(
         pyexr.read(str(filename1)),
