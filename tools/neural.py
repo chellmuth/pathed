@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+from collections import namedtuple
 from pathlib import Path
 
 import click
@@ -8,7 +9,9 @@ import click
 import compare_pdfs
 import photon_reader
 import process_raw_to_renders
+import simple_chart
 import runner
+import variance
 import visualize
 from mitsuba import run_mitsuba
 
@@ -29,6 +32,21 @@ dimensions = {
     "cbox-bw": (400, 400),
 }
 
+interesting_points = [
+    (20, 134), # left wall
+    (268, 151), # back wall
+    (384, 240), # right wall
+    (114, 26), # ceiling
+    (313, 349), # short box - right side
+    (246, 315), # short box - front side
+    (228, 270), # short box - top side
+    (82, 388), # floor
+    (146, 210), # tall box - front side
+    (94, 175), # tall box - left side
+]
+
+Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path" ])
+
 class Context:
     def __init__(self, scene_name=None, checkpoint_name=None, output_name=None):
         self.scene_name = scene_name or default_scene_name
@@ -47,11 +65,20 @@ class Context:
         self.checkpoint_name = checkpoint_name or default_checkpoints[self.scene_name]
         self.checkpoint_path = self.research_path / "checkpoints" / f"{self.checkpoint_name}.t"
 
+        self.gt_path = self.scenes_path / "gt.exr"
+
     def scene_path(self, scene_file):
         return self.scenes_path / scene_file
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
+
+    def artifacts(self, point):
+        return Artifacts(
+            render_path=self.output_root / f"render_{point[0]}_{point[1]}.exr",
+            batch_path=self.output_root / f"batch_{point[0]}_{point[1]}.exr",
+            samples_path=self.output_root / f"samples_{point[0]}_{point[1]}.bin",
+        )
 
 @click.group()
 def cli():
@@ -64,18 +91,7 @@ def pdf_compare(all, point):
     context = Context()
 
     if all:
-        points = [
-            (20, 134), # left wall
-            (268, 151), # back wall
-            (384, 240), # right wall
-            (114, 26), # ceiling
-            (313, 349), # short box - right side
-            (246, 315), # short box - front side
-            (228, 270), # short box - top side
-            (82, 388), # floor
-            (146, 210), # tall box - front side
-            (94, 175), # tall box - left side
-        ]
+        points = interesting_points
     elif point:
         points = [point]
     else:
@@ -83,7 +99,6 @@ def pdf_compare(all, point):
 
     print(f"Processing points: {points}")
 
-    kl_divergences = []
     for point in points:
         server_process = runner.launch_server(
             context.server_path,
@@ -122,6 +137,29 @@ def pdf_compare(all, point):
         )
 
         server_process.join()
+
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
+
+        time.sleep(10) # make sure server starts up
+
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-neural.xml"),
+            context.output_root / "neural.exr",
+            [ "-p1" ],
+            {
+                "x": point[0],
+                "y": point[1],
+                "spp": 1024,
+                "width": dimensions[default_scene_name][0],
+                "height": dimensions[default_scene_name][1],
+            },
+            verbose=True
+        )
 
         pdf_out_path = context.output_root / f"pdf_{point[0]}_{point[1]}.exr"
         photons_out_path = context.output_root / f"photon-bundle_{point[0]}_{point[1]}.dat"
@@ -165,12 +203,11 @@ def pdf_compare(all, point):
         plt.savefig(context.output_root / f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
         plt.close()
 
+        # Cleanup
         render_filename = f"render_{point[0]}_{point[1]}.exr"
         batch_filename = f"batch_{point[0]}_{point[1]}.exr"
+        samples_filename = f"samples_{point[0]}_{point[1]}.bin"
 
-        kl_divergences.append(compare_pdfs.run(render_filename, batch_filename))
-
-        # Cleanup
         shutil.move(render_filename, context.output_root / render_filename)
         shutil.move(batch_filename, context.output_root / batch_filename)
 
@@ -180,8 +217,44 @@ def pdf_compare(all, point):
         shutil.move(grid_filename, context.output_root / grid_filename)
         shutil.move(photons_filename, context.output_root / photons_filename)
         shutil.move(neural_filename, context.output_root / neural_filename)
+        shutil.move(samples_filename, context.output_root / samples_filename)
 
-    print(kl_divergences)
+@cli.command()
+@click.option("--all", is_flag=True)
+@click.option("--point", type=int, nargs=2)
+def pdf_analyze(all, point):
+    context = Context()
+
+    if all:
+        points = interesting_points
+    elif point:
+        points = [point]
+    else:
+        points = [(20, 134)]
+
+    divergence_list = []
+    error_list = []
+    for point in points:
+        artifacts = context.artifacts(point)
+        render_path = artifacts.render_path
+        batch_path = artifacts.batch_path
+        samples_path = artifacts.samples_path
+
+        samples = variance.read_bin(samples_path)
+        divergences = compare_pdfs.run(render_path, batch_path)
+        errors = variance.errors(samples, 1)
+
+        divergence_list.append(divergences)
+        error_list.append(errors)
+
+        print(point)
+        print(divergences)
+        print(errors)
+
+    simple_chart.scatter(
+        [ d["kl"] for d in divergence_list ],
+        [ e["variance"] for e in error_list ]
+    )
 
 # Quick 1spp comparison between neural and path
 @cli.command()
