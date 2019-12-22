@@ -10,6 +10,7 @@
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "medium.h"
 #include "microfacet.h"
 #include "mirror.h"
 #include "obj_parser.h"
@@ -29,6 +30,8 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#include <map>
+
 typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
 
 static bool checkFloat(json floatJson, float *value);
@@ -42,6 +45,10 @@ static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
+static void parseMedia(
+    json mediaJson,
+    std::map<std::string, std::shared_ptr<Medium> > &media
+);
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
@@ -72,6 +79,10 @@ Scene parseScene(std::ifstream &sceneFile)
         resolution
     );
 
+    std::map<std::string, std::shared_ptr<Medium> > media;
+    auto mediaJson = sceneJson["media"];
+    parseMedia(mediaJson, media);
+
     auto objects = sceneJson["models"];
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
     std::vector<std::shared_ptr<BVH> > bvhs;
@@ -90,7 +101,6 @@ Scene parseScene(std::ifstream &sceneFile)
     }
 
     std::shared_ptr<EnvironmentLight> environmentLight;
-    std::shared_ptr<EnvironmentLight> environmentLight2;
     auto environmentLightJson = sceneJson["environmentLight"];
     parseEnvironmentLight(environmentLightJson, environmentLight);
     if (environmentLight) {
@@ -107,6 +117,18 @@ Scene parseScene(std::ifstream &sceneFile)
     );
 
     return scene;
+}
+
+static void parseMedia(
+    json mediaJson,
+    std::map<std::string, std::shared_ptr<Medium> > &media
+) {
+    if (!mediaJson.is_array()) { return; }
+
+    for (auto &mediumJson : mediaJson) {
+        std::shared_ptr<Medium> medium = std::make_shared<Medium>();
+        media[mediumJson["name"]] = medium;
+    }
 }
 
 static void parseObjects(
