@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "material.h"
+#include "medium.h"
 #include "primitive.h"
 #include "random_generator.h"
 #include "shape.h"
@@ -13,7 +14,11 @@ struct Intersection;
 
 class Surface : public Primitive {
 public:
-    Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> material);
+    Surface(
+        std::shared_ptr<Shape> shape,
+        std::shared_ptr<Material> material,
+        std::shared_ptr<Medium> internalMedium
+    );
 
     SurfaceSample sample(RandomGenerator &random) const;
     float pdf(const Point3 &point) const;

@@ -2,7 +2,11 @@
 
 #include "ray.h"
 
-Surface::Surface(std::shared_ptr<Shape> shape, std::shared_ptr<Material> material)
+Surface::Surface(
+    std::shared_ptr<Shape> shape,
+    std::shared_ptr<Material> material,
+    std::shared_ptr<Medium> internalMedium
+)
     : m_shape(shape), m_material(material)
 {}
 

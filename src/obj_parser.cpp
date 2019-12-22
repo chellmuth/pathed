@@ -315,7 +315,7 @@ void ObjParser::processFace(Triangle *face)
     auto material = std::make_shared<Lambertian>(diffuse, emit);
 
     std::shared_ptr<Triangle> shape(face);
-    std::shared_ptr<Surface> surface(new Surface(shape, material));
+    std::shared_ptr<Surface> surface(new Surface(shape, material, nullptr));
 
     m_surfaces.push_back(surface);
 

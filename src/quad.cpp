@@ -7,6 +7,7 @@
 void Quad::parse(
     const Transform &transform,
     std::shared_ptr<Material> material,
+    std::shared_ptr<Medium> internalMedium,
     std::vector<std::shared_ptr<Surface>> &surfaces
 ) {
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
@@ -49,10 +50,10 @@ void Quad::parse(
         points[5]
     );
 
-    auto surface1 = std::make_shared<Surface>(triangle1, material);
+    auto surface1 = std::make_shared<Surface>(triangle1, material, internalMedium);
     surfaces.push_back(surface1);
 
-    auto surface2 = std::make_shared<Surface>(triangle2, material);
+    auto surface2 = std::make_shared<Surface>(triangle2, material, internalMedium);
     surfaces.push_back(surface2);
 
     for (int i = 0; i < 6; i++) {

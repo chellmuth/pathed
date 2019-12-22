@@ -18,6 +18,7 @@
     {
       "type": "obj",
       "filename": "assets/teapot-full/Mesh000.obj",
+      "internalMedia": "tea",
       "bsdf": {
         "type": "glass",
         "ior": "1.15",
@@ -27,6 +28,7 @@
     {
       "type": "obj",
       "filename": "assets/teapot-full/Mesh002.obj",
+      "internalMedia": "tea",
       "bsdf": {
         "type": "glass",
         "ior": "1.15",
