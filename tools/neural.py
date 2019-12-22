@@ -5,6 +5,7 @@ from collections import namedtuple
 from pathlib import Path
 
 import click
+import pyexr
 
 import compare_pdfs
 import photon_reader
@@ -79,6 +80,10 @@ class Context:
             batch_path=self.output_root / f"batch_{point[0]}_{point[1]}.exr",
             samples_path=self.output_root / f"samples_{point[0]}_{point[1]}.bin",
         )
+
+    def gt_pixel(self, point, channel=0):
+        exr = pyexr.read(str(self.gt_path))
+        return exr[point[1]][point[0]][channel]
 
 @click.group()
 def cli():
@@ -242,7 +247,7 @@ def pdf_analyze(all, point):
 
         samples = variance.read_bin(samples_path)
         divergences = compare_pdfs.run(render_path, batch_path)
-        errors = variance.errors(samples, 1)
+        errors = variance.errors(samples, context.gt_pixel(point))
 
         divergence_list.append(divergences)
         error_list.append(errors)

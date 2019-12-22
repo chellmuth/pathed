@@ -13,29 +13,23 @@ def sample_variance(samples):
         for sample in samples
     ) / (len(samples) - 1)
 
-def mrse(samples, count):
-    gt = sample_mean(samples[count:])
-    measurement = sample_mean(samples[:count])
-
+def mrse(samples, gt):
+    measurement = sample_mean(samples)
     return (measurement - gt) ** 2 / gt
 
-def ae(samples, count):
-    gt = sample_mean(samples[count:])
-    measurement = sample_mean(samples[:count])
-
+def ae(samples, gt):
+    measurement = sample_mean(samples)
     return abs(measurement - gt)
 
-def mse(samples, count):
-    gt = sample_mean(samples[count:])
-    measurement = sample_mean(samples[:count])
-
+def mse(samples, gt):
+    measurement = sample_mean(samples)
     return (measurement - gt) ** 2
 
-def errors(samples, count):
+def errors(samples, gt):
     return {
-        "ae": ae(samples, count),
-        "mrse": mrse(samples, count),
-        "mse": mse(samples, count),
+        "ae": ae(samples, gt),
+        "mrse": mrse(samples, gt),
+        "mse": mse(samples, gt),
         "variance": sample_variance(samples)
     }
 
