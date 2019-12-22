@@ -89,7 +89,7 @@ Color VolumePathTracer::transmittance(
 
     if (!mediumIn || !mediumOut) { return Color(1.f); }
 
-    const Color sigmaT(0.1486f, 0.321f, 0.736f);
+    const Color sigmaT = mediumOut->sigmaT();
 
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;

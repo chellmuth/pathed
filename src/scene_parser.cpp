@@ -134,7 +134,10 @@ static void parseMedia(
     if (!mediaJson.is_array()) { return; }
 
     for (auto &mediumJson : mediaJson) {
-        std::shared_ptr<Medium> medium = std::make_shared<Medium>();
+        std::cout << mediumJson["sigma_t"] << std::endl;
+        Color sigmaT = parseColor(mediumJson["sigma_t"]);
+
+        std::shared_ptr<Medium> medium = std::make_shared<Medium>(sigmaT);
         media[mediumJson["name"]] = medium;
     }
 }
