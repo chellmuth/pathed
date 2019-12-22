@@ -1,9 +1,13 @@
 from matplotlib import pyplot as plt
 
-def scatter(xs, ys):
+def scatter(xs, ys, title="", x_label="", y_label=""):
     figure = plt.figure()
 
     axes = figure.add_subplot()
+    axes.set_title(title)
+    axes.set_xlabel(x_label)
+    axes.set_ylabel(y_label)
+
     axes.scatter(xs, ys)
 
     plt.show()

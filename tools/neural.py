@@ -253,7 +253,34 @@ def pdf_analyze(all, point):
 
     simple_chart.scatter(
         [ d["kl"] for d in divergence_list ],
-        [ e["variance"] for e in error_list ]
+        [ e["variance"] for e in error_list ],
+        title="Correlation between KL divergence and variance",
+        x_label="KL divergence",
+        y_label="Variance"
+    )
+
+    simple_chart.scatter(
+        [ d["chi2"] for d in divergence_list ],
+        [ e["variance"] for e in error_list ],
+        title="Correlation between Chi-squared divergence and variance",
+        x_label="Chi-squared",
+        y_label="Variance"
+    )
+
+    simple_chart.scatter(
+        [ d["kl"] for d in divergence_list ],
+        [ e["mrse"] for e in error_list ],
+        title="Correlation between KL divergence and MrSE",
+        x_label="KL divergence",
+        y_label="MrSE"
+    )
+
+    simple_chart.scatter(
+        [ d["chi2"] for d in divergence_list ],
+        [ e["mrse"] for e in error_list ],
+        title="Correlation between Chi-squared divergence and MrSE",
+        x_label="Chi-squared",
+        y_label="MrSE"
     )
 
 # Quick 1spp comparison between neural and path
