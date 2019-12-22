@@ -35,6 +35,20 @@ def chi2_divergence(exr1, exr2):
 
     return divergence
 
+def absolute_distance(exr1, exr2):
+    divergence = 0
+    for i, (p, q) in enumerate(zip(exr1, exr2)):
+        divergence += abs(p - q)
+
+    return divergence
+
+def squared_distance(exr1, exr2):
+    divergence = 0
+    for i, (p, q) in enumerate(zip(exr1, exr2)):
+        divergence += (p - q) ** 2
+
+    return divergence
+
 def compare(exr1, exr2):
     assert exr1.shape == exr2.shape
 
@@ -44,6 +58,8 @@ def compare(exr1, exr2):
     return {
         "kl": kl_divergence(exr1, exr2),
         "chi2": chi2_divergence(exr1, exr2),
+        "abs": absolute_distance(exr1, exr2),
+        "squared": squared_distance(exr1, exr2),
     }
 
 def run(filename1, filename2):

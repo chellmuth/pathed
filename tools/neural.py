@@ -245,9 +245,10 @@ def pdf_analyze(all, point):
         batch_path = artifacts.batch_path
         samples_path = artifacts.samples_path
 
-        samples = variance.read_bin(samples_path)
         divergences = compare_pdfs.run(render_path, batch_path)
-        errors = variance.errors(samples, context.gt_pixel(point))
+
+        samples = variance.read_bin(samples_path)
+        errors = variance.errors(samples, 4, context.gt_pixel(point))
 
         divergence_list.append(divergences)
         error_list.append(errors)
@@ -273,6 +274,14 @@ def pdf_analyze(all, point):
     )
 
     simple_chart.scatter(
+        [ d["squared"] for d in divergence_list ],
+        [ e["variance"] for e in error_list ],
+        title="Correlation between squared pdf difference and variance",
+        x_label="Squared pdf distance",
+        y_label="Variance"
+    )
+
+    simple_chart.scatter(
         [ d["kl"] for d in divergence_list ],
         [ e["mrse"] for e in error_list ],
         title="Correlation between KL divergence and MrSE",
@@ -285,6 +294,14 @@ def pdf_analyze(all, point):
         [ e["mrse"] for e in error_list ],
         title="Correlation between Chi-squared divergence and MrSE",
         x_label="Chi-squared",
+        y_label="MrSE"
+    )
+
+    simple_chart.scatter(
+        [ d["squared"] for d in divergence_list ],
+        [ e["mrse"] for e in error_list ],
+        title="Correlation between squared pdf difference and MrSE",
+        x_label="Squared pdf distance",
         y_label="MrSE"
     )
 

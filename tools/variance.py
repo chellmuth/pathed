@@ -25,11 +25,11 @@ def mse(samples, gt):
     measurement = sample_mean(samples)
     return (measurement - gt) ** 2
 
-def errors(samples, gt):
+def errors(samples, count, gt):
     return {
-        "ae": ae(samples, gt),
-        "mrse": mrse(samples, gt),
-        "mse": mse(samples, gt),
+        "ae": ae(samples[:count], gt),
+        "mrse": mrse(samples[:count], gt),
+        "mse": mse(samples[:count], gt),
         "variance": sample_variance(samples)
     }
 
