@@ -77,12 +77,29 @@ Color VolumePathTracer::L(
     return result;
 }
 
+// static bool checkInternal(
+//     const Intersection &sourceIntersection,
+//     const Intersection &targetIntersection
+// ) {
+//     const Point3 &source = sourceIntersection.point;
+//     const Point3 &target = targetIntersection.point;
+
+//     const Vector3 sourceWi = (target - source).toVector().normalized();
+//     const Vector3 targetWo = -sourceWi;
+
+//     return (sourceWi.dot(sourceIntersection.normal) < 0.f)
+//         && (targetWo.dot(targetIntersection.normal) < 0.f);
+// }
+
 Color VolumePathTracer::transmittance(
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection
 ) const {
     std::shared_ptr<Medium> sourceMedium;
     std::shared_ptr<Medium> targetMedium;
+
+    // bool isInternal = checkInternal(sourceIntersection, targetIntersection);
+    // if (!isInternal) { return Color(1.f); }
 
     const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
     const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
