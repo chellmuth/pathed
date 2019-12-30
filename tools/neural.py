@@ -17,7 +17,7 @@ import visualize
 from mitsuba import run_mitsuba
 
 default_scene_name = "cbox-bw"
-default_output_name = "cbox-bw--debug"
+default_output_name = "cbox-bw--walk"
 
 default_checkpoints = {
     "kitchen": None,
@@ -448,6 +448,42 @@ def debug_pixel(x, y):
         [raw_grid_from_renderer],
         f"grid_{x}_{y}.png"
     )
+
+@cli.command()
+@click.argument("x", type=int)
+@click.argument("y", type=int)
+def walk_pixel(x, y):
+    context = Context()
+
+    scale = 4
+
+    for offset in range(2):
+        x_scaled = scale * x + offset
+        y_scaled = scale * y
+
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
+
+        time.sleep(10) # make sure server starts up
+
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-neural.xml"),
+            f"render_{x}_{y}__{offset}.exr",
+            [ "-p1" ],
+            {
+                "x": x_scaled,
+                "y": y_scaled,
+                "width": dimensions[default_scene_name][0] * scale,
+                "height": dimensions[default_scene_name][1] * scale,
+            },
+            verbose=True
+        )
+
+        server_process.join()
 
 @cli.command()
 @click.argument("scene_name")
