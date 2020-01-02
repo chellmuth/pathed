@@ -455,9 +455,9 @@ def debug_pixel(x, y):
 def walk_pixel(x, y):
     context = Context()
 
-    scale = 4
+    scale = 5
 
-    for offset in range(2):
+    for offset in range(50):
         x_scaled = scale * x + offset
         y_scaled = scale * y
 
@@ -472,7 +472,7 @@ def walk_pixel(x, y):
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("scene-neural.xml"),
-            f"render_{x}_{y}__{offset}.exr",
+            f"render_{x}_{y}.exr",
             [ "-p1" ],
             {
                 "x": x_scaled,
@@ -484,6 +484,65 @@ def walk_pixel(x, y):
         )
 
         server_process.join()
+
+        batch_path = Path(f"batch_{x_scaled}_{y_scaled}.exr")
+        neural_out_path = context.output_root / f"neural_{x}_{y}__{offset}.png"
+        visualize.convert_to_density_mesh(
+            batch_path,
+            neural_out_path
+        )
+
+        batch_filename = f"batch_{x_scaled}_{y_scaled}.exr"
+        grid_filename = f"grid_{x_scaled}_{y_scaled}.bin"
+        neural_filename = f"neural_{x_scaled}_{y_scaled}.bin"
+
+        os.remove(batch_filename)
+        os.remove(grid_filename)
+        os.remove(neural_filename)
+
+    render_filename = f"render_{x}_{y}.exr"
+    os.remove(render_filename)
+
+@cli.command()
+@click.argument("x", type=int)
+@click.argument("y", type=int)
+def check_convergence(x, y):
+    context = Context()
+
+    point = [x, y]
+    server_process = runner.launch_server(
+        context.server_path,
+        0,
+        context.checkpoint_path
+    )
+
+    time.sleep(10) # make sure server starts up
+
+    power = 10
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("scene-neural.xml"),
+        context.output_root / "neural.exr",
+        [ "-p1" ],
+        {
+            "x": point[0],
+            "y": point[1],
+            "spp": 2 ** power,
+            "width": dimensions[default_scene_name][0],
+            "height": dimensions[default_scene_name][1],
+        },
+        verbose=True
+    )
+
+    samples_filename = f"samples_{point[0]}_{point[1]}.bin"
+    samples_path = context.artifacts((x, y)).samples_path
+    shutil.move(samples_filename, samples_path)
+
+    samples = variance.read_bin(samples_path)
+    for i in range(power + 1):
+        errors = variance.errors(samples, 2 ** i, context.gt_pixel(point))
+        print(2 ** i, errors)
 
 @cli.command()
 @click.argument("scene_name")

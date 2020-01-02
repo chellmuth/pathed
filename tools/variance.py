@@ -34,8 +34,10 @@ def errors(samples, count, gt):
         "ae": ae(samples[:count], gt),
         "mrse": mrse(samples[:count], gt),
         "mse": mse(samples[:count], gt),
-        "variance": sample_variance(samples),
-        "bias": relative_bias(samples, gt)
+        "variance": sample_variance(samples[:count]),
+        "bias": relative_bias(samples[:count], gt),
+        "mean": sample_mean(samples[:count]),
+        "gt": gt,
     }
 
 def read_bin(filename):
