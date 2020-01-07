@@ -2,11 +2,20 @@ import math
 from dataclasses import dataclass
 
 import click
+import matplotlib.pyplot as plt
+import numpy as np
 
 @dataclass
 class Point:
     x: float
     y: float
+
+    def update(self, attribute, amount):
+        if attribute == "x":
+            return Point(self.x + amount, self.y)
+
+        if attribute == "y":
+            return Point(self.x, self.y + amount)
 
 def length(point1, point2):
     return math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2)
@@ -38,13 +47,27 @@ def last_cell(exit_point):
 
     return guess
 
+def graph(cells):
+    x_cols = 200
+    y_cols = 200
+
+    grid = np.zeros((y_cols, x_cols))
+    for cell in cells:
+        grid[cell.y, cell.x] = 1
+
+    figure = plt.figure(1)
+    axes = figure.add_subplot()
+
+    axes.imshow(grid, origin="lower")
+    plt.show()
+
 @click.command()
 def init():
-    x_cols = 2
-    y_cols = 2
+    x_cols = 200
+    y_cols = 200
 
-    entry_point = Point(1.8, 0.)
-    exit_point = Point(0.1, 1.1)
+    entry_point = Point(50.8, 0.)
+    exit_point = Point(163.3, 200.)
 
     spans = Point(
         exit_point.x - entry_point.x,
@@ -69,27 +92,31 @@ def init():
     current_cell = cell(entry_point)
     print("last cell:", last_cell(exit_point))
 
-    print("visited cell:", current_cell)
     print("initial next times:", next_times)
+
+    visited_cells = [ current_cell ]
 
     while current_cell != last_cell(exit_point):
         if next_times.x < next_times.y:
             if rates.x > 0:
                 next_times.x += 1. / rates.x
-                current_cell.x += 1
+                current_cell = current_cell.update("x", 1)
             else:
                 next_times.x -= 1. / rates.x
-                current_cell.x -= 1
+                current_cell = current_cell.update("x", -1)
         else:
             if rates.y > 0:
                 next_times.y += 1. / rates.y
-                current_cell.y += 1
+                current_cell = current_cell.update("y", 1)
             else:
                 next_times.y -= 1. / rates.y
-                current_cell.y -= 1
+                current_cell = current_cell.update("y", -1)
 
-        print("visited cell:", current_cell)
-        print(next_times)
+        visited_cells.append(current_cell)
+        # print(next_times)
+
+    # print(visited_cells)
+    graph(visited_cells)
 
 if __name__ == "__main__":
     init()
