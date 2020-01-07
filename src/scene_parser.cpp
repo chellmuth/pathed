@@ -27,6 +27,7 @@
 #include "transform.h"
 #include "uv.h"
 #include "vector.h"
+#include "vol_parser.h"
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -136,8 +137,9 @@ static void parseMedia(
 
     for (auto &mediumJson : mediaJson) {
         if (mediumJson["type"] == "heterogeneous") {
-        } else {
-            std::cout << mediumJson["sigma_t"] << std::endl;
+            std::shared_ptr<Medium> medium = VolParser::parse(mediumJson["filename"]);
+            media[mediumJson["name"]] = medium;
+        } else if (mediumJson["type"] == "homogeneous") {
             Color sigmaT = parseColor(mediumJson["sigma_t"]);
 
             std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(sigmaT);

@@ -11,6 +11,7 @@
   "media": [
     {
       "name": "tea",
+      "type": "homogeneous",
       "sigma_t": [ "0.1486", "0.321", "0.736" ]
     }
   ],
