@@ -31,7 +31,10 @@
     {
       "type": "obj",
       "filename": "assets/smoke/bounds.obj",
-      "internal_medium": "smoke"
+      "internal_medium": "smoke",
+      "bsdf": {
+        "type": "passthrough"
+      }
     },
     {
       "type": "sphere",

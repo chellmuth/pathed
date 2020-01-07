@@ -16,6 +16,7 @@
 #include "mirror.h"
 #include "obj_parser.h"
 #include "oren_nayar.h"
+#include "passthrough.h"
 #include "perfect_transmission.h"
 #include "phong.h"
 #include "point.h"
@@ -279,6 +280,8 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         );
     } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
+    } else if (bsdfJson["type"] == "passthrough") {
+        return std::make_shared<Passthrough>();
     } else if (bsdfJson["type"] == "perfect-transmission") {
         return std::make_shared<PerfectTransmission>();
     } else if (bsdfJson["type"] == "glass") {
