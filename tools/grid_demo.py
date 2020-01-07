@@ -11,12 +11,18 @@ class Point:
 def length(point1, point2):
     return math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2)
 
-def calc_next_distance(current):
-    if current == int(current):
-        return current + 1.
-    return math.ceil(current) - current
+def calc_next_distance(current, is_forward):
+    if is_forward:
+        if current == int(current):
+            return current + 1.
+        return math.ceil(current) - current
+    else:
+        if current == int(current):
+            return current - 1.
+        return math.floor(current) - current
 
-def calc_next_time(rate, next_distance):
+def calc_next_time(rate, entry_point):
+    next_distance = calc_next_distance(entry_point, rate > 0.)
     return next_distance / rate
 
 def cell(current_point):
@@ -37,8 +43,8 @@ def init():
     x_cols = 2
     y_cols = 2
 
-    entry_point = Point(0., 0.)
-    exit_point = Point(2., 1.1)
+    entry_point = Point(1.8, 0.)
+    exit_point = Point(0.1, 1.1)
 
     spans = Point(
         exit_point.x - entry_point.x,
@@ -56,8 +62,8 @@ def init():
     print("rates:", rates)
 
     next_times = Point(
-        calc_next_time(rates.x, calc_next_distance(entry_point.x)),
-        calc_next_time(rates.y, calc_next_distance(entry_point.y)),
+        calc_next_time(rates.x, entry_point.x),
+        calc_next_time(rates.y, entry_point.y)
     )
 
     current_cell = cell(entry_point)
@@ -68,11 +74,19 @@ def init():
 
     while current_cell != last_cell(exit_point):
         if next_times.x < next_times.y:
-            next_times.x += 1. / rates.x
-            current_cell.x += 1
+            if rates.x > 0:
+                next_times.x += 1. / rates.x
+                current_cell.x += 1
+            else:
+                next_times.x -= 1. / rates.x
+                current_cell.x -= 1
         else:
-            next_times.y += 1. / rates.y
-            current_cell.y += 1
+            if rates.y > 0:
+                next_times.y += 1. / rates.y
+                current_cell.y += 1
+            else:
+                next_times.y -= 1. / rates.y
+                current_cell.y -= 1
 
         print("visited cell:", current_cell)
         print(next_times)
