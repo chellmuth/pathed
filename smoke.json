@@ -11,6 +11,7 @@
   "media": [
     {
       "name": "smoke",
+      "type": "heterogeneous",
       "filename": "assets/smoke/smoke.vol"
     }
   ],
@@ -29,7 +30,8 @@
     },
     {
       "type": "obj",
-      "filename": "assets/smoke/bounds.obj"
+      "filename": "assets/smoke/bounds.obj",
+      "internal_medium": "smoke"
     },
     {
       "type": "sphere",

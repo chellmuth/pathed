@@ -4,10 +4,5 @@
 
 class Medium {
 public:
-    Medium(Color sigmaT) : m_sigmaT(sigmaT) {}
-
-    Color sigmaT() const { return m_sigmaT; }
-
-private:
-    Color m_sigmaT;
+    virtual Color sigmaT() const = 0;
 };

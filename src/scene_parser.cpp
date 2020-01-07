@@ -6,6 +6,7 @@
 #include "environment_light.h"
 #include "glass.h"
 #include "globals.h"
+#include "homogeneous_medium.h"
 #include "job.h"
 #include "lambertian.h"
 #include "light.h"
@@ -134,11 +135,14 @@ static void parseMedia(
     if (!mediaJson.is_array()) { return; }
 
     for (auto &mediumJson : mediaJson) {
-        std::cout << mediumJson["sigma_t"] << std::endl;
-        Color sigmaT = parseColor(mediumJson["sigma_t"]);
+        if (mediumJson["type"] == "heterogeneous") {
+        } else {
+            std::cout << mediumJson["sigma_t"] << std::endl;
+            Color sigmaT = parseColor(mediumJson["sigma_t"]);
 
-        std::shared_ptr<Medium> medium = std::make_shared<Medium>(sigmaT);
-        media[mediumJson["name"]] = medium;
+            std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(sigmaT);
+            media[mediumJson["name"]] = medium;
+        }
     }
 }
 
