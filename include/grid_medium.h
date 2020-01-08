@@ -45,6 +45,8 @@ public:
     GridMedium(const GridInfo &gridInfo, const std::vector<float> &gridData);
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
+    float findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const;
+
     float lookup(int x, int y, int z) const;
 
 protected:
