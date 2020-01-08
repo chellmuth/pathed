@@ -20,6 +20,10 @@ struct GridInfo {
     float maxX;
     float maxY;
     float maxZ;
+
+    float widthX() const { return maxX - minX; }
+    float widthY() const { return maxY - minY; }
+    float widthZ() const { return maxZ - minZ; }
 };
 
 struct GridCell {
@@ -28,10 +32,26 @@ struct GridCell {
     int z;
 
     GridCell(const Point3 &point)
-        : x(std::floor(point.x())),
-          y(std::floor(point.y())),
-          z(std::floor(point.z()))
-    {}
+    {
+        // Make sure the intersecting dimension stays "outside" the grid initially
+        if (point.x() == 0.f) {
+            x = -1;
+        } else {
+            x = (int)std::floor(point.x());
+        }
+
+        if (point.y() == 0.f) {
+            y = -1;
+        } else {
+            y = (int)std::floor(point.y());
+        }
+
+        if (point.z() == 0.f) {
+            z = -1;
+        } else {
+            z = (int)std::floor(point.z());
+        }
+    }
 
     bool operator==(const GridCell &cell) const {
         return x == cell.x && y == cell.y && z == cell.z;
@@ -55,6 +75,8 @@ public:
     RegularTrackerStepResult step();
 
 private:
+    float worldTime(float gridTime);
+
     const GridInfo m_gridInfo;
     const Point3 m_entryPoint;
     const Point3 m_exitPoint;
@@ -76,7 +98,6 @@ public:
 
 protected:
     Point3 worldToGrid(const Point3 &worldPoint) const;
-    Point3 gridToWorld(const Point3 &gridPoint) const;
     float lookup(int cellX, int cellY, int cellZ) const;
 
 

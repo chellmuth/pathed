@@ -3,13 +3,14 @@
 #include "util.h"
 
 #include <assert.h>
+#include <limits>
 
 GridMedium::GridMedium(const GridInfo &gridInfo, const std::vector<float> &gridData)
     : m_gridInfo(gridInfo), m_gridData(gridData)
 {
-    m_widthX = m_gridInfo.maxX - m_gridInfo.minX;
-    m_widthY = m_gridInfo.maxY - m_gridInfo.minY;
-    m_widthZ = m_gridInfo.maxZ - m_gridInfo.minZ;
+    m_widthX = m_gridInfo.widthX();
+    m_widthY = m_gridInfo.widthY();
+    m_widthZ = m_gridInfo.widthZ();
 }
 
 float GridMedium::lookup(int cellX, int cellY, int cellZ) const
@@ -17,32 +18,51 @@ float GridMedium::lookup(int cellX, int cellY, int cellZ) const
     return m_gridData[(cellZ * m_gridInfo.cellsY + cellY) * m_gridInfo.cellsX + cellX];
 }
 
+static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
+{
+    return Point3(
+        (gridPoint.x() / gridInfo.cellsX) * gridInfo.widthX() + gridInfo.minX,
+        (gridPoint.y() / gridInfo.cellsY) * gridInfo.widthY() + gridInfo.minY,
+        (gridPoint.z() / gridInfo.cellsZ) * gridInfo.widthZ() + gridInfo.minZ
+    );
+}
+
 static float calculateNextDistance(float currentValue, bool isForward)
 {
     if (isForward) {
         if (currentValue == std::floor(currentValue)) {
-            return currentValue + 1.f;
+            return 1.f;
         } else {
             return std::ceil(currentValue) - currentValue;
         }
     } else {
         if (currentValue == std::floor(currentValue)) {
-            return currentValue - 1.f;
+            return -1.f;
         } else {
             return std::floor(currentValue) - currentValue;
         }
     }
 }
 
+static float calculateNextTime(float nextDistance, float rate)
+{
+    if (rate == 0.f) { return std::numeric_limits<float>::max(); }
+    return nextDistance / rate;
+}
+
 static Vector3 calculateNextTimes(const Vector3 &rates, const Point3 &entryPoint)
 {
     const Vector3 nextDistances(
-        calculateNextDistance(entryPoint.x(), rates.x()),
-        calculateNextDistance(entryPoint.y(), rates.y()),
-        calculateNextDistance(entryPoint.z(), rates.z())
+        calculateNextDistance(entryPoint.x(), rates.x() > 0.f),
+        calculateNextDistance(entryPoint.y(), rates.y() > 0.f),
+        calculateNextDistance(entryPoint.z(), rates.z() > 0.f)
     );
 
-    return nextDistances / rates;
+    return Vector3(
+        calculateNextTime(nextDistances.x(), rates.x()),
+        calculateNextTime(nextDistances.y(), rates.y()),
+        calculateNextTime(nextDistances.z(), rates.z())
+    );
 }
 
 static GridCell updateCell(const GridCell &cell, const std::string &attribute, int amount)
@@ -97,15 +117,6 @@ Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
     );
 }
 
-Point3 GridMedium::gridToWorld(const Point3 &gridPoint) const
-{
-    return Point3(
-        (gridPoint.x() / m_gridInfo.cellsX) * m_widthX + m_gridInfo.minX,
-        (gridPoint.y() / m_gridInfo.cellsY) * m_widthY + m_gridInfo.minY,
-        (gridPoint.z() / m_gridInfo.cellsZ) * m_widthZ + m_gridInfo.minZ
-    );
-}
-
 static bool validCell(const GridInfo &gridInfo, const GridCell &cell)
 {
     if (cell.x < 0 || cell.y < 0 || cell.z < 0) { return false; }
@@ -134,6 +145,16 @@ RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3&
 
     m_currentTime = 0.f;
     m_currentCell = GridCell(m_entryPoint);
+}
+
+float RegularTrackerState::worldTime(float gridTime)
+{
+    const float totalGridTime = (m_entryPoint - m_exitPoint).toVector().length();
+    const float timeRatio = gridTime / totalGridTime;
+
+    const float totalWorldTime = (gridToWorld(m_gridInfo, m_exitPoint) - gridToWorld(m_gridInfo, m_entryPoint)).toVector().length();
+
+    return timeRatio * totalWorldTime;
 }
 
 RegularTrackerStepResult RegularTrackerState::step()
@@ -173,8 +194,8 @@ RegularTrackerStepResult RegularTrackerState::step()
         return RegularTrackerStepResult({
             true,
             m_currentCell,
-            cellTime,
-            m_currentTime
+            worldTime(cellTime),
+            worldTime(m_currentTime)
         });
     } else {
         return RegularTrackerStepResult({
@@ -210,7 +231,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
 float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const
 {
-    const float targetExponent = std::log(targetTransmission);
+    const float targetExponent = -std::log(targetTransmission);
 
     const Point3 entryPoint = worldToGrid(entryPointWorld);
     const Point3 exitPoint = worldToGrid(exitPointWorld);
@@ -224,17 +245,16 @@ float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 
         const GridCell &currentCell = stepResult.cell;
         const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
 
-        const float cellExponent = -sigmaT * stepResult.cellTime;
+        const float cellExponent = sigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;
-        if (accumulatedExponent > targetTransmission) {
-            const float overflow = accumulatedExponent - targetTransmission;
-            const float cellRatio = overflow / cellExponent;
+
+        if (accumulatedExponent >= targetExponent) {
+            const float overflow = accumulatedExponent - targetExponent;
+            const float cellRatio = 1.f - overflow / cellExponent;
             const float actualCellTime = stepResult.cellTime * cellRatio;
 
-            return stepResult.currentTime + actualCellTime;
+            return stepResult.currentTime - stepResult.cellTime + actualCellTime;
         }
-
-        accumulatedExponent += -sigmaT * stepResult.cellTime;
 
         stepResult = trackerState.step();
     }
