@@ -9,6 +9,8 @@
 #include "stb_image_write.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
 
 Job *g_job;
 RTCDevice g_rtcDevice;

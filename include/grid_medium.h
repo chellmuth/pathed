@@ -46,8 +46,6 @@ struct RegularTrackerStepResult {
     GridCell cell;
     float cellTime;
     float currentTime;
-    /* Point3 entryPoint; */
-    /* Point3 exitPoint; */
 };
 
 class RegularTrackerState {
