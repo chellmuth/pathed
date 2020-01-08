@@ -61,6 +61,17 @@ def graph(cells):
     axes.imshow(grid, origin="lower")
     plt.show()
 
+def point_at_time(entry_point, exit_point, time):
+    spans = Point(
+        exit_point.x - entry_point.x,
+        exit_point.y - entry_point.y,
+    )
+
+    return Point(
+        entry_point.x + spans.x * time,
+        entry_point.y + spans.y * time,
+    )
+
 @click.command()
 def init():
     x_cols = 200

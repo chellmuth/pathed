@@ -106,13 +106,10 @@ Color VolumePathTracer::transmittance(
 
     if (!mediumIn || !mediumOut) { return Color(1.f); }
 
-    const Color sigmaT = mediumOut->sigmaT();
-
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    const float distance = (target - source).toVector().length();
-    return util::exp(-sigmaT * distance);
+    return mediumOut->transmittance(source, target);
 }
 
 Color VolumePathTracer::direct(

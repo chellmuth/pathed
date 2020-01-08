@@ -102,6 +102,14 @@ Vector3 Vector3::operator- () const
     );
 }
 
+Vector3 Vector3::operator/ (const Vector3& v) const
+{
+    return Vector3(
+        m_x / v.x(),
+        m_y / v.y(),
+        m_z / v.z()
+    );
+}
 
 bool Vector3::operator==(const Vector3 &v) const
 {

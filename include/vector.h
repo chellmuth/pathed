@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 
@@ -26,8 +27,11 @@ public:
     Vector3 operator* (const float t) const;
     Vector3 operator- (const Vector3& v) const;
     Vector3 operator+ (const Vector3& v) const;
+    Vector3 operator/ (const Vector3& v) const;
     Vector3 operator- () const;
     bool operator==(const Vector3 &v) const;
+
+    float min() const { return std::min(m_x, std::min(m_y, m_z)); }
 
     void debug() const;
     std::string toString() const {
