@@ -173,12 +173,14 @@ RegularTrackerStepResult RegularTrackerState::step()
         return RegularTrackerStepResult({
             true,
             m_currentCell,
-            cellTime
+            cellTime,
+            m_currentTime
         });
     } else {
         return RegularTrackerStepResult({
             false,
             GridCell({-1, -1, -1}),
+            0.f,
             0.f
         });
     }
@@ -213,59 +215,29 @@ float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 
     const Point3 entryPoint = worldToGrid(entryPointWorld);
     const Point3 exitPoint = worldToGrid(exitPointWorld);
 
-    const Vector3 rayPath = (exitPoint - entryPoint).toVector();
-    const float totalDistance = rayPath.length();
-
-    const Vector3 spans = (exitPoint - entryPoint).toVector();
-    const Vector3 rates = spans / totalDistance;
-    Vector3 nextTimes = calculateNextTimes(rates, entryPoint);
-
-    float currentTime = 0.f;
     float accumulatedExponent = 0.f;
 
-    GridCell currentCell(entryPoint);
-    while(validCell(m_gridInfo, currentCell)) {
-        const float minTime = nextTimes.min();
+    RegularTrackerState trackerState(m_gridInfo, entryPoint, exitPoint);
 
-        const float cellTime = minTime - currentTime;
+    auto stepResult = trackerState.step();
+    while(stepResult.isValidStep) {
+        const GridCell &currentCell = stepResult.cell;
         const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
 
-        const float cellExponent = -sigmaT * cellTime;
+        const float cellExponent = -sigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;
         if (accumulatedExponent > targetTransmission) {
             const float overflow = accumulatedExponent - targetTransmission;
             const float cellRatio = overflow / cellExponent;
-            const float actualCellTime = cellTime * cellRatio;
+            const float actualCellTime = stepResult.cellTime * cellRatio;
 
-            return currentTime + actualCellTime;
+            return stepResult.currentTime + actualCellTime;
         }
 
-        currentTime = minTime;
+        accumulatedExponent += -sigmaT * stepResult.cellTime;
 
-        if (nextTimes.x() == minTime) {
-            if (rates.x() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "x", 1.f / rates.x());
-                currentCell = updateCell(currentCell, "x", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "x", -1.f / rates.x());
-                currentCell = updateCell(currentCell, "x", -1);
-            }
-        } else if (nextTimes.y() == minTime) {
-            if (rates.y() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "y", 1.f / rates.y());
-                currentCell = updateCell(currentCell, "y", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "y", -1.f / rates.y());
-                currentCell = updateCell(currentCell, "y", -1);
-            }
-        } else if (nextTimes.z() == minTime) {
-            if (rates.z() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "z", 1.f / rates.z());
-                currentCell = updateCell(currentCell, "z", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "z", -1.f / rates.z());
-                currentCell = updateCell(currentCell, "z", -1);
-            }
-        } else { assert(0); }
+        stepResult = trackerState.step();
     }
+
+    return -1.f;
 }
