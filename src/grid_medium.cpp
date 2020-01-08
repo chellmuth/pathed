@@ -106,14 +106,80 @@ Point3 GridMedium::gridToWorld(const Point3 &gridPoint) const
     );
 }
 
-bool GridMedium::validCell(const GridCell &cell) const
+static bool validCell(const GridInfo &gridInfo, const GridCell &cell)
 {
     if (cell.x < 0 || cell.y < 0 || cell.z < 0) { return false; }
-    if (cell.x >= m_gridInfo.cellsX) { return false; }
-    if (cell.y >= m_gridInfo.cellsY) { return false; }
-    if (cell.z >= m_gridInfo.cellsZ) { return false; }
+    if (cell.x >= gridInfo.cellsX) { return false; }
+    if (cell.y >= gridInfo.cellsY) { return false; }
+    if (cell.z >= gridInfo.cellsZ) { return false; }
 
     return true;
+}
+
+RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3& entryPoint, const Point3 &exitPoint)
+    : m_gridInfo(gridInfo),
+      m_entryPoint(entryPoint),
+      m_exitPoint(exitPoint),
+      m_currentCell({-1, -1, -1}),
+      m_rates(0.f),
+      m_nextTimes(0.f)
+{
+    const Vector3 rayPath = (exitPoint - entryPoint).toVector();
+    const float totalDistance = rayPath.length();
+
+    const Vector3 spans = (exitPoint - entryPoint).toVector();
+    m_rates = spans / totalDistance;
+
+    m_nextTimes = calculateNextTimes(m_rates, entryPoint);
+
+    m_currentTime = 0.f;
+    m_currentCell = GridCell(entryPoint);
+}
+
+RegularTrackerStepResult RegularTrackerState::step()
+{
+    if (validCell(m_gridInfo, m_currentCell)) {
+        const float minTime = m_nextTimes.min();
+
+        const float cellTime = minTime - m_currentTime;
+        m_currentTime = minTime;
+
+        if (m_nextTimes.x() == minTime) {
+            if (m_rates.x() > 0.f) {
+                m_nextTimes = updateTimes(m_nextTimes, "x", 1.f / m_rates.x());
+                m_currentCell = updateCell(m_currentCell, "x", 1);
+            } else {
+                m_nextTimes = updateTimes(m_nextTimes, "x", -1.f / m_rates.x());
+                m_currentCell = updateCell(m_currentCell, "x", -1);
+            }
+        } else if (m_nextTimes.y() == minTime) {
+            if (m_rates.y() > 0.f) {
+                m_nextTimes = updateTimes(m_nextTimes, "y", 1.f / m_rates.y());
+                m_currentCell = updateCell(m_currentCell, "y", 1);
+            } else {
+                m_nextTimes = updateTimes(m_nextTimes, "y", -1.f / m_rates.y());
+                m_currentCell = updateCell(m_currentCell, "y", -1);
+            }
+        } else if (m_nextTimes.z() == minTime) {
+            if (m_rates.z() > 0.f) {
+                m_nextTimes = updateTimes(m_nextTimes, "z", 1.f / m_rates.z());
+                m_currentCell = updateCell(m_currentCell, "z", 1);
+            } else {
+                m_nextTimes = updateTimes(m_nextTimes, "z", -1.f / m_rates.z());
+                m_currentCell = updateCell(m_currentCell, "z", -1);
+            }
+        } else { assert(0); }
+
+        return RegularTrackerStepResult({
+            true,
+            m_currentCell
+        });
+    } else {
+        return RegularTrackerStepResult({
+            false,
+            GridCell({-1, -1, -1})
+        });
+    }
 }
 
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
@@ -132,7 +198,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
     float accumulatedExponent = 0.f;
 
     GridCell currentCell(entryPoint);
-    while(validCell(currentCell)) {
+    while(validCell(m_gridInfo, currentCell)) {
         const float minTime = nextTimes.min();
 
         const float cellTime = minTime - currentTime;
@@ -189,7 +255,7 @@ float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 
     float accumulatedExponent = 0.f;
 
     GridCell currentCell(entryPoint);
-    while(validCell(currentCell)) {
+    while(validCell(m_gridInfo, currentCell)) {
         const float minTime = nextTimes.min();
 
         const float cellTime = minTime - currentTime;
