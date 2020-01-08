@@ -124,60 +124,62 @@ RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3&
       m_rates(0.f),
       m_nextTimes(0.f)
 {
-    const Vector3 rayPath = (exitPoint - entryPoint).toVector();
+    const Vector3 rayPath = (m_exitPoint - m_entryPoint).toVector();
     const float totalDistance = rayPath.length();
 
-    const Vector3 spans = (exitPoint - entryPoint).toVector();
+    const Vector3 spans = (m_exitPoint - m_entryPoint).toVector();
     m_rates = spans / totalDistance;
 
-    m_nextTimes = calculateNextTimes(m_rates, entryPoint);
+    m_nextTimes = calculateNextTimes(m_rates, m_entryPoint);
 
     m_currentTime = 0.f;
-    m_currentCell = GridCell(entryPoint);
+    m_currentCell = GridCell(m_entryPoint);
 }
 
 RegularTrackerStepResult RegularTrackerState::step()
 {
+    const float minTime = m_nextTimes.min();
+
+    const float cellTime = minTime - m_currentTime;
+    m_currentTime = minTime;
+
+    if (m_nextTimes.x() == minTime) {
+        if (m_rates.x() > 0.f) {
+            m_nextTimes = updateTimes(m_nextTimes, "x", 1.f / m_rates.x());
+            m_currentCell = updateCell(m_currentCell, "x", 1);
+        } else {
+            m_nextTimes = updateTimes(m_nextTimes, "x", -1.f / m_rates.x());
+            m_currentCell = updateCell(m_currentCell, "x", -1);
+        }
+    } else if (m_nextTimes.y() == minTime) {
+        if (m_rates.y() > 0.f) {
+            m_nextTimes = updateTimes(m_nextTimes, "y", 1.f / m_rates.y());
+            m_currentCell = updateCell(m_currentCell, "y", 1);
+        } else {
+            m_nextTimes = updateTimes(m_nextTimes, "y", -1.f / m_rates.y());
+            m_currentCell = updateCell(m_currentCell, "y", -1);
+        }
+    } else if (m_nextTimes.z() == minTime) {
+        if (m_rates.z() > 0.f) {
+            m_nextTimes = updateTimes(m_nextTimes, "z", 1.f / m_rates.z());
+            m_currentCell = updateCell(m_currentCell, "z", 1);
+        } else {
+            m_nextTimes = updateTimes(m_nextTimes, "z", -1.f / m_rates.z());
+            m_currentCell = updateCell(m_currentCell, "z", -1);
+        }
+    } else { assert(0); }
+
     if (validCell(m_gridInfo, m_currentCell)) {
-        const float minTime = m_nextTimes.min();
-
-        const float cellTime = minTime - m_currentTime;
-        m_currentTime = minTime;
-
-        if (m_nextTimes.x() == minTime) {
-            if (m_rates.x() > 0.f) {
-                m_nextTimes = updateTimes(m_nextTimes, "x", 1.f / m_rates.x());
-                m_currentCell = updateCell(m_currentCell, "x", 1);
-            } else {
-                m_nextTimes = updateTimes(m_nextTimes, "x", -1.f / m_rates.x());
-                m_currentCell = updateCell(m_currentCell, "x", -1);
-            }
-        } else if (m_nextTimes.y() == minTime) {
-            if (m_rates.y() > 0.f) {
-                m_nextTimes = updateTimes(m_nextTimes, "y", 1.f / m_rates.y());
-                m_currentCell = updateCell(m_currentCell, "y", 1);
-            } else {
-                m_nextTimes = updateTimes(m_nextTimes, "y", -1.f / m_rates.y());
-                m_currentCell = updateCell(m_currentCell, "y", -1);
-            }
-        } else if (m_nextTimes.z() == minTime) {
-            if (m_rates.z() > 0.f) {
-                m_nextTimes = updateTimes(m_nextTimes, "z", 1.f / m_rates.z());
-                m_currentCell = updateCell(m_currentCell, "z", 1);
-            } else {
-                m_nextTimes = updateTimes(m_nextTimes, "z", -1.f / m_rates.z());
-                m_currentCell = updateCell(m_currentCell, "z", -1);
-            }
-        } else { assert(0); }
-
         return RegularTrackerStepResult({
             true,
-            m_currentCell
+            m_currentCell,
+            cellTime
         });
     } else {
         return RegularTrackerStepResult({
             false,
-            GridCell({-1, -1, -1})
+            GridCell({-1, -1, -1}),
+            0.f
         });
     }
 }
@@ -187,51 +189,18 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
     const Point3 entryPoint = worldToGrid(entryPointWorld);
     const Point3 exitPoint = worldToGrid(exitPointWorld);
 
-    const Vector3 rayPath = (exitPoint - entryPoint).toVector();
-    const float totalDistance = rayPath.length();
-
-    const Vector3 spans = (exitPoint - entryPoint).toVector();
-    const Vector3 rates = spans / totalDistance;
-    Vector3 nextTimes = calculateNextTimes(rates, entryPoint);
-
-    float currentTime = 0.f;
     float accumulatedExponent = 0.f;
 
-    GridCell currentCell(entryPoint);
-    while(validCell(m_gridInfo, currentCell)) {
-        const float minTime = nextTimes.min();
+    RegularTrackerState trackerState(m_gridInfo, entryPoint, exitPoint);
 
-        const float cellTime = minTime - currentTime;
+    auto stepResult = trackerState.step();
+    while(stepResult.isValidStep) {
+        const GridCell &currentCell = stepResult.cell;
         const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
 
-        accumulatedExponent += -sigmaT * cellTime;
-        currentTime = minTime;
+        accumulatedExponent += -sigmaT * stepResult.cellTime;
 
-        if (nextTimes.x() == minTime) {
-            if (rates.x() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "x", 1.f / rates.x());
-                currentCell = updateCell(currentCell, "x", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "x", -1.f / rates.x());
-                currentCell = updateCell(currentCell, "x", -1);
-            }
-        } else if (nextTimes.y() == minTime) {
-            if (rates.y() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "y", 1.f / rates.y());
-                currentCell = updateCell(currentCell, "y", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "y", -1.f / rates.y());
-                currentCell = updateCell(currentCell, "y", -1);
-            }
-        } else if (nextTimes.z() == minTime) {
-            if (rates.z() > 0.f) {
-                nextTimes = updateTimes(nextTimes, "z", 1.f / rates.z());
-                currentCell = updateCell(currentCell, "z", 1);
-            } else {
-                nextTimes = updateTimes(nextTimes, "z", -1.f / rates.z());
-                currentCell = updateCell(currentCell, "z", -1);
-            }
-        } else { assert(0); }
+        stepResult = trackerState.step();
     }
 
     return util::exp(accumulatedExponent);

@@ -41,9 +41,10 @@ struct GridCell {
 };
 
 struct RegularTrackerStepResult {
-    bool validStep;
+    bool isValidStep;
 
     GridCell cell;
+    float cellTime;
     /* Point3 entryPoint; */
     /* Point3 exitPoint; */
 };
