@@ -111,3 +111,53 @@ TEST_CASE("grid resolution does not affect homogeneous calculations", "[grid]") 
         REQUIRE(distance == Approx(expected));
     }
 }
+
+TEST_CASE("transmittance numbers based on grid extents", "[grid]") {
+    const float sigmaT = 0.1;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        -10.f, -10.f, -10.f,
+        10.f, 10.f, 10.f
+    });
+
+    std::vector<float> gridData = { sigmaT };
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(-10.f, 0.5f, 0.5f);
+    Point3 exitPoint(10.f, 0.5f, 0.5f);
+
+    // transmittance on straight line across
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 20.f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+
+    // entry and exit can be switched
+    {
+        Color transmittance = grid.transmittance(exitPoint, entryPoint);
+
+        float expected = std::exp(-sigmaT * 20.f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+
+    // target transmittance is equivalent to full line across
+    {
+        float targetTransmittance = std::exp(-sigmaT * 20.f);
+        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+
+        float expected = 20.f;
+        REQUIRE(distance == Approx(expected));
+    }
+
+    // target transmittance is equivalent to fraction of path
+    {
+        float expected = 3.f;
+        float targetTransmittance = std::exp(-sigmaT * expected);
+        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+
+        REQUIRE(distance == Approx(expected));
+    }
+}
