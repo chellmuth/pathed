@@ -14,6 +14,7 @@
 #include "util.h"
 #include "vector.h"
 
+#include <assert.h>
 #include <fstream>
 #include <iostream>
 
@@ -29,33 +30,89 @@ static Interaction surfaceInteraction() {
 }
 
 Color BasicVolumeIntegrator::L(
+    const Point3 &point,
+    const Vector3 &direction,
+    const Scene &scene,
+    RandomGenerator &random
+) const {
+    const Ray ray(point, direction);
+    const Intersection intersection = scene.testIntersect(ray);
+
+    if (!intersection.hit) { return Color(0.f); }
+
+    const std::shared_ptr<Medium> medium = intersection.surface->getInternalMedium();
+
+    if (medium) {
+        const Interaction nextInteraction = sampleInteraction2(
+            point,
+            intersection,
+            ray,
+            random
+        );
+
+        if (nextInteraction.isSurface) {
+            return L(
+                intersection.point,
+                -intersection.woWorld,
+                scene, random
+            );
+        } else {
+            return L(
+                nextInteraction.point,
+                nextInteraction.direction,
+                scene, random
+            );
+        }
+    } else {
+        // Right now all emitters are in a vaccuum
+        const Color emit = intersection.material->emit();
+        if (emit.isBlack()) {
+            std::cout << "EMITTER!" << std::endl;
+            return L(
+                intersection.point,
+                -intersection.woWorld,
+                scene, random
+            );
+        } else {
+            return emit;
+        }
+    }
+}
+
+Color BasicVolumeIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
 ) const {
-    if (intersection.normal.dot(intersection.woWorld) < 0.f) {
-        return Color(0.f, 0.f, 0.f);
-    }
+    return L(intersection.point, -intersection.woWorld, scene, random);
 
-    Ray volumeRay(intersection.point, -intersection.woWorld);
-    Intersection exitIntersection = scene.testIntersect(volumeRay);
+    // if (!intersection.hit) { return Color(0.f); }
 
-    // Box edges
-    if (!exitIntersection.hit) { return Color(1.f, 0.f, 0.f); }
+    // if (intersection.normal.dot(intersection.woWorld) < 0.f) {
+    //     return Color(0.f, 0.f, 0.f);
+    // }
 
-    const Interaction nextInteraction = sampleInteraction(
-        intersection,
-        exitIntersection,
-        volumeRay,
-        random
-    );
+    // Ray volumeRay(intersection.point, -intersection.woWorld);
+    // Intersection exitIntersection = scene.testIntersect(volumeRay);
 
-    if (nextInteraction.isSurface) {
-        return Color(0.f, 0.f, 0.f);
-    } else {
-        return Color(1.f, 1.f, 1.f);
-    }
+    // // Box edges
+    // if (!exitIntersection.hit) { return Color(1.f, 0.f, 0.f); }
+
+    // const Interaction nextInteraction = sampleInteraction(
+    //     intersection,
+    //     exitIntersection,
+    //     volumeRay,
+    //     random
+    // );
+
+    // if (nextInteraction.isSurface) {
+    //     return Color(0.f, 0.f, 0.f);
+    // } else {
+    //     return Color(1.f, 1.f, 1.f);
+    // }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
 
     // sample.eyePoints.push_back(intersection.point);
 
@@ -177,6 +234,41 @@ Interaction BasicVolumeIntegrator::sampleInteraction(
     });
 }
 
+Interaction BasicVolumeIntegrator::sampleInteraction2(
+    const Point3 &sourcePoint,
+    const Intersection &targetIntersection,
+    const Ray &ray,
+    RandomGenerator &random
+) const {
+    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
+
+    if (!mediumOut) { return surfaceInteraction(); }
+
+    const TransmittanceQueryResult queryResult = mediumOut->findTransmittance(
+        sourcePoint,
+        targetIntersection.point,
+        random.next()
+    );
+    if (!queryResult.isValid) { return surfaceInteraction(); }
+
+    const float distance = queryResult.distance;
+    const Point3 interactionPoint = ray.at(distance);
+
+    const Phase phaseFunction;
+    const Vector3 woWorld = -ray.direction();
+    const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
+    const float sampleF = phaseFunction.f(woWorld, wiWorld);
+
+    return Interaction({
+        false,
+        interactionPoint,
+        wiWorld,
+        sampleF,
+        mediumOut->sigmaS(interactionPoint),
+        mediumOut->sigmaT(interactionPoint)
+    });
+}
+
 Color BasicVolumeIntegrator::transmittance(
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection
@@ -193,141 +285,4 @@ Color BasicVolumeIntegrator::transmittance(
     const Point3 &target = targetIntersection.point;
 
     return mediumOut->transmittance(source, target);
-}
-
-Color BasicVolumeIntegrator::direct(
-    const Intersection &intersection,
-    const BSDFSample &bsdfSample,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        // part of my old logic - if you hit an emitter, don't do direct lighting?
-        return Color(0.f, 0.f, 0.f);
-    }
-
-    Color result(0.f);
-
-    result += directSampleLights(
-        intersection,
-        bsdfSample,
-        scene,
-        random,
-        sample
-    );
-
-    result += directSampleBSDF(
-        intersection,
-        bsdfSample,
-        scene,
-        random,
-        sample
-    );
-
-    return result;
-}
-
-Color BasicVolumeIntegrator::directSampleLights(
-    const Intersection &intersection,
-    const BSDFSample &bsdfSample,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    if (bsdfSample.material->isDelta()) { return 0.f; }
-
-    const LightSample lightSample = scene.sampleDirectLights(intersection, random);
-
-    const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
-    const Vector3 wiWorld = lightDirection.normalized();
-
-    if (lightSample.normal.dot(wiWorld) >= 0.f) {
-        // Sample hit back of light
-        sample.shadowTests.push_back({
-            intersection.point,
-            lightSample.point,
-            true
-        });
-
-        return Color(0.f);
-    }
-
-    const Ray shadowRay = Ray(intersection.point, wiWorld);
-    const float lightDistance = lightDirection.length();
-    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
-
-    sample.shadowTests.push_back({
-        intersection.point,
-        lightSample.point,
-        occluded
-    });
-
-    if (occluded) {
-        return Color(0.f);
-    }
-
-    const float pdf = lightSample.solidAnglePDF(intersection.point);
-    const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
-
-    const Vector3 lightWo = -lightDirection.normalized();
-
-    const Color lightContribution = lightSample.light->emit(lightWo)
-        * lightWeight
-        * intersection.material->f(intersection, wiWorld)
-        * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld)
-        / pdf;
-
-    return lightContribution;
-}
-
-Color BasicVolumeIntegrator::directSampleBSDF(
-    const Intersection &intersection,
-    const BSDFSample &bsdfSample,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
-    const Intersection bounceIntersection = scene.testIntersect(bounceRay);
-
-    if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
-        const float distance = (bounceIntersection.point - intersection.point).toVector().length();
-        const float lightPDF = scene.lightsPDF(
-            intersection.point,
-            bounceIntersection,
-            Measure::SolidAngle
-        );
-        const float brdfWeight = bsdfSample.material->isDelta()
-            ? 1.f
-            : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
-
-        const Color brdfContribution = bounceIntersection.material->emit()
-            * brdfWeight
-            * bsdfSample.throughput
-            * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
-            / bsdfSample.pdf;
-
-        return brdfContribution;
-    } else if (!bounceIntersection.hit) {
-        const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
-        if (!environmentL.isBlack()) {
-            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
-            const float brdfWeight = bsdfSample.material->isDelta()
-                ? 1.f
-                : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
-
-            const Color brdfContribution = environmentL
-                * brdfWeight
-                * bsdfSample.throughput
-                * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
-                / bsdfSample.pdf;
-
-            return brdfContribution;
-        }
-    }
-
-    return Color(0.f);
 }

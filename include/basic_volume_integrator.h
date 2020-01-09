@@ -24,6 +24,20 @@ public:
     ) const override;
 
 private:
+    Color L(
+        const Point3 &point,
+        const Vector3 &direction,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
+    Interaction sampleInteraction2(
+        const Point3 &sourcePoint,
+        const Intersection &targetIntersection,
+        const Ray &ray,
+        RandomGenerator &random
+    ) const;
+
     Interaction sampleInteraction(
         const Intersection &sourceIntersection,
         const Intersection &targetIntersection,
@@ -34,30 +48,6 @@ private:
     Color transmittance(
         const Intersection &sourceIntersection,
         const Intersection &targetIntersection
-    ) const;
-
-    Color direct(
-        const Intersection &intersection,
-        const BSDFSample &bsdfSample,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
-    Color directSampleLights(
-        const Intersection &intersection,
-        const BSDFSample &bsdfSample,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
-    Color directSampleBSDF(
-        const Intersection &intersection,
-        const BSDFSample &bsdfSample,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
     ) const;
 
     BounceController m_bounceController;
