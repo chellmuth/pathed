@@ -229,9 +229,12 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
     return util::exp(-accumulatedExponent);
 }
 
-TransmittanceQueryResult GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const
-{
-    const float targetExponent = -std::log(targetTransmission);
+TransmittanceQueryResult GridMedium::findTransmittance(
+    const Point3 &entryPointWorld,
+    const Point3 &exitPointWorld,
+    float targetTransmittance
+) const {
+    const float targetExponent = -std::log(targetTransmittance);
 
     const Point3 entryPoint = worldToGrid(entryPointWorld);
     const Point3 exitPoint = worldToGrid(exitPointWorld);

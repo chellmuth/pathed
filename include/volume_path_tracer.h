@@ -1,8 +1,19 @@
 #pragma once
 
 #include "bounce_controller.h"
+#include "intersection.h"
 #include "material.h"
+#include "point.h"
+#include "ray.h"
+#include "random_generator.h"
 #include "sample_integrator.h"
+#include "scene.h"
+
+struct Interaction {
+    bool isSurface;
+
+    Point3 volumeInteraction;
+};
 
 class VolumePathTracer : public SampleIntegrator {
 public:
@@ -18,6 +29,13 @@ public:
     ) const override;
 
 private:
+    Interaction sampleInteraction(
+        const Intersection &sourceIntersection,
+        const Intersection &targetIntersection,
+        const Ray &ray,
+        RandomGenerator &random
+    ) const;
+
     Color transmittance(
         const Intersection &sourceIntersection,
         const Intersection &targetIntersection

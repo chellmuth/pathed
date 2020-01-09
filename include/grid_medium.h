@@ -8,11 +8,6 @@
 #include <cmath>
 #include <vector>
 
-struct TransmittanceQueryResult {
-    bool isValid;
-    float distance;
-};
-
 struct GridInfo {
     uint32_t cellsX;
     uint32_t cellsY;
@@ -99,7 +94,12 @@ public:
     GridMedium(const GridInfo &gridInfo, const std::vector<float> &gridData);
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
-    TransmittanceQueryResult findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const;
+
+    TransmittanceQueryResult findTransmittance(
+        const Point3 &entryPointWorld,
+        const Point3 &exitPointWorld,
+        float targetTransmittance
+    ) const override;
 
 protected:
     Point3 worldToGrid(const Point3 &worldPoint) const;

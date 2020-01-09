@@ -43,6 +43,13 @@ Color VolumePathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
+        const Interaction nextIntersection = sampleInteraction(
+            lastIntersection,
+            bounceIntersection,
+            bounceRay,
+            random
+        );
+
         const float invPDF = 1.f / bsdfSample.pdf;
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
 
@@ -91,13 +98,34 @@ Color VolumePathTracer::L(
 //         && (targetWo.dot(targetIntersection.normal) < 0.f);
 // }
 
+Interaction VolumePathTracer::sampleInteraction(
+    const Intersection &sourceIntersection,
+    const Intersection &targetIntersection,
+    const Ray &ray,
+    RandomGenerator &random
+) const {
+    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
+    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
+
+    if (!mediumIn || !mediumOut) { return Interaction({ false, Point3(0.f, 0.f, 0.f) }); }
+
+    const TransmittanceQueryResult queryResult = mediumOut->findTransmittance(
+        sourceIntersection.point,
+        targetIntersection.point,
+        random.next()
+    );
+    if (!queryResult.isValid) { return Interaction({ false, Point3(0.f, 0.f, 0.f) }); }
+
+    const float distance = queryResult.distance;
+    const Point3 interactionPoint = ray.at(distance);
+
+    return Interaction({ true, interactionPoint });
+}
+
 Color VolumePathTracer::transmittance(
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection
 ) const {
-    std::shared_ptr<Medium> sourceMedium;
-    std::shared_ptr<Medium> targetMedium;
-
     // bool isInternal = checkInternal(sourceIntersection, targetIntersection);
     // if (!isInternal) { return Color(1.f); }
 
