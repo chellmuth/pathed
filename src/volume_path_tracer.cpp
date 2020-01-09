@@ -145,7 +145,7 @@ Interaction VolumePathTracer::sampleInteraction(
     const float sampleF = phaseFunction.f(woWorld, wiWorld);
 
     return Interaction({
-        true,
+        false,
         interactionPoint,
         wiWorld,
         sampleF,
