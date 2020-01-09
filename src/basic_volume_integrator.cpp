@@ -67,7 +67,6 @@ Color BasicVolumeIntegrator::L(
         // Right now all emitters are in a vaccuum
         const Color emit = intersection.material->emit();
         if (emit.isBlack()) {
-            std::cout << "EMITTER!" << std::endl;
             return L(
                 intersection.point,
                 -intersection.woWorld,

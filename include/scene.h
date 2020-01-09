@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include "bvh.h"
 #include "environment_light.h"
 #include "intersection.h"
 #include "light.h"
@@ -58,13 +57,9 @@ struct LightSample {
 class Scene {
 public:
     Scene(
-        // old
-        std::vector<std::shared_ptr<Primitive> > primitives,
         std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
-
-        // new
         std::shared_ptr<Camera> camera
     );
 
@@ -92,7 +87,6 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    std::unique_ptr<BVH> m_bvh;
     std::vector<std::vector<std::shared_ptr<Surface> > > m_surfaces;
 
     std::vector<std::shared_ptr<Light> > m_lights;

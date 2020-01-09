@@ -55,11 +55,15 @@ static void parseMedia(
     json mediaJson,
     MediaMap &media
 );
+static void parseVolumes(
+    json volumesJson,
+    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
+    MediaMap &media
+);
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    MediaMap &media,
-    std::vector<std::shared_ptr<BVH> > &bvhs
+    MediaMap &media
 );
 static void parseObj(
     json objectJson,
@@ -94,10 +98,13 @@ Scene parseScene(std::ifstream &sceneFile)
     auto mediaJson = sceneJson["media"];
     parseMedia(mediaJson, media);
 
-    auto objects = sceneJson["models"];
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
-    std::vector<std::shared_ptr<BVH> > bvhs;
-    parseObjects(objects, surfaces, media, bvhs);
+
+    auto volumes = sceneJson["volumes"];
+    parseVolumes(volumes, surfaces, media);
+
+    auto objects = sceneJson["models"];
+    parseObjects(objects, surfaces, media);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -118,9 +125,7 @@ Scene parseScene(std::ifstream &sceneFile)
         lights.push_back(environmentLight);
     }
 
-    std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
     Scene scene(
-        primitives,
         surfaces,
         lights,
         environmentLight,
@@ -152,8 +157,7 @@ static void parseMedia(
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    MediaMap &media,
-    std::vector<std::shared_ptr<BVH> > &bvhs
+    MediaMap &media
 ) {
     for (auto objectJson : objectsJson) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -165,14 +169,22 @@ static void parseObjects(
             parseQuad(objectJson, localSurfaces);
         }
 
-        auto bvh = std::make_shared<BVH>();
+        surfaces.push_back(localSurfaces);
+    }
+}
 
-        std::vector<std::shared_ptr<Primitive> > primitives(
-            localSurfaces.begin(), localSurfaces.end()
-        );
-
-        bvh->bake(primitives);
-        bvhs.push_back(bvh);
+static void parseVolumes(
+    json volumesJson,
+    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
+    MediaMap &media
+) {
+    for (auto volumeJson : volumesJson) {
+        std::vector<std::shared_ptr<Surface>> localSurfaces;
+        if (volumeJson["type"] == "obj") {
+            parseObj(volumeJson, localSurfaces, media);
+        } else {
+            throw "Unimplemented!";
+        }
 
         surfaces.push_back(localSurfaces);
     }

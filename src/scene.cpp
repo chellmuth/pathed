@@ -15,7 +15,6 @@
 #include <limits>
 
 Scene::Scene(
-    std::vector<std::shared_ptr<Primitive> > primitives,
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
@@ -24,13 +23,8 @@ Scene::Scene(
     : m_surfaces(surfaces),
       m_lights(lights),
       m_environmentLight(environmentLight),
-      m_camera(camera),
-      m_bvh(new BVH())
+      m_camera(camera)
 {
-    printf("BAKING...\n");
-    m_bvh->bake(primitives);
-    printf("BAKED...\n");
-
     rtcCommitScene(g_rtcScene);
 }
 
@@ -139,8 +133,6 @@ Intersection Scene::testIntersect(const Ray &ray) const
     } else {
         return IntersectionHelper::miss;
     }
-
-    // return m_bvh->testIntersect(ray);
 }
 
 bool Scene::testOcclusion(const Ray &ray, float maxT) const

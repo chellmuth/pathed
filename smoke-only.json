@@ -16,15 +16,15 @@
     }
   ],
 
-  "models": [
+  "volumes": [
     {
       "type": "obj",
       "filename": "assets/smoke/bounds.obj",
-      "internal_medium": "smoke",
-      "bsdf": {
-        "type": "passthrough"
-      }
-    },
+      "internal_medium": "smoke"
+    }
+  ],
+
+  "models": [
     {
       "type": "sphere",
       "center": [ "0", "-2", "-1" ],
