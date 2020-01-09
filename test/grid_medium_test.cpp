@@ -167,3 +167,53 @@ TEST_CASE("transmittance numbers based on grid extents", "[grid]") {
         REQUIRE(result.distance == Approx(expected));
     }
 }
+
+TEST_CASE("findTransmittance doesn't meet threshold, exits outside volume", "[grid]") {
+    const float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.f, 0.5f, 0.5f);
+    Point3 exitPoint(1.f, 0.5f, 0.5f);
+
+    // target transmittance is past full line across
+    {
+        float targetTransmittance = std::exp(-sigmaT * 1.1f);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+
+        REQUIRE(!result.isValid);
+        REQUIRE(result.distance == -1.f);
+    }
+}
+
+TEST_CASE("findTransmittance doesn't meet threshold, exits inside volume", "[grid][!shouldfail]") {
+    const float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.f, 0.5f, 0.5f);
+    Point3 exitPoint(0.5f, 0.5f, 0.5f);
+
+    // target transmittance is past full line across
+    {
+        float targetTransmittance = std::exp(-sigmaT * 0.8f);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+
+        REQUIRE(!result.isValid);
+        REQUIRE(result.distance == -1.f);
+    }
+}
