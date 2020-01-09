@@ -10,9 +10,9 @@
 #include "sample_integrator.h"
 #include "scene.h"
 
-class VolumePathTracer : public SampleIntegrator {
+class BasicVolumeIntegrator : public SampleIntegrator {
 public:
-    VolumePathTracer(BounceController bounceController)
+    BasicVolumeIntegrator(BounceController bounceController)
         : m_bounceController(bounceController)
     {}
 

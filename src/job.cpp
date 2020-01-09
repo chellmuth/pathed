@@ -1,5 +1,6 @@
 #include "job.h"
 
+#include "basic_volume_integrator.h"
 #include "data_parallel_integrator.h"
 #include "depositer.h"
 #include "light_tracer.h"
@@ -66,6 +67,8 @@ std::shared_ptr<Integrator> Job::integrator() const
         return std::make_shared<PathTracer>(m_bounceController);
     } else if (integrator == "VolumePathTracer") {
         return std::make_shared<VolumePathTracer>(m_bounceController);
+    } else if (integrator == "BasicVolumeIntegrator") {
+        return std::make_shared<BasicVolumeIntegrator>(m_bounceController);
     } else if (integrator == "Depositer") {
         return std::make_shared<Depositer>(m_bounceController);
     } else if (integrator == "NearestPhoton") {
