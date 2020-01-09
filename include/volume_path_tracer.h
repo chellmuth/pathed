@@ -12,7 +12,12 @@
 struct Interaction {
     bool isSurface;
 
-    Point3 volumeInteraction;
+    Point3 point;
+    Vector3 direction;
+    float pdf;
+
+    float sigmaS;
+    float sigmaT;
 };
 
 class VolumePathTracer : public SampleIntegrator {

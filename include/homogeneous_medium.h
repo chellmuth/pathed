@@ -32,6 +32,14 @@ public:
             return TransmittanceQueryResult({ true, distance });
         }
     }
+
+    float sigmaT(const Point3 &worldPoint) const override {
+        assert(m_sigmaT.r() == m_sigmaT.g() && m_sigmaT.r() == m_sigmaT.b());
+        return m_sigmaT.r();
+    }
+
+    float sigmaS(const Point3 &worldPoint) const override { return sigmaT(worldPoint); }
+
 private:
     Color m_sigmaT;
 };

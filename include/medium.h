@@ -17,4 +17,6 @@ public:
         float targetTransmittance
     ) const = 0;
 
+    virtual float sigmaT(const Point3 &worldPoint) const = 0;
+    virtual float sigmaS(const Point3 &worldPoint) const = 0;
 };

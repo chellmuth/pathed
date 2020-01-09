@@ -101,6 +101,9 @@ public:
         float targetTransmittance
     ) const override;
 
+    float sigmaT(const Point3 &worldPoint) const override;
+    float sigmaS(const Point3 &worldPoint) const override;
+
 protected:
     Point3 worldToGrid(const Point3 &worldPoint) const;
     float lookup(int cellX, int cellY, int cellZ) const;

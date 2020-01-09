@@ -267,3 +267,15 @@ TransmittanceQueryResult GridMedium::findTransmittance(
 
     return TransmittanceQueryResult({ false, -1.f });
 }
+
+float GridMedium::sigmaT(const Point3 &worldPoint) const
+{
+    return sigmaS(worldPoint);
+}
+
+float GridMedium::sigmaS(const Point3 &worldPoint) const
+{
+    const Point3 gridPoint = worldToGrid(worldPoint);
+    const GridCell cell = GridCell(gridPoint);
+    return lookup(cell.x, cell.y, cell.z);
+}

@@ -8,6 +8,7 @@
 #include "measure.h"
 #include "mis.h"
 #include "monte_carlo.h"
+#include "phase.h"
 #include "ray.h"
 #include "transform.h"
 #include "util.h"
@@ -15,6 +16,17 @@
 
 #include <fstream>
 #include <iostream>
+
+static Interaction surfaceInteraction() {
+    return Interaction({
+        true,
+        Point3(0.f, 0.f, 0.f),
+        Vector3(0.f),
+        0.f,
+        0.f,
+        0.f
+    });
+}
 
 Color VolumePathTracer::L(
     const Intersection &intersection,
@@ -43,12 +55,20 @@ Color VolumePathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        const Interaction nextIntersection = sampleInteraction(
+        const Interaction nextInteraction = sampleInteraction(
             lastIntersection,
             bounceIntersection,
             bounceRay,
             random
         );
+
+        if (nextInteraction.isSurface) {
+            // ...
+        } else {
+            // modulation *= nextInteraction.sigmaS
+            //     * (1.f / nextInteraction.sigmaT);
+
+        }
 
         const float invPDF = 1.f / bsdfSample.pdf;
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
@@ -107,19 +127,31 @@ Interaction VolumePathTracer::sampleInteraction(
     const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
     const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
 
-    if (!mediumIn || !mediumOut) { return Interaction({ false, Point3(0.f, 0.f, 0.f) }); }
+    if (!mediumIn || !mediumOut) { return surfaceInteraction(); }
 
     const TransmittanceQueryResult queryResult = mediumOut->findTransmittance(
         sourceIntersection.point,
         targetIntersection.point,
         random.next()
     );
-    if (!queryResult.isValid) { return Interaction({ false, Point3(0.f, 0.f, 0.f) }); }
+    if (!queryResult.isValid) { return surfaceInteraction(); }
 
     const float distance = queryResult.distance;
     const Point3 interactionPoint = ray.at(distance);
 
-    return Interaction({ true, interactionPoint });
+    const Phase phaseFunction;
+    const Vector3 woWorld = -ray.direction();
+    const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
+    const float sampleF = phaseFunction.f(woWorld, wiWorld);
+
+    return Interaction({
+        true,
+        interactionPoint,
+        wiWorld,
+        sampleF,
+        mediumOut->sigmaS(interactionPoint),
+        mediumOut->sigmaT(interactionPoint)
+    });
 }
 
 Color VolumePathTracer::transmittance(
