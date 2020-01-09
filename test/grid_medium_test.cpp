@@ -39,19 +39,21 @@ TEST_CASE("1x1x1 grid", "[grid]") {
     // target transmittance is equivalent to full line across
     {
         float targetTransmittance = std::exp(-0.4f);
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
         float expected = 1.f;
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 
     // target transmittance is equivalent to fraction of path
     {
         float expected = 0.3f;
         float targetTransmittance = std::exp(-0.4 * expected);
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 }
 
@@ -96,19 +98,21 @@ TEST_CASE("grid resolution does not affect homogeneous calculations", "[grid]") 
     // target transmittance is equivalent to full line across
     for (auto &grid : grids) {
         float targetTransmittance = std::exp(-sigmaT) + 1e-6;
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
         float expected = 1.f;
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 
     // target transmittance is equivalent to fraction of path
     for (auto &grid : grids) {
         float expected = 0.3f;
         float targetTransmittance = std::exp(-sigmaT * expected);
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 }
 
@@ -146,18 +150,20 @@ TEST_CASE("transmittance numbers based on grid extents", "[grid]") {
     // target transmittance is equivalent to full line across
     {
         float targetTransmittance = std::exp(-sigmaT * 20.f);
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
         float expected = 20.f;
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 
     // target transmittance is equivalent to fraction of path
     {
         float expected = 3.f;
         float targetTransmittance = std::exp(-sigmaT * expected);
-        float distance = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
+        auto result = grid.findTransmittance(entryPoint, exitPoint, targetTransmittance);
 
-        REQUIRE(distance == Approx(expected));
+        REQUIRE(result.isValid);
+        REQUIRE(result.distance == Approx(expected));
     }
 }

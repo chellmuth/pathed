@@ -221,15 +221,15 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         const GridCell &currentCell = stepResult.cell;
         const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
 
-        accumulatedExponent += -sigmaT * stepResult.cellTime;
+        accumulatedExponent += sigmaT * stepResult.cellTime;
 
         stepResult = trackerState.step();
     }
 
-    return util::exp(accumulatedExponent);
+    return util::exp(-accumulatedExponent);
 }
 
-float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const
+TransmittanceQueryResult GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld, float targetTransmission) const
 {
     const float targetExponent = -std::log(targetTransmission);
 
@@ -253,11 +253,14 @@ float GridMedium::findTransmittance(const Point3 &entryPointWorld, const Point3 
             const float cellRatio = 1.f - overflow / cellExponent;
             const float actualCellTime = stepResult.cellTime * cellRatio;
 
-            return stepResult.currentTime - stepResult.cellTime + actualCellTime;
+            return TransmittanceQueryResult({
+                true,
+                stepResult.currentTime - stepResult.cellTime + actualCellTime
+            });
         }
 
         stepResult = trackerState.step();
     }
 
-    return -1.f;
+    return TransmittanceQueryResult({ false, -1.f });
 }
