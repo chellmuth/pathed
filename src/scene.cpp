@@ -48,7 +48,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
     const std::vector<std::vector<std::shared_ptr<Surface> > > *surfaces = context->surfacesPtr;
     const auto &surfacePtr = (*surfaces)[hit->geomID][hit->primID];
     if (surfacePtr->getMaterial()->isContainer()) {
-        std::cout << "CONTAINER!" << std::endl;
+        args->valid[0] = 0;
     }
 }
 
@@ -87,13 +87,12 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-    CustomRTCIntersectContext context;
-    InitCustomRTCIntersectContext(&context);
-    // rtcInitIntersectContext(&context);
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
 
     rtcIntersect1(
         g_rtcScene,
-        &context.context,
+        &context,
         &rayHit
     );
 
@@ -187,12 +186,12 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
 
     rtcRay.flags = 0;
 
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context);
 
     rtcOccluded1(
         g_rtcScene,
-        &context,
+        &context.context,
         &rtcRay
     );
 
