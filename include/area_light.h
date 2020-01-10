@@ -14,7 +14,7 @@ public:
     Color emit() const override;
 
     SurfaceSample sample(
-        const Intersection &intersection,
+        const Point3 &point,
         RandomGenerator &random
     ) const override;
 

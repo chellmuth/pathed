@@ -227,7 +227,7 @@ LightSample Scene::sampleDirectLights(
     const int lightIndex = (int)floorf(random.next() * lightCount);
 
     const std::shared_ptr<Light> light = m_lights[lightIndex];
-    const SurfaceSample surfaceSample = light->sample(intersection, random);
+    const SurfaceSample surfaceSample = light->sample(intersection.point, random);
 
     const float lightChoicePDF = 1.f / lightCount;
 

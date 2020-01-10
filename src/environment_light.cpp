@@ -73,7 +73,7 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
     return result * m_scale;
 }
 
-SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomGenerator &random) const
+SurfaceSample EnvironmentLight::sample(const Point3 &point, RandomGenerator &random) const
 {
     float thetaPDF, phiPDF;
     const int thetaStep = m_thetaDistribution->sample(&thetaPDF, random);
@@ -90,7 +90,7 @@ SurfaceSample EnvironmentLight::sample(const Intersection &intersection, RandomG
     const Vector3 direction = sphericalToCartesian(phi, theta);
 
     SurfaceSample inProgress = {
-        .point = intersection.point + direction * 10000.f,
+        .point = point + direction * 10000.f,
         .normal = direction * -1.f,
         .invPDF = 1.f / pdf,
         .measure = Measure::SolidAngle
