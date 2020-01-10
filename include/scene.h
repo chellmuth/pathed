@@ -21,7 +21,7 @@ class Ray;
 
 using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
 
-struct MyContext {
+struct CustomRTCIntersectContext {
     RTCIntersectContext context;
     const NestedSurfaceVector *surfacesPtr;
 };
@@ -96,7 +96,7 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    void InitMyContext(MyContext *contextPtr) const;
+    void InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const;
     void registerOcclusionFilters() const;
 
     NestedSurfaceVector m_surfaces;

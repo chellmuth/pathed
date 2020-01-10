@@ -14,7 +14,7 @@
 
 static int secretValue = 28;
 
-void Scene::InitMyContext(MyContext *contextPtr) const
+void Scene::InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const
 {
   rtcInitIntersectContext(&contextPtr->context);
   contextPtr->surfacesPtr = &m_surfaces;
@@ -40,7 +40,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 {
     if (args->context == nullptr) { return; }
 
-    const MyContext* context = (const MyContext*)args->context;
+    const CustomRTCIntersectContext* context = (const CustomRTCIntersectContext*)args->context;
 
     RTCHit *hit = (RTCHit*)args->hit;
     if (hit == nullptr) { return; }
@@ -87,8 +87,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-    MyContext context;
-    InitMyContext(&context);
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context);
     // rtcInitIntersectContext(&context);
 
     rtcIntersect1(
