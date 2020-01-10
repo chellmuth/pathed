@@ -45,6 +45,7 @@ public:
     ) const = 0;
 
     virtual bool isDelta() const { return false; }
+    virtual bool isContainer() const { return false; }
 
     Color emit() const;
 

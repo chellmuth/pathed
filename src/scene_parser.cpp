@@ -55,11 +55,6 @@ static void parseMedia(
     json mediaJson,
     MediaMap &media
 );
-static void parseVolumes(
-    json volumesJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    MediaMap &media
-);
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
@@ -99,9 +94,6 @@ Scene parseScene(std::ifstream &sceneFile)
     parseMedia(mediaJson, media);
 
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
-
-    auto volumes = sceneJson["volumes"];
-    parseVolumes(volumes, surfaces, media);
 
     auto objects = sceneJson["models"];
     parseObjects(objects, surfaces, media);
@@ -167,23 +159,6 @@ static void parseObjects(
             parseSphere(objectJson, localSurfaces);
         } else if (objectJson["type"] == "quad") {
             parseQuad(objectJson, localSurfaces);
-        }
-
-        surfaces.push_back(localSurfaces);
-    }
-}
-
-static void parseVolumes(
-    json volumesJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    MediaMap &media
-) {
-    for (auto volumeJson : volumesJson) {
-        std::vector<std::shared_ptr<Surface>> localSurfaces;
-        if (volumeJson["type"] == "obj") {
-            parseObj(volumeJson, localSurfaces, media);
-        } else {
-            throw "Unimplemented!";
         }
 
         surfaces.push_back(localSurfaces);
