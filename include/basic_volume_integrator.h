@@ -35,6 +35,7 @@ private:
         const Point3 &sourcePoint,
         const Intersection &targetIntersection,
         const Ray &ray,
+        const Scene &scene,
         RandomGenerator &random
     ) const;
 

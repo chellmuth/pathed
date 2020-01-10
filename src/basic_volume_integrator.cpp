@@ -47,6 +47,7 @@ Color BasicVolumeIntegrator::L(
             point,
             intersection,
             ray,
+            scene,
             random
         );
 
@@ -237,6 +238,7 @@ Interaction BasicVolumeIntegrator::sampleInteraction2(
     const Point3 &sourcePoint,
     const Intersection &targetIntersection,
     const Ray &ray,
+    const Scene &scene,
     RandomGenerator &random
 ) const {
     const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
@@ -257,6 +259,8 @@ Interaction BasicVolumeIntegrator::sampleInteraction2(
     const Vector3 woWorld = -ray.direction();
     const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
     const float sampleF = phaseFunction.f(woWorld, wiWorld);
+
+    const LightSample lightSample = scene.sampleDirectLights(interactionPoint, random);
 
     return Interaction({
         false,

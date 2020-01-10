@@ -82,7 +82,7 @@ public:
 
     LightSample sampleLights(RandomGenerator &random) const;
     LightSample sampleDirectLights(
-        const Intersection &intersection,
+        const Point3 &point,
         RandomGenerator &random
     ) const;
 

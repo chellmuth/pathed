@@ -219,7 +219,7 @@ LightSample Scene::sampleLights(RandomGenerator &random) const
 }
 
 LightSample Scene::sampleDirectLights(
-    const Intersection &intersection,
+    const Point3 &point,
     RandomGenerator &random
 ) const
 {
@@ -227,7 +227,7 @@ LightSample Scene::sampleDirectLights(
     const int lightIndex = (int)floorf(random.next() * lightCount);
 
     const std::shared_ptr<Light> light = m_lights[lightIndex];
-    const SurfaceSample surfaceSample = light->sample(intersection.point, random);
+    const SurfaceSample surfaceSample = light->sample(point, random);
 
     const float lightChoicePDF = 1.f / lightCount;
 

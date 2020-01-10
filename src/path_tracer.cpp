@@ -116,7 +116,7 @@ Color PathTracer::directSampleLights(
 ) const {
     if (bsdfSample.material->isDelta()) { return 0.f; }
 
-    const LightSample lightSample = scene.sampleDirectLights(intersection, random);
+    const LightSample lightSample = scene.sampleDirectLights(intersection.point, random);
 
     const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     const Vector3 wiWorld = lightDirection.normalized();
