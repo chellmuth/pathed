@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "environment_light.h"
 #include "intersection.h"
 #include "light.h"
@@ -14,8 +11,20 @@
 #include "world_frame.h"
 #include "vector.h"
 
+#include <embree3/rtcore.h>
+
+#include <memory>
+#include <vector>
+
 class Camera;
 class Ray;
+
+using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
+
+struct MyContext {
+    RTCIntersectContext context;
+    const NestedSurfaceVector *surfacesPtr;
+};
 
 struct LightSample {
     std::shared_ptr<Light> light;
@@ -57,7 +66,7 @@ struct LightSample {
 class Scene {
 public:
     Scene(
-        std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+        NestedSurfaceVector surfaces,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
         std::shared_ptr<Camera> camera
@@ -68,7 +77,7 @@ public:
     Intersection testIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces();
+    NestedSurfaceVector getSurfaces();
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
@@ -87,7 +96,10 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    std::vector<std::vector<std::shared_ptr<Surface> > > m_surfaces;
+    void InitMyContext(MyContext *contextPtr) const;
+    void registerOcclusionFilters() const;
+
+    NestedSurfaceVector m_surfaces;
 
     std::vector<std::shared_ptr<Light> > m_lights;
     std::shared_ptr<EnvironmentLight> m_environmentLight;

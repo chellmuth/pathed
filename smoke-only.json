@@ -24,7 +24,7 @@
       "bsdf": {
         "type": "passthrough"
       }
-    }
+    },
     {
       "type": "sphere",
       "center": [ "0", "-2", "-1" ],

@@ -9,13 +9,19 @@
 #include "uv.h"
 #include "world_frame.h"
 
-#include <embree3/rtcore.h>
-
 #include <cmath>
 #include <limits>
 
+static int secretValue = 28;
+
+void Scene::InitMyContext(MyContext *contextPtr) const
+{
+  rtcInitIntersectContext(&contextPtr->context);
+  contextPtr->surfacesPtr = &m_surfaces;
+}
+
 Scene::Scene(
-    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+    NestedSurfaceVector surfaces,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
@@ -25,10 +31,39 @@ Scene::Scene(
       m_environmentLight(environmentLight),
       m_camera(camera)
 {
+    registerOcclusionFilters();
+
     rtcCommitScene(g_rtcScene);
 }
 
-std::vector<std::vector<std::shared_ptr<Surface> > > Scene::getSurfaces()
+static void occlusionFilter(const RTCFilterFunctionNArguments *args)
+{
+    if (args->context == nullptr) { return; }
+
+    const MyContext* context = (const MyContext*)args->context;
+
+    RTCHit *hit = (RTCHit*)args->hit;
+    if (hit == nullptr) { return; }
+
+    const std::vector<std::vector<std::shared_ptr<Surface> > > *surfaces = context->surfacesPtr;
+    const auto &surfacePtr = (*surfaces)[hit->geomID][hit->primID];
+    if (surfacePtr->getMaterial()->isContainer()) {
+        std::cout << "CONTAINER!" << std::endl;
+    }
+}
+
+void Scene::registerOcclusionFilters() const
+{
+    for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
+        RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
+        rtcSetGeometryIntersectFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
+    }
+}
+
+NestedSurfaceVector Scene::getSurfaces()
 {
     return m_surfaces;
 }
@@ -52,12 +87,13 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    MyContext context;
+    InitMyContext(&context);
+    // rtcInitIntersectContext(&context);
 
     rtcIntersect1(
         g_rtcScene,
-        &context,
+        &context.context,
         &rayHit
     );
 

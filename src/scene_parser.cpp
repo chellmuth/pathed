@@ -250,6 +250,7 @@ static void parseEnvironmentLight(
         std::cout << environmentLight->toString() << std::endl;
     }
 }
+
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 {
     if (!bsdfJson.is_object()) {
