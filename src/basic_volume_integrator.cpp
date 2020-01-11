@@ -25,7 +25,8 @@ static Interaction surfaceInteraction() {
         Vector3(0.f),
         0.f,
         0.f,
-        0.f
+        0.f,
+        nullptr
     });
 }
 
@@ -238,7 +239,8 @@ Interaction BasicVolumeIntegrator::sampleInteraction(
         wiWorld,
         sampleF,
         mediumOut->sigmaS(interactionPoint),
-        mediumOut->sigmaT(interactionPoint)
+        mediumOut->sigmaT(interactionPoint),
+        nullptr
     });
 }
 
@@ -274,7 +276,8 @@ Interaction BasicVolumeIntegrator::sampleInteraction2(
         wiWorld,
         sampleF,
         mediumOut->sigmaS(interactionPoint),
-        mediumOut->sigmaT(interactionPoint)
+        mediumOut->sigmaT(interactionPoint),
+        mediumOut.get()
     });
 }
 
@@ -299,7 +302,12 @@ Color BasicVolumeIntegrator::directSampleLights(
     if (occluded) {
         return Color(0.f);
     } else {
-        return Color(1.f);
+        const Color transmittance = interaction.medium->transmittance(
+            interaction.point,
+            lightSample.point
+        );
+
+        return Color(1.f) * transmittance;
     }
 }
 

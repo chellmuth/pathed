@@ -24,7 +24,8 @@ static Interaction surfaceInteraction() {
         Vector3(0.f),
         0.f,
         0.f,
-        0.f
+        0.f,
+        nullptr
     });
 }
 
@@ -150,7 +151,8 @@ Interaction VolumePathTracer::sampleInteraction(
         wiWorld,
         sampleF,
         mediumOut->sigmaS(interactionPoint),
-        mediumOut->sigmaT(interactionPoint)
+        mediumOut->sigmaT(interactionPoint),
+        nullptr
     });
 }
 

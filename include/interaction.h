@@ -1,6 +1,7 @@
 #pragma once
 
 #include "point.h"
+#include "medium.h"
 #include "vector.h"
 
 struct Interaction {
@@ -12,4 +13,6 @@ struct Interaction {
 
     float sigmaS;
     float sigmaT;
+
+    Medium *medium;
 };
