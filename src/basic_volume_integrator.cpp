@@ -302,12 +302,18 @@ Color BasicVolumeIntegrator::directSampleLights(
     if (occluded) {
         return Color(0.f);
     } else {
+        const float pdf = lightSample.solidAnglePDF(interaction.point);
+
         const Color transmittance = interaction.medium->transmittance(
             interaction.point,
             lightSample.point
         );
 
-        return Color(1.f) * transmittance;
+        return lightSample.light->emit(lightDirection)
+            * transmittance
+            * 1.f / (4.f * M_PI)
+            / pdf;
+
     }
 }
 
