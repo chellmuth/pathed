@@ -292,11 +292,15 @@ Color BasicVolumeIntegrator::directSampleLights(
         return Color(0.f);
     }
 
-    return Color(0.f, 1.f, 0.f);
+    const Ray shadowRay = Ray(interaction.point, wiWorld);
+    const float lightDistance = lightDirection.length();
+    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
-    // const Ray shadowRay = Ray(intersection.point, wiWorld);
-    // const float lightDistance = lightDirection.length();
-    // const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+    if (occluded) {
+        return Color(0.f);
+    } else {
+        return Color(1.f);
+    }
 }
 
 Color BasicVolumeIntegrator::transmittance(
