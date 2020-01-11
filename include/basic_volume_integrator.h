@@ -46,6 +46,13 @@ private:
         RandomGenerator &random
     ) const;
 
+    Color directSampleLights(
+        const Interaction &interaction,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
+
     Color transmittance(
         const Intersection &sourceIntersection,
         const Intersection &targetIntersection

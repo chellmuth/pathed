@@ -16,8 +16,8 @@ static int secretValue = 28;
 
 void Scene::InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const
 {
-  rtcInitIntersectContext(&contextPtr->context);
-  contextPtr->surfacesPtr = &m_surfaces;
+    rtcInitIntersectContext(&contextPtr->context);
+    contextPtr->surfacesPtr = &m_surfaces;
 }
 
 Scene::Scene(
@@ -56,7 +56,7 @@ void Scene::registerOcclusionFilters() const
 {
     for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
         RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
-        rtcSetGeometryIntersectFilterFunction(
+        rtcSetGeometryOccludedFilterFunction(
             rtcGeometry,
             occlusionFilter
         );

@@ -58,11 +58,19 @@ Color BasicVolumeIntegrator::L(
                 scene, random
             );
         } else {
-            return L(
-                nextInteraction.point,
-                nextInteraction.direction,
-                scene, random
+            return directSampleLights(
+                nextInteraction,
+                scene,
+                random
             );
+
+            // Single scatter only
+
+            // return L(
+            //     nextInteraction.point,
+            //     nextInteraction.direction,
+            //     scene, random
+            // );
         }
     } else {
         // Right now all emitters are in a vaccuum
@@ -260,8 +268,6 @@ Interaction BasicVolumeIntegrator::sampleInteraction2(
     const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
     const float sampleF = phaseFunction.f(woWorld, wiWorld);
 
-    const LightSample lightSample = scene.sampleDirectLights(interactionPoint, random);
-
     return Interaction({
         false,
         interactionPoint,
@@ -270,6 +276,27 @@ Interaction BasicVolumeIntegrator::sampleInteraction2(
         mediumOut->sigmaS(interactionPoint),
         mediumOut->sigmaT(interactionPoint)
     });
+}
+
+Color BasicVolumeIntegrator::directSampleLights(
+    const Interaction &interaction,
+    const Scene &scene,
+    RandomGenerator &random
+) const {
+    const LightSample lightSample = scene.sampleDirectLights(interaction.point, random);
+
+    const Vector3 lightDirection = (lightSample.point - interaction.point).toVector();
+    const Vector3 wiWorld = lightDirection.normalized();
+
+    if (lightSample.normal.dot(wiWorld) >= 0.f) {
+        return Color(0.f);
+    }
+
+    return Color(0.f, 1.f, 0.f);
+
+    // const Ray shadowRay = Ray(intersection.point, wiWorld);
+    // const float lightDistance = lightDirection.length();
+    // const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 }
 
 Color BasicVolumeIntegrator::transmittance(
