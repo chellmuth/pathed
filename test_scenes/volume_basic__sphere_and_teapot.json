@@ -1,0 +1,47 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0", "0", "5" ],
+      "origin": [ "0", "3", "-10" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "33"
+  },
+
+  "models": [
+    {
+      "type": "sphere",
+      "center": [ "0", "0", "5" ],
+      "radius": "1",
+      "bsdf": {
+        "type": "glass"
+      }
+    },
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "100", "100", "100" ],
+        "rotate": [ "90", "0", "0" ],
+        "translate": [ "0", "-1.01", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "4", "1", "4" ],
+        "rotate": [ "-90", "0", "0" ],
+        "translate": [ "0", "20", "5" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "0", "0" ],
+        "emit": [ "20", "20", "20" ]
+      }
+    }
+  ]
+}
