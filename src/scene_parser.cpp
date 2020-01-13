@@ -65,7 +65,11 @@ static void parseObj(
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MediaMap &media
 );
-static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseSphere(
+    json sphereJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+);
 static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseEnvironmentLight(
     json environmentLightJson,
@@ -156,7 +160,7 @@ static void parseObjects(
         if (objectJson["type"] == "obj") {
             parseObj(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "sphere") {
-            parseSphere(objectJson, localSurfaces);
+            parseSphere(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "quad") {
             parseQuad(objectJson, localSurfaces);
         }
@@ -201,17 +205,26 @@ static void parseObj(
     }
 }
 
-static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces)
-{
+static void parseSphere(
+    json sphereJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+) {
     auto bsdfJson = sphereJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+
+    std::shared_ptr<Medium> mediumPtr(nullptr);
+    std::string mediumKey;
+    if (checkString(sphereJson["internal_medium"], &mediumKey)) {
+        mediumPtr = media[mediumKey];
+    }
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
         parseFloat(sphereJson["radius"])
     );
 
-    auto surface = std::make_shared<Surface>(sphere, materialPtr, nullptr);
+    auto surface = std::make_shared<Surface>(sphere, materialPtr, mediumPtr);
 
     surfaces.push_back(surface);
 

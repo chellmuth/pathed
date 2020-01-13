@@ -8,13 +8,22 @@
     "fov": "33"
   },
 
+  "media": [
+    {
+      "name": "smoke",
+      "type": "homogeneous",
+      "sigma_t": [ "0.8", "0.8", "0.8" ]
+    }
+  ],
+
   "models": [
     {
       "type": "sphere",
       "center": [ "0", "0", "5" ],
       "radius": "1",
+      "internal_medium": "smoke",
       "bsdf": {
-        "type": "glass"
+        "type": "passthrough"
       }
     },
     {

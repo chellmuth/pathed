@@ -3,6 +3,7 @@
 #include "snell.h"
 #include "tangent_frame.h"
 #include "transform.h"
+#include "world_frame.h"
 
 #include <algorithm>
 #include <cmath>
@@ -27,10 +28,12 @@ BSDFSample Passthrough::sample(
     RandomGenerator &random
 ) const
 {
+    const float cosTheta = WorldFrame::absCosTheta(-intersection.shadingNormal, -intersection.woWorld);
+
     BSDFSample sample = {
         .wiWorld = -intersection.woWorld,
         .pdf = 1.f,
-        .throughput = Color(1.f),
+        .throughput = Color(1.f) / cosTheta,
         .material = this
     };
     return sample;
