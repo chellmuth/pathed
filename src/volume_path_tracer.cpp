@@ -181,6 +181,9 @@ Color VolumePathTracer::direct(
     RandomGenerator &random,
     Sample &sample
 ) const {
+    const bool isContainer = intersection.material->isContainer();
+    if (isContainer) { return Color(0.f); }
+
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         // part of my old logic - if you hit an emitter, don't do direct lighting?
