@@ -3,6 +3,8 @@
 #include "color.h"
 #include "point.h"
 
+class Scene;
+
 struct TransmittanceQueryResult {
     bool isValid;
     float distance;
@@ -19,4 +21,10 @@ public:
 
     virtual float sigmaT(const Point3 &worldPoint) const = 0;
     virtual float sigmaS(const Point3 &worldPoint) const = 0;
+
+    virtual Color integrate(
+        const Point3 &entryPointWorld,
+        const Point3 &exitPointWorld,
+        Scene &scene
+    ) const = 0;
 };

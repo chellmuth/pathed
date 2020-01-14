@@ -104,6 +104,12 @@ public:
     float sigmaT(const Point3 &worldPoint) const override;
     float sigmaS(const Point3 &worldPoint) const override;
 
+    Color integrate(
+        const Point3 &entryPointWorld,
+        const Point3 &exitPointWorld,
+        Scene &scene
+    ) const override { return Color(0.f); }
+
 protected:
     Point3 worldToGrid(const Point3 &worldPoint) const;
     float lookup(int cellX, int cellY, int cellZ) const;
