@@ -9,6 +9,7 @@
 #include "uv.h"
 #include "world_frame.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -238,6 +239,14 @@ OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
     if (std::isinf(rtcRay.tfar)) {
         return OcclusionResult({ true });
     }
+
+    std::sort(
+        context.volumeEvents.begin(),
+        context.volumeEvents.end(),
+        [](VolumeEvent ve1, VolumeEvent ve2) {
+            return ve1.t > ve2.t;
+        }
+    );
 
     return OcclusionResult({
         false,

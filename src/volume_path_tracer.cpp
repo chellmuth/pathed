@@ -14,6 +14,7 @@
 #include "util.h"
 #include "vector.h"
 
+#include <assert.h>
 #include <fstream>
 #include <iostream>
 
@@ -250,8 +251,20 @@ Color VolumePathTracer::directSampleLights(
         return Color(0.f);
     }
 
-    if (occlusionResult.volumeEvents.size() > 0) {
-        return Color(0.f, 1.f, 0.f);
+    Color transmittance(1.f);
+
+    const std::vector<VolumeEvent> &volumeEvents = occlusionResult.volumeEvents;
+    const size_t eventCount = volumeEvents.size();
+    if (eventCount > 0) {
+        assert(eventCount % 2 == 0);
+
+        for (int i = 0; i < eventCount / 2; i++) {
+            const std::shared_ptr<Medium> mediumPtr = volumeEvents[i * 2].mediumPtr;
+            const Point3 enterPoint = shadowRay.at(volumeEvents[i * 2].t);
+            const Point3 exitPoint = shadowRay.at(volumeEvents[i * 2 + 1].t);
+
+            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+        }
     }
 
     const float pdf = lightSample.solidAnglePDF(intersection.point);
@@ -261,6 +274,7 @@ Color VolumePathTracer::directSampleLights(
     const Vector3 lightWo = -lightDirection.normalized();
 
     const Color lightContribution = lightSample.light->emit(lightWo)
+        * transmittance
         * lightWeight
         * intersection.material->f(intersection, wiWorld)
         * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld)
