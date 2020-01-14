@@ -11,8 +11,8 @@
   "media": [
     {
       "name": "smoke",
-      "type": "heterogeneous",
-      "filename": "assets/smoke/smoke.vol"
+      "type": "homogeneous",
+      "sigma_t": ["4", "4", "4"]
     }
   ],
 
@@ -21,7 +21,7 @@
       "type": "obj",
       "filename": "assets/smoke/plane.obj",
       "transform": {
-        "translate": [ "0", "0.48", "0" ]
+        "translate": [ "0", "0.501", "0" ]
       },
       "bsdf": {
         "type": "lambertian",
