@@ -40,16 +40,28 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 {
     if (args->context == nullptr) { return; }
 
-    const CustomRTCIntersectContext* context = (const CustomRTCIntersectContext*)args->context;
+    CustomRTCIntersectContext *context = (CustomRTCIntersectContext *)args->context;
 
-    RTCHit *hit = (RTCHit*)args->hit;
+    RTCHit *hit = (RTCHit *)args->hit;
     if (hit == nullptr) { return; }
 
-    const std::vector<std::vector<std::shared_ptr<Surface> > > *surfaces = context->surfacesPtr;
+    const NestedSurfaceVector *surfaces = context->surfacesPtr;
     const auto &surfacePtr = (*surfaces)[hit->geomID][hit->primID];
-    if (surfacePtr->getMaterial()->isContainer()) {
-        args->valid[0] = 0;
-    }
+
+    if (!surfacePtr->getMaterial()->isContainer()) { return; }
+
+    std::shared_ptr<Medium> mediumPtr = surfacePtr->getInternalMedium();
+    if (!mediumPtr) { return; }
+
+    RTCRay *ray = (RTCRay *)args->ray;
+    VolumeEvent event({
+        ray->tfar,
+        mediumPtr
+    });
+
+    context->volumeEvents.push_back(event);
+
+    args->valid[0] = 0;
 }
 
 void Scene::registerOcclusionFilters() const
@@ -196,6 +208,41 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
     );
 
     return std::isinf(rtcRay.tfar);
+}
+
+OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
+{
+    RTCRay rtcRay;
+    rtcRay.org_x = ray.origin().x();
+    rtcRay.org_y = ray.origin().y();
+    rtcRay.org_z = ray.origin().z();
+
+    rtcRay.dir_x = ray.direction().x();
+    rtcRay.dir_y = ray.direction().y();
+    rtcRay.dir_z = ray.direction().z();
+
+    rtcRay.tnear = 1e-3f;
+    rtcRay.tfar = maxT - 1e-3f;
+
+    rtcRay.flags = 0;
+
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context);
+
+    rtcOccluded1(
+        g_rtcScene,
+        &context.context,
+        &rtcRay
+    );
+
+    if (std::isinf(rtcRay.tfar)) {
+        return OcclusionResult({ true });
+    }
+
+    return OcclusionResult({
+        false,
+        context.volumeEvents
+    });
 }
 
 LightSample Scene::sampleLights(RandomGenerator &random) const

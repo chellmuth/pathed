@@ -238,16 +238,20 @@ Color VolumePathTracer::directSampleLights(
 
     const Ray shadowRay = Ray(intersection.point, wiWorld);
     const float lightDistance = lightDirection.length();
-    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+    OcclusionResult occlusionResult = scene.testVolumetricOcclusion(shadowRay, lightDistance);
 
     sample.shadowTests.push_back({
         intersection.point,
         lightSample.point,
-        occluded
+        occlusionResult.isOccluded
     });
 
-    if (occluded) {
+    if (occlusionResult.isOccluded) {
         return Color(0.f);
+    }
+
+    if (occlusionResult.volumeEvents.size() > 0) {
+        return Color(0.f, 1.f, 0.f);
     }
 
     const float pdf = lightSample.solidAnglePDF(intersection.point);

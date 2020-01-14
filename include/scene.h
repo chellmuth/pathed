@@ -21,9 +21,20 @@ class Ray;
 
 using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
 
+struct VolumeEvent {
+    float t;
+    std::shared_ptr<Medium> mediumPtr;
+};
+
+struct OcclusionResult {
+    bool isOccluded;
+    std::vector<VolumeEvent> volumeEvents;
+};
+
 struct CustomRTCIntersectContext {
     RTCIntersectContext context;
     const NestedSurfaceVector *surfacesPtr;
+    std::vector<VolumeEvent> volumeEvents;
 };
 
 struct LightSample {
@@ -76,6 +87,7 @@ public:
 
     Intersection testIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
+    OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
     NestedSurfaceVector getSurfaces();
     std::shared_ptr<Camera> getCamera() const { return m_camera; }

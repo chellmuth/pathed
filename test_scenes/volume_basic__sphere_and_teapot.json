@@ -1,8 +1,8 @@
 {
   "sensor": {
     "lookAt": {
-      "target": [ "0", "0", "5" ],
-      "origin": [ "0", "3", "-5" ],
+      "target": [ "0", "1", "0" ],
+      "origin": [ "0", "2", "-5" ],
       "up": [ "0", "1", "0" ]
     },
     "fov": "33"
@@ -12,26 +12,26 @@
     {
       "name": "smoke",
       "type": "homogeneous",
-      "sigma_t": [ "0.8", "0.8", "0.8" ]
+      "sigma_t": [ "0.95", "0.95", "0.95" ]
     }
   ],
 
   "models": [
     {
-      "type": "sphere",
-      "center": [ "0", "0", "5" ],
-      "radius": "1",
+      "type": "obj",
+      "filename": "bunny.obj",
       "internal_medium": "smoke",
       "bsdf": {
         "type": "passthrough"
       }
     },
+
     {
       "type": "quad",
       "transform": {
         "scale": [ "100", "100", "100" ],
         "rotate": [ "90", "0", "0" ],
-        "translate": [ "0", "-1.01", "0" ]
+        "translate": [ "0", "-0.01", "0" ]
       },
       "bsdf": {
         "type": "lambertian",

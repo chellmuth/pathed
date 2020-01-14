@@ -48,8 +48,8 @@ add_executable(pathed app/main.cpp ${SOURCES})
 # against NanoGUI, we need to link against those as well.
 target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree)
 
-add_executable(pathed_tests ${TESTS} ${SOURCES})
-target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree)
+# add_executable(pathed_tests ${TESTS} ${SOURCES})
+# target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree)
 
 # add_executable(testbed app/testbed.cpp ${SOURCES})
 # target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree)
