@@ -12,6 +12,10 @@ AABB::AABB(float minX, float minY, float minZ, float maxX, float maxY, float max
       m_maxZ(maxZ)
 {}
 
+static AABBHit miss() {
+    return AABBHit({ 0, Point3(0.f, 0.f, 0.f), Point3(0.f, 0.f, 0.f) });
+}
+
 AABBHit AABB::intersect(const Ray &ray)
 {
     Vector3 invDirection(
@@ -32,6 +36,8 @@ AABBHit AABB::intersect(const Ray &ray)
     float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
     float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
+    if (tmin > tmax) { return miss(); }
+
     if (tmin >= 0 && !std::isinf(tmin) && tmax >= 0 && !std::isinf(tmax)) {
         return AABBHit({
             2,
@@ -48,5 +54,5 @@ AABBHit AABB::intersect(const Ray &ray)
         });
     }
 
-    return AABBHit({ 0, Point3(0.f, 0.f, 0.f), Point3(0.f, 0.f, 0.f) });
+    return miss();
 }
