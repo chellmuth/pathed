@@ -185,3 +185,19 @@ TEST_CASE("custom bounds", "[aabb]") {
     REQUIRE_POINT_APPROX(hit.enterPoint, Point3(-1.f, 3.f, 7.f));
     REQUIRE_POINT_APPROX(hit.exitPoint, Point3(0.f, 4.f, 8.f));
 }
+
+TEST_CASE("intersect segment both inside", "[aabb]") {
+    AABB aabb(
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    );
+
+    Point3 enterPoint = Point3(0.3f, 0.3f, 0.3f);
+    Point3 exitPoint = Point3(0.4f, 0.5f, 0.6f);
+
+    AABBHit hit = aabb.intersect(enterPoint, exitPoint);
+
+    REQUIRE(hit.hitCount == 2);
+    REQUIRE_POINT_APPROX(hit.enterPoint, Point3(0.3f, 0.3f, 0.3f));
+    REQUIRE_POINT_APPROX(hit.exitPoint, Point3(0.4f, 0.5f, 0.6f));
+}

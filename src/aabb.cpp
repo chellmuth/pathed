@@ -42,7 +42,9 @@ AABBHit AABB::intersect(const Ray &ray)
         return AABBHit({
             2,
             ray.at(tmin),
-            ray.at(tmax)
+            ray.at(tmax),
+            tmin,
+            tmax
         });
     }
 
@@ -50,9 +52,31 @@ AABBHit AABB::intersect(const Ray &ray)
         return AABBHit({
             1,
             ray.at(0.f),
-            ray.at(tmax)
+            ray.at(tmax),
+            0.f,
+            tmax
         });
     }
 
     return miss();
+}
+
+AABBHit AABB::intersect(const Point3 &enterPoint, const Point3 &exitPoint)
+{
+    const Vector3 travelDirection = (exitPoint - enterPoint).toVector();
+    const Ray testRay(enterPoint, travelDirection.normalized());
+
+    const AABBHit hit = intersect(testRay);
+
+    const float maxT = travelDirection.length();
+    if (hit.hitCount == 0) { return hit; }
+    if (hit.exitT <= maxT) { return hit; }
+
+    return AABBHit({
+        2,
+        hit.enterPoint,
+        exitPoint,
+        hit.enterT,
+        maxT
+    });
 }
