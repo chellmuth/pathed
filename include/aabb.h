@@ -1,12 +1,13 @@
 #pragma once
 
+#include "point.h"
 #include "ray.h"
 
 struct AABBHit {
     int hitCount;
 
-    float enterTime;
-    float exitTime;
+    Point3 enterPoint;
+    Point3 exitPoint;
 };
 
 class AABB {

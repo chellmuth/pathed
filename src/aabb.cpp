@@ -35,18 +35,18 @@ AABBHit AABB::intersect(const Ray &ray)
     if (tmin >= 0 && tmax >= 0) {
         return AABBHit({
             2,
-            tmin,
-            tmax
+            ray.at(tmin),
+            ray.at(tmax)
         });
     }
 
     if (tmax >= 0 && tmin < 0) {
         return AABBHit({
             1,
-            0.f,
-            tmax
+            ray.at(0.f),
+            ray.at(tmax)
         });
     }
 
-    return AABBHit({ 0, tmin, tmax });
+    return AABBHit({ 0, ray.at(tmin), ray.at(tmax) });
 }
