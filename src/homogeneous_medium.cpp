@@ -3,8 +3,10 @@
 #include "scene.h"
 #include "util.h"
 
-HomogeneousMedium::HomogeneousMedium(Color sigmaT)
-    : m_sigmaT(sigmaT), Medium()
+HomogeneousMedium::HomogeneousMedium(Color sigmaT, Color sigmaS)
+    : m_sigmaT(sigmaT),
+      m_sigmaS(sigmaS),
+      Medium()
 {}
 
 Color HomogeneousMedium::transmittance(const Point3 &pointA, const Point3 &pointB) const
@@ -83,5 +85,6 @@ Color HomogeneousMedium::integrate(
 
     const Color Ld = directSampleLights(samplePoint, scene, random);
     const Color directTransmittance = transmittance(entryPointWorld, samplePoint);
-    return Ld * directTransmittance;
+
+    return Ld * directTransmittance * sigmaS(samplePoint);
 }

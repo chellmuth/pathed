@@ -143,9 +143,10 @@ static void parseMedia(
             media[mediumJson["name"]] = medium;
         } else if (mediumJson["type"] == "homogeneous") {
             Color sigmaT = parseColor(mediumJson["sigma_t"]);
+            Color sigmaS = parseColor(mediumJson["sigma_s"], Color(0.f));
 
-            std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(sigmaT);
-            media[mediumJson["name"]] = medium;
+            auto mediumPtr = std::make_shared<HomogeneousMedium>(sigmaT, sigmaS);
+            media[mediumJson["name"]] = mediumPtr;
         }
     }
 }

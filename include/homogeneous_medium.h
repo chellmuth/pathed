@@ -12,7 +12,7 @@
 
 class HomogeneousMedium : public Medium {
 public:
-    HomogeneousMedium(Color sigmaT);
+    HomogeneousMedium(Color sigmaT, Color sigmaS);
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
 
@@ -35,7 +35,8 @@ public:
     }
 
     float sigmaS(const Point3 &worldPoint) const override {
-        return sigmaT(worldPoint);
+        assert(m_sigmaS.r() == m_sigmaS.g() && m_sigmaS.r() == m_sigmaS.b());
+        return m_sigmaS.r();
     }
 
 private:
@@ -46,4 +47,5 @@ private:
     ) const;
 
     Color m_sigmaT;
+    Color m_sigmaS;
 };
