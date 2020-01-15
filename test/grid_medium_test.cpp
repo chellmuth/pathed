@@ -330,3 +330,49 @@ TEST_CASE("transmittance start point inside the grid", "[grid]") {
         REQUIRE(transmittance.r() == Approx(expected));
     }
 }
+
+TEST_CASE("1x1x1 transmittance fully inside the grid", "[grid]") {
+    float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.5f, 0.5f, 0.5f);
+    Point3 exitPoint(0.5f, 0.6f, 0.5f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 0.1f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}
+
+TEST_CASE("33x33x33 transmittance fully inside the grid", "[grid]") {
+    float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        33, 33, 33,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData(33 * 33 * 33, sigmaT);
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.5f, 0.5f, 0.5f);
+    Point3 exitPoint(0.5f, 0.6f, 0.5f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 0.1f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}

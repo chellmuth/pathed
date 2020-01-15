@@ -7,6 +7,14 @@
 #include <assert.h>
 #include <limits>
 
+std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
+{
+    return os << "[GridCell: "
+              << "x=" << gridCell.x << " "
+              << "y=" << gridCell.y << " "
+              << "z=" << gridCell.z << "]" << std::endl;
+}
+
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,

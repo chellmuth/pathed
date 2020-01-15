@@ -7,6 +7,7 @@
 #include "vector.h"
 
 #include <cmath>
+#include <ostream>
 #include <vector>
 
 struct GridInfo {
@@ -62,6 +63,8 @@ struct GridCell {
 
     bool operator!=(const GridCell &cell) const { return !(*this == cell); }
 };
+
+std::ostream &operator<<(std::ostream &os, const GridCell &gridCell);
 
 struct RegularTrackerStepResult {
     bool isValidStep;
