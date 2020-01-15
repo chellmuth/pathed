@@ -248,7 +248,8 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
         const GridCell &currentCell = stepResult.cell;
-        const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
+        // const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
+        const float sigmaT = 4.f;
 
         const float cellExponent = sigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;
@@ -321,11 +322,8 @@ Color GridMedium::integrate(
     RandomGenerator &random
 ) const
 {
-    const Point3 entryPoint = worldToGrid(entryPointWorld);
-    const Point3 exitPoint = worldToGrid(exitPointWorld);
-
-    const Vector3 travelVector = (exitPoint - entryPoint).toVector();
-    const Ray travelRay(entryPoint, travelVector.normalized());
+    const Vector3 travelVector = (exitPointWorld - entryPointWorld).toVector();
+    const Ray travelRay(entryPointWorld, travelVector.normalized());
 
     AABB aabb(
         m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
@@ -336,16 +334,18 @@ Color GridMedium::integrate(
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
-        gridToWorld(m_gridInfo, hit.enterPoint),
-        gridToWorld(m_gridInfo, hit.exitPoint),
+        hit.enterPoint,
+        hit.exitPoint,
         targetTransmittance
     );
 
     if (!queryResult.isValid) { return Color(0.f); }
     const Point3 samplePoint = travelRay.at(queryResult.distance);
 
-    const Color Ld = directSampleLights(gridToWorld(m_gridInfo, samplePoint), scene, random);
+    const Color Ld = directSampleLights(samplePoint, scene, random);
     const Color directTransmittance = transmittance(hit.enterPoint, samplePoint);
+
+    std::cout << Ld << " " << directTransmittance << " " << sigmaS(samplePoint) << std::endl;
 
     return Ld * directTransmittance * sigmaS(samplePoint);
 }
