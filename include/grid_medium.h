@@ -95,14 +95,14 @@ public:
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData,
-        Color albedo,
+        float albedo,
         float scale
     );
 
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData
-    ) : GridMedium(gridInfo, gridData, Color(0.f), 1.f) {}
+    ) : GridMedium(gridInfo, gridData, 0.f, 1.f) {}
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
 
@@ -130,7 +130,7 @@ protected:
     ) const;
 
     Point3 worldToGrid(const Point3 &worldPoint) const;
-    float lookup(int cellX, int cellY, int cellZ) const;
+    float lookupSigmaT(int cellX, int cellY, int cellZ) const;
 
 
     GridInfo m_gridInfo;
@@ -141,6 +141,6 @@ protected:
 
     std::vector<float> m_gridData;
 
-    Color m_albedo;
+    float m_albedo;
     float m_scale;
 };

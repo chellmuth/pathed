@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-std::shared_ptr<Medium> VolParser::parse(const std::string &filename, Color albedo, float scale)
+std::shared_ptr<Medium> VolParser::parse(const std::string &filename, float albedo, float scale)
 {
     std::ifstream volStream(filename, std::ifstream::binary);
 

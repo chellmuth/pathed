@@ -10,7 +10,7 @@
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
-    Color albedo,
+    float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
     m_gridData(gridData),
@@ -22,9 +22,26 @@ GridMedium::GridMedium(
     m_widthZ = m_gridInfo.widthZ();
 }
 
-float GridMedium::lookup(int cellX, int cellY, int cellZ) const
+float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
 {
-    return m_gridData[(cellZ * m_gridInfo.cellsY + cellY) * m_gridInfo.cellsX + cellX];
+    const int index = (cellZ * m_gridInfo.cellsY + cellY) * m_gridInfo.cellsX + cellX;
+    const float density = m_gridData[index];
+
+    return density * m_scale;
+}
+
+float GridMedium::sigmaT(const Point3 &worldPoint) const
+{
+    const Point3 gridPoint = worldToGrid(worldPoint);
+    const GridCell cell = GridCell(gridPoint);
+    return lookupSigmaT(cell.x, cell.y, cell.z);
+}
+
+float GridMedium::sigmaS(const Point3 &worldPoint) const
+{
+    const Point3 gridPoint = worldToGrid(worldPoint);
+    const GridCell cell = GridCell(gridPoint);
+    return lookupSigmaT(cell.x, cell.y, cell.z) * m_albedo;
 }
 
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
@@ -228,7 +245,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
         const GridCell &currentCell = stepResult.cell;
-        const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
+        const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
 
         accumulatedExponent += sigmaT * stepResult.cellTime;
 
@@ -255,8 +272,7 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
         const GridCell &currentCell = stepResult.cell;
-        // const float sigmaT = lookup(currentCell.x, currentCell.y, currentCell.z);
-        const float sigmaT = 4.f;
+        const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
 
         const float cellExponent = sigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;
@@ -276,18 +292,6 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     }
 
     return TransmittanceQueryResult({ false, -1.f });
-}
-
-float GridMedium::sigmaT(const Point3 &worldPoint) const
-{
-    return 40.f;
-}
-
-float GridMedium::sigmaS(const Point3 &worldPoint) const
-{
-    const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint);
-    return lookup(cell.x, cell.y, cell.z);
 }
 
 Color GridMedium::directSampleLights(

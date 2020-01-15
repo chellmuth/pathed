@@ -139,7 +139,7 @@ static void parseMedia(
 
     for (auto &mediumJson : mediaJson) {
         if (mediumJson["type"] == "heterogeneous") {
-            const Color albedo = parseColor(mediumJson["albedo"]);
+            const float albedo = parseFloat(mediumJson["albedo"]);
             const float scale = parseFloat(mediumJson["scale"], 1.f);
 
             auto mediumPtr = VolParser::parse(
