@@ -32,7 +32,7 @@ AABBHit AABB::intersect(const Ray &ray)
     float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
     float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
-    if (tmin >= 0 && tmax >= 0) {
+    if (tmin >= 0 && !std::isinf(tmin) && tmax >= 0 && !std::isinf(tmax)) {
         return AABBHit({
             2,
             ray.at(tmin),
@@ -40,7 +40,7 @@ AABBHit AABB::intersect(const Ray &ray)
         });
     }
 
-    if (tmax >= 0 && tmin < 0) {
+    if (tmax >= 0 && !std::isinf(tmax) && tmin < 0) {
         return AABBHit({
             1,
             ray.at(0.f),
@@ -48,5 +48,5 @@ AABBHit AABB::intersect(const Ray &ray)
         });
     }
 
-    return AABBHit({ 0, ray.at(tmin), ray.at(tmax) });
+    return AABBHit({ 0, Point3(0.f, 0.f, 0.f), Point3(0.f, 0.f, 0.f) });
 }
