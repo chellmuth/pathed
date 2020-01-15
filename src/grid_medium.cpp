@@ -171,6 +171,8 @@ RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3&
 
     m_currentTime = 0.f;
     m_currentCell = GridCell(m_entryPoint);
+
+    m_endTime = totalDistance;
 }
 
 float RegularTrackerState::worldTime(float gridTime)
@@ -185,10 +187,16 @@ float RegularTrackerState::worldTime(float gridTime)
 
 RegularTrackerStepResult RegularTrackerState::step()
 {
-    const float minTime = m_nextTimes.min();
+    if (m_currentTime >= m_endTime) {
+        return RegularTrackerStepResult({
+            false,
+            GridCell({-1, -1, -1}),
+            0.f,
+            0.f
+        });
+    }
 
-    const float cellTime = minTime - m_currentTime;
-    m_currentTime = minTime;
+    const float minTime = m_nextTimes.min();
 
     if (m_nextTimes.x() == minTime) {
         if (m_rates.x() > 0.f) {
@@ -216,27 +224,29 @@ RegularTrackerStepResult RegularTrackerState::step()
         }
     } else { assert(0); }
 
-    if (validCell(m_gridInfo, m_currentCell)) {
-        return RegularTrackerStepResult({
-            true,
-            m_currentCell,
-            worldTime(cellTime),
-            worldTime(m_currentTime)
-        });
-    } else {
-        return RegularTrackerStepResult({
-            false,
-            GridCell({-1, -1, -1}),
-            0.f,
-            0.f
-        });
-    }
+    const float clippedTime = std::min(minTime, m_endTime);
+    const float cellTime = clippedTime - m_currentTime;
+    m_currentTime = clippedTime;
+
+    return RegularTrackerStepResult({
+        true,
+        m_currentCell,
+        worldTime(cellTime),
+        worldTime(m_currentTime)
+    });
 }
 
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
 {
-    const Point3 entryPoint = worldToGrid(entryPointWorld);
-    const Point3 exitPoint = worldToGrid(exitPointWorld);
+    AABB aabb(
+        m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
+        m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
+    );
+    AABBHit hit = aabb.intersect(entryPointWorld, exitPointWorld);
+    if (!hit.isHit) { return Color(1.f); }
+
+    const Point3 entryPoint = worldToGrid(hit.enterPoint);
+    const Point3 exitPoint = worldToGrid(hit.exitPoint);
 
     float accumulatedExponent = 0.f;
 

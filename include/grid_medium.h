@@ -87,6 +87,8 @@ private:
     float m_currentTime;
     GridCell m_currentCell;
 
+    float m_endTime;
+
     Vector3 m_nextTimes;
 };
 

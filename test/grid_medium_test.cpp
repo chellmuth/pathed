@@ -217,3 +217,93 @@ TEST_CASE("findTransmittance doesn't meet threshold, exits inside volume", "[gri
         REQUIRE(result.distance == -1.f);
     }
 }
+
+TEST_CASE("transmittance handles non-intersection", "[grid]") {
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {0.4f};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(-1.f, -1.f, -1.f);
+    Point3 exitPoint(-2.f, -2.f, -2.f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = 1.f;
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}
+
+TEST_CASE("transmittance handles unclamped start points", "[grid]") {
+    float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(-100.f, 0.5f, 0.5f);
+    Point3 exitPoint(1.f, 0.5f, 0.5f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 1.f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}
+
+TEST_CASE("transmittance handles unclamped end points", "[grid]") {
+    float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.f, 0.5f, 0.5f);
+    Point3 exitPoint(100.f, 0.5f, 0.5f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 1.f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}
+
+TEST_CASE("transmittance exit point inside the grid", "[grid]") {
+    float sigmaT = 0.4f;
+
+    GridInfo gridInfo({
+        1, 1, 1,
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    });
+
+    std::vector<float> gridData = {sigmaT};
+    GridMedium grid(gridInfo, gridData);
+
+    Point3 entryPoint(0.f, 0.5f, 0.5f);
+    Point3 exitPoint(0.5f, 0.5f, 0.5f);
+
+    {
+        Color transmittance = grid.transmittance(entryPoint, exitPoint);
+
+        float expected = std::exp(-sigmaT * 0.5f);
+        REQUIRE(transmittance.r() == Approx(expected));
+    }
+}
