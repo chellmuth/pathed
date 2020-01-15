@@ -330,7 +330,7 @@ Color GridMedium::integrate(
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(travelRay);
-    if (hit.hitCount < 2) { return Color(0.f); }
+    if (hit.hitCount == 0) { return Color(0.f); }
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
@@ -344,8 +344,6 @@ Color GridMedium::integrate(
 
     const Color Ld = directSampleLights(samplePoint, scene, random);
     const Color directTransmittance = transmittance(hit.enterPoint, samplePoint);
-
-    std::cout << Ld << " " << directTransmittance << " " << sigmaS(samplePoint) << std::endl;
 
     return Ld * directTransmittance * sigmaS(samplePoint);
 }
