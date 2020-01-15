@@ -170,10 +170,15 @@ Color VolumePathTracer::scatter(
     const Scene &scene,
     RandomGenerator &random
 ) const {
-    const bool isContainer = sourceIntersection.material->isContainer();
-    if (isContainer) { return Color(0.01f); }
+    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
+    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
 
-    return Color(0.f);
+    if (!mediumIn || !mediumOut) { return Color(0.f); }
+
+    const Point3 &source = sourceIntersection.point;
+    const Point3 &target = targetIntersection.point;
+
+    return mediumOut->integrate(source, target, scene, random);
 }
 
 Color VolumePathTracer::direct(
