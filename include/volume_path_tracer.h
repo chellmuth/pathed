@@ -36,6 +36,13 @@ private:
         const Intersection &targetIntersection
     ) const;
 
+    Color scatter(
+        const Intersection &sourceIntersection,
+        const Intersection &targetIntersection,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
     Color direct(
         const Intersection &intersection,
         const BSDFSample &bsdfSample,

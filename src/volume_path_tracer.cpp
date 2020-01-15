@@ -57,20 +57,9 @@ Color VolumePathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        const Interaction nextInteraction = sampleInteraction(
-            lastIntersection,
-            bounceIntersection,
-            bounceRay,
-            random
-        );
-
-        if (nextInteraction.isSurface) {
-            // ...
-        } else {
-            // modulation *= nextInteraction.sigmaS
-            //     * (1.f / nextInteraction.sigmaT);
-
-        }
+        // if volume, integrate!
+        const Color Ls = scatter(lastIntersection, bounceIntersection, scene, random);
+        result += Ls * modulation;
 
         const float invPDF = 1.f / bsdfSample.pdf;
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
@@ -173,6 +162,18 @@ Color VolumePathTracer::transmittance(
     const Point3 &target = targetIntersection.point;
 
     return mediumOut->transmittance(source, target);
+}
+
+Color VolumePathTracer::scatter(
+    const Intersection &sourceIntersection,
+    const Intersection &targetIntersection,
+    const Scene &scene,
+    RandomGenerator &random
+) const {
+    const bool isContainer = sourceIntersection.material->isContainer();
+    if (isContainer) { return Color(0.01f); }
+
+    return Color(0.f);
 }
 
 Color VolumePathTracer::direct(

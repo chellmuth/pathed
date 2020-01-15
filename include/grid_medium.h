@@ -3,6 +3,7 @@
 #include "color.h"
 #include "medium.h"
 #include "point.h"
+#include "random_generator.h"
 #include "vector.h"
 
 #include <cmath>
@@ -107,7 +108,8 @@ public:
     Color integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
-        Scene &scene
+        const Scene &scene,
+        RandomGenerator &random
     ) const override { return Color(0.f); }
 
 protected:

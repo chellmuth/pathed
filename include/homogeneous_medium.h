@@ -3,6 +3,7 @@
 #include "color.h"
 #include "medium.h"
 #include "point.h"
+#include "random_generator.h"
 #include "vector.h"
 
 #include <assert.h>
@@ -24,7 +25,8 @@ public:
     Color integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
-        Scene &scene
+        const Scene &scene,
+        RandomGenerator &random
     ) const override;
 
     float sigmaT(const Point3 &worldPoint) const override {
@@ -37,5 +39,11 @@ public:
     }
 
 private:
+    Color directSampleLights(
+        const Point3 &point,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
     Color m_sigmaT;
 };

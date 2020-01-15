@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "point.h"
+#include "random_generator.h"
 
 class Scene;
 
@@ -25,6 +26,7 @@ public:
     virtual Color integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
-        Scene &scene
+        const Scene &scene,
+        RandomGenerator &random
     ) const = 0;
 };
