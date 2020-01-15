@@ -139,8 +139,16 @@ static void parseMedia(
 
     for (auto &mediumJson : mediaJson) {
         if (mediumJson["type"] == "heterogeneous") {
-            std::shared_ptr<Medium> medium = VolParser::parse(mediumJson["filename"]);
-            media[mediumJson["name"]] = medium;
+            const Color albedo = parseColor(mediumJson["albedo"]);
+            const float scale = parseFloat(mediumJson["scale"], 1.f);
+
+            auto mediumPtr = VolParser::parse(
+                mediumJson["filename"],
+                albedo,
+                scale
+            );
+
+            media[mediumJson["name"]] = mediumPtr;
         } else if (mediumJson["type"] == "homogeneous") {
             Color sigmaT = parseColor(mediumJson["sigma_t"]);
             Color sigmaS = parseColor(mediumJson["sigma_s"], Color(0.f));

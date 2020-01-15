@@ -92,7 +92,17 @@ private:
 
 class GridMedium : public Medium {
 public:
-    GridMedium(const GridInfo &gridInfo, const std::vector<float> &gridData);
+    GridMedium(
+        const GridInfo &gridInfo,
+        const std::vector<float> &gridData,
+        Color albedo,
+        float scale
+    );
+
+    GridMedium(
+        const GridInfo &gridInfo,
+        const std::vector<float> &gridData
+    ) : GridMedium(gridInfo, gridData, Color(0.f), 1.f) {}
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
 
@@ -130,4 +140,7 @@ protected:
     float m_widthZ;
 
     std::vector<float> m_gridData;
+
+    Color m_albedo;
+    float m_scale;
 };

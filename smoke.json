@@ -12,6 +12,8 @@
     {
       "name": "smoke",
       "type": "heterogeneous",
+      "albedo": "0.9",
+      "scale": "10",
       "filename": "assets/smoke/smoke.vol"
     }
   ],

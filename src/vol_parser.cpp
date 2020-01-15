@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-std::shared_ptr<Medium> VolParser::parse(const std::string &filename)
+std::shared_ptr<Medium> VolParser::parse(const std::string &filename, Color albedo, float scale)
 {
     std::ifstream volStream(filename, std::ifstream::binary);
 
@@ -65,5 +65,5 @@ std::shared_ptr<Medium> VolParser::parse(const std::string &filename)
         bounds[5]
     };
 
-    return std::make_shared<GridMedium>(gridInfo, gridData);
+    return std::make_shared<GridMedium>(gridInfo, gridData, albedo, scale);
 }

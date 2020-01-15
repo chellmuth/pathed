@@ -7,8 +7,15 @@
 #include <assert.h>
 #include <limits>
 
-GridMedium::GridMedium(const GridInfo &gridInfo, const std::vector<float> &gridData)
-    : m_gridInfo(gridInfo), m_gridData(gridData)
+GridMedium::GridMedium(
+    const GridInfo &gridInfo,
+    const std::vector<float> &gridData,
+    Color albedo,
+    float scale
+) : m_gridInfo(gridInfo),
+    m_gridData(gridData),
+    m_albedo(albedo),
+    m_scale(scale)
 {
     m_widthX = m_gridInfo.widthX();
     m_widthY = m_gridInfo.widthY();
