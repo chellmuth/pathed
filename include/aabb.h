@@ -4,7 +4,7 @@
 #include "ray.h"
 
 struct AABBHit {
-    int hitCount;
+    bool isHit;
 
     Point3 enterPoint;
     Point3 exitPoint;

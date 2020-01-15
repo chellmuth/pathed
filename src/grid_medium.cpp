@@ -341,7 +341,7 @@ Color GridMedium::integrate(
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(travelRay);
-    if (hit.hitCount == 0) { return Color(0.f); }
+    if (!hit.isHit) { return Color(0.f); }
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
