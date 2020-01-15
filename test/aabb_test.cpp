@@ -150,5 +150,38 @@ TEST_CASE("intersect corner", "[aabb]") {
     REQUIRE(hit.hitCount == 0);
 }
 
-TEST_CASE("custom bounds", "[aabb]") {}
-TEST_CASE("ray starts on bounds", "[aabb]") {}
+TEST_CASE("ray starts on bounds", "[aabb]") {
+    AABB aabb(
+        0.f, 0.f, 0.f,
+        1.f, 1.f, 1.f
+    );
+
+    Ray testRay(
+        Point3(0.5f, 0.f, 0.4f),
+        Vector3(1.f, 1.f, 1.f).normalized()
+    );
+
+    AABBHit hit = aabb.intersect(testRay);
+
+    REQUIRE(hit.hitCount == 2);
+    REQUIRE_POINT_APPROX(hit.enterPoint, Point3(0.5f, 0.f, 0.4f));
+    REQUIRE_POINT_APPROX(hit.exitPoint, Point3(1.f, 0.5f, 0.9f));
+}
+
+TEST_CASE("custom bounds", "[aabb]") {
+    AABB aabb(
+        -1.f, 0.f, 6.f,
+        1.f, 4.f, 100.f
+    );
+
+    Ray testRay(
+        Point3(-3.f, 1.f, 5.f),
+        Vector3(1.f, 1.f, 1.f).normalized()
+    );
+
+    AABBHit hit = aabb.intersect(testRay);
+
+    REQUIRE(hit.hitCount == 2);
+    REQUIRE_POINT_APPROX(hit.enterPoint, Point3(-1.f, 3.f, 7.f));
+    REQUIRE_POINT_APPROX(hit.exitPoint, Point3(0.f, 4.f, 8.f));
+}
