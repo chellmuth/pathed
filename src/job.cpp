@@ -8,6 +8,7 @@
 #include "nearest_photon.h"
 #include "path_tracer.h"
 #include "pdf_integrator.h"
+#include "render_backsides.h"
 #include "self_integrator.h"
 #include "volume_path_tracer.h"
 
@@ -83,6 +84,8 @@ std::shared_ptr<Integrator> Job::integrator() const
         return std::make_shared<SelfIntegrator>(m_bounceController);
     } else if (integrator == "DataParallelIntegrator") {
         return std::make_shared<DataParallelIntegrator>(m_bounceController);
+    } else if (integrator == "RenderBacksides") {
+        return std::make_shared<RenderBacksides>();
     }
     throw "Unimplemented";
 }
