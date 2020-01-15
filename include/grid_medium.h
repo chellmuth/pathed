@@ -110,9 +110,15 @@ public:
         const Point3 &exitPointWorld,
         const Scene &scene,
         RandomGenerator &random
-    ) const override { return Color(0.f); }
+    ) const override;
 
 protected:
+    Color directSampleLights(
+        const Point3 &point,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
     Point3 worldToGrid(const Point3 &worldPoint) const;
     float lookup(int cellX, int cellY, int cellZ) const;
 

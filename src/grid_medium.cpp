@@ -1,5 +1,7 @@
 #include "grid_medium.h"
 
+#include "aabb.h"
+#include "scene.h"
 #include "util.h"
 
 #include <assert.h>
@@ -270,7 +272,7 @@ TransmittanceQueryResult GridMedium::findTransmittance(
 
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
-    return sigmaS(worldPoint);
+    return 40.f;
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
@@ -278,4 +280,72 @@ float GridMedium::sigmaS(const Point3 &worldPoint) const
     const Point3 gridPoint = worldToGrid(worldPoint);
     const GridCell cell = GridCell(gridPoint);
     return lookup(cell.x, cell.y, cell.z);
+}
+
+Color GridMedium::directSampleLights(
+    const Point3 &point,
+    const Scene &scene,
+    RandomGenerator &random
+) const {
+    const LightSample lightSample = scene.sampleDirectLights(point, random);
+
+    const Vector3 lightDirection = (lightSample.point - point).toVector();
+    const Vector3 wiWorld = lightDirection.normalized();
+
+    if (lightSample.normal.dot(wiWorld) >= 0.f) {
+        return Color(0.f);
+    }
+
+    const Ray shadowRay = Ray(point, wiWorld);
+    const float lightDistance = lightDirection.length();
+    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+
+    if (occluded) {
+        return Color(0.f);
+    } else {
+        const float pdf = lightSample.solidAnglePDF(point);
+
+        const Color transmittance = Color(1.f); // todo
+
+        return lightSample.light->emit(lightDirection)
+            * transmittance
+            * 1.f / (4.f * M_PI)
+            / pdf;
+    }
+}
+
+Color GridMedium::integrate(
+    const Point3 &entryPointWorld,
+    const Point3 &exitPointWorld,
+    const Scene &scene,
+    RandomGenerator &random
+) const
+{
+    const Point3 entryPoint = worldToGrid(entryPointWorld);
+    const Point3 exitPoint = worldToGrid(exitPointWorld);
+
+    const Vector3 travelVector = (exitPoint - entryPoint).toVector();
+    const Ray travelRay(entryPoint, travelVector.normalized());
+
+    AABB aabb(
+        m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
+        m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
+    );
+    AABBHit hit = aabb.intersect(travelRay);
+    if (hit.hitCount < 2) { return Color(0.f); }
+
+    const float targetTransmittance = random.next();
+    const TransmittanceQueryResult queryResult = findTransmittance(
+        gridToWorld(m_gridInfo, hit.enterPoint),
+        gridToWorld(m_gridInfo, hit.exitPoint),
+        targetTransmittance
+    );
+
+    if (!queryResult.isValid) { return Color(0.f); }
+    const Point3 samplePoint = travelRay.at(queryResult.distance);
+
+    const Color Ld = directSampleLights(gridToWorld(m_gridInfo, samplePoint), scene, random);
+    const Color directTransmittance = transmittance(hit.enterPoint, samplePoint);
+
+    return Ld * directTransmittance * sigmaS(samplePoint);
 }

@@ -11,9 +11,8 @@
   "media": [
     {
       "name": "smoke",
-      "type": "homogeneous",
-      "sigma_t": ["4", "4", "4"],
-      "sigma_s": ["0.03", "0.03", "0.03"]
+      "type": "heterogeneous",
+      "filename": "assets/smoke/smoke.vol"
     }
   ],
 
