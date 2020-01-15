@@ -172,13 +172,6 @@ Point3 Triangle::centroid() const
     );
 }
 
-void Triangle::updateAABB(AABB *aabb)
-{
-    aabb->update(m_p0);
-    aabb->update(m_p1);
-    aabb->update(m_p2);
-}
-
 std::shared_ptr<Shape> Triangle::transform(const Transform &transform) const
 {
     if (m_hasUVs) {

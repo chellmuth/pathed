@@ -107,15 +107,6 @@ float Sphere::area() const
     return 4 * M_PI * m_radius * m_radius;
 }
 
-void Sphere::updateAABB(AABB *aabb)
-{
-    Point3 bottomLeftFront(-m_radius, -m_radius, -m_radius);
-    Point3 topRightBack(m_radius, m_radius, m_radius);
-
-    aabb->update(m_center + bottomLeftFront);
-    aabb->update(m_center + topRightBack);
-}
-
 std::shared_ptr<Shape> Sphere::transform(const Transform &transform) const
 {
     throw "Sphere transform unimplemented";

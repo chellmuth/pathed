@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+class Triangle;
+
 enum class Handedness {
     Right,
     Left

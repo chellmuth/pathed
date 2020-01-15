@@ -32,8 +32,6 @@ public:
     Color getRadiance() const;
 
     Point3 centroid() const override { return m_shape->centroid(); }
-    void updateAABB(AABB *aabb) override { return m_shape->updateAABB(aabb); }
-
 
 private:
     std::shared_ptr<Shape> m_shape;
