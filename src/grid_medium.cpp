@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <limits>
 
+static const bool DEBUG = false;
+
 std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
 {
     return os << "[GridCell: "
@@ -181,6 +183,11 @@ RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3&
     m_currentCell = GridCell(m_entryPoint, gridInfo);
 
     m_endTime = totalDistance;
+
+    if (DEBUG) {
+        std::cout << "[constructor] entry point: " << m_entryPoint.toString() << std::endl;
+        std::cout << "[constructor] exit point: " << m_exitPoint.toString() << std::endl;
+    }
 }
 
 float RegularTrackerState::worldTime(float gridTime)
@@ -238,6 +245,11 @@ RegularTrackerStepResult RegularTrackerState::step()
     const float cellTime = clippedTime - m_currentTime;
     m_currentTime = clippedTime;
 
+    if (DEBUG) {
+        std::cout << "[step] steppedCell: " << steppedCell << std::endl;
+        std::cout << "[step] cell time: " << cellTime << " world time: " << worldTime(cellTime) << std::endl;
+    }
+
     return RegularTrackerStepResult({
         true,
         steppedCell,
@@ -268,6 +280,10 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
 
         accumulatedExponent += sigmaT * stepResult.cellTime;
+
+        if (DEBUG) {
+            std::cout << "[transmittance] cell time: " << stepResult.cellTime << " sigmaT: " << sigmaT << std::endl;
+        }
 
         stepResult = trackerState.step();
     }
