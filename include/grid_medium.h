@@ -32,23 +32,25 @@ struct GridCell {
     int y;
     int z;
 
-    GridCell(const Point3 &point)
+    GridCell(int x_, int y_, int z_) : x(x_), y(y_), z(z_) {}
+
+    GridCell(const Point3 &point, const GridInfo &gridInfo)
     {
-        // Make sure the intersecting dimension stays "outside" the grid initially
-        if (point.x() == 0.f) {
-            x = -1;
+        // Bring outer boundaries "into" the cell that will be integrated over
+        if (point.x() == (float)gridInfo.cellsX) {
+            x = (float)gridInfo.cellsX - 1;
         } else {
             x = (int)std::floor(point.x());
         }
 
-        if (point.y() == 0.f) {
-            y = -1;
+        if (point.y() == (float)gridInfo.cellsY) {
+            y = (float)gridInfo.cellsY - 1;
         } else {
             y = (int)std::floor(point.y());
         }
 
-        if (point.z() == 0.f) {
-            z = -1;
+        if (point.z() == (float)gridInfo.cellsZ) {
+            z = (float)gridInfo.cellsZ - 1;
         } else {
             z = (int)std::floor(point.z());
         }

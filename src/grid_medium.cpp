@@ -33,14 +33,14 @@ float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint);
+    const GridCell cell = GridCell(gridPoint, m_gridInfo);
     return lookupSigmaT(cell.x, cell.y, cell.z);
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint);
+    const GridCell cell = GridCell(gridPoint, m_gridInfo);
     return lookupSigmaT(cell.x, cell.y, cell.z) * m_albedo;
 }
 
@@ -170,7 +170,7 @@ RegularTrackerState::RegularTrackerState(const GridInfo &gridInfo, const Point3&
     m_nextTimes = calculateNextTimes(m_rates, m_entryPoint);
 
     m_currentTime = 0.f;
-    m_currentCell = GridCell(m_entryPoint);
+    m_currentCell = GridCell(m_entryPoint, gridInfo);
 
     m_endTime = totalDistance;
 }
@@ -195,6 +195,8 @@ RegularTrackerStepResult RegularTrackerState::step()
             0.f
         });
     }
+
+    const GridCell steppedCell = m_currentCell;
 
     const float minTime = m_nextTimes.min();
 
@@ -230,7 +232,7 @@ RegularTrackerStepResult RegularTrackerState::step()
 
     return RegularTrackerStepResult({
         true,
-        m_currentCell,
+        steppedCell,
         worldTime(cellTime),
         worldTime(m_currentTime)
     });
