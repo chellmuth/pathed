@@ -57,3 +57,28 @@ def test_custom_grid():
 #     assert grid.interpolate(0.0, 0.0, 0.0) == 0
 #     assert grid.interpolate(10.0, 10.0, 10.0) == 0
 #     assert grid.interpolate(9.999, 9.999, 9.999) == 0
+
+def test_midpoint_rule():
+    x, y, z = 10, 10, 10
+    data = [
+        i for i in range(x * y * z)
+    ]
+    grid = Grid(x, y, z, data)
+
+    p0 = (8.4, 3.6, 7.2)
+    p1 = (3.5, 1.0, 3.1)
+
+    c0 = grid.interpolate(*p0)
+    c1 = grid.interpolate(*p1)
+
+    mean = (c0 + c1) * 0.5
+
+    midpoint = (
+        (p1[0] + p0[0]) * 0.5,
+        (p1[1] + p0[1]) * 0.5,
+        (p1[2] + p0[2]) * 0.5,
+    )
+
+    c_mid = grid.interpolate(*midpoint)
+
+    assert c_mid == mean
