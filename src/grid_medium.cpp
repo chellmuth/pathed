@@ -2,6 +2,7 @@
 
 #include "aabb.h"
 #include "scene.h"
+#include "volume_helper.h"
 #include "util.h"
 
 #include <assert.h>
@@ -334,38 +335,6 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     return TransmittanceQueryResult({ false, -1.f });
 }
 
-Color GridMedium::directSampleLights(
-    const Point3 &point,
-    const Scene &scene,
-    RandomGenerator &random
-) const {
-    const LightSample lightSample = scene.sampleDirectLights(point, random);
-
-    const Vector3 lightDirection = (lightSample.point - point).toVector();
-    const Vector3 wiWorld = lightDirection.normalized();
-
-    if (lightSample.normal.dot(wiWorld) >= 0.f) {
-        return Color(0.f);
-    }
-
-    const Ray shadowRay = Ray(point, wiWorld);
-    const float lightDistance = lightDirection.length();
-    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
-
-    if (occluded) {
-        return Color(0.f);
-    } else {
-        const float pdf = lightSample.solidAnglePDF(point);
-
-        const Color shadowTransmittance = transmittance(point, lightSample.point);
-
-        return lightSample.light->emit(lightDirection)
-            * shadowTransmittance
-            * 1.f / (4.f * M_PI)
-            / pdf;
-    }
-}
-
 Color GridMedium::integrate(
     const Point3 &entryPointWorld,
     const Point3 &exitPointWorld,
@@ -393,7 +362,7 @@ Color GridMedium::integrate(
     if (!queryResult.isValid) { return Color(0.f); }
     const Point3 samplePoint = travelRay.at(queryResult.distance);
 
-    const Color Ld = directSampleLights(samplePoint, scene, random);
+    const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
     const Color directTransmittance = transmittance(hit.enterPoint, samplePoint);
 
     return Ld * directTransmittance * sigmaS(samplePoint);
