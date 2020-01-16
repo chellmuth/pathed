@@ -118,12 +118,20 @@ static Color directSampleLights(
     const std::vector<VolumeEvent> &volumeEvents = occlusionResult.volumeEvents;
     const size_t eventCount = volumeEvents.size();
     if (eventCount > 0) {
-        assert(eventCount % 2 == 0);
+        if (mediumPtr) {
+            assert(eventCount == 1);
 
-        for (int i = 0; i < eventCount / 2; i++) {
-            const std::shared_ptr<Medium> mediumPtr = volumeEvents[i * 2].mediumPtr;
-            const Point3 enterPoint = shadowRay.at(volumeEvents[i * 2].t);
-            const Point3 exitPoint = shadowRay.at(volumeEvents[i * 2 + 1].t);
+            const Point3 enterPoint = intersection.point;
+            const Point3 exitPoint = shadowRay.at(volumeEvents[0].t);
+
+            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+        } else {
+            assert(eventCount == 2);
+
+            const std::shared_ptr<Medium> mediumPtr = volumeEvents[0].mediumPtr;
+
+            const Point3 enterPoint = shadowRay.at(volumeEvents[0].t);
+            const Point3 exitPoint = shadowRay.at(volumeEvents[1].t);
 
             transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
         }
