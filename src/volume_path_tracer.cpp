@@ -25,7 +25,7 @@ Color VolumePathTracer::L(
 
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
-        result = DirectLightingHelper::Ld(intersection, bsdfSample, scene, random, sample);
+        result = DirectLightingHelper::Ld(intersection, mediumPtr, bsdfSample, scene, random, sample);
         sample.contributions.push_back({result, 1.f});
     }
 
@@ -80,7 +80,14 @@ Color VolumePathTracer::L(
         if (m_bounceController.checkCounts(bounce)) {
             const Color previous = result;
 
-            Color Ld = DirectLightingHelper::Ld(bounceIntersection, bsdfSample, scene, random, sample);
+            Color Ld = DirectLightingHelper::Ld(
+                bounceIntersection,
+                mediumPtr,
+                bsdfSample,
+                scene,
+                random,
+                sample
+            );
             result += Ld * modulation;
 
             sample.contributions.push_back({result - previous, invPDF});

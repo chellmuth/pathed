@@ -3,6 +3,7 @@
 #include "intersection.h"
 #include "material.h"
 #include "measure.h"
+#include "medium.h"
 #include "mis.h"
 #include "random_generator.h"
 #include "ray.h"
@@ -14,8 +15,27 @@
 #include <assert.h>
 #include <vector>
 
+static Color directSampleLights(
+    const Intersection &intersection,
+    const std::shared_ptr<Medium> &mediumPtr,
+    const BSDFSample &bsdfSample,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+);
+
+static Color directSampleBSDF(
+    const Intersection &intersection,
+    const std::shared_ptr<Medium> &mediumPtr,
+    const BSDFSample &bsdfSample,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+);
+
 Color DirectLightingHelper::Ld(
     const Intersection &intersection,
+    const std::shared_ptr<Medium> &mediumPtr,
     const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
@@ -34,6 +54,7 @@ Color DirectLightingHelper::Ld(
 
     result += directSampleLights(
         intersection,
+        mediumPtr,
         bsdfSample,
         scene,
         random,
@@ -42,6 +63,7 @@ Color DirectLightingHelper::Ld(
 
     result += directSampleBSDF(
         intersection,
+        mediumPtr,
         bsdfSample,
         scene,
         random,
@@ -51,8 +73,9 @@ Color DirectLightingHelper::Ld(
     return result;
 }
 
-Color DirectLightingHelper::directSampleLights(
+static Color directSampleLights(
     const Intersection &intersection,
+    const std::shared_ptr<Medium> &mediumPtr,
     const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
@@ -122,8 +145,9 @@ Color DirectLightingHelper::directSampleLights(
     return lightContribution;
 }
 
-Color DirectLightingHelper::directSampleBSDF(
+static Color directSampleBSDF(
     const Intersection &intersection,
+    const std::shared_ptr<Medium> &mediumPtr,
     const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
