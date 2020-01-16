@@ -357,10 +357,10 @@ Color GridMedium::directSampleLights(
     } else {
         const float pdf = lightSample.solidAnglePDF(point);
 
-        const Color transmittance = Color(1.f); // todo
+        const Color shadowTransmittance = transmittance(point, lightSample.point);
 
         return lightSample.light->emit(lightDirection)
-            * transmittance
+            * shadowTransmittance
             * 1.f / (4.f * M_PI)
             / pdf;
     }
