@@ -71,6 +71,7 @@ struct RegularTrackerStepResult {
 
     GridCell cell;
     float cellTime;
+    float enterTime;
     float currentTime;
 };
 

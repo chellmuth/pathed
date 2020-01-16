@@ -250,6 +250,7 @@ RegularTrackerStepResult RegularTrackerState::step()
             false,
             GridCell({-1, -1, -1}),
             0.f,
+            0.f,
             0.f
         });
     }
@@ -286,6 +287,9 @@ RegularTrackerStepResult RegularTrackerState::step()
 
     const float clippedTime = std::min(minTime, m_endTime);
     const float cellTime = clippedTime - m_currentTime;
+
+    const float enterTime = m_currentTime;
+
     m_currentTime = clippedTime;
 
     if (DEBUG) {
@@ -297,6 +301,7 @@ RegularTrackerStepResult RegularTrackerState::step()
         true,
         steppedCell,
         worldTime(cellTime),
+        worldTime(enterTime),
         worldTime(m_currentTime)
     });
 }
