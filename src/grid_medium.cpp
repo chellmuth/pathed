@@ -363,7 +363,5 @@ Color GridMedium::integrate(
     const Point3 samplePoint = travelRay.at(queryResult.distance);
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
-    const Color directTransmittance = transmittance(hit.enterPoint, samplePoint);
-
-    return Ld * directTransmittance * sigmaS(samplePoint);
+    return Ld * sigmaS(samplePoint);
 }
