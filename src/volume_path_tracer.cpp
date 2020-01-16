@@ -3,27 +3,13 @@
 #include "bounce_controller.h"
 #include "color.h"
 #include "direct_lighting_helper.h"
-#include "measure.h"
 #include "monte_carlo.h"
-#include "phase.h"
 #include "ray.h"
 #include "transform.h"
-#include "util.h"
 #include "vector.h"
 
 #include <iostream>
 
-static Interaction surfaceInteraction() {
-    return Interaction({
-        true,
-        Point3(0.f, 0.f, 0.f),
-        Vector3(0.f),
-        0.f,
-        0.f,
-        0.f,
-        nullptr
-    });
-}
 
 Color VolumePathTracer::L(
     const Intersection &intersection,
@@ -31,6 +17,8 @@ Color VolumePathTracer::L(
     RandomGenerator &random,
     Sample &sample
 ) const {
+    std::shared_ptr<Medium> mediumPtr(nullptr);
+
     sample.eyePoints.push_back(intersection.point);
 
     BSDFSample bsdfSample = intersection.material->sample(intersection, random);
@@ -47,13 +35,24 @@ Color VolumePathTracer::L(
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         Ray bounceRay(lastIntersection.point, bsdfSample.wiWorld);
 
+        // Refraction, medium changes
+        if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
+
+            // Internal, entering medium
+            if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
+                mediumPtr = lastIntersection.surface->getInternalMedium();
+            } else { // External, exiting medium
+                mediumPtr = nullptr;
+            }
+        } // else Reflection, medium does not change
+
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
         // if volume, integrate!
-        const Color Ls = scatter(lastIntersection, bounceIntersection, scene, random);
+        const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
         result += Ls * modulation;
 
         const float invPDF = 1.f / bsdfSample.pdf;
@@ -61,6 +60,7 @@ Color VolumePathTracer::L(
 
         modulation *= bsdfSample.throughput
             * transmittance(
+                mediumPtr,
                 lastIntersection,
                 bounceIntersection
             )
@@ -91,34 +91,30 @@ Color VolumePathTracer::L(
 }
 
 Color VolumePathTracer::transmittance(
+    const std::shared_ptr<Medium> &mediumPtr,
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection
 ) const {
-    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
-    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
-
-    if (!mediumIn || !mediumOut) { return Color(1.f); }
+    if (!mediumPtr) { return Color(1.f); }
 
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumOut->transmittance(source, target);
+    return mediumPtr->transmittance(source, target);
 }
 
 Color VolumePathTracer::scatter(
+    const std::shared_ptr<Medium> &mediumPtr,
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection,
     const Scene &scene,
     RandomGenerator &random
 ) const {
-    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
-    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
-
-    if (!mediumIn || !mediumOut) { return Color(0.f); }
+    if (!mediumPtr) { return Color(0.f); }
 
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumOut->integrate(source, target, scene, random);
+    return mediumPtr->integrate(source, target, scene, random);
 }
 

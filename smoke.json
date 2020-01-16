@@ -23,7 +23,7 @@
       "type": "obj",
       "filename": "assets/smoke/plane.obj",
       "transform": {
-        "translate": [ "0", "0.501", "0" ]
+        "translate": [ "0", "0.48", "0" ]
       },
       "bsdf": {
         "type": "lambertian",
