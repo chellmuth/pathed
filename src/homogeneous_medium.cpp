@@ -2,6 +2,7 @@
 
 #include "scene.h"
 #include "util.h"
+#include "volume_helper.h"
 
 HomogeneousMedium::HomogeneousMedium(Color sigmaT, Color sigmaS)
     : m_sigmaT(sigmaT),
@@ -31,38 +32,6 @@ TransmittanceQueryResult HomogeneousMedium::findTransmittance(
     }
 }
 
-Color HomogeneousMedium::directSampleLights(
-    const Point3 &point,
-    const Scene &scene,
-    RandomGenerator &random
-) const {
-    const LightSample lightSample = scene.sampleDirectLights(point, random);
-
-    const Vector3 lightDirection = (lightSample.point - point).toVector();
-    const Vector3 wiWorld = lightDirection.normalized();
-
-    if (lightSample.normal.dot(wiWorld) >= 0.f) {
-        return Color(0.f);
-    }
-
-    const Ray shadowRay = Ray(point, wiWorld);
-    const float lightDistance = lightDirection.length();
-    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
-
-    if (occluded) {
-        return Color(0.f);
-    } else {
-        const float pdf = lightSample.solidAnglePDF(point);
-
-        const Color transmittance = Color(1.f); // todo
-
-        return lightSample.light->emit(lightDirection)
-            * transmittance
-            * 1.f / (4.f * M_PI)
-            / pdf;
-    }
-}
-
 Color HomogeneousMedium::integrate(
     const Point3 &entryPointWorld,
     const Point3 &exitPointWorld,
@@ -83,7 +52,7 @@ Color HomogeneousMedium::integrate(
     const Ray travelRay(entryPointWorld, travelVector.normalized());
     const Point3 samplePoint = travelRay.at(sampleT);
 
-    const Color Ld = directSampleLights(samplePoint, scene, random);
+    const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
     const Color directTransmittance = transmittance(entryPointWorld, samplePoint);
 
     return Ld * directTransmittance * sigmaS(samplePoint);

@@ -40,12 +40,6 @@ public:
     }
 
 private:
-    Color directSampleLights(
-        const Point3 &point,
-        const Scene &scene,
-        RandomGenerator &random
-    ) const;
-
     Color m_sigmaT;
     Color m_sigmaS;
 };

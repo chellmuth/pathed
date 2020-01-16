@@ -130,12 +130,6 @@ public:
     ) const override;
 
 protected:
-    Color directSampleLights(
-        const Point3 &point,
-        const Scene &scene,
-        RandomGenerator &random
-    ) const;
-
     Point3 worldToGrid(const Point3 &worldPoint) const;
     float lookupSigmaT(int cellX, int cellY, int cellZ) const;
 
