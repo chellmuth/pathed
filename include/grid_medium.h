@@ -129,10 +129,13 @@ public:
         RandomGenerator &random
     ) const override;
 
+
 protected:
     Point3 worldToGrid(const Point3 &worldPoint) const;
     float lookupSigmaT(int cellX, int cellY, int cellZ) const;
 
+    float interpolate(Point3 gridPoint) const;
+    float interpolate(float gridX, float gridY, float gridZ) const;
 
     GridInfo m_gridInfo;
 

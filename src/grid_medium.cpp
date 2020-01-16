@@ -45,18 +45,56 @@ float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
     return density * m_scale;
 }
 
+float GridMedium::interpolate(Point3 gridPoint) const
+{
+    return interpolate(gridPoint.x(), gridPoint.y(), gridPoint.z());
+}
+
+float GridMedium::interpolate(float gridX, float gridY, float gridZ) const
+{
+    const int x0 = std::floor(gridX);
+    const int x1 = x0 + 1;
+    const float xd = (gridX - x0) / (x1 - x0);
+
+    const int y0 = std::floor(gridY);
+    const int y1 = y0 + 1;
+    const float yd = (gridY - y0) / (y1 - y0);
+
+    const int z0 = std::floor(gridZ);
+    const int z1 = z0 + 1;
+    const float zd = (gridZ - z0) / (z1 - z0);
+
+    const float c000 = lookupSigmaT(x0, y0, z0);
+    const float c001 = lookupSigmaT(x0, y0, z1);
+    const float c010 = lookupSigmaT(x0, y1, z0);
+    const float c011 = lookupSigmaT(x0, y1, z1);
+    const float c100 = lookupSigmaT(x1, y0, z0);
+    const float c101 = lookupSigmaT(x1, y0, z1);
+    const float c110 = lookupSigmaT(x1, y1, z0);
+    const float c111 = lookupSigmaT(x1, y1, z1);
+
+    const float c_00 = c000 * (1 - xd) + c100 * xd;
+    const float c_01 = c001 * (1 - xd) + c101 * xd;
+    const float c_10 = c010 * (1 - xd) + c110 * xd;
+    const float c_11 = c011 * (1 - xd) + c111 * xd;
+
+    const float c__0 = c_00 * (1 - yd) + c_10 * yd;
+    const float c__1 = c_01 * (1 - yd) + c_11 * yd;
+
+    const float c = c__0 * (1 - zd) + c__1 * zd;
+    return c;
+}
+
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint, m_gridInfo);
-    return lookupSigmaT(cell.x, cell.y, cell.z);
+    return interpolate(gridPoint);
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint, m_gridInfo);
-    return lookupSigmaT(cell.x, cell.y, cell.z) * (1.f - m_albedo);
+    return interpolate(gridPoint);
 }
 
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
