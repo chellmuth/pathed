@@ -2,6 +2,7 @@
 
 #include "intersection.h"
 #include "material.h"
+#include "measure.h"
 #include "mis.h"
 #include "random_generator.h"
 #include "ray.h"

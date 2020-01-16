@@ -3,11 +3,7 @@
 #include "bounce_controller.h"
 #include "color.h"
 #include "direct_lighting_helper.h"
-#include "globals.h"
-#include "job.h"
-#include "light.h"
 #include "measure.h"
-#include "mis.h"
 #include "monte_carlo.h"
 #include "phase.h"
 #include "ray.h"
@@ -15,8 +11,6 @@
 #include "util.h"
 #include "vector.h"
 
-#include <assert.h>
-#include <fstream>
 #include <iostream>
 
 static Interaction surfaceInteraction() {
@@ -96,64 +90,10 @@ Color VolumePathTracer::L(
     return result;
 }
 
-// static bool checkInternal(
-//     const Intersection &sourceIntersection,
-//     const Intersection &targetIntersection
-// ) {
-//     const Point3 &source = sourceIntersection.point;
-//     const Point3 &target = targetIntersection.point;
-
-//     const Vector3 sourceWi = (target - source).toVector().normalized();
-//     const Vector3 targetWo = -sourceWi;
-
-//     return (sourceWi.dot(sourceIntersection.normal) < 0.f)
-//         && (targetWo.dot(targetIntersection.normal) < 0.f);
-// }
-
-Interaction VolumePathTracer::sampleInteraction(
-    const Intersection &sourceIntersection,
-    const Intersection &targetIntersection,
-    const Ray &ray,
-    RandomGenerator &random
-) const {
-    const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
-    const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
-
-    if (!mediumIn || !mediumOut) { return surfaceInteraction(); }
-
-    const TransmittanceQueryResult queryResult = mediumOut->findTransmittance(
-        sourceIntersection.point,
-        targetIntersection.point,
-        random.next()
-    );
-    if (!queryResult.isValid) { return surfaceInteraction(); }
-
-    const float distance = queryResult.distance;
-    const Point3 interactionPoint = ray.at(distance);
-
-    const Phase phaseFunction;
-    const Vector3 woWorld = -ray.direction();
-    const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
-    const float sampleF = phaseFunction.f(woWorld, wiWorld);
-
-    return Interaction({
-        false,
-        interactionPoint,
-        wiWorld,
-        sampleF,
-        mediumOut->sigmaS(interactionPoint),
-        mediumOut->sigmaT(interactionPoint),
-        nullptr
-    });
-}
-
 Color VolumePathTracer::transmittance(
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection
 ) const {
-    // bool isInternal = checkInternal(sourceIntersection, targetIntersection);
-    // if (!isInternal) { return Color(1.f); }
-
     const std::shared_ptr<Medium> mediumIn = sourceIntersection.surface->getInternalMedium();
     const std::shared_ptr<Medium> mediumOut = targetIntersection.surface->getInternalMedium();
 
