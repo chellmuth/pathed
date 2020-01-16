@@ -56,7 +56,7 @@ float GridMedium::sigmaS(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
     const GridCell cell = GridCell(gridPoint, m_gridInfo);
-    return lookupSigmaT(cell.x, cell.y, cell.z) * m_albedo;
+    return lookupSigmaT(cell.x, cell.y, cell.z) * (1.f - m_albedo);
 }
 
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
