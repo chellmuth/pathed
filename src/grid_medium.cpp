@@ -34,6 +34,10 @@ GridMedium::GridMedium(
 
 float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
 {
+    if (cellX < 0 || cellX >= m_gridInfo.cellsX) { return 0.f; }
+    if (cellY < 0 || cellY >= m_gridInfo.cellsY) { return 0.f; }
+    if (cellZ < 0 || cellZ >= m_gridInfo.cellsZ) { return 0.f; }
+
     const int index = (cellZ * m_gridInfo.cellsY + cellY) * m_gridInfo.cellsX + cellX;
     const float density = m_gridData[index];
 
