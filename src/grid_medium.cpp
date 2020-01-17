@@ -76,10 +76,20 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
     RegularTrackerState trackerState(m_gridInfo, entryPoint, exitPoint);
 
+    const Ray trackerRay(
+        entryPointWorld,
+        (exitPointWorld - entryPointWorld).toVector().normalized()
+    );
+
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
         const GridCell &currentCell = stepResult.cell;
-        const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
+        // const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
+
+        const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
+        const Point3 midpointWorld = trackerRay.at(midpointTime);
+        const Point3 midpoint = worldToGrid(midpointWorld);
+        const float sigmaT = m_grid.interpolate(midpoint) * m_scale;
 
         accumulatedExponent += sigmaT * stepResult.cellTime;
 
