@@ -13,11 +13,7 @@ UniformGrid::UniformGrid(
     const std::vector<float> &gridData
 ) : m_gridInfo(gridInfo),
     m_gridData(gridData)
-{
-    m_widthX = m_gridInfo.widthX();
-    m_widthY = m_gridInfo.widthY();
-    m_widthZ = m_gridInfo.widthZ();
-}
+{}
 
 float UniformGrid::lookup(int cellX, int cellY, int cellZ) const
 {

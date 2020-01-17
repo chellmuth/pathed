@@ -77,9 +77,5 @@ public:
 private:
     GridInfo m_gridInfo;
 
-    float m_widthX;
-    float m_widthY;
-    float m_widthZ;
-
     std::vector<float> m_gridData;
 };
