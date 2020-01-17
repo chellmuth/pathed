@@ -55,16 +55,6 @@ Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
     );
 }
 
-static bool validCell(const GridInfo &gridInfo, const GridCell &cell)
-{
-    if (cell.x < 0 || cell.y < 0 || cell.z < 0) { return false; }
-    if (cell.x >= gridInfo.cellsX) { return false; }
-    if (cell.y >= gridInfo.cellsY) { return false; }
-    if (cell.z >= gridInfo.cellsZ) { return false; }
-
-    return true;
-}
-
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
 {
     AABB aabb(
