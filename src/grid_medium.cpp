@@ -40,15 +40,13 @@ float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint, m_gridInfo);
-    return lookupSigmaT(cell.x, cell.y, cell.z);
+    return m_grid.interpolate(gridPoint);
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    const GridCell cell = GridCell(gridPoint, m_gridInfo);
-    return lookupSigmaT(cell.x, cell.y, cell.z) * (1.f - m_albedo);
+    return m_grid.interpolate(gridPoint) * m_albedo;
 }
 
 Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
@@ -170,5 +168,5 @@ Color GridMedium::integrate(
     const Point3 samplePoint = travelRay.at(queryResult.distance);
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
-    return Ld * sigmaS(samplePoint);
+    return Ld;
 }
