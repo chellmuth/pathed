@@ -27,7 +27,7 @@ struct GridInfo {
 class UniformGrid {
 public:
     UniformGrid(
-        const GridInfo &gridInfo,
+        int cellsX, int cellsY, int cellsZ,
         const std::vector<float> &gridData
     );
 
@@ -37,7 +37,9 @@ public:
     float interpolate(float gridX, float gridY, float gridZ) const;
 
 private:
-    GridInfo m_gridInfo;
+    int m_cellsX;
+    int m_cellsY;
+    int m_cellsZ;
 
     std::vector<float> m_gridData;
 };

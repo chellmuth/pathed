@@ -18,7 +18,12 @@ GridMedium::GridMedium(
     float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
-    m_grid(gridInfo, gridData),
+    m_grid(
+        gridInfo.cellsX,
+        gridInfo.cellsY,
+        gridInfo.cellsZ,
+        gridData
+    ),
     m_albedo(albedo),
     m_scale(scale)
 {

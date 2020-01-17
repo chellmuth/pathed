@@ -1,19 +1,21 @@
 #include "uniform_grid.h"
 
 UniformGrid::UniformGrid(
-    const GridInfo &gridInfo,
+    int cellsX, int cellsY, int cellsZ,
     const std::vector<float> &gridData
-) : m_gridInfo(gridInfo),
+) : m_cellsX(cellsX),
+    m_cellsY(cellsY),
+    m_cellsZ(cellsZ),
     m_gridData(gridData)
 {}
 
 float UniformGrid::lookup(int cellX, int cellY, int cellZ) const
 {
-    if (cellX < 0 || cellX >= m_gridInfo.cellsX) { return 0.f; }
-    if (cellY < 0 || cellY >= m_gridInfo.cellsY) { return 0.f; }
-    if (cellZ < 0 || cellZ >= m_gridInfo.cellsZ) { return 0.f; }
+    if (cellX < 0 || cellX >= m_cellsX) { return 0.f; }
+    if (cellY < 0 || cellY >= m_cellsY) { return 0.f; }
+    if (cellZ < 0 || cellZ >= m_cellsZ) { return 0.f; }
 
-    const int index = (cellZ * m_gridInfo.cellsY + cellY) * m_gridInfo.cellsX + cellX;
+    const int index = (cellZ * m_cellsY + cellY) * m_cellsX + cellX;
     const float density = m_gridData[index];
 
     return density;
