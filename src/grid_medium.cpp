@@ -168,5 +168,11 @@ Color GridMedium::integrate(
     const Point3 samplePoint = travelRay.at(queryResult.distance);
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
-    return Ld;
+
+    // full estimator is Ld * Tr * sigma_s / p(x)
+    // = Ld * Tr * sigma_s / (Tr * sigma_t)
+    // = Ld * (sigma_s / sigma_t)
+    // = Ld * albedo
+
+    return Ld * m_albedo;
 }
