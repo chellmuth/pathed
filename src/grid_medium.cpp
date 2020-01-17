@@ -32,21 +32,16 @@ GridMedium::GridMedium(
     m_widthZ = m_gridInfo.widthZ();
 }
 
-float GridMedium::lookupSigmaT(int cellX, int cellY, int cellZ) const
-{
-    return m_grid.lookup(cellX, cellY, cellZ) * m_scale;
-}
-
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    return m_grid.interpolate(gridPoint);
+    return m_grid.interpolate(gridPoint) * m_scale;
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
 {
     const Point3 gridPoint = worldToGrid(worldPoint);
-    return m_grid.interpolate(gridPoint) * m_albedo;
+    return m_grid.interpolate(gridPoint) * m_scale * m_albedo;
 }
 
 Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
@@ -81,7 +76,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
-        const GridCell &currentCell = stepResult.cell;
+        // const GridCell &currentCell = stepResult.cell;
         // const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
 
         const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
@@ -115,10 +110,17 @@ TransmittanceQueryResult GridMedium::findTransmittance(
 
     RegularTrackerState trackerState(m_gridInfo, entryPoint, exitPoint);
 
+    const Ray trackerRay(
+        entryPointWorld,
+        (exitPointWorld - entryPointWorld).toVector().normalized()
+    );
+
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
-        const GridCell &currentCell = stepResult.cell;
-        const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
+        const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
+        const Point3 midpointWorld = trackerRay.at(midpointTime);
+        const Point3 midpoint = worldToGrid(midpointWorld);
+        const float sigmaT = m_grid.interpolate(midpoint) * m_scale;
 
         const float cellExponent = sigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;

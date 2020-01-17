@@ -48,7 +48,6 @@ public:
 protected:
     UniformGrid m_grid;
 
-    float lookupSigmaT(int cellX, int cellY, int cellZ) const;
     Point3 worldToGrid(const Point3 &worldPoint) const;
 
     GridInfo m_gridInfo;
