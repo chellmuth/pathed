@@ -37,7 +37,6 @@ Color VolumePathTracer::L(
 
         // Refraction, medium changes
         if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
-
             // Internal, entering medium
             if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
                 mediumPtr = lastIntersection.surface->getInternalMedium();

@@ -34,7 +34,7 @@ Color VolumeHelper::directSampleLights(
         // TODO: Over all intersected volumes
         const Color shadowTransmittance = medium.transmittance(samplePoint, lightSample.point);
 
-        return lightSample.light->emit(lightDirection)
+        return lightSample.light->emit(-lightDirection.normalized())
             * shadowTransmittance
             * 1.f / (4.f * M_PI)
             / pdf;

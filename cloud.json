@@ -10,11 +10,17 @@
 
   "media": [
     {
-      "name": "smoke",
+      "name": "cloud",
       "type": "heterogeneous",
       "albedo": "0.9",
-      "scale": "100",
-      "filename": "assets/smoke/smoke.vol"
+      "scale": "1",
+      "filename": "assets/cloud/density.vol"
+    },
+    {
+      "name": "test",
+      "type": "homogeneous",
+      "sigma_t": [ "1.5", "1.5", "1.5" ],
+      "sigma_s": [ "0.0", "0.0", "0.0" ]
     }
   ],
 
@@ -23,12 +29,12 @@
       "type": "obj",
       "filename": "assets/cloud/density_render.obj",
       "transform": {
-        "translate": [ "-1", "0", "-1.2" ],
-        "rotate": [ "90", "0", "0" ]
+        "translate": [ "-1", "0", "-1.2" ]
+
       },
+      "internal_medium": "test",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "0.2", "0.2", "0.3" ]
+        "type": "passthrough"
       }
     }
   ],
