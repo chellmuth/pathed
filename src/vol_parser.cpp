@@ -6,8 +6,12 @@
 #include <fstream>
 #include <vector>
 
-std::shared_ptr<Medium> VolParser::parse(const std::string &filename, float albedo, float scale)
-{
+std::shared_ptr<Medium> VolParser::parse(
+    const std::string &filename,
+    float albedo,
+    float scale,
+    Handedness handedness
+) {
     std::ifstream volStream(filename, std::ifstream::binary);
 
     std::cout << "Parsing " << filename << std::endl;
@@ -49,21 +53,34 @@ std::shared_ptr<Medium> VolParser::parse(const std::string &filename, float albe
     volStream.read(reinterpret_cast<char *>(gridData.data()), sizeof(float) * count);
 
     std::cout << "gridData[0]: " << gridData[0] << std::endl;
-    std::cout << "gridData[326910]: " << gridData[326910] << std::endl;
-    std::cout << "gridData[326911]: " << gridData[326911] << std::endl;
+    // std::cout << "gridData[326910]: " << gridData[326910] << std::endl;
+    // std::cout << "gridData[326911]: " << gridData[326911] << std::endl;
 
-    GridInfo gridInfo = {
-        cellsX,
-        cellsY,
-        cellsZ,
+    GridInfo gridInfo = handedness == Handedness::Right ?
+        GridInfo({
+            cellsX,
+            cellsY,
+            cellsZ,
 
-        bounds[0],
-        bounds[1],
-        bounds[2],
-        bounds[3],
-        bounds[4],
-        bounds[5]
-    };
+            bounds[0],
+            bounds[1],
+            bounds[2],
+            bounds[3],
+            bounds[4],
+            bounds[5]
+        }) : GridInfo({
+            cellsX,
+            cellsY,
+            cellsZ,
+
+            -bounds[3],
+            bounds[1],
+            bounds[2],
+            -bounds[0],
+            bounds[4],
+            bounds[5]
+        })
+    ;
 
     return std::make_shared<GridMedium>(gridInfo, gridData, albedo, scale);
 }

@@ -1,9 +1,9 @@
 {
   "sensor": {
     "lookAt": {
-      "origin": [ "0.0715308", "-4.17677", "5.33558" ],
-      "target": [ "0.0720194", "-3.62456", "4.50187" ],
-      "up": [ "-0.000323605", "0.833706", "0.552208" ]
+      "origin": [ "0", "0", "10" ],
+      "target": [ "1", "1", "0.4" ],
+      "up": [ "0", "1", "0" ]
     },
     "fov": "15"
   },
@@ -13,7 +13,7 @@
       "name": "cloud",
       "type": "heterogeneous",
       "albedo": "0.9",
-      "scale": "1",
+      "scale": "100",
       "filename": "assets/cloud/density.vol"
     },
     {
@@ -28,11 +28,7 @@
     {
       "type": "obj",
       "filename": "assets/cloud/density_render.obj",
-      "transform": {
-        "translate": [ "-1", "0", "-1.2" ]
-
-      },
-      "internal_medium": "test",
+      "internal_medium": "cloud",
       "bsdf": {
         "type": "passthrough"
       }
@@ -41,6 +37,6 @@
 
   "environmentLight": {
     "filename": "assets/cloud/skylight-morn.exr",
-    "scale": "3"
+    "scale": "1"
   }
 }

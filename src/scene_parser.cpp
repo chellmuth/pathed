@@ -145,7 +145,8 @@ static void parseMedia(
             auto mediumPtr = VolParser::parse(
                 mediumJson["filename"],
                 albedo,
-                scale
+                scale,
+                Handedness::Left
             );
 
             media[mediumJson["name"]] = mediumPtr;

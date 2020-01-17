@@ -80,3 +80,25 @@ AABBHit AABB::intersect(const Point3 &enterPoint, const Point3 &exitPoint)
         maxT
     });
 }
+
+std::ostream &operator<<(std::ostream &os, const AABB &aabb)
+{
+    return os << "[AABB: "
+              << "minX=" << aabb.m_minX << " "
+              << "maxX=" << aabb.m_maxX << " "
+              << "minY=" << aabb.m_minY << " "
+              << "maxY=" << aabb.m_maxY << " "
+              << "minZ=" << aabb.m_minZ << " "
+              << "maxZ=" << aabb.m_maxZ;
+}
+
+std::ostream &operator<<(std::ostream &os, const AABBHit &hit)
+{
+    return os << "[AABBHit: "
+              << "isHit=" << hit.isHit << " "
+              << "enterPoint=" << hit.enterPoint.toString() << " "
+              << "exitPoint=" << hit.exitPoint.toString() << " "
+              << "enterT=" << hit.enterT << " "
+              << "exitT=" << hit.exitT;
+}
+

@@ -39,7 +39,6 @@ struct GridCell {
 
     bool operator!=(const GridCell &cell) const { return !(*this == cell); }
 };
-
 std::ostream &operator<<(std::ostream &os, const GridCell &gridCell);
 
 struct RegularTrackerStepResult {
@@ -50,6 +49,7 @@ struct RegularTrackerStepResult {
     float enterTime;
     float currentTime;
 };
+std::ostream &operator<<(std::ostream &os, const RegularTrackerStepResult &stepResult);
 
 class RegularTrackerState {
 public:
