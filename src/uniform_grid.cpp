@@ -1,5 +1,9 @@
 #include "uniform_grid.h"
 
+#include <iostream>
+
+static bool DEBUG = false;
+
 UniformGrid::UniformGrid(
     int cellsX, int cellsY, int cellsZ,
     const std::vector<float> &gridData
@@ -28,17 +32,21 @@ float UniformGrid::interpolate(Point3 gridPoint) const
 
 float UniformGrid::interpolate(float gridX, float gridY, float gridZ) const
 {
+    if (gridX < 0 || gridX > m_cellsX - 1) { return 0.f; }
+    if (gridY < 0 || gridY > m_cellsY - 1) { return 0.f; }
+    if (gridZ < 0 || gridZ > m_cellsZ - 1) { return 0.f; }
+
     const int x0 = std::floor(gridX);
-    const int x1 = x0 + 1;
-    const float xd = (gridX - x0) / (x1 - x0);
+    const int x1 = std::ceil(gridX);
+    const float xd = gridX - x0;
 
     const int y0 = std::floor(gridY);
-    const int y1 = y0 + 1;
-    const float yd = (gridY - y0) / (y1 - y0);
+    const int y1 = std::ceil(gridY);
+    const float yd = gridY - y0;
 
     const int z0 = std::floor(gridZ);
-    const int z1 = z0 + 1;
-    const float zd = (gridZ - z0) / (z1 - z0);
+    const int z1 = std::ceil(gridZ);
+    const float zd = gridZ - z0;
 
     const float c000 = lookup(x0, y0, z0);
     const float c001 = lookup(x0, y0, z1);
@@ -58,5 +66,14 @@ float UniformGrid::interpolate(float gridX, float gridY, float gridZ) const
     const float c__1 = c_01 * (1 - yd) + c_11 * yd;
 
     const float c = c__0 * (1 - zd) + c__1 * zd;
+
+    if (DEBUG) {
+        std::cout << "Interpolation Debug: "
+            << "(" << gridX << ", " << gridY << ", " << gridZ << ")" << std::endl;
+        std::cout << "x0: " << x0 << " x1: " << x1 << " xd: " << xd << std::endl;
+        std::cout << "y0: " << y0 << " y1: " << y1 << " yd: " << yd << std::endl;
+        std::cout << "z0: " << z0 << " z1: " << z1 << " zd: " << zd << std::endl;
+    }
+
     return c;
 }
