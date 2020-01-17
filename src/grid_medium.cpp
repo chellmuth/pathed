@@ -11,7 +11,6 @@
 
 static const bool DEBUG = false;
 
-
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
@@ -70,8 +69,8 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
     RegularTrackerState trackerState(m_gridInfo, entryPoint, exitPoint);
 
     const Ray trackerRay(
-        entryPointWorld,
-        (exitPointWorld - entryPointWorld).toVector().normalized()
+        hit.enterPoint,
+        (hit.exitPoint - hit.enterPoint).toVector().normalized()
     );
 
     auto stepResult = trackerState.step();
@@ -86,6 +85,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         accumulatedExponent += midpointSigmaT * stepResult.cellTime;
 
         if (DEBUG) {
+            std::cout << "[transmittance] midpointWorld: " << midpointWorld.toString() << std::endl;
             std::cout << "[transmittance] cell time: " << stepResult.cellTime << " sigmaT: " << midpointSigmaT << std::endl;
         }
 
