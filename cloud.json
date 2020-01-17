@@ -1,0 +1,40 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0.0715308", "-4.17677", "5.33558" ],
+      "target": [ "0.0720194", "-3.62456", "4.50187" ],
+      "up": [ "-0.000323605", "0.833706", "0.552208" ]
+    },
+    "fov": "15"
+  },
+
+  "media": [
+    {
+      "name": "smoke",
+      "type": "heterogeneous",
+      "albedo": "0.9",
+      "scale": "100",
+      "filename": "assets/smoke/smoke.vol"
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/cloud/density_render.obj",
+      "transform": {
+        "translate": [ "-1", "0", "-1.2" ],
+        "rotate": [ "90", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.2", "0.2", "0.3" ]
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/cloud/skylight-morn.exr",
+    "scale": "3"
+  }
+}
