@@ -7,14 +7,14 @@
 
 #include <cmath>
 
-TEST_CASE("1x1x1 grid", "[grid]") {
+TEST_CASE("2x2x2 grid", "[grid]") {
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {0.4f};
+    std::vector<float> gridData(8, 0.4f);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.f, 0.5f, 0.5f);
@@ -64,8 +64,8 @@ TEST_CASE("grid resolution does not affect homogeneous calculations", "[grid]") 
 
     const int gridCount = 4;
     uint32_t gridSizes[gridCount][3] = {
-        { 1, 1, 1 },
-        { 2, 1, 1 },
+        { 2, 2, 2 },
+        { 3, 2, 2 },
         { 4, 4, 4 },
         { 20, 5, 20 },
     };
@@ -120,12 +120,12 @@ TEST_CASE("transmittance numbers based on grid extents", "[grid]") {
     const float sigmaT = 0.1;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         -10.f, -10.f, -10.f,
         10.f, 10.f, 10.f
     });
 
-    std::vector<float> gridData = { sigmaT };
+    std::vector<float> gridData(8, sigmaT);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(-10.f, 0.5f, 0.5f);
@@ -172,12 +172,12 @@ TEST_CASE("findTransmittance doesn't meet threshold, exits outside volume", "[gr
     const float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, sigmaT);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.f, 0.5f, 0.5f);
@@ -197,12 +197,12 @@ TEST_CASE("findTransmittance doesn't meet threshold, exits inside volume", "[gri
     const float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, sigmaT);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.f, 0.5f, 0.5f);
@@ -220,12 +220,12 @@ TEST_CASE("findTransmittance doesn't meet threshold, exits inside volume", "[gri
 
 TEST_CASE("transmittance handles non-intersection", "[grid]") {
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {0.4f};
+    std::vector<float> gridData(8, 0.4f);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(-1.f, -1.f, -1.f);
@@ -243,12 +243,12 @@ TEST_CASE("transmittance handles unclamped start points", "[grid]") {
     float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, sigmaT);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(-100.f, 0.5f, 0.5f);
@@ -266,12 +266,12 @@ TEST_CASE("transmittance handles unclamped end points", "[grid]") {
     float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, sigmaT);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.f, 0.5f, 0.5f);
@@ -289,12 +289,12 @@ TEST_CASE("transmittance exit point inside the grid", "[grid]") {
     float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, 0.4f);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.f, 0.5f, 0.5f);
@@ -312,12 +312,12 @@ TEST_CASE("transmittance start point inside the grid", "[grid]") {
     float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, 0.4f);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.5f, 0.5f, 0.5f);
@@ -335,12 +335,12 @@ TEST_CASE("1x1x1 transmittance fully inside the grid", "[grid]") {
     float sigmaT = 0.4f;
 
     GridInfo gridInfo({
-        1, 1, 1,
+        2, 2, 2,
         0.f, 0.f, 0.f,
         1.f, 1.f, 1.f
     });
 
-    std::vector<float> gridData = {sigmaT};
+    std::vector<float> gridData(8, 0.4f);
     GridMedium grid(gridInfo, gridData);
 
     Point3 entryPoint(0.5f, 0.5f, 0.5f);
