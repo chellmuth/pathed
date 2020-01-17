@@ -54,9 +54,9 @@ float GridMedium::sigmaS(const Point3 &worldPoint) const
 Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
 {
     return Point3(
-        ((worldPoint.x() - m_gridInfo.minX) / m_widthX) * m_gridInfo.cellsX,
-        ((worldPoint.y() - m_gridInfo.minY) / m_widthY) * m_gridInfo.cellsY,
-        ((worldPoint.z() - m_gridInfo.minZ) / m_widthZ) * m_gridInfo.cellsZ
+        ((worldPoint.x() - m_gridInfo.minX) / m_widthX) * (m_gridInfo.cellsX - 1),
+        ((worldPoint.y() - m_gridInfo.minY) / m_widthY) * (m_gridInfo.cellsY - 1),
+        ((worldPoint.z() - m_gridInfo.minZ) / m_widthZ) * (m_gridInfo.cellsZ - 1)
     );
 }
 

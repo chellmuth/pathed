@@ -16,9 +16,9 @@ std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
 {
     return Point3(
-        (gridPoint.x() / gridInfo.cellsX) * gridInfo.widthX() + gridInfo.minX,
-        (gridPoint.y() / gridInfo.cellsY) * gridInfo.widthY() + gridInfo.minY,
-        (gridPoint.z() / gridInfo.cellsZ) * gridInfo.widthZ() + gridInfo.minZ
+        (gridPoint.x() / (gridInfo.cellsX - 1)) * gridInfo.widthX() + gridInfo.minX,
+        (gridPoint.y() / (gridInfo.cellsY - 1)) * gridInfo.widthY() + gridInfo.minY,
+        (gridPoint.z() / (gridInfo.cellsZ - 1)) * gridInfo.widthZ() + gridInfo.minZ
     );
 }
 
