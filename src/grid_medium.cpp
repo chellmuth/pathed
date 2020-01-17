@@ -81,13 +81,12 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
         const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
         const Point3 midpointWorld = trackerRay.at(midpointTime);
-        const Point3 midpoint = worldToGrid(midpointWorld);
-        const float sigmaT = m_grid.interpolate(midpoint) * m_scale;
+        const float midpointSigmaT = sigmaT(midpointWorld);
 
-        accumulatedExponent += sigmaT * stepResult.cellTime;
+        accumulatedExponent += midpointSigmaT * stepResult.cellTime;
 
         if (DEBUG) {
-            std::cout << "[transmittance] cell time: " << stepResult.cellTime << " sigmaT: " << sigmaT << std::endl;
+            std::cout << "[transmittance] cell time: " << stepResult.cellTime << " sigmaT: " << midpointSigmaT << std::endl;
         }
 
         stepResult = trackerState.step();
@@ -119,10 +118,9 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     while(stepResult.isValidStep) {
         const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
         const Point3 midpointWorld = trackerRay.at(midpointTime);
-        const Point3 midpoint = worldToGrid(midpointWorld);
-        const float sigmaT = m_grid.interpolate(midpoint) * m_scale;
+        const float midpointSigmaT = sigmaT(midpointWorld);
 
-        const float cellExponent = sigmaT * stepResult.cellTime;
+        const float cellExponent = midpointSigmaT * stepResult.cellTime;
         accumulatedExponent += cellExponent;
 
         if (accumulatedExponent >= targetExponent) {

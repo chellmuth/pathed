@@ -44,7 +44,6 @@ public:
         RandomGenerator &random
     ) const override;
 
-
 protected:
     UniformGrid m_grid;
 
