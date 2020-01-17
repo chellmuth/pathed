@@ -1,13 +1,5 @@
 #include "uniform_grid.h"
 
-std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
-{
-    return os << "[GridCell: "
-              << "x=" << gridCell.x << " "
-              << "y=" << gridCell.y << " "
-              << "z=" << gridCell.z << "]" << std::endl;
-}
-
 UniformGrid::UniformGrid(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData

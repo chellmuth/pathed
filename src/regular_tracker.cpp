@@ -5,6 +5,14 @@
 
 static const bool DEBUG = false;
 
+std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
+{
+    return os << "[GridCell: "
+              << "x=" << gridCell.x << " "
+              << "y=" << gridCell.y << " "
+              << "z=" << gridCell.z << "]" << std::endl;
+}
+
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)
 {
     return Point3(
