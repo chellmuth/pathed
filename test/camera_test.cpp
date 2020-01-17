@@ -16,13 +16,12 @@ TEST_CASE("Camera hello", "[camera]") {
         { 1, 1 }
     );
 
-    auto optionalPixel = camera.calculatePixel(Point3(0.f, 0.f, 10.f));
-    REQUIRE(optionalPixel);
+    Pixel *pixel = nullptr;
+    camera.calculatePixel(Point3(0.f, 0.f, 10.f), pixel);
+    REQUIRE(pixel);
 
-    auto pixel = optionalPixel.value();
-
-    REQUIRE(pixel.x == 0);
-    REQUIRE(pixel.y == 0);
+    REQUIRE(pixel->x == 0);
+    REQUIRE(pixel->y == 0);
 }
 
 TEST_CASE("Camera miss", "[camera]") {
@@ -34,8 +33,9 @@ TEST_CASE("Camera miss", "[camera]") {
         { 1, 1 }
     );
 
-    auto optionalPixel = camera.calculatePixel(Point3(100000.f, 0.f, 10.f));
-    REQUIRE(!optionalPixel);
+    Pixel *pixel = nullptr;
+    camera.calculatePixel(Point3(100000.f, 0.f, 10.f), pixel);
+    REQUIRE(!pixel);
 }
 
 TEST_CASE("Camera hits a specific pixel easy", "[camera]") {
@@ -47,13 +47,12 @@ TEST_CASE("Camera hits a specific pixel easy", "[camera]") {
         { 100, 100 }
     );
 
-    auto optionalPixel = camera.calculatePixel(Point3(0.f, 0.f, 10.f));
-    REQUIRE(optionalPixel);
+    Pixel *pixel = nullptr;
+    camera.calculatePixel(Point3(0.f, 0.f, 10.f), pixel);
+    REQUIRE(pixel);
 
-    auto pixel = optionalPixel.value();
-
-    REQUIRE(pixel.x == 50);
-    REQUIRE(pixel.y == 49);
+    REQUIRE(pixel->x == 50);
+    REQUIRE(pixel->y == 49);
 }
 
 TEST_CASE("Camera hits a specific pixel tougher", "[camera]") {
@@ -65,13 +64,12 @@ TEST_CASE("Camera hits a specific pixel tougher", "[camera]") {
         { 100, 100 }
     );
 
-    auto optionalPixel = camera.calculatePixel(Point3(1.f, 1.f, 2.f));
-    REQUIRE(optionalPixel);
+    Pixel *pixel = nullptr;
+    camera.calculatePixel(Point3(1.f, 1.f, 2.f), pixel);
+    REQUIRE(pixel);
 
-    auto pixel = optionalPixel.value();
-
-    REQUIRE(pixel.x == 75);
-    REQUIRE(pixel.y == 24);
+    REQUIRE(pixel->x == 75);
+    REQUIRE(pixel->y == 24);
 }
 
 TEST_CASE("Cornell light", "[camera]") {
@@ -84,11 +82,10 @@ TEST_CASE("Cornell light", "[camera]") {
     );
 
     auto lightPoint = Point3(0.174274f, 1.980000f, -0.149822f);
-    auto optionalPixel = camera.calculatePixel(lightPoint);
-    REQUIRE(optionalPixel);
+    Pixel *pixel;
+    camera.calculatePixel(lightPoint, pixel);
+    REQUIRE(pixel);
 
-    auto pixel = optionalPixel.value();
-
-    REQUIRE(pixel.x == 57);
-    REQUIRE(pixel.y == 92);
+    REQUIRE(pixel->x == 57);
+    REQUIRE(pixel->y == 92);
 }

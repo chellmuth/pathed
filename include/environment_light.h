@@ -2,7 +2,6 @@
 
 #include "color.h"
 #include "distribution.h"
-#include "intersection.h"
 #include "light.h"
 #include "material.h"
 #include "point.h"
@@ -22,7 +21,7 @@ public:
     Color emit(const Vector3 &direction) const;
 
     SurfaceSample sample(
-        const Intersection &intersection,
+        const Point3 &point,
         RandomGenerator &random
     ) const override;
 

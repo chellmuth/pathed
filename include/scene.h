@@ -1,9 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
-#include "bvh.h"
 #include "environment_light.h"
 #include "intersection.h"
 #include "light.h"
@@ -15,8 +11,31 @@
 #include "world_frame.h"
 #include "vector.h"
 
+#include <embree3/rtcore.h>
+
+#include <memory>
+#include <vector>
+
 class Camera;
 class Ray;
+
+using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
+
+struct VolumeEvent {
+    float t;
+    std::shared_ptr<Medium> mediumPtr;
+};
+
+struct OcclusionResult {
+    bool isOccluded;
+    std::vector<VolumeEvent> volumeEvents;
+};
+
+struct CustomRTCIntersectContext {
+    RTCIntersectContext context;
+    const NestedSurfaceVector *surfacesPtr;
+    std::vector<VolumeEvent> volumeEvents;
+};
 
 struct LightSample {
     std::shared_ptr<Light> light;
@@ -58,13 +77,9 @@ struct LightSample {
 class Scene {
 public:
     Scene(
-        // old
-        std::vector<std::shared_ptr<Primitive> > primitives,
-        std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+        NestedSurfaceVector surfaces,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
-
-        // new
         std::shared_ptr<Camera> camera
     );
 
@@ -72,13 +87,14 @@ public:
 
     Intersection testIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
+    OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces();
+    NestedSurfaceVector getSurfaces();
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
     LightSample sampleDirectLights(
-        const Intersection &intersection,
+        const Point3 &point,
         RandomGenerator &random
     ) const;
 
@@ -92,8 +108,10 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    std::unique_ptr<BVH> m_bvh;
-    std::vector<std::vector<std::shared_ptr<Surface> > > m_surfaces;
+    void InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const;
+    void registerOcclusionFilters() const;
+
+    NestedSurfaceVector m_surfaces;
 
     std::vector<std::shared_ptr<Light> > m_lights;
     std::shared_ptr<EnvironmentLight> m_environmentLight;

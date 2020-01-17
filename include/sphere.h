@@ -1,6 +1,5 @@
 #pragma once
 
-#include "aabb.h"
 #include "intersection.h"
 #include "material.h"
 #include "point.h"
@@ -20,7 +19,6 @@ public:
     Intersection testIntersect(const Ray &ray);
 
     Point3 centroid() const override { return m_center; }
-    void updateAABB(AABB *aabb) override;
 
     std::shared_ptr<Shape> transform(const Transform &transform) const override;
 

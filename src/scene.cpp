@@ -9,14 +9,20 @@
 #include "uv.h"
 #include "world_frame.h"
 
-#include <embree3/rtcore.h>
-
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
+static int secretValue = 28;
+
+void Scene::InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const
+{
+    rtcInitIntersectContext(&contextPtr->context);
+    contextPtr->surfacesPtr = &m_surfaces;
+}
+
 Scene::Scene(
-    std::vector<std::shared_ptr<Primitive> > primitives,
-    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces,
+    NestedSurfaceVector surfaces,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
@@ -24,17 +30,53 @@ Scene::Scene(
     : m_surfaces(surfaces),
       m_lights(lights),
       m_environmentLight(environmentLight),
-      m_camera(camera),
-      m_bvh(new BVH())
+      m_camera(camera)
 {
-    printf("BAKING...\n");
-    m_bvh->bake(primitives);
-    printf("BAKED...\n");
+    registerOcclusionFilters();
 
     rtcCommitScene(g_rtcScene);
 }
 
-std::vector<std::vector<std::shared_ptr<Surface> > > Scene::getSurfaces()
+static void occlusionFilter(const RTCFilterFunctionNArguments *args)
+{
+    if (args->context == nullptr) { return; }
+
+    CustomRTCIntersectContext *context = (CustomRTCIntersectContext *)args->context;
+
+    RTCHit *hit = (RTCHit *)args->hit;
+    if (hit == nullptr) { return; }
+
+    const NestedSurfaceVector *surfaces = context->surfacesPtr;
+    const auto &surfacePtr = (*surfaces)[hit->geomID][hit->primID];
+
+    if (!surfacePtr->getMaterial()->isContainer()) { return; }
+
+    std::shared_ptr<Medium> mediumPtr = surfacePtr->getInternalMedium();
+    if (!mediumPtr) { return; }
+
+    RTCRay *ray = (RTCRay *)args->ray;
+    VolumeEvent event({
+        ray->tfar,
+        mediumPtr
+    });
+
+    context->volumeEvents.push_back(event);
+
+    args->valid[0] = 0;
+}
+
+void Scene::registerOcclusionFilters() const
+{
+    for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
+        RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
+        rtcSetGeometryOccludedFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
+    }
+}
+
+NestedSurfaceVector Scene::getSurfaces()
 {
     return m_surfaces;
 }
@@ -139,8 +181,6 @@ Intersection Scene::testIntersect(const Ray &ray) const
     } else {
         return IntersectionHelper::miss;
     }
-
-    // return m_bvh->testIntersect(ray);
 }
 
 bool Scene::testOcclusion(const Ray &ray, float maxT) const
@@ -159,16 +199,59 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
 
     rtcRay.flags = 0;
 
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context);
 
     rtcOccluded1(
         g_rtcScene,
-        &context,
+        &context.context,
         &rtcRay
     );
 
     return std::isinf(rtcRay.tfar);
+}
+
+OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
+{
+    RTCRay rtcRay;
+    rtcRay.org_x = ray.origin().x();
+    rtcRay.org_y = ray.origin().y();
+    rtcRay.org_z = ray.origin().z();
+
+    rtcRay.dir_x = ray.direction().x();
+    rtcRay.dir_y = ray.direction().y();
+    rtcRay.dir_z = ray.direction().z();
+
+    rtcRay.tnear = 1e-3f;
+    rtcRay.tfar = maxT - 1e-3f;
+
+    rtcRay.flags = 0;
+
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context);
+
+    rtcOccluded1(
+        g_rtcScene,
+        &context.context,
+        &rtcRay
+    );
+
+    if (std::isinf(rtcRay.tfar)) {
+        return OcclusionResult({ true });
+    }
+
+    std::sort(
+        context.volumeEvents.begin(),
+        context.volumeEvents.end(),
+        [](VolumeEvent ve1, VolumeEvent ve2) {
+            return ve1.t > ve2.t;
+        }
+    );
+
+    return OcclusionResult({
+        false,
+        context.volumeEvents
+    });
 }
 
 LightSample Scene::sampleLights(RandomGenerator &random) const
@@ -192,7 +275,7 @@ LightSample Scene::sampleLights(RandomGenerator &random) const
 }
 
 LightSample Scene::sampleDirectLights(
-    const Intersection &intersection,
+    const Point3 &point,
     RandomGenerator &random
 ) const
 {
@@ -200,7 +283,7 @@ LightSample Scene::sampleDirectLights(
     const int lightIndex = (int)floorf(random.next() * lightCount);
 
     const std::shared_ptr<Light> light = m_lights[lightIndex];
-    const SurfaceSample surfaceSample = light->sample(intersection, random);
+    const SurfaceSample surfaceSample = light->sample(point, random);
 
     const float lightChoicePDF = 1.f / lightCount;
 

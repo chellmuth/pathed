@@ -1,6 +1,5 @@
 #pragma once
 
-#include "aabb.h"
 #include "intersection.h"
 #include "measure.h"
 #include "point.h"
@@ -34,7 +33,6 @@ public:
     virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;
 
     virtual Point3 centroid() const = 0;
-    virtual void updateAABB(AABB *aabb) = 0;
 
     virtual float area() const = 0;
 

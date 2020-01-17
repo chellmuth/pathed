@@ -6,14 +6,17 @@
 #include "environment_light.h"
 #include "glass.h"
 #include "globals.h"
+#include "homogeneous_medium.h"
 #include "job.h"
 #include "lambertian.h"
 #include "light.h"
 #include "matrix.h"
+#include "medium.h"
 #include "microfacet.h"
 #include "mirror.h"
 #include "obj_parser.h"
 #include "oren_nayar.h"
+#include "passthrough.h"
 #include "perfect_transmission.h"
 #include "phong.h"
 #include "point.h"
@@ -25,14 +28,21 @@
 #include "transform.h"
 #include "uv.h"
 #include "vector.h"
+#include "vol_parser.h"
 
 #include "json.hpp"
 using json = nlohmann::json;
 
-typedef std::vector<std::vector<std::shared_ptr<Surface>>> NestedSurfaceVector;
+#include <map>
 
+using MediaMap = std::map<std::string, std::shared_ptr<Medium> >;
+using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
+
+static bool checkFloat(json floatJson, float *value);
 static float parseFloat(json floatJson);
 static float parseFloat(json floatJson, float defaultValue);
+static bool checkString(json stringJson, std::string *value);
+static std::string parseString(json stringJson);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
@@ -41,13 +51,25 @@ static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
+static void parseMedia(
+    json mediaJson,
+    MediaMap &media
+);
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    std::vector<std::shared_ptr<BVH> > &bvhs
+    MediaMap &media
 );
-static void parseObj(json objectJson, std::vector<std::shared_ptr<Surface>> &surfaces);
-static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseObj(
+    json objectJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+);
+static void parseSphere(
+    json sphereJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+);
 static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces);
 static void parseEnvironmentLight(
     json environmentLightJson,
@@ -71,10 +93,14 @@ Scene parseScene(std::ifstream &sceneFile)
         resolution
     );
 
-    auto objects = sceneJson["models"];
+    std::map<std::string, std::shared_ptr<Medium> > media;
+    auto mediaJson = sceneJson["media"];
+    parseMedia(mediaJson, media);
+
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
-    std::vector<std::shared_ptr<BVH> > bvhs;
-    parseObjects(objects, surfaces, bvhs);
+
+    auto objects = sceneJson["models"];
+    parseObjects(objects, surfaces, media);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -89,16 +115,13 @@ Scene parseScene(std::ifstream &sceneFile)
     }
 
     std::shared_ptr<EnvironmentLight> environmentLight;
-    std::shared_ptr<EnvironmentLight> environmentLight2;
     auto environmentLightJson = sceneJson["environmentLight"];
     parseEnvironmentLight(environmentLightJson, environmentLight);
     if (environmentLight) {
         lights.push_back(environmentLight);
     }
 
-    std::vector<std::shared_ptr<Primitive>> primitives(bvhs.begin(), bvhs.end());
     Scene scene(
-        primitives,
         surfaces,
         lights,
         environmentLight,
@@ -108,36 +131,58 @@ Scene parseScene(std::ifstream &sceneFile)
     return scene;
 }
 
+static void parseMedia(
+    json mediaJson,
+    std::map<std::string, std::shared_ptr<Medium> > &media
+) {
+    if (!mediaJson.is_array()) { return; }
+
+    for (auto &mediumJson : mediaJson) {
+        if (mediumJson["type"] == "heterogeneous") {
+            const float albedo = parseFloat(mediumJson["albedo"]);
+            const float scale = parseFloat(mediumJson["scale"], 1.f);
+
+            auto mediumPtr = VolParser::parse(
+                mediumJson["filename"],
+                albedo,
+                scale
+            );
+
+            media[mediumJson["name"]] = mediumPtr;
+        } else if (mediumJson["type"] == "homogeneous") {
+            Color sigmaT = parseColor(mediumJson["sigma_t"]);
+            Color sigmaS = parseColor(mediumJson["sigma_s"], Color(0.f));
+
+            auto mediumPtr = std::make_shared<HomogeneousMedium>(sigmaT, sigmaS);
+            media[mediumJson["name"]] = mediumPtr;
+        }
+    }
+}
+
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
-    std::vector<std::shared_ptr<BVH> > &bvhs
+    MediaMap &media
 ) {
     for (auto objectJson : objectsJson) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
-            parseObj(objectJson, localSurfaces);
+            parseObj(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "sphere") {
-            parseSphere(objectJson, localSurfaces);
+            parseSphere(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "quad") {
             parseQuad(objectJson, localSurfaces);
         }
-
-        auto bvh = std::make_shared<BVH>();
-
-        std::vector<std::shared_ptr<Primitive> > primitives(
-            localSurfaces.begin(), localSurfaces.end()
-        );
-
-        bvh->bake(primitives);
-        bvhs.push_back(bvh);
 
         surfaces.push_back(localSurfaces);
     }
 }
 
-static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfaces)
-{
+static void parseObj(
+    json objJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+) {
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
     auto transformJson = objJson["transform"];
@@ -152,10 +197,16 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     auto bsdfJson = objJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
 
+    std::shared_ptr<Medium> mediumPtr(nullptr);
+    std::string mediumKey;
+    if (checkString(objJson["internal_medium"], &mediumKey)) {
+        mediumPtr = media[mediumKey];
+    }
+
     for (auto surfacePtr : objSurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr);
+            auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -163,17 +214,26 @@ static void parseObj(json objJson, std::vector<std::shared_ptr<Surface>> &surfac
     }
 }
 
-static void parseSphere(json sphereJson, std::vector<std::shared_ptr<Surface>> &surfaces)
-{
+static void parseSphere(
+    json sphereJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+) {
     auto bsdfJson = sphereJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+
+    std::shared_ptr<Medium> mediumPtr(nullptr);
+    std::string mediumKey;
+    if (checkString(sphereJson["internal_medium"], &mediumKey)) {
+        mediumPtr = media[mediumKey];
+    }
 
     auto sphere = std::make_shared<Sphere>(
         parsePoint(sphereJson["center"]),
         parseFloat(sphereJson["radius"])
     );
 
-    auto surface = std::make_shared<Surface>(sphere, materialPtr);
+    auto surface = std::make_shared<Surface>(sphere, materialPtr, mediumPtr);
 
     surfaces.push_back(surface);
 
@@ -196,7 +256,7 @@ static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surf
         transform = parseTransform(transformJson);
     }
 
-    Quad::parse(transform, materialPtr, surfaces);
+    Quad::parse(transform, materialPtr, nullptr, surfaces);
 }
 
 static void parseEnvironmentLight(
@@ -212,6 +272,7 @@ static void parseEnvironmentLight(
         std::cout << environmentLight->toString() << std::endl;
     }
 }
+
 static std::shared_ptr<Material> parseMaterial(json bsdfJson)
 {
     if (!bsdfJson.is_object()) {
@@ -229,10 +290,17 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
         );
     } else if (bsdfJson["type"] == "mirror") {
         return std::make_shared<Mirror>();
+    } else if (bsdfJson["type"] == "passthrough") {
+        return std::make_shared<Passthrough>();
     } else if (bsdfJson["type"] == "perfect-transmission") {
         return std::make_shared<PerfectTransmission>();
     } else if (bsdfJson["type"] == "glass") {
-        return std::make_shared<Glass>();
+        float ior;
+        if (checkFloat(bsdfJson["ior"], &ior)) {
+            return std::make_shared<Glass>(ior);
+        } else {
+            return std::make_shared<Glass>();
+        }
     } else if (bsdfJson["type"] == "oren-nayar") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"], Color(1.f));
         float sigma = parseFloat(bsdfJson["sigma"]);
@@ -319,6 +387,16 @@ static Transform parseTransform(json transformJson)
     return Transform(matrix);
 }
 
+static bool checkFloat(json floatJson, float *value)
+{
+    try {
+        *value = parseFloat(floatJson);
+        return true;
+    } catch (nlohmann::detail::type_error) {
+        return false;
+    }
+}
+
 static float parseFloat(json floatJson, float defaultValue)
 {
     try {
@@ -389,4 +467,19 @@ static UV parseUV(json UVJson)
         stof(UVJson["u"].get<std::string>()),
         stof(UVJson["v"].get<std::string>())
     };
+}
+
+static bool checkString(json stringJson, std::string *value)
+{
+    try {
+        *value = parseString(stringJson);
+        return true;
+    } catch (nlohmann::detail::type_error) {
+        return false;
+    }
+}
+
+static std::string parseString(json stringJson)
+{
+    return stringJson.get<std::string>();
 }

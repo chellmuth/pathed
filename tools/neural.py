@@ -1,18 +1,23 @@
 import os
 import shutil
 import time
+from collections import namedtuple
 from pathlib import Path
 
 import click
+import pyexr
 
+import compare_pdfs
 import photon_reader
 import process_raw_to_renders
+import simple_chart
 import runner
+import variance
 import visualize
 from mitsuba import run_mitsuba
 
 default_scene_name = "cbox-bw"
-default_output_name = "cbox-bw--debug"
+default_output_name = "cbox-bw--walk"
 
 default_checkpoints = {
     "kitchen": None,
@@ -27,6 +32,21 @@ dimensions = {
     "cbox-ppg": (400, 400),
     "cbox-bw": (400, 400),
 }
+
+interesting_points = [
+    (20, 134), # left wall
+    (268, 151), # back wall
+    (384, 240), # right wall
+    (114, 26), # ceiling
+    (313, 349), # short box - right side
+    (246, 315), # short box - front side
+    (228, 270), # short box - top side
+    (82, 388), # floor
+    (146, 210), # tall box - front side
+    (94, 175), # tall box - left side
+]
+
+Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path" ])
 
 class Context:
     def __init__(self, scene_name=None, checkpoint_name=None, output_name=None):
@@ -46,11 +66,24 @@ class Context:
         self.checkpoint_name = checkpoint_name or default_checkpoints[self.scene_name]
         self.checkpoint_path = self.research_path / "checkpoints" / f"{self.checkpoint_name}.t"
 
+        self.gt_path = self.scenes_path / "gt.exr"
+
     def scene_path(self, scene_file):
         return self.scenes_path / scene_file
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
+
+    def artifacts(self, point):
+        return Artifacts(
+            render_path=self.output_root / f"render_{point[0]}_{point[1]}.exr",
+            batch_path=self.output_root / f"batch_{point[0]}_{point[1]}.exr",
+            samples_path=self.output_root / f"samples_{point[0]}_{point[1]}.bin",
+        )
+
+    def gt_pixel(self, point, channel=0):
+        exr = pyexr.read(str(self.gt_path))
+        return exr[point[1]][point[0]][channel]
 
 @click.group()
 def cli():
@@ -63,22 +96,13 @@ def pdf_compare(all, point):
     context = Context()
 
     if all:
-        points = [
-            (20, 134), # left wall
-            (268, 151), # back wall
-            (384, 240), # right wall
-            (114, 26), # ceiling
-            (313, 349), # short box - right side
-            (246, 315), # short box - front side
-            (228, 270), # short box - top side
-            (82, 388), # floor
-            (146, 210), # tall box - front side
-            (94, 175), # tall box - left side
-        ]
+        points = interesting_points
     elif point:
         points = [point]
     else:
         points = [(20, 134)]
+
+    print(f"Processing points: {points}")
 
     for point in points:
         server_process = runner.launch_server(
@@ -118,6 +142,29 @@ def pdf_compare(all, point):
         )
 
         server_process.join()
+
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
+
+        time.sleep(10) # make sure server starts up
+
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-neural.xml"),
+            context.output_root / "neural.exr",
+            [ "-p1" ],
+            {
+                "x": point[0],
+                "y": point[1],
+                "spp": 1024,
+                "width": dimensions[default_scene_name][0],
+                "height": dimensions[default_scene_name][1],
+            },
+            verbose=True
+        )
 
         pdf_out_path = context.output_root / f"pdf_{point[0]}_{point[1]}.exr"
         photons_out_path = context.output_root / f"photon-bundle_{point[0]}_{point[1]}.dat"
@@ -161,10 +208,11 @@ def pdf_compare(all, point):
         plt.savefig(context.output_root / f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
         plt.close()
 
-
         # Cleanup
         render_filename = f"render_{point[0]}_{point[1]}.exr"
         batch_filename = f"batch_{point[0]}_{point[1]}.exr"
+        samples_filename = f"samples_{point[0]}_{point[1]}.bin"
+
         shutil.move(render_filename, context.output_root / render_filename)
         shutil.move(batch_filename, context.output_root / batch_filename)
 
@@ -174,7 +222,98 @@ def pdf_compare(all, point):
         shutil.move(grid_filename, context.output_root / grid_filename)
         shutil.move(photons_filename, context.output_root / photons_filename)
         shutil.move(neural_filename, context.output_root / neural_filename)
+        shutil.move(samples_filename, context.output_root / samples_filename)
 
+@cli.command()
+@click.option("--all", is_flag=True)
+@click.option("--point", type=int, nargs=2)
+def pdf_analyze(all, point):
+    context = Context()
+
+    if all:
+        points = interesting_points
+    elif point:
+        points = [point]
+    else:
+        points = [(20, 134)]
+
+    divergence_list = []
+    error_list = []
+    for point in points:
+        artifacts = context.artifacts(point)
+        render_path = artifacts.render_path
+        batch_path = artifacts.batch_path
+        samples_path = artifacts.samples_path
+
+        divergences = compare_pdfs.run(render_path, batch_path)
+
+        samples = variance.read_bin(samples_path)
+        errors = variance.errors(samples, 4, context.gt_pixel(point))
+
+        divergence_list.append(divergences)
+        error_list.append(errors)
+
+        compare_pdfs.generate_zero_map(render_path, batch_path, f"zero_{point[0]}_{point[1]}.exr")
+
+        print(point)
+        print(divergences)
+        print(errors)
+
+    # simple_chart.scatter(
+    #     [ d["kl"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between KL divergence and variance",
+    #     x_label="KL divergence",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["chi2"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between Chi-squared divergence and variance",
+    #     x_label="Chi-squared",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["abs"] for d in divergence_list ],
+    #     [ e["variance"] for e in error_list ],
+    #     title="Correlation between squared pdf difference and variance",
+    #     x_label="Squared pdf distance",
+    #     y_label="Variance"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["kl"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between KL divergence and MrSE",
+    #     x_label="KL divergence",
+    #     y_label="MrSE"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["chi2"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between Chi-squared divergence and MrSE",
+    #     x_label="Chi-squared",
+    #     y_label="MrSE"
+    # )
+
+    # simple_chart.scatter(
+    #     [ d["squared"] for d in divergence_list ],
+    #     [ e["mrse"] for e in error_list ],
+    #     title="Correlation between squared pdf difference and MrSE",
+    #     x_label="Squared pdf distance",
+    #     y_label="MrSE"
+    # )
+
+    simple_chart.scatter(
+        [ d["chi2"] for d in divergence_list ],
+        [ e["bias"] for e in error_list ],
+        title="Correlation between Chi-squared divergence and bias",
+        x_label="Chi-squared",
+        y_label="Bias"
+    )
 
 # Quick 1spp comparison between neural and path
 @cli.command()
@@ -311,6 +450,101 @@ def debug_pixel(x, y):
     )
 
 @cli.command()
+@click.argument("x", type=int)
+@click.argument("y", type=int)
+def walk_pixel(x, y):
+    context = Context()
+
+    scale = 5
+
+    for offset in range(50):
+        x_scaled = scale * x + offset
+        y_scaled = scale * y
+
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
+
+        time.sleep(10) # make sure server starts up
+
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-neural.xml"),
+            f"render_{x}_{y}.exr",
+            [ "-p1" ],
+            {
+                "x": x_scaled,
+                "y": y_scaled,
+                "width": dimensions[default_scene_name][0] * scale,
+                "height": dimensions[default_scene_name][1] * scale,
+            },
+            verbose=True
+        )
+
+        server_process.join()
+
+        batch_path = Path(f"batch_{x_scaled}_{y_scaled}.exr")
+        neural_out_path = context.output_root / f"neural_{x}_{y}__{offset}.png"
+        visualize.convert_to_density_mesh(
+            batch_path,
+            neural_out_path
+        )
+
+        batch_filename = f"batch_{x_scaled}_{y_scaled}.exr"
+        grid_filename = f"grid_{x_scaled}_{y_scaled}.bin"
+        neural_filename = f"neural_{x_scaled}_{y_scaled}.bin"
+
+        os.remove(batch_filename)
+        os.remove(grid_filename)
+        os.remove(neural_filename)
+
+    render_filename = f"render_{x}_{y}.exr"
+    os.remove(render_filename)
+
+@cli.command()
+@click.argument("x", type=int)
+@click.argument("y", type=int)
+def check_convergence(x, y):
+    context = Context()
+
+    point = [x, y]
+    server_process = runner.launch_server(
+        context.server_path,
+        0,
+        context.checkpoint_path
+    )
+
+    time.sleep(10) # make sure server starts up
+
+    power = 10
+
+    run_mitsuba(
+        context.mitsuba_path,
+        context.scene_path("scene-neural.xml"),
+        context.output_root / "neural.exr",
+        [ "-p1" ],
+        {
+            "x": point[0],
+            "y": point[1],
+            "spp": 2 ** power,
+            "width": dimensions[default_scene_name][0],
+            "height": dimensions[default_scene_name][1],
+        },
+        verbose=True
+    )
+
+    samples_filename = f"samples_{point[0]}_{point[1]}.bin"
+    samples_path = context.artifacts((x, y)).samples_path
+    shutil.move(samples_filename, samples_path)
+
+    samples = variance.read_bin(samples_path)
+    for i in range(power + 1):
+        errors = variance.errors(samples, 2 ** i, context.gt_pixel(point))
+        print(2 ** i, errors)
+
+@cli.command()
 @click.argument("scene_name")
 @click.argument("pdf_count", type=int)
 @click.argument("checkpoint_name", type=str)
@@ -323,8 +557,8 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
 
     dataset_path = context.dataset_path(dataset_name)
 
-    phases = [ "train", "test" ]
-    for phase in phases:
+    phases = [ ("train", pdf_count), ("test", 1)  ]
+    for phase, count in phases:
         raw_path = dataset_path / phase / "raw"
         renders_path = dataset_path / phase / "renders"
         raw_path.mkdir(parents=True, exist_ok=True)
@@ -335,7 +569,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
             "whatever.exr",
             [],
             {
-                "pdfCount": pdf_count,
+                "pdfCount": count,
             }
         )
 
@@ -360,7 +594,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "50000",
+            "--num_training_steps", "500000",
         ]
     )
 

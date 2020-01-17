@@ -345,7 +345,7 @@ Color MLIntegrator::direct(
     int lightIndex = (int)floorf(random.next() * lightCount);
 
     std::shared_ptr<Light> light = scene.lights()[lightIndex];
-    SurfaceSample lightSample = light->sample(intersection, random);
+    SurfaceSample lightSample = light->sample(intersection.point, random);
 
     Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     Vector3 wo = lightDirection.normalized();

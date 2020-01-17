@@ -7,6 +7,7 @@
 
 class Glass : public Material {
 public:
+    Glass(float ior);
     Glass();
 
     Color f(
@@ -20,7 +21,8 @@ public:
         RandomGenerator &random
     ) const override;
 
-    bool isDelta() const { return true; }
+    bool isDelta() const override { return true; }
 
 private:
+    float m_ior;
 };

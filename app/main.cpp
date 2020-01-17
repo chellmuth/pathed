@@ -55,6 +55,8 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // rtcSetSceneBuildQuality(g_rtcScene, RTC_BUILD_QUALITY_HIGH);
+
     int success = chdir("..");
     assert(success == 0);
 

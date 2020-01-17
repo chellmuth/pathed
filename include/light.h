@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "color.h"
-#include "intersection.h"
 #include "material.h"
 #include "point.h"
 #include "random_generator.h"
@@ -15,7 +14,7 @@ public:
     virtual Color emit(const Vector3 &direction) const { return emit(); }
 
     virtual SurfaceSample sample(
-        const Intersection &intersection,
+        const Point3 &point,
         RandomGenerator &random
     ) const = 0;
 

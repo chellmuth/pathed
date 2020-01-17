@@ -26,7 +26,6 @@ public:
     Intersection testIntersect(const Ray &ray) override;
 
     Point3 centroid() const override;
-    void updateAABB(AABB *aabb) override;
 
     void pushVertices(std::vector<float> &vertices) override;
     void pushIndices(std::vector<uint> &indices, int offset) override;

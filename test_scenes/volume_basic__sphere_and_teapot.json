@@ -1,0 +1,56 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0", "1", "0" ],
+      "origin": [ "0", "2", "-5" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "33"
+  },
+
+  "media": [
+    {
+      "name": "smoke",
+      "type": "homogeneous",
+      "sigma_t": [ "0.95", "0.95", "0.95" ]
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "bunny.obj",
+      "internal_medium": "smoke",
+      "bsdf": {
+        "type": "passthrough"
+      }
+    },
+
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "100", "100", "100" ],
+        "rotate": [ "90", "0", "0" ],
+        "translate": [ "0", "-0.01", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "4", "1", "4" ],
+        "rotate": [ "-90", "0", "0" ],
+        "translate": [ "0", "20", "5" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "0", "0" ],
+        "emit": [ "20", "20", "20" ]
+      }
+    }
+  ]
+}
