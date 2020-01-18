@@ -103,10 +103,12 @@ Color VolumePathTracer::transmittance(
 ) const {
     if (!mediumPtr) { return Color(1.f); }
 
+    Transform inverse = mediumPtr->inverseTransform();
+
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumPtr->transmittance(source, target);
+    return mediumPtr->transmittance(inverse.apply(source), inverse.apply(target));
 }
 
 Color VolumePathTracer::scatter(

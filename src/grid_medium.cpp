@@ -29,6 +29,14 @@ GridMedium::GridMedium(
     m_widthX = m_gridInfo.widthX();
     m_widthY = m_gridInfo.widthY();
     m_widthZ = m_gridInfo.widthZ();
+
+    const float matrix[4][4] = {
+        1.f, 0.f, 0.f, -1.f,
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 1.2f,
+        0.f, 0.f, 0.f, 1.f
+    };
+    m_inverseTransform = Transform(matrix);
 }
 
 float GridMedium::sigmaT(const Point3 &worldPoint) const
@@ -45,11 +53,23 @@ float GridMedium::sigmaS(const Point3 &worldPoint) const
 
 Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
 {
+    const Point3 modelPoint = worldToModel(worldPoint);
+    return modelToGrid(modelPoint);
+}
+
+Point3 GridMedium::modelToGrid(const Point3 &modelPoint) const
+{
     return Point3(
-        ((worldPoint.x() - m_gridInfo.minX) / m_widthX) * (m_gridInfo.cellsX - 1),
-        ((worldPoint.y() - m_gridInfo.minY) / m_widthY) * (m_gridInfo.cellsY - 1),
-        ((worldPoint.z() - m_gridInfo.minZ) / m_widthZ) * (m_gridInfo.cellsZ - 1)
+        ((modelPoint.x() - m_gridInfo.minX) / m_widthX) * (m_gridInfo.cellsX - 1),
+        ((modelPoint.y() - m_gridInfo.minY) / m_widthY) * (m_gridInfo.cellsY - 1),
+        ((modelPoint.z() - m_gridInfo.minZ) / m_widthZ) * (m_gridInfo.cellsZ - 1)
     );
+}
+
+Point3 GridMedium::worldToModel(const Point3 &worldPoint) const
+{
+    return worldPoint;
+    // return m_inverseTransform.apply(worldPoint);
 }
 
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
@@ -58,11 +78,11 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
-    AABBHit hit = aabb.intersect(entryPointWorld, exitPointWorld);
+    AABBHit hit = aabb.intersect(worldToModel(entryPointWorld), worldToModel(exitPointWorld));
     if (!hit.isHit) { return Color(1.f); }
 
-    const Point3 entryPoint = worldToGrid(hit.enterPoint);
-    const Point3 exitPoint = worldToGrid(hit.exitPoint);
+    const Point3 entryPoint = modelToGrid(hit.enterPoint);
+    const Point3 exitPoint = modelToGrid(hit.exitPoint);
 
     float accumulatedExponent = 0.f;
 
@@ -72,6 +92,8 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         hit.enterPoint,
         (hit.exitPoint - hit.enterPoint).toVector().normalized()
     );
+
+    trackerRay.debug();
 
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {

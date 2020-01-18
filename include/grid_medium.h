@@ -4,6 +4,7 @@
 #include "medium.h"
 #include "point.h"
 #include "random_generator.h"
+#include "transform.h"
 #include "uniform_grid.h"
 #include "vector.h"
 
@@ -45,8 +46,11 @@ public:
     ) const override;
 
 protected:
+    Transform m_inverseTransform;
     UniformGrid m_grid;
 
+    Point3 worldToModel(const Point3 &worldPoint) const;
+    Point3 modelToGrid(const Point3 &modelPoint) const;
     Point3 worldToGrid(const Point3 &worldPoint) const;
 
     GridInfo m_gridInfo;
