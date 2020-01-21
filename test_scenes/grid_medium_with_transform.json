@@ -1,0 +1,42 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "0", "10" ],
+      "target": [ "0", "0", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "33"
+  },
+
+  "media": [
+    {
+      "name": "cloud",
+      "type": "heterogeneous",
+      "albedo": "0.9",
+      "scale": "1",
+      "filename": "assets/dummy_medium.vol"
+    },
+    {
+      "name": "test",
+      "type": "homogeneous",
+      "sigma_t": [ "1.5", "1.5", "1.5" ],
+      "sigma_s": [ "0.0", "0.0", "0.0" ]
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/dummy_medium.obj",
+      "internal_medium": "cloud",
+      "bsdf": {
+        "type": "passthrough"
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/cloud/skylight-morn.exr",
+    "scale": "1"
+  }
+}

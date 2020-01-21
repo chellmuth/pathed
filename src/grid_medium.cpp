@@ -79,7 +79,13 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(worldToModel(entryPointWorld), worldToModel(exitPointWorld));
-    if (!hit.isHit) { return Color(1.f); }
+    if (!hit.isHit) {
+        // std::cout << "[miss] entryPointWorld: " << entryPointWorld.toString() << " exitPointWorld: " << exitPointWorld.toString() << std::endl;
+        // return Color(1.f, 0.f, 1.f);
+        return Color(0.f);
+    }
+    // std::cout << "[hit] entryPointWorld: " << entryPointWorld.toString() << " exitPointWorld: " << exitPointWorld.toString() << std::endl;
+    // return Color(0.f, 1.f, 0.f);
 
     const Point3 entryPoint = modelToGrid(hit.enterPoint);
     const Point3 exitPoint = modelToGrid(hit.exitPoint);
@@ -93,7 +99,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         (hit.exitPoint - hit.enterPoint).toVector().normalized()
     );
 
-    trackerRay.debug();
+    // trackerRay.debug();
 
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {

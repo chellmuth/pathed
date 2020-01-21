@@ -108,7 +108,7 @@ Color VolumePathTracer::transmittance(
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumPtr->transmittance(inverse.apply(source), inverse.apply(target));
+    return mediumPtr->transmittance(source, target);
 }
 
 Color VolumePathTracer::scatter(
@@ -123,6 +123,7 @@ Color VolumePathTracer::scatter(
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
+    return Color(0.f);
     return mediumPtr->integrate(source, target, scene, random);
 }
 
