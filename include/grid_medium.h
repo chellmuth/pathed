@@ -46,6 +46,14 @@ public:
     ) const override;
 
 protected:
+    enum class GridFrame {
+        World,
+        Model,
+        Grid
+    };
+
+    float sigmaT(const Point3 &worldPoint, GridFrame frame) const;
+
     Transform m_inverseTransform;
     UniformGrid m_grid;
 

@@ -34,10 +34,22 @@ GridMedium::GridMedium(
     m_inverseTransform = inverseTransform;
 }
 
-float GridMedium::sigmaT(const Point3 &modelPoint) const
+float GridMedium::sigmaT(const Point3 &point, GridFrame frame) const
 {
-    const Point3 gridPoint = modelToGrid(modelPoint);
+    Point3 gridPoint(0.f, 0.f, 0.f);
+
+    switch (frame) {
+    case GridFrame::World: { gridPoint = worldToGrid(point); break; }
+    case GridFrame::Model: { gridPoint = modelToGrid(point); break; }
+    case GridFrame::Grid: { gridPoint = point; break; }
+    }
+
     return m_grid.interpolate(gridPoint) * m_scale;
+}
+
+float GridMedium::sigmaT(const Point3 &worldPoint) const
+{
+    return sigmaT(worldPoint, GridFrame::World);
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
@@ -89,12 +101,9 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
-        // const GridCell &currentCell = stepResult.cell;
-        // const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
-
         const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
         const Point3 midpointModel = trackerRay.at(midpointTime);
-        const float midpointSigmaT = sigmaT(midpointModel);
+        const float midpointSigmaT = sigmaT(midpointModel, GridFrame::Model);
 
         accumulatedExponent += midpointSigmaT * stepResult.cellTime;
 
