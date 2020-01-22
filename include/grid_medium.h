@@ -17,7 +17,7 @@ public:
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData,
-        const Transform &transform,
+        const Transform &inverseTransform,
         float albedo,
         float scale
     );

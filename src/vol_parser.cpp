@@ -84,5 +84,11 @@ std::shared_ptr<Medium> VolParser::parse(
         })
     ;
 
-    return std::make_shared<GridMedium>(gridInfo, gridData, transform, albedo, scale);
+    return std::make_shared<GridMedium>(
+        gridInfo,
+        gridData,
+        transform.inversed(),
+        albedo,
+        scale
+    );
 }

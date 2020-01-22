@@ -353,47 +353,85 @@ static Transform parseTransform(json transformJson, Transform defaultTransform)
 static Transform parseTransform(json transformJson)
 {
     float matrix[4][4];
-    matrix::makeIdentity(matrix);
+    float inverse[4][4];
+
+    float scaleX = 1.f;
+    float scaleY = 1.f;
+    float scaleZ = 1.f;
 
     auto scale = transformJson["scale"];
     if (scale.is_array()) {
-        matrix::scale(
-            matrix,
-            parseFloat(scale[0]),
-            parseFloat(scale[1]),
-            parseFloat(scale[2])
-        );
+        scaleX = parseFloat(scale[0]);
+        scaleY = parseFloat(scale[1]);
+        scaleZ = parseFloat(scale[2]);
     }
 
     auto rotate = transformJson["rotate"];
+    float rotateX = 0.f;
+    float rotateY = 0.f;
+    float rotateZ = 0.f;
+
     if (rotate.is_array()) {
-        matrix::rotateX(
-            matrix,
-            parseFloat(rotate[0]) * M_PI / 180.f
-        );
-
-        matrix::rotateY(
-            matrix,
-            parseFloat(rotate[1]) * M_PI / 180.f
-        );
-
-        matrix::rotateZ(
-            matrix,
-            parseFloat(rotate[2]) * M_PI / 180.f
-        );
+         rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
+         rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
+         rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
     }
 
     auto translate = transformJson["translate"];
+    float translateX = 0.f;
+    float translateY = 0.f;
+    float translateZ = 0.f;
+
     if (translate.is_array()) {
-        matrix::translate(
-            matrix,
-            -parseFloat(translate[0]),
-            parseFloat(translate[1]),
-            parseFloat(translate[2])
-        );
+        translateX = -parseFloat(translate[0]); // todo: handedness
+        translateY = parseFloat(translate[1]);
+        translateZ = parseFloat(translate[2]);
     }
 
-    return Transform(matrix);
+    // Transformation
+    matrix::makeIdentity(matrix);
+    matrix::scale(
+        matrix,
+        scaleX,
+        scaleY,
+        scaleZ
+    );
+
+    matrix::rotateX(matrix, rotateX);
+    matrix::rotateY(matrix, rotateY);
+    matrix::rotateZ(matrix, rotateZ);
+
+    matrix::translate(
+        matrix,
+        translateX,
+        translateY,
+        translateZ
+    );
+
+    // Inverse
+    matrix::makeIdentity(inverse);
+    matrix::translate(
+        inverse,
+        -translateX,
+        -translateY,
+        -translateZ
+    );
+
+    matrix::rotateZ(inverse, -rotateZ);
+    matrix::rotateY(inverse, -rotateY);
+    matrix::rotateX(inverse, -rotateX);
+
+    matrix::scale(
+        inverse,
+        1.f / scaleX,
+        1.f / scaleY,
+        1.f / scaleZ
+    );
+
+    return Transform(
+        matrix,
+        inverse
+    );
 }
 
 static bool checkFloat(json floatJson, float *value)

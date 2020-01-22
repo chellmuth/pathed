@@ -4,6 +4,7 @@
 #include "ray.h"
 #include "vector.h"
 
+#include <assert.h>
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
@@ -16,14 +17,28 @@ static const float identity[4][4] = {
 };
 
 Transform::Transform()
-    : Transform(identity)
+    : Transform(identity, identity)
 {}
 
 Transform::Transform(const float matrix[4][4])
+    : m_hasInverse(false)
 {
     for (int row = 0; row < 4; row++ ) {
         for (int col = 0; col < 4; col++ ) {
             m_matrix[row][col] = matrix[row][col];
+        }
+    }
+}
+
+Transform::Transform(
+    const float matrix[4][4],
+    const float inverse[4][4]
+) : m_hasInverse(true)
+{
+    for (int row = 0; row < 4; row++ ) {
+        for (int col = 0; col < 4; col++ ) {
+            m_matrix[row][col] = matrix[row][col];
+            m_inverse[row][col] = inverse[row][col];
         }
     }
 }
@@ -38,6 +53,12 @@ Transform Transform::transposed() const
     };
 
     return Transform(transpose);
+}
+
+Transform Transform::inversed() const
+{
+    assert(m_hasInverse);
+    return Transform(m_inverse, m_matrix);
 }
 
 Point3 Transform::apply(const Point3 &point) const
