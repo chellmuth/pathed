@@ -17,7 +17,7 @@ public:
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData,
-        const Transform &inverseTransform,
+        const Transform &worldToModel,
         float albedo,
         float scale
     );
@@ -54,11 +54,12 @@ protected:
 
     float sigmaT(const Point3 &worldPoint, GridFrame frame) const;
 
-    Transform m_inverseTransform;
+    Transform m_worldToModel;
     UniformGrid m_grid;
 
     Point3 worldToModel(const Point3 &worldPoint) const;
     Point3 modelToGrid(const Point3 &modelPoint) const;
+    Point3 modelToWorld(const Point3 &modelPoint) const;
     Point3 worldToGrid(const Point3 &worldPoint) const;
 
     GridInfo m_gridInfo;

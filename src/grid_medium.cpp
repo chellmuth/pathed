@@ -14,7 +14,7 @@ static const bool DEBUG = false;
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
-    const Transform &inverseTransform,
+    const Transform &worldToModel,
     float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
@@ -24,14 +24,13 @@ GridMedium::GridMedium(
         gridInfo.cellsZ,
         gridData
     ),
+    m_worldToModel(worldToModel),
     m_albedo(albedo),
     m_scale(scale)
 {
     m_widthX = m_gridInfo.widthX();
     m_widthY = m_gridInfo.widthY();
     m_widthZ = m_gridInfo.widthZ();
-
-    m_inverseTransform = inverseTransform;
 }
 
 float GridMedium::sigmaT(const Point3 &point, GridFrame frame) const
@@ -73,9 +72,14 @@ Point3 GridMedium::modelToGrid(const Point3 &modelPoint) const
     );
 }
 
+Point3 GridMedium::modelToWorld(const Point3 &worldPoint) const
+{
+    return m_worldToModel.applyInverse(worldPoint);
+}
+
 Point3 GridMedium::worldToModel(const Point3 &worldPoint) const
 {
-    return m_inverseTransform.apply(worldPoint);
+    return m_worldToModel.apply(worldPoint);
 }
 
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
@@ -170,8 +174,11 @@ Color GridMedium::integrate(
     RandomGenerator &random
 ) const
 {
-    const Vector3 travelVector = (exitPointWorld - entryPointWorld).toVector();
-    const Ray travelRay(entryPointWorld, travelVector.normalized());
+    const Point3 entryPointModel = worldToModel(entryPointWorld);
+    const Point3 exitPointModel = worldToModel(exitPointWorld);
+
+    const Vector3 travelVector = (exitPointModel - entryPointModel).toVector();
+    const Ray travelRay(entryPointModel, travelVector.normalized());
 
     AABB aabb(
         m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
@@ -182,8 +189,8 @@ Color GridMedium::integrate(
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
-        hit.enterPoint,
-        hit.exitPoint,
+        modelToWorld(hit.enterPoint),
+        modelToWorld(hit.exitPoint),
         targetTransmittance
     );
 

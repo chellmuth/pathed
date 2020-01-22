@@ -74,6 +74,21 @@ Point3 Transform::apply(const Point3 &point) const
     );
 }
 
+Point3 Transform::applyInverse(const Point3 &point) const
+{
+    assert(m_hasInverse);
+
+    float x = point.x();
+    float y = point.y();
+    float z = point.z();
+
+    return Point3(
+        m_inverse[0][0] * x + m_inverse[0][1] * y + m_inverse[0][2] * z + m_inverse[0][3],
+        m_inverse[1][0] * x + m_inverse[1][1] * y + m_inverse[1][2] * z + m_inverse[1][3],
+        m_inverse[2][0] * x + m_inverse[2][1] * y + m_inverse[2][2] * z + m_inverse[2][3]
+    );
+}
+
 Vector3 Transform::apply(const Vector3 &vector) const
 {
     float x = vector.x();
