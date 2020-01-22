@@ -12,17 +12,18 @@
     {
       "name": "cloud",
       "type": "heterogeneous",
-      "albedo": "0.9",
+      "albedo": "0",
       "scale": "1",
       "filename": "assets/dummy_medium.vol",
       "transform": {
-        "translate": [ "1.0", "0.0", "1.2" ]
+        "translate": [ "1.0", "0.0", "1.2" ],
+        "rotate": [ "45", "0", "0" ]
       }
     },
     {
       "name": "test",
       "type": "homogeneous",
-      "sigma_t": [ "1.5", "1.5", "1.5" ],
+      "sigma_t": [ "1.0", "1.0", "1.0" ],
       "sigma_s": [ "0.0", "0.0", "0.0" ]
     }
   ],
@@ -33,7 +34,8 @@
       "filename": "assets/dummy_medium.obj",
       "internal_medium": "cloud",
       "transform": {
-        "translate": [ "1.0", "0.0", "1.2" ]
+        "translate": [ "1.0", "0.0", "1.2" ],
+        "rotate": [ "45", "0", "0" ]
       },
       "bsdf": {
         "type": "passthrough"
