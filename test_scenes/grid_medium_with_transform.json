@@ -33,7 +33,7 @@
       "filename": "assets/dummy_medium.obj",
       "internal_medium": "cloud",
       "transform": {
-        "translate": [ "-1.0", "0.0", "-1.2" ]
+        "translate": [ "1.0", "0.0", "1.2" ]
       },
       "bsdf": {
         "type": "passthrough"

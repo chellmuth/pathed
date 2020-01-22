@@ -49,6 +49,7 @@ static Color parseColor(json colorJson, bool required = false);
 static Color parseColor(json colorJson, Color defaultColor);
 static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
+static Transform parseTransform(json transformJson, Transform defaultTransform);
 static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 
 static void parseMedia(
@@ -146,6 +147,7 @@ static void parseMedia(
                 mediumJson["filename"],
                 albedo,
                 scale,
+                parseTransform(mediumJson["transform"], Transform()),
                 Handedness::Left
             );
 
@@ -340,6 +342,12 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson)
     } else {
         throw "Unimplemented";
     }
+}
+
+static Transform parseTransform(json transformJson, Transform defaultTransform)
+{
+    if (!transformJson.is_object()) { return defaultTransform; }
+    return parseTransform(transformJson);
 }
 
 static Transform parseTransform(json transformJson)

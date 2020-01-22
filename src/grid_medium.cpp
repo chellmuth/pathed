@@ -14,6 +14,7 @@ static const bool DEBUG = false;
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
+    const Transform &transform,
     float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
@@ -36,7 +37,7 @@ GridMedium::GridMedium(
         0.f, 0.f, 1.f, 1.2f,
         0.f, 0.f, 0.f, 1.f
     };
-    m_inverseTransform = Transform(matrix);
+    m_inverseTransform = transform;
 }
 
 float GridMedium::sigmaT(const Point3 &modelPoint) const

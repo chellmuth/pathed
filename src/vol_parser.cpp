@@ -1,6 +1,7 @@
 #include "vol_parser.h"
 
 #include "grid_medium.h"
+#include "transform.h"
 
 #include <iostream>
 #include <fstream>
@@ -10,6 +11,7 @@ std::shared_ptr<Medium> VolParser::parse(
     const std::string &filename,
     float albedo,
     float scale,
+    const Transform &transform,
     Handedness handedness
 ) {
     std::ifstream volStream(filename, std::ifstream::binary);
@@ -82,5 +84,5 @@ std::shared_ptr<Medium> VolParser::parse(
         })
     ;
 
-    return std::make_shared<GridMedium>(gridInfo, gridData, albedo, scale);
+    return std::make_shared<GridMedium>(gridInfo, gridData, transform, albedo, scale);
 }

@@ -12,12 +12,12 @@
 #include <ostream>
 #include <vector>
 
-
 class GridMedium : public Medium {
 public:
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData,
+        const Transform &transform,
         float albedo,
         float scale
     );
@@ -25,7 +25,7 @@ public:
     GridMedium(
         const GridInfo &gridInfo,
         const std::vector<float> &gridData
-    ) : GridMedium(gridInfo, gridData, 0.f, 1.f) {}
+    ) : GridMedium(gridInfo, gridData, Transform(), 0.f, 1.f) {}
 
     Color transmittance(const Point3 &pointA, const Point3 &pointB) const override;
 
