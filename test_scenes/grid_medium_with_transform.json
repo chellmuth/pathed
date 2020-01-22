@@ -14,7 +14,10 @@
       "type": "heterogeneous",
       "albedo": "0.9",
       "scale": "1",
-      "filename": "assets/dummy_medium.vol"
+      "filename": "assets/dummy_medium.vol",
+      "transform": {
+        "translate": [ "-1.0", "0.0", "-1.2" ]
+      }
     },
     {
       "name": "test",
