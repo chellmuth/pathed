@@ -244,7 +244,7 @@ OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
         context.volumeEvents.begin(),
         context.volumeEvents.end(),
         [](VolumeEvent ve1, VolumeEvent ve2) {
-            return ve1.t > ve2.t;
+            return ve1.t < ve2.t;
         }
     );
 

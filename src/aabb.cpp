@@ -52,7 +52,7 @@ AABBHit AABB::intersect(const Ray &ray)
     if (tmax >= 0 && !std::isinf(tmax) && tmin < 0) {
         return AABBHit({
             true,
-            ray.at(0.f),
+            ray.origin(),
             ray.at(tmax),
             0.f,
             tmax
