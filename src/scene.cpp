@@ -325,7 +325,7 @@ float Scene::lightsPDF(
 Color Scene::environmentL(const Vector3 &direction) const
 {
     if (m_environmentLight) {
-        return m_environmentLight->emit(direction);
+        return m_environmentLight->emit(-direction);
     }
     return Color(0.f);
 }

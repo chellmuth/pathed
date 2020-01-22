@@ -17,21 +17,22 @@ Color VolumeHelper::directSampleLights(
 ) {
     const LightSample lightSample = scene.sampleDirectLights(samplePoint, random);
 
-    const Vector3 lightDirection = (lightSample.point - samplePoint).toVector();
-    const Vector3 wiWorld = lightDirection.normalized();
+    const Vector3 sampleDirection = (lightSample.point - samplePoint).toVector();
+    const Vector3 wiWorld = sampleDirection.normalized();
 
     if (lightSample.normal.dot(wiWorld) >= 0.f) {
         return Color(0.f);
     }
 
     const Ray shadowRay = Ray(samplePoint, wiWorld);
-    const float lightDistance = lightDirection.length();
+    const float lightDistance = sampleDirection.length();
     const OcclusionResult occlusionResult = scene.testVolumetricOcclusion(shadowRay, lightDistance);
 
     if (occlusionResult.isOccluded) {
         return Color(0.f);
     } else {
         const float pdf = lightSample.solidAnglePDF(samplePoint);
+        const Vector3 lightWo = -sampleDirection.normalized();
 
         // TODO: Over all intersected volumes
         Color shadowTransmittance(0.f);
@@ -47,7 +48,7 @@ Color VolumeHelper::directSampleLights(
             shadowTransmittance = medium.transmittance(enterPoint, exitPoint);
         }
 
-        return lightSample.light->emit(-lightDirection.normalized())
+        return lightSample.light->emit(lightWo)
             * shadowTransmittance
             * 1.f / (4.f * M_PI)
             / pdf;
