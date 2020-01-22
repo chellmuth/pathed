@@ -12,7 +12,7 @@
     {
       "name": "cloud",
       "type": "heterogeneous",
-      "albedo": "0",
+      "albedo": "0.5",
       "scale": "1",
       "filename": "assets/dummy_medium.vol",
       "transform": {
@@ -24,7 +24,7 @@
       "name": "test",
       "type": "homogeneous",
       "sigma_t": [ "1.0", "1.0", "1.0" ],
-      "sigma_s": [ "0.0", "0.0", "0.0" ]
+      "sigma_s": [ "0.5", "0.5", "0.5" ]
     }
   ],
 

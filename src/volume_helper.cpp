@@ -7,6 +7,8 @@
 #include "vector.h"
 #include "scene.h"
 
+#include <assert.h>
+
 Color VolumeHelper::directSampleLights(
     const Medium &medium,
     const Point3 &samplePoint,
@@ -24,15 +26,26 @@ Color VolumeHelper::directSampleLights(
 
     const Ray shadowRay = Ray(samplePoint, wiWorld);
     const float lightDistance = lightDirection.length();
-    const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
+    const OcclusionResult occlusionResult = scene.testVolumetricOcclusion(shadowRay, lightDistance);
 
-    if (occluded) {
+    if (occlusionResult.isOccluded) {
         return Color(0.f);
     } else {
         const float pdf = lightSample.solidAnglePDF(samplePoint);
 
         // TODO: Over all intersected volumes
-        const Color shadowTransmittance = medium.transmittance(samplePoint, lightSample.point);
+        Color shadowTransmittance(0.f);
+
+        const std::vector<VolumeEvent> &volumeEvents = occlusionResult.volumeEvents;
+        const size_t eventCount = volumeEvents.size();
+        if (eventCount > 0) {
+            assert(eventCount == 1);
+
+            const Point3 enterPoint = samplePoint;
+            const Point3 exitPoint = shadowRay.at(volumeEvents[0].t);
+
+            shadowTransmittance = medium.transmittance(enterPoint, exitPoint);
+        }
 
         return lightSample.light->emit(-lightDirection.normalized())
             * shadowTransmittance
@@ -40,4 +53,3 @@ Color VolumeHelper::directSampleLights(
             / pdf;
     }
 }
-
