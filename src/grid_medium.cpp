@@ -14,7 +14,7 @@ static const bool DEBUG = false;
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
-    const Transform &transform,
+    const Transform &inverseTransform,
     float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
@@ -31,13 +31,7 @@ GridMedium::GridMedium(
     m_widthY = m_gridInfo.widthY();
     m_widthZ = m_gridInfo.widthZ();
 
-    const float matrix[4][4] = {
-        1.f, 0.f, 0.f, -1.f,
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 1.f, 1.2f,
-        0.f, 0.f, 0.f, 1.f
-    };
-    m_inverseTransform = transform;
+    m_inverseTransform = inverseTransform;
 }
 
 float GridMedium::sigmaT(const Point3 &modelPoint) const
@@ -69,7 +63,6 @@ Point3 GridMedium::modelToGrid(const Point3 &modelPoint) const
 
 Point3 GridMedium::worldToModel(const Point3 &worldPoint) const
 {
-    // return worldPoint;
     return m_inverseTransform.apply(worldPoint);
 }
 
@@ -80,13 +73,7 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(worldToModel(entryPointWorld), worldToModel(exitPointWorld));
-    if (!hit.isHit) {
-        // std::cout << "[miss] entryPointWorld: " << entryPointWorld.toString() << " exitPointWorld: " << exitPointWorld.toString() << std::endl;
-        // return Color(1.f, 0.f, 1.f);
-        return Color(0.f);
-    }
-    // std::cout << "[hit] entryPointWorld: " << entryPointWorld.toString() << " exitPointWorld: " << exitPointWorld.toString() << std::endl;
-    // return Color(0.f, 1.f, 0.f);
+    if (!hit.isHit) { return Color(1.f); }
 
     const Point3 entryPoint = modelToGrid(hit.enterPoint);
     const Point3 exitPoint = modelToGrid(hit.exitPoint);

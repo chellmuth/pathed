@@ -30,15 +30,4 @@ public:
         const Scene &scene,
         RandomGenerator &random
     ) const = 0;
-
-    Transform inverseTransform() const {
-        const float matrix[4][4] = {
-            1.f, 0.f, 0.f, -1.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 1.2f,
-            0.f, 0.f, 0.f, 1.f
-        };
-        return Transform(matrix);
-    }
-
 };
