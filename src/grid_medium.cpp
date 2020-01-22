@@ -195,7 +195,7 @@ Color GridMedium::integrate(
     );
 
     if (!queryResult.isValid) { return Color(0.f); }
-    const Point3 samplePoint = travelRay.at(queryResult.distance);
+    const Point3 samplePoint = modelToWorld(travelRay.at(queryResult.distance));
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
 
