@@ -13,6 +13,15 @@
 
 #include <memory>
 
+struct LoopState {
+    int bounce;
+    Intersection lastIntersection;
+    Color modulation;
+    std::shared_ptr<Medium> mediumPtr;
+    Color result;
+    BSDFSample bsdfSample;
+};
+
 class BasicVolumeIntegrator : public SampleIntegrator {
 public:
     BasicVolumeIntegrator(BounceController bounceController)
@@ -27,6 +36,13 @@ public:
     ) const override;
 
 private:
+    bool processBounce(
+        LoopState &loopState,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
     Color transmittance(
         const std::shared_ptr<Medium> &mediumPtr,
         const Intersection &sourceIntersection,
