@@ -12,6 +12,12 @@ struct TransmittanceQueryResult {
     float distance;
 };
 
+struct IntegrationResult {
+    bool shouldScatter;
+    Point3 scatterPoint;
+    Color Ld;
+};
+
 class Medium {
 public:
     virtual Color transmittance(const Point3 &pointA, const Point3 &pointB) const = 0;
@@ -24,7 +30,7 @@ public:
     virtual float sigmaT(const Point3 &worldPoint) const = 0;
     virtual float sigmaS(const Point3 &worldPoint) const = 0;
 
-    virtual Color integrate(
+    virtual IntegrationResult integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
         const Scene &scene,

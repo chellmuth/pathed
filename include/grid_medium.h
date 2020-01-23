@@ -38,7 +38,7 @@ public:
     float sigmaT(const Point3 &worldPoint) const override;
     float sigmaS(const Point3 &worldPoint) const override;
 
-    Color integrate(
+    IntegrationResult integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
         const Scene &scene,

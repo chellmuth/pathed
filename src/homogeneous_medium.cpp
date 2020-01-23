@@ -32,7 +32,7 @@ TransmittanceQueryResult HomogeneousMedium::findTransmittance(
     }
 }
 
-Color HomogeneousMedium::integrate(
+IntegrationResult HomogeneousMedium::integrate(
     const Point3 &entryPointWorld,
     const Point3 &exitPointWorld,
     const Scene &scene,
@@ -55,5 +55,7 @@ Color HomogeneousMedium::integrate(
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
     const Color directTransmittance = transmittance(entryPointWorld, samplePoint);
 
-    return Ld * directTransmittance * sigmaS(samplePoint);
+    // todo: this will always scatter
+    return IntegrationResult({ false, Point3(0.f, 0.f, 0.f), Color(0.f) });
+    // return Ld * directTransmittance * sigmaS(samplePoint);
 }

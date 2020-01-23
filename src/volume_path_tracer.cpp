@@ -121,6 +121,10 @@ Color VolumePathTracer::scatter(
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumPtr->integrate(source, target, scene, random);
+    IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
+    if (result.shouldScatter) {
+        return result.Ld;
+    }
+    return Color(0.f);
 }
 
