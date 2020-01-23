@@ -174,8 +174,6 @@ IntegrationResult GridMedium::integrate(
     RandomGenerator &random
 ) const
 {
-    const IntegrationResult noScatter({ false, Point3(0.f, 0.f, 0.f), Color(0.f) });
-
     const Point3 entryPointModel = worldToModel(entryPointWorld);
     const Point3 exitPointModel = worldToModel(exitPointWorld);
 
@@ -187,7 +185,7 @@ IntegrationResult GridMedium::integrate(
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(travelRay);
-    if (!hit.isHit) { return noScatter; }
+    if (!hit.isHit) { return IntegrationHelper::noScatter(); }
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
@@ -196,7 +194,7 @@ IntegrationResult GridMedium::integrate(
         targetTransmittance
     );
 
-    if (!queryResult.isValid) { return noScatter; }
+    if (!queryResult.isValid) { return IntegrationHelper::noScatter(); }
     const Point3 samplePoint = modelToWorld(travelRay.at(queryResult.distance));
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);

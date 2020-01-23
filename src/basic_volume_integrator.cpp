@@ -73,8 +73,13 @@ bool BasicVolumeIntegrator::processBounce(
     sample.eyePoints.push_back(bounceIntersection.point);
 
     // if volume, integrate!
-    const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
-    result += Ls * modulation;
+    const IntegrationResult integrationResult = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
+    if (integrationResult.shouldScatter) {
+        const Color Ld = integrationResult.Ld;
+        result += Ld * modulation;
+
+        // todo: should be modulating here and intitiating real scatter
+    }
 
     const float invPDF = 1.f / bsdfSample.pdf;
     const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
@@ -130,21 +135,18 @@ Color BasicVolumeIntegrator::transmittance(
     return mediumPtr->transmittance(source, target);
 }
 
-Color BasicVolumeIntegrator::scatter(
+IntegrationResult BasicVolumeIntegrator::scatter(
     const std::shared_ptr<Medium> &mediumPtr,
     const Intersection &sourceIntersection,
     const Intersection &targetIntersection,
     const Scene &scene,
     RandomGenerator &random
 ) const {
-    if (!mediumPtr) { return Color(0.f); }
+    if (!mediumPtr) { return IntegrationHelper::noScatter(); }
 
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
-    if (result.shouldScatter) {
-        return result.Ld;
-    }
-    return Color(0.f);
+    const IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
+    return result;
 }

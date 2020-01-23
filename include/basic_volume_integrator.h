@@ -49,7 +49,7 @@ private:
         const Intersection &targetIntersection
     ) const;
 
-    Color scatter(
+    IntegrationResult scatter(
         const std::shared_ptr<Medium> &mediumPtr,
         const Intersection &sourceIntersection,
         const Intersection &targetIntersection,

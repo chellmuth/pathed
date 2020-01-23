@@ -18,6 +18,14 @@ struct IntegrationResult {
     Color Ld;
 };
 
+namespace IntegrationHelper {
+    inline IntegrationResult noScatter() {
+        return IntegrationResult({
+            false, Point3(0.f, 0.f, 0.f), Color(0.f)
+        });
+    }
+}
+
 class Medium {
 public:
     virtual Color transmittance(const Point3 &pointA, const Point3 &pointB) const = 0;
