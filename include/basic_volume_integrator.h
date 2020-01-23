@@ -52,14 +52,14 @@ private:
 
     Color transmittance(
         const std::shared_ptr<Medium> &mediumPtr,
-        const Intersection &sourceIntersection,
-        const Intersection &targetIntersection
+        const Point3 &source,
+        const Point3 &target
     ) const;
 
     IntegrationResult scatter(
         const std::shared_ptr<Medium> &mediumPtr,
-        const Intersection &sourceIntersection,
-        const Intersection &targetIntersection,
+        const Point3 &source,
+        const Point3 &target,
         const Scene &scene,
         RandomGenerator &random
     ) const;

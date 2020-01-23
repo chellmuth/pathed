@@ -84,11 +84,17 @@ bool BasicVolumeIntegrator::processBounce(
 
     Ray bounceRay(lastIntersection.point, bsdfSample.wiWorld);
 
+    const Point3 point = lastIntersection.point;
+    const Vector3 woWorld = lastIntersection.woWorld;
+    const Vector3 normal = lastIntersection.normal;
+    const Vector3 shadingNormal = lastIntersection.shadingNormal;
+    const Surface *surfacePtr = lastIntersection.surface;
+
     // Refraction, medium changes
-    if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
+    if (woWorld.dot(bsdfSample.wiWorld) < 0.f) {
         // Internal, entering medium
-        if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
-            mediumPtr = lastIntersection.surface->getInternalMedium();
+        if (normal.dot(bsdfSample.wiWorld) < 0.f) {
+            mediumPtr = surfacePtr->getInternalMedium();
         } else { // External, exiting medium
             mediumPtr = nullptr;
         }
@@ -100,7 +106,7 @@ bool BasicVolumeIntegrator::processBounce(
     sample.eyePoints.push_back(bounceIntersection.point);
 
     const float invPDF = 1.f / bsdfSample.pdf;
-    const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
+    const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
 
     modulation *= bsdfSample.throughput
         * cosTheta
@@ -111,7 +117,13 @@ bool BasicVolumeIntegrator::processBounce(
     }
 
     // if volume, integrate!
-    const IntegrationResult integrationResult = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
+    const IntegrationResult integrationResult = scatter(
+        mediumPtr,
+        point,
+        bounceIntersection.point,
+        scene,
+        random
+    );
     if (integrationResult.shouldScatter) {
         const Color Ld = integrationResult.Ld;
         result += Ld * modulation;
@@ -129,8 +141,8 @@ bool BasicVolumeIntegrator::processBounce(
     } else {
         modulation *= transmittance(
             mediumPtr,
-            lastIntersection,
-            bounceIntersection
+            point,
+            bounceIntersection.point
         );
     }
 
@@ -161,28 +173,22 @@ bool BasicVolumeIntegrator::processBounce(
 
 Color BasicVolumeIntegrator::transmittance(
     const std::shared_ptr<Medium> &mediumPtr,
-    const Intersection &sourceIntersection,
-    const Intersection &targetIntersection
+    const Point3 &source,
+    const Point3 &target
 ) const {
     if (!mediumPtr) { return Color(1.f); }
-
-    const Point3 &source = sourceIntersection.point;
-    const Point3 &target = targetIntersection.point;
 
     return mediumPtr->transmittance(source, target);
 }
 
 IntegrationResult BasicVolumeIntegrator::scatter(
     const std::shared_ptr<Medium> &mediumPtr,
-    const Intersection &sourceIntersection,
-    const Intersection &targetIntersection,
+    const Point3 &source,
+    const Point3 &target,
     const Scene &scene,
     RandomGenerator &random
 ) const {
     if (!mediumPtr) { return IntegrationHelper::noScatter(); }
-
-    const Point3 &source = sourceIntersection.point;
-    const Point3 &target = targetIntersection.point;
 
     const IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
     return result;
