@@ -33,14 +33,14 @@ Color BasicVolumeIntegrator::L(
     Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
-    Interaction fakeInteraction({ false, Point3(0.f, 0.f, 0.f ), Vector3(0.f)});
+    Interaction fakeInteraction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f)});
     LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample, fakeInteraction});
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         state.bounce = bounce;
 
         if (!state.interaction.isSurface) {
-            if (!processScatter(state, scene, random)) { break; }
+            if (!processScatter(state, scene, random, sample)) { break; }
         } else {
             if (!processBounce(state, scene, random, sample)) { break; }
         }
@@ -52,7 +52,8 @@ Color BasicVolumeIntegrator::L(
 bool BasicVolumeIntegrator::processScatter(
     LoopState &state,
     const Scene &scene,
-    RandomGenerator &random
+    RandomGenerator &random,
+    Sample &sample
 ) const {
     int bounce = state.bounce;
     Interaction &interaction = state.interaction;
@@ -64,7 +65,68 @@ bool BasicVolumeIntegrator::processScatter(
     const Phase phaseFunction;
     const Vector3 woWorld = interaction.woWorld;
     const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
-    const float sampleF = phaseFunction.f(woWorld, wiWorld);
+
+    Ray bounceRay(interaction.point, wiWorld);
+
+    Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    if (!bounceIntersection.hit) { return false; }
+
+    // modulation unchanged: f_p / pdf = 1, and no cos term
+
+    if (modulation.isBlack()) {
+        return false;
+    }
+
+    const IntegrationResult integrationResult = scatter(
+        mediumPtr,
+        interaction.point,
+        bounceIntersection.point,
+        scene,
+        random
+    );
+    if (integrationResult.shouldScatter) {
+        const Color Ld = integrationResult.Ld;
+        result += Ld * modulation;
+
+        modulation *= integrationResult.transmittance;
+
+        Interaction scatterInteraction({
+            false,
+            integrationResult.scatterPoint,
+            -bounceRay.direction()
+        });
+
+        state.interaction = scatterInteraction;
+        return true;
+    } else {
+        modulation *= transmittance(
+            mediumPtr,
+            interaction.point,
+            bounceIntersection.point
+        );
+    }
+
+    bsdfSample = bounceIntersection.material->sample(
+        bounceIntersection, random
+    );
+
+    state.lastIntersection = bounceIntersection;
+
+    if (m_bounceController.checkCounts(bounce)) {
+        const Color previous = result;
+
+        Color Ld = DirectLightingHelper::Ld(
+            bounceIntersection,
+            mediumPtr,
+            bsdfSample,
+            scene,
+            random,
+            sample
+        );
+        result += Ld * modulation;
+
+        // sample.contributions.push_back({result - previous, invPDF});
+    }
 
     return true;
 }

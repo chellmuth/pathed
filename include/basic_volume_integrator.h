@@ -47,7 +47,8 @@ private:
     bool processScatter(
         LoopState &state,
         const Scene &scene,
-        RandomGenerator &random
+        RandomGenerator &random,
+        Sample &sample
     ) const;
 
     Color transmittance(
