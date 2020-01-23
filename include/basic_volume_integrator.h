@@ -44,6 +44,12 @@ private:
         Sample &sample
     ) const;
 
+    bool processScatter(
+        LoopState &state,
+        const Scene &scene,
+        RandomGenerator &random
+    ) const;
+
     Color transmittance(
         const std::shared_ptr<Medium> &mediumPtr,
         const Intersection &sourceIntersection,

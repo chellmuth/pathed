@@ -4,6 +4,7 @@
 #include "color.h"
 #include "direct_lighting_helper.h"
 #include "monte_carlo.h"
+#include "phase.h"
 #include "ray.h"
 #include "transform.h"
 #include "vector.h"
@@ -32,15 +33,40 @@ Color BasicVolumeIntegrator::L(
     Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
-    Interaction fakeInteraction({ false, Point3(0.f, 0.f, 0.f )});
+    Interaction fakeInteraction({ false, Point3(0.f, 0.f, 0.f ), Vector3(0.f)});
     LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample, fakeInteraction});
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         state.bounce = bounce;
-        if (!processBounce(state, scene, random, sample)) { break; }
+
+        if (!state.interaction.isSurface) {
+            if (!processScatter(state, scene, random)) { break; }
+        } else {
+            if (!processBounce(state, scene, random, sample)) { break; }
+        }
     }
 
     return state.result;
+}
+
+bool BasicVolumeIntegrator::processScatter(
+    LoopState &state,
+    const Scene &scene,
+    RandomGenerator &random
+) const {
+    int bounce = state.bounce;
+    Interaction &interaction = state.interaction;
+    Color &modulation = state.modulation;
+    std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
+    Color &result = state.result;
+    BSDFSample &bsdfSample = state.bsdfSample;
+
+    const Phase phaseFunction;
+    const Vector3 woWorld = interaction.woWorld;
+    const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
+    const float sampleF = phaseFunction.f(woWorld, wiWorld);
+
+    return true;
 }
 
 bool BasicVolumeIntegrator::processBounce(
@@ -94,11 +120,12 @@ bool BasicVolumeIntegrator::processBounce(
 
         Interaction scatterInteraction({
             false,
-            integrationResult.scatterPoint
+            integrationResult.scatterPoint,
+            -bounceRay.direction()
         });
 
         state.interaction = scatterInteraction;
-        // todo: should be intitiating real scatter
+        return true;
     } else {
         modulation *= transmittance(
             mediumPtr,

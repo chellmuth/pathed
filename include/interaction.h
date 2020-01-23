@@ -8,4 +8,5 @@ struct Interaction {
     bool isSurface;
 
     Point3 point;
+    Vector3 woWorld;
 };
