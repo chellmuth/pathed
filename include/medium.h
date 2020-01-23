@@ -17,12 +17,13 @@ struct IntegrationResult {
     Point3 scatterPoint;
     Color transmittance;
     Color Ld;
+    Color weight;
 };
 
 namespace IntegrationHelper {
     inline IntegrationResult noScatter() {
         return IntegrationResult({
-            false, Point3(0.f, 0.f, 0.f), Color(0.f), Color(0.f)
+            false, Point3(0.f, 0.f, 0.f), Color(0.f), Color(0.f), Color(0.f)
         });
     }
 }

@@ -85,10 +85,10 @@ bool BasicVolumeIntegrator::processScatter(
         random
     );
     if (integrationResult.shouldScatter) {
+        modulation *= integrationResult.weight;
+
         const Color Ld = integrationResult.Ld;
         result += Ld * modulation;
-
-        modulation *= integrationResult.transmittance;
 
         Interaction scatterInteraction({
             false,
@@ -99,11 +99,11 @@ bool BasicVolumeIntegrator::processScatter(
         state.interaction = scatterInteraction;
         return true;
     } else {
-        modulation *= transmittance(
-            mediumPtr,
-            interaction.point,
-            bounceIntersection.point
-        );
+        // modulation *= transmittance(
+        //     mediumPtr,
+        //     interaction.point,
+        //     bounceIntersection.point
+        // );
     }
 
     bsdfSample = bounceIntersection.material->sample(
@@ -187,10 +187,10 @@ bool BasicVolumeIntegrator::processBounce(
         random
     );
     if (integrationResult.shouldScatter) {
+        modulation *= integrationResult.weight;
+
         const Color Ld = integrationResult.Ld;
         result += Ld * modulation;
-
-        modulation *= integrationResult.transmittance;
 
         Interaction scatterInteraction({
             false,
@@ -201,11 +201,11 @@ bool BasicVolumeIntegrator::processBounce(
         state.interaction = scatterInteraction;
         return true;
     } else {
-        modulation *= transmittance(
-            mediumPtr,
-            point,
-            bounceIntersection.point
-        );
+        // modulation *= transmittance(
+        //     mediumPtr,
+        //     point,
+        //     bounceIntersection.point
+        // );
     }
 
     bsdfSample = bounceIntersection.material->sample(
