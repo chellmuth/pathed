@@ -50,21 +50,22 @@ Color VolumePathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        // if volume, integrate!
-        const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
-        result += Ls * modulation;
-
         const float invPDF = 1.f / bsdfSample.pdf;
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
 
         modulation *= bsdfSample.throughput
-            * transmittance(
-                mediumPtr,
-                lastIntersection,
-                bounceIntersection
-            )
             * cosTheta
             * invPDF;
+
+        // if volume, integrate!
+        const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
+        result += Ls * modulation;
+
+        modulation *= transmittance(
+            mediumPtr,
+            lastIntersection,
+            bounceIntersection
+        );
 
         if (modulation.isBlack()) {
             break;
@@ -127,4 +128,3 @@ Color VolumePathTracer::scatter(
     }
     return Color(0.f);
 }
-
