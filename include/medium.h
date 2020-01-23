@@ -15,13 +15,14 @@ struct TransmittanceQueryResult {
 struct IntegrationResult {
     bool shouldScatter;
     Point3 scatterPoint;
+    Color transmittance;
     Color Ld;
 };
 
 namespace IntegrationHelper {
     inline IntegrationResult noScatter() {
         return IntegrationResult({
-            false, Point3(0.f, 0.f, 0.f), Color(0.f)
+            false, Point3(0.f, 0.f, 0.f), Color(0.f), Color(0.f)
         });
     }
 }

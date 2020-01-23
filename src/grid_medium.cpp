@@ -207,6 +207,7 @@ IntegrationResult GridMedium::integrate(
     return IntegrationResult({
         true,
         samplePoint,
+        targetTransmittance,
         Ld * m_albedo
     });
 }

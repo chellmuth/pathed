@@ -56,6 +56,6 @@ IntegrationResult HomogeneousMedium::integrate(
     const Color directTransmittance = transmittance(entryPointWorld, samplePoint);
 
     // todo: this will always scatter
-    return IntegrationResult({ false, Point3(0.f, 0.f, 0.f), Color(0.f) });
+    return IntegrationHelper::noScatter();
     // return Ld * directTransmittance * sigmaS(samplePoint);
 }

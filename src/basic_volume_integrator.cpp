@@ -32,7 +32,8 @@ Color BasicVolumeIntegrator::L(
     Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
-    LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample});
+    Interaction fakeInteraction({ false, Point3(0.f, 0.f, 0.f )});
+    LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample, fakeInteraction});
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         state.bounce = bounce;
@@ -72,29 +73,38 @@ bool BasicVolumeIntegrator::processBounce(
 
     sample.eyePoints.push_back(bounceIntersection.point);
 
+    const float invPDF = 1.f / bsdfSample.pdf;
+    const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
+
+    modulation *= bsdfSample.throughput
+        * cosTheta
+        * invPDF;
+
+    if (modulation.isBlack()) {
+        return false;
+    }
+
     // if volume, integrate!
     const IntegrationResult integrationResult = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
     if (integrationResult.shouldScatter) {
         const Color Ld = integrationResult.Ld;
         result += Ld * modulation;
 
-        // todo: should be modulating here and intitiating real scatter
-    }
+        modulation *= integrationResult.transmittance;
 
-    const float invPDF = 1.f / bsdfSample.pdf;
-    const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
+        Interaction scatterInteraction({
+            false,
+            integrationResult.scatterPoint
+        });
 
-    modulation *= bsdfSample.throughput
-        * transmittance(
+        state.interaction = scatterInteraction;
+        // todo: should be intitiating real scatter
+    } else {
+        modulation *= transmittance(
             mediumPtr,
             lastIntersection,
             bounceIntersection
-        )
-        * cosTheta
-        * invPDF;
-
-    if (modulation.isBlack()) {
-        return false;
+        );
     }
 
     bsdfSample = bounceIntersection.material->sample(

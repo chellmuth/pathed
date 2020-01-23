@@ -20,6 +20,7 @@ struct LoopState {
     std::shared_ptr<Medium> mediumPtr;
     Color result;
     BSDFSample bsdfSample;
+    Interaction interaction;
 };
 
 class BasicVolumeIntegrator : public SampleIntegrator {
