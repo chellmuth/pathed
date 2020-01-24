@@ -91,13 +91,9 @@ bool BasicVolumeIntegrator::processScatter(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    Interaction &interaction = state.interaction;
-    Color &modulation = state.modulation;
-    std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-
     const IntegrationResult integrationResult = scatter(
-        mediumPtr,
-        interaction.point,
+        state.mediumPtr,
+        state.interaction.point,
         bounceIntersection.point,
         scene,
         random
@@ -120,25 +116,12 @@ bool BasicVolumeIntegrator::processBounce(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    int bounce = state.bounce;
-    Intersection &lastIntersection = state.lastIntersection;
-    Color &modulation = state.modulation;
-    std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-    Color &result = state.result;
-    BSDFSample &bsdfSample = state.bsdfSample;
-
-    const Point3 point = lastIntersection.point;
-    const Vector3 woWorld = lastIntersection.woWorld;
-    const Vector3 normal = lastIntersection.normal;
-    const Vector3 shadingNormal = lastIntersection.shadingNormal;
-    const Surface *surfacePtr = lastIntersection.surface;
-
     sample.eyePoints.push_back(bounceIntersection.point);
 
     // if volume, integrate!
     const IntegrationResult integrationResult = scatter(
-        mediumPtr,
-        point,
+        state.mediumPtr,
+        state.lastIntersection.point,
         bounceIntersection.point,
         scene,
         random
