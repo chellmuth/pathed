@@ -33,20 +33,17 @@ Color BasicVolumeIntegrator::L(
     Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
-    Interaction fakeInteraction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f), Vector3(0.f) });
-    LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample, fakeInteraction});
+    Interaction interaction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f), Vector3(0.f) });
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        state.bounce = bounce;
-
-        const Point3 lastPoint = state.interaction.isSurface
-            ? state.lastIntersection.point
-            : state.interaction.point
+        const Point3 lastPoint = interaction.isSurface
+            ? lastIntersection.point
+            : interaction.point
         ;
 
-        const Vector3 lastDirection = state.interaction.isSurface
-            ? state.bsdfSample.wiWorld
-            : state.interaction.wiWorld
+        const Vector3 lastDirection = interaction.isSurface
+            ? bsdfSample.wiWorld
+            : interaction.wiWorld
         ;
 
         const Ray bounceRay(lastPoint, lastDirection);
@@ -54,25 +51,30 @@ Color BasicVolumeIntegrator::L(
         const Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
-        if (state.interaction.isSurface) {
-            const float invPDF = 1.f / state.bsdfSample.pdf;
+        if (interaction.isSurface) {
+            const float invPDF = 1.f / bsdfSample.pdf;
 
-            const Vector3 shadingNormal = state.lastIntersection.shadingNormal;
-            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, state.bsdfSample.wiWorld);
+            const Vector3 shadingNormal = lastIntersection.shadingNormal;
+            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
 
-            state.modulation *= state.bsdfSample.throughput
+            modulation *= bsdfSample.throughput
                 * cosTheta
                 * invPDF;
         }
 
-        if (state.modulation.isBlack()) { break; }
+        if (modulation.isBlack()) { break; }
 
-        state.mediumPtr = updateMediumPtr(state);
+        mediumPtr = updateMediumPtr(
+            mediumPtr,
+            interaction,
+            lastIntersection,
+            bsdfSample
+        );
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
         const IntegrationResult integrationResult = scatter(
-            state.mediumPtr,
+            mediumPtr,
             lastPoint,
             bounceIntersection.point,
             scene,
@@ -80,10 +82,10 @@ Color BasicVolumeIntegrator::L(
         );
 
         if (integrationResult.shouldScatter) {
-            state.modulation *= integrationResult.weight;
+            modulation *= integrationResult.weight;
 
             const Color Ld = integrationResult.Ld;
-            state.result += Ld * state.modulation;
+            result += Ld * modulation;
 
             const Phase phaseFunction;
             const Vector3 woWorld = bounceIntersection.woWorld;
@@ -96,9 +98,9 @@ Color BasicVolumeIntegrator::L(
                 wiWorld
             });
 
-            state.interaction = scatterInteraction;
+            interaction = scatterInteraction;
         } else {
-            state.bsdfSample = bounceIntersection.material->sample(
+            bsdfSample = bounceIntersection.material->sample(
                 bounceIntersection, random
             );
 
@@ -107,35 +109,40 @@ Color BasicVolumeIntegrator::L(
 
                 Color Ld = DirectLightingHelper::Ld(
                     bounceIntersection,
-                    state.mediumPtr,
-                    state.bsdfSample,
+                    mediumPtr,
+                    bsdfSample,
                     scene,
                     random,
                     sample
                 );
-                state.result += Ld * state.modulation;
+                result += Ld * modulation;
                 // sample.contributions.push_back({result - previous, invPDF});
             }
-            state.lastIntersection = bounceIntersection;
+            lastIntersection = bounceIntersection;
         }
     }
 
-    return state.result;
+    return result;
 }
 
-std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(LoopState &state) const {
-    if (state.interaction.isSurface) {
+std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(
+    const std::shared_ptr<Medium> mediumPtr,
+    const Interaction &interaction,
+    const Intersection &lastIntersection,
+    const BSDFSample &bsdfSample
+) const {
+    if (interaction.isSurface) {
         // Refraction, medium changes
-        if (state.lastIntersection.woWorld.dot(state.bsdfSample.wiWorld) < 0.f) {
+        if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
             // Internal, entering medium
-            if (state.lastIntersection.normal.dot(state.bsdfSample.wiWorld) < 0.f) {
-                return state.lastIntersection.surface->getInternalMedium();
+            if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
+                return lastIntersection.surface->getInternalMedium();
             } else { // External, exiting medium
                 return nullptr;
             }
         } // else Reflection, medium does not change
     }
-    return state.mediumPtr;
+    return mediumPtr;
 }
 
 Color BasicVolumeIntegrator::transmittance(
