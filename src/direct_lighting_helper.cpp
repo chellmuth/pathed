@@ -144,7 +144,8 @@ static Color directSampleBSDF(
     Sample &sample
 ) {
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
-    const Intersection bounceIntersection = scene.testVolumetricIntersect(bounceRay);
+    const IntersectionResult bounceResult = scene.testVolumetricIntersect(bounceRay);
+    const Intersection &bounceIntersection = bounceResult.intersection;
 
     if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();

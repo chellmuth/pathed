@@ -192,7 +192,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
     }
 }
 
-Intersection Scene::testVolumetricIntersect(const Ray &ray) const
+IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
 {
     RTCRayHit rayHit;
     rayHit.ray.org_x = ray.origin().x();
@@ -288,9 +288,21 @@ Intersection Scene::testVolumetricIntersect(const Ray &ray) const
             .material = surfacePtr->getMaterial().get(),
             .surface = surfacePtr.get()
         };
-        return hit;
+
+        std::sort(
+            context.volumeEvents.begin(),
+            context.volumeEvents.end(),
+            [](VolumeEvent ve1, VolumeEvent ve2) {
+                return ve1.t < ve2.t;
+            }
+        );
+
+        return IntersectionResult({
+            hit,
+            context.volumeEvents
+        });
     } else {
-        return IntersectionHelper::miss;
+        return IntersectionResult({IntersectionHelper::miss});
     }
 }
 

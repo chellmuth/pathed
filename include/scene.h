@@ -26,6 +26,11 @@ struct VolumeEvent {
     std::shared_ptr<Medium> mediumPtr;
 };
 
+struct IntersectionResult {
+    Intersection intersection;
+    std::vector<VolumeEvent> volumeEvents;
+};
+
 struct OcclusionResult {
     bool isOccluded;
     std::vector<VolumeEvent> volumeEvents;
@@ -87,7 +92,7 @@ public:
     const std::vector<std::shared_ptr<Light>> &lights() const { return m_lights; }
 
     Intersection testIntersect(const Ray &ray) const;
-    Intersection testVolumetricIntersect(const Ray &ray) const;
+    IntersectionResult testVolumetricIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
