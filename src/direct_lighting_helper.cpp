@@ -136,7 +136,7 @@ static Color directSampleLights(
 
     const float pdf = lightSample.solidAnglePDF(intersection.point);
     const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
+    const float lightWeight = MIS::balanceWeight(1, 0, pdf, brdfPDF);
 
     const Vector3 lightWo = -lightDirection.normalized();
 
@@ -158,6 +158,8 @@ static Color directSampleBSDF(
     RandomGenerator &random,
     Sample &sample
 ) {
+    return Color(0.f);
+
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 
