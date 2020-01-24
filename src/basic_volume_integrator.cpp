@@ -70,7 +70,6 @@ Color BasicVolumeIntegrator::L(
             random
         );
 
-        interaction.isSurface = !integrationResult.shouldScatter;
         if (integrationResult.shouldScatter) {
             modulation *= integrationResult.weight;
 
@@ -87,6 +86,7 @@ Color BasicVolumeIntegrator::L(
                 wiWorld
             });
 
+            interaction.isSurface = false;
             interaction.scatterEvent = scatterEvent;
         } else {
             interaction.bsdfSample = bounceIntersection.material->sample(
@@ -107,6 +107,8 @@ Color BasicVolumeIntegrator::L(
                 result += Ld * modulation;
                 // sample.contributions.push_back({result - previous, invPDF});
             }
+
+            interaction.isSurface = true;
             interaction.intersection = bounceIntersection;
         }
     }
