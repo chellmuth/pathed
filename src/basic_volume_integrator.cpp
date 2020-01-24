@@ -74,26 +74,7 @@ Color BasicVolumeIntegrator::L(
             } // else Reflection, medium does not change
         }
 
-        if (!state.interaction.isSurface) {
-            const IntegrationResult integrationResult = scatter(
-                state.mediumPtr,
-                state.interaction.point,
-                bounceIntersection.point,
-                scene,
-                random
-            );
-
-            const bool shouldContinue = finishIt(
-                state,
-                integrationResult,
-                bounceIntersection,
-                scene,
-                random,
-                sample
-            );
-
-            if (!shouldContinue) { break; }
-        } else {
+        if (state.interaction.isSurface) {
             sample.eyePoints.push_back(bounceIntersection.point);
 
             // if volume, integrate!
@@ -105,7 +86,7 @@ Color BasicVolumeIntegrator::L(
                 random
             );
 
-            const bool shouldContinue = finishIt(
+            finishIt(
                 state,
                 integrationResult,
                 bounceIntersection,
@@ -113,8 +94,23 @@ Color BasicVolumeIntegrator::L(
                 random,
                 sample
             );
+        } else {
+            const IntegrationResult integrationResult = scatter(
+                state.mediumPtr,
+                state.interaction.point,
+                bounceIntersection.point,
+                scene,
+                random
+            );
 
-            if (!shouldContinue) { break; }
+            finishIt(
+                state,
+                integrationResult,
+                bounceIntersection,
+                scene,
+                random,
+                sample
+            );
         }
     }
 
@@ -144,7 +140,7 @@ IntegrationResult BasicVolumeIntegrator::scatter(
     return result;
 }
 
-bool BasicVolumeIntegrator::finishIt(
+void BasicVolumeIntegrator::finishIt(
     LoopState &state,
     const IntegrationResult &integrationResult,
     const Intersection &bounceIntersection,
@@ -176,7 +172,7 @@ bool BasicVolumeIntegrator::finishIt(
         });
 
         state.interaction = scatterInteraction;
-        return true;
+        return;
     }
 
     bsdfSample = bounceIntersection.material->sample(
@@ -200,6 +196,4 @@ bool BasicVolumeIntegrator::finishIt(
 
         // sample.contributions.push_back({result - previous, invPDF});
     }
-
-    return true;
 }

@@ -51,7 +51,7 @@ private:
         RandomGenerator &random
     ) const;
 
-    bool finishIt(
+    void finishIt(
         LoopState &state,
         const IntegrationResult &integrationResult,
         const Intersection &bounceIntersection,
