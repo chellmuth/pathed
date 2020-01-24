@@ -53,14 +53,5 @@ private:
         RandomGenerator &random
     ) const;
 
-    void finishIt(
-        LoopState &state,
-        const IntegrationResult &integrationResult,
-        const Intersection &bounceIntersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
     BounceController m_bounceController;
 };

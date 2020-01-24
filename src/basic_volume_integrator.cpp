@@ -160,19 +160,3 @@ IntegrationResult BasicVolumeIntegrator::scatter(
     const IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
     return result;
 }
-
-void BasicVolumeIntegrator::finishIt(
-    LoopState &state,
-    const IntegrationResult &integrationResult,
-    const Intersection &bounceIntersection,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    int bounce = state.bounce;
-    Color &modulation = state.modulation;
-    BSDFSample &bsdfSample = state.bsdfSample;
-    std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-    Color &result = state.result;
-
-}
