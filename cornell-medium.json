@@ -13,7 +13,7 @@
       "name": "gas",
       "type": "homogeneous",
       "sigma_t": [ "1.0", "1.0", "1.0" ],
-      "sigma_s": [ "0.0", "0.0", "0.0" ]
+      "sigma_s": [ "1.0", "1.0", "1.0" ]
     }
   ],
 
@@ -24,6 +24,14 @@
       "internal_medium": "gas",
       "bsdf": {
         "type": "passthrough"
+      }
+    },
+    {
+      "type": "sphere",
+      "radius": "0.3",
+      "center": [ "0.0", "1.0", "0.0" ],
+      "bsdf": {
+        "type": "glass"
       }
     },
     {
