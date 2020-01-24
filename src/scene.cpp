@@ -192,6 +192,108 @@ Intersection Scene::testIntersect(const Ray &ray) const
     }
 }
 
+Intersection Scene::testVolumetricIntersect(const Ray &ray) const
+{
+    RTCRayHit rayHit;
+    rayHit.ray.org_x = ray.origin().x();
+    rayHit.ray.org_y = ray.origin().y();
+    rayHit.ray.org_z = ray.origin().z();
+
+    rayHit.ray.dir_x = ray.direction().x();
+    rayHit.ray.dir_y = ray.direction().y();
+    rayHit.ray.dir_z = ray.direction().z();
+
+    rayHit.ray.tnear = 1e-3f;
+    rayHit.ray.tfar = 1e5f;
+
+    rayHit.ray.flags = 0;
+
+    rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context, false);
+
+    rtcIntersect1(
+        g_rtcScene,
+        &context.context,
+        &rayHit
+    );
+
+    const RTCHit &hit = rayHit.hit;
+
+    // need parallel arrays of geometry and materials
+    if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+        RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+
+        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &shapePtr = surfacePtr->getShape();
+
+        UV uv;
+        Vector3 geometricNormal(0.f, 0.f, 0.f);
+        Vector3 shadingNormal(0.f, 0.f, 0.f);
+        if (shapePtr->useBackwardsNormals()) {
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                0,
+                &uv.u,
+                2
+            );
+
+            float normalRaw[3];
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                1,
+                &normalRaw[0],
+                3
+            );
+
+            shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f;
+        } else {
+            // spheres
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized();
+        }
+
+        if (shadingNormal.length() == 0.f) {
+            shadingNormal = geometricNormal;
+        }
+
+        Intersection hit = {
+            .hit = true,
+            .t = rayHit.ray.tfar,
+            .point = ray.at(rayHit.ray.tfar),
+            .woWorld = -ray.direction(),
+            .normal = geometricNormal,
+            .shadingNormal = shadingNormal.normalized(),
+            // .shadingNormal = geometricNormal,
+            .uv = uv,
+            .material = surfacePtr->getMaterial().get(),
+            .surface = surfacePtr.get()
+        };
+        return hit;
+    } else {
+        return IntersectionHelper::miss;
+    }
+}
+
 bool Scene::testOcclusion(const Ray &ray, float maxT) const
 {
     RTCRay rtcRay;

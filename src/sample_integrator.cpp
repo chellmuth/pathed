@@ -30,6 +30,17 @@ void SampleIntegrator::samplePixel(
             }
 
             sample.contributions.push_back({color, 1.f});
+
+
+            if (intersection.material->isContainer()) {
+                Intersection volumetricIntersection = scene.testVolumetricIntersect(ray);
+                if (volumetricIntersection.hit) {
+                    // todo: build a scene that has this and implement
+                    assert(!intersection.material->emit());
+                } else {
+                    color += scene.environmentL(ray.direction());
+                }
+            }
         }
 
         color += L(intersection, scene, random, sample);

@@ -87,6 +87,7 @@ public:
     const std::vector<std::shared_ptr<Light>> &lights() const { return m_lights; }
 
     Intersection testIntersect(const Ray &ray) const;
+    Intersection testVolumetricIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 

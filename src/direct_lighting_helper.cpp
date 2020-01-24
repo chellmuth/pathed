@@ -41,6 +41,8 @@ Color DirectLightingHelper::Ld(
     RandomGenerator &random,
     Sample &sample
 ) {
+    if (bsdfSample.material->isContainer()) { return Color(0.f); }
+
     Color emit = intersection.material->emit();
     if (!emit.isBlack()) {
         // part of my old logic - if you hit an emitter, don't do direct lighting?
@@ -136,7 +138,7 @@ static Color directSampleLights(
 
     const float pdf = lightSample.solidAnglePDF(intersection.point);
     const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-    const float lightWeight = MIS::balanceWeight(1, 0, pdf, brdfPDF);
+    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
 
     const Vector3 lightWo = -lightDirection.normalized();
 
@@ -158,10 +160,8 @@ static Color directSampleBSDF(
     RandomGenerator &random,
     Sample &sample
 ) {
-    return Color(0.f);
-
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
-    const Intersection bounceIntersection = scene.testIntersect(bounceRay);
+    const Intersection bounceIntersection = scene.testVolumetricIntersect(bounceRay);
 
     if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();
