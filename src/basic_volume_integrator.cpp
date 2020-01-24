@@ -39,9 +39,14 @@ Color BasicVolumeIntegrator::L(
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         state.bounce = bounce;
 
+        const Point3 lastPoint = state.interaction.isSurface
+            ? state.lastIntersection.point
+            : state.interaction.point
+        ;
+
         Ray bounceRay = state.interaction.isSurface
-            ? Ray(state.lastIntersection.point, state.bsdfSample.wiWorld)
-            : Ray(state.interaction.point, state.interaction.wiWorld)
+            ? Ray(lastPoint, state.bsdfSample.wiWorld)
+            : Ray(lastPoint, state.interaction.wiWorld)
         ;
 
         Intersection bounceIntersection = scene.testIntersect(bounceRay);
@@ -68,7 +73,7 @@ Color BasicVolumeIntegrator::L(
 
             integrationResult = scatter(
                 state.mediumPtr,
-                state.lastIntersection.point,
+                lastPoint,
                 bounceIntersection.point,
                 scene,
                 random
@@ -77,7 +82,7 @@ Color BasicVolumeIntegrator::L(
         } else {
             integrationResult = scatter(
                 state.mediumPtr,
-                state.interaction.point,
+                lastPoint,
                 bounceIntersection.point,
                 scene,
                 random
