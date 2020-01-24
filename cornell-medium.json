@@ -1,0 +1,34 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "1", "6.8" ],
+      "target": [ "0", "1", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "19.5"
+  },
+
+  "media": [
+    {
+      "name": "gas",
+      "type": "homogeneous",
+      "sigma_t": [ "100.0", "100.0", "100.0" ],
+      "sigma_s": [ "0.0", "0.0", "0.0" ]
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/cornell-volume-caustic/bounds.obj",
+      "internal_medium": "gas",
+      "bsdf": {
+        "type": "passthrough"
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/cornell-volume-caustic/CornellBox-Frame.obj"
+    }
+  ]
+}
