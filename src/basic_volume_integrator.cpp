@@ -48,17 +48,17 @@ Color BasicVolumeIntegrator::L(
         if (!bounceIntersection.hit) { break; }
 
         if (state.interaction.isSurface) {
-            const float invPDF = 1.f / bsdfSample.pdf;
+            const float invPDF = 1.f / state.bsdfSample.pdf;
 
             const Vector3 shadingNormal = state.lastIntersection.shadingNormal;
-            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
+            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, state.bsdfSample.wiWorld);
 
-            modulation *= bsdfSample.throughput
+            state.modulation *= state.bsdfSample.throughput
                 * cosTheta
                 * invPDF;
         }
 
-        if (modulation.isBlack()) { break; }
+        if (state.modulation.isBlack()) { break; }
 
         state.mediumPtr = updateMediumPtr(state);
 
