@@ -33,7 +33,7 @@ Color BasicVolumeIntegrator::L(
     Color modulation = Color(1.f);
     Intersection lastIntersection = intersection;
 
-    Interaction fakeInteraction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f)});
+    Interaction fakeInteraction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f), Vector3(0.f) });
     LoopState state({1, lastIntersection, modulation, mediumPtr, result, bsdfSample, fakeInteraction});
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
@@ -55,18 +55,11 @@ bool BasicVolumeIntegrator::processScatter(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    int bounce = state.bounce;
     Interaction &interaction = state.interaction;
     Color &modulation = state.modulation;
     std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-    Color &result = state.result;
-    BSDFSample &bsdfSample = state.bsdfSample;
 
-    const Phase phaseFunction;
-    const Vector3 woWorld = interaction.woWorld;
-    const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
-
-    Ray bounceRay(interaction.point, wiWorld);
+    Ray bounceRay(interaction.point, interaction.wiWorld);
 
     Intersection bounceIntersection = scene.testIntersect(bounceRay);
     if (!bounceIntersection.hit) { return false; }
@@ -207,10 +200,15 @@ bool BasicVolumeIntegrator::finishIt(
         const Color Ld = integrationResult.Ld;
         result += Ld * modulation;
 
+        const Phase phaseFunction;
+        const Vector3 woWorld = bounceIntersection.woWorld;
+        const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
+
         Interaction scatterInteraction({
             false,
             integrationResult.scatterPoint,
-            -bounceRay.direction()
+            woWorld,
+            wiWorld
         });
 
         state.interaction = scatterInteraction;

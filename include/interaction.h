@@ -9,4 +9,5 @@ struct Interaction {
 
     Point3 point;
     Vector3 woWorld;
+    Vector3 wiWorld;
 };
