@@ -39,10 +39,15 @@ Color BasicVolumeIntegrator::L(
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         state.bounce = bounce;
 
+        Ray bounceRay = state.interaction.isSurface
+            ? Ray(state.lastIntersection.point, state.bsdfSample.wiWorld)
+            : Ray(state.interaction.point, state.interaction.wiWorld)
+        ;
+
         if (!state.interaction.isSurface) {
-            if (!processScatter(state, scene, random, sample)) { break; }
+            if (!processScatter(state, bounceRay, scene, random, sample)) { break; }
         } else {
-            if (!processBounce(state, scene, random, sample)) { break; }
+            if (!processBounce(state, bounceRay, scene, random, sample)) { break; }
         }
     }
 
@@ -51,6 +56,7 @@ Color BasicVolumeIntegrator::L(
 
 bool BasicVolumeIntegrator::processScatter(
     LoopState &state,
+    const Ray &bounceRay,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -58,8 +64,6 @@ bool BasicVolumeIntegrator::processScatter(
     Interaction &interaction = state.interaction;
     Color &modulation = state.modulation;
     std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-
-    Ray bounceRay(interaction.point, interaction.wiWorld);
 
     Intersection bounceIntersection = scene.testIntersect(bounceRay);
     if (!bounceIntersection.hit) { return false; }
@@ -91,6 +95,7 @@ bool BasicVolumeIntegrator::processScatter(
 
 bool BasicVolumeIntegrator::processBounce(
     LoopState &state,
+    const Ray &bounceRay,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -101,8 +106,6 @@ bool BasicVolumeIntegrator::processBounce(
     std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
     Color &result = state.result;
     BSDFSample &bsdfSample = state.bsdfSample;
-
-    Ray bounceRay(lastIntersection.point, bsdfSample.wiWorld);
 
     const Point3 point = lastIntersection.point;
     const Vector3 woWorld = lastIntersection.woWorld;
