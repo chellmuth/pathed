@@ -58,21 +58,9 @@ Color BasicVolumeIntegrator::L(
                 * invPDF;
         }
 
-        if (modulation.isBlack()) {
-            break;
-        }
+        if (modulation.isBlack()) { break; }
 
-        if (state.interaction.isSurface) {
-            // Refraction, medium changes
-            if (state.lastIntersection.woWorld.dot(state.bsdfSample.wiWorld) < 0.f) {
-                // Internal, entering medium
-                if (state.lastIntersection.normal.dot(state.bsdfSample.wiWorld) < 0.f) {
-                    state.mediumPtr = state.lastIntersection.surface->getInternalMedium();
-                } else { // External, exiting medium
-                    state.mediumPtr = nullptr;
-                }
-            } // else Reflection, medium does not change
-        }
+        state.mediumPtr = updateMediumPtr(state);
 
         if (state.interaction.isSurface) {
             sample.eyePoints.push_back(bounceIntersection.point);
@@ -115,6 +103,21 @@ Color BasicVolumeIntegrator::L(
     }
 
     return state.result;
+}
+
+std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(LoopState &state) const {
+    if (state.interaction.isSurface) {
+        // Refraction, medium changes
+        if (state.lastIntersection.woWorld.dot(state.bsdfSample.wiWorld) < 0.f) {
+            // Internal, entering medium
+            if (state.lastIntersection.normal.dot(state.bsdfSample.wiWorld) < 0.f) {
+                return state.lastIntersection.surface->getInternalMedium();
+            } else { // External, exiting medium
+                return nullptr;
+            }
+        } // else Reflection, medium does not change
+    }
+    return state.mediumPtr;
 }
 
 Color BasicVolumeIntegrator::transmittance(

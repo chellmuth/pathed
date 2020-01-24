@@ -37,6 +37,8 @@ public:
     ) const override;
 
 private:
+    std::shared_ptr<Medium> updateMediumPtr(LoopState &state) const;
+
     Color transmittance(
         const std::shared_ptr<Medium> &mediumPtr,
         const Point3 &source,
