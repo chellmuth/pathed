@@ -44,12 +44,12 @@ Color BasicVolumeIntegrator::L(
             : state.interaction.point
         ;
 
-        Ray bounceRay = state.interaction.isSurface
+        const Ray bounceRay = state.interaction.isSurface
             ? Ray(lastPoint, state.bsdfSample.wiWorld)
             : Ray(lastPoint, state.interaction.wiWorld)
         ;
 
-        Intersection bounceIntersection = scene.testIntersect(bounceRay);
+        const Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
         if (state.interaction.isSurface) {
@@ -67,27 +67,15 @@ Color BasicVolumeIntegrator::L(
 
         state.mediumPtr = updateMediumPtr(state);
 
-        IntegrationResult integrationResult = IntegrationHelper::noScatter();
-        if (state.interaction.isSurface) {
-            sample.eyePoints.push_back(bounceIntersection.point);
+        sample.eyePoints.push_back(bounceIntersection.point);
 
-            integrationResult = scatter(
-                state.mediumPtr,
-                lastPoint,
-                bounceIntersection.point,
-                scene,
-                random
-            );
-
-        } else {
-            integrationResult = scatter(
-                state.mediumPtr,
-                lastPoint,
-                bounceIntersection.point,
-                scene,
-                random
-            );
-        }
+        const IntegrationResult integrationResult = scatter(
+            state.mediumPtr,
+            lastPoint,
+            bounceIntersection.point,
+            scene,
+            random
+        );
 
         finishIt(
             state,
