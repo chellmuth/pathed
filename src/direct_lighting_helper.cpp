@@ -11,6 +11,7 @@
 #include "scene.h"
 #include "world_frame.h"
 #include "vector.h"
+#include "volume_helper.h"
 
 #include <assert.h>
 #include <vector>
@@ -112,29 +113,11 @@ static Color directSampleLights(
         return Color(0.f);
     }
 
-    Color transmittance(1.f);
-
-    const std::vector<VolumeEvent> &volumeEvents = occlusionResult.volumeEvents;
-    const size_t eventCount = volumeEvents.size();
-    if (eventCount > 0) {
-        if (mediumPtr) {
-            assert(eventCount == 1);
-
-            const Point3 enterPoint = intersection.point;
-            const Point3 exitPoint = shadowRay.at(volumeEvents[0].t);
-
-            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
-        } else {
-            assert(eventCount == 2);
-
-            const std::shared_ptr<Medium> mediumPtr = volumeEvents[0].mediumPtr;
-
-            const Point3 enterPoint = shadowRay.at(volumeEvents[0].t);
-            const Point3 exitPoint = shadowRay.at(volumeEvents[1].t);
-
-            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
-        }
-    }
+    const Color transmittance = VolumeHelper::rayTransmission(
+        shadowRay,
+        occlusionResult.volumeEvents,
+        mediumPtr
+    );
 
     const float pdf = lightSample.solidAnglePDF(intersection.point);
     const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);

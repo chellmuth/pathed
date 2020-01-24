@@ -54,3 +54,34 @@ Color VolumeHelper::directSampleLights(
             / pdf;
     }
 }
+
+Color VolumeHelper::rayTransmission(
+    const Ray &ray,
+    const std::vector<VolumeEvent> &volumeEvents,
+    const std::shared_ptr<Medium> &mediumPtr
+) {
+    Color transmittance(1.f);
+
+    const size_t eventCount = volumeEvents.size();
+    if (eventCount > 0) {
+        if (mediumPtr) {
+            assert(eventCount == 1);
+
+            const Point3 enterPoint = ray.origin();
+            const Point3 exitPoint = ray.at(volumeEvents[0].t);
+
+            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+        } else {
+            assert(eventCount == 2);
+
+            const std::shared_ptr<Medium> mediumPtr = volumeEvents[0].mediumPtr;
+
+            const Point3 enterPoint = ray.at(volumeEvents[0].t);
+            const Point3 exitPoint = ray.at(volumeEvents[1].t);
+
+            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+        }
+    }
+
+    return transmittance;
+}
