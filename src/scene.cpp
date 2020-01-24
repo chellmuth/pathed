@@ -13,12 +13,14 @@
 #include <cmath>
 #include <limits>
 
-static int secretValue = 28;
-
-void Scene::InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const
+void Scene::InitCustomRTCIntersectContext(
+    CustomRTCIntersectContext *contextPtr,
+    bool shouldIntersectPassthroughs
+) const
 {
     rtcInitIntersectContext(&contextPtr->context);
     contextPtr->surfacesPtr = &m_surfaces;
+    contextPtr->shouldIntersectPassthroughs = shouldIntersectPassthroughs;
 }
 
 Scene::Scene(
@@ -42,6 +44,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
     if (args->context == nullptr) { return; }
 
     CustomRTCIntersectContext *context = (CustomRTCIntersectContext *)args->context;
+    if (context->shouldIntersectPassthroughs) { return; }
 
     RTCHit *hit = (RTCHit *)args->hit;
     if (hit == nullptr) { return; }
@@ -69,6 +72,12 @@ void Scene::registerOcclusionFilters() const
 {
     for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
         RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
+
+        rtcSetGeometryIntersectFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
+
         rtcSetGeometryOccludedFilterFunction(
             rtcGeometry,
             occlusionFilter
@@ -100,12 +109,12 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context, true);
 
     rtcIntersect1(
         g_rtcScene,
-        &context,
+        &context.context,
         &rayHit
     );
 
@@ -200,7 +209,7 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
     rtcRay.flags = 0;
 
     CustomRTCIntersectContext context;
-    InitCustomRTCIntersectContext(&context);
+    InitCustomRTCIntersectContext(&context, false);
 
     rtcOccluded1(
         g_rtcScene,
@@ -228,7 +237,7 @@ OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
     rtcRay.flags = 0;
 
     CustomRTCIntersectContext context;
-    InitCustomRTCIntersectContext(&context);
+    InitCustomRTCIntersectContext(&context, false);
 
     rtcOccluded1(
         g_rtcScene,

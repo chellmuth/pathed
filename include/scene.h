@@ -33,6 +33,7 @@ struct OcclusionResult {
 
 struct CustomRTCIntersectContext {
     RTCIntersectContext context;
+    bool shouldIntersectPassthroughs;
     const NestedSurfaceVector *surfacesPtr;
     std::vector<VolumeEvent> volumeEvents;
 };
@@ -108,7 +109,10 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    void InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const;
+    void InitCustomRTCIntersectContext(
+        CustomRTCIntersectContext *contextPtr,
+        bool shouldIntersectPassthroughs
+    ) const;
     void registerOcclusionFilters() const;
 
     NestedSurfaceVector m_surfaces;
