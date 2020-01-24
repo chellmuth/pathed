@@ -18,20 +18,13 @@ Color BasicVolumeIntegrator::L(
     RandomGenerator &random,
     Sample &sample
 ) const {
+    Color result(0.f);
+    Color modulation = Color(1.f);
     std::shared_ptr<Medium> mediumPtr(nullptr);
 
     sample.eyePoints.push_back(intersection.point);
 
     const BSDFSample bsdfSample = intersection.material->sample(intersection, random);
-
-    Color result(0.f);
-    if (m_bounceController.checkCounts(1)) {
-        result = DirectLightingHelper::Ld(intersection, mediumPtr, bsdfSample, scene, random, sample);
-        sample.contributions.push_back({result, 1.f});
-    }
-
-    Color modulation = Color(1.f);
-
     Interaction interaction({
         true,
         intersection,
@@ -39,12 +32,21 @@ Color BasicVolumeIntegrator::L(
         InteractionHelper::nullScatter()
     });
 
+    if (m_bounceController.checkCounts(1)) {
+        result = DirectLightingHelper::Ld(intersection, mediumPtr, bsdfSample, scene, random, sample);
+        sample.contributions.push_back({result, 1.f});
+    }
+
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
+        // We have already calculated direct light on interaction.point() with NEE
+
+        // Intersect the next ray
         const Ray bounceRay(interaction.point(), interaction.wiWorld());
 
         const Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
 
+        // If we came from a surface, update the modulation
         if (interaction.isSurface) {
             const float invPDF = 1.f / interaction.bsdfSample.pdf;
 
@@ -58,10 +60,13 @@ Color BasicVolumeIntegrator::L(
 
         if (modulation.isBlack()) { break; }
 
+        // Update the current medium
         mediumPtr = updateMediumPtr(mediumPtr, interaction);
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
+        // Integrate any volumes,
+        // possibly overriding the bounce point with a scatter point
         const IntegrationResult integrationResult = scatter(
             mediumPtr,
             interaction.point(),
@@ -73,6 +78,7 @@ Color BasicVolumeIntegrator::L(
         if (integrationResult.shouldScatter) {
             modulation *= integrationResult.weight;
 
+            // Direct light on the scatter point
             const Color Ld = integrationResult.Ld;
             result += Ld * modulation;
 
@@ -89,6 +95,7 @@ Color BasicVolumeIntegrator::L(
             interaction.isSurface = false;
             interaction.scatterEvent = scatterEvent;
         } else {
+            // Grab the future bsdf ray to use in MIS direct light sampling
             interaction.bsdfSample = bounceIntersection.material->sample(
                 bounceIntersection, random
             );
@@ -96,6 +103,7 @@ Color BasicVolumeIntegrator::L(
             if (m_bounceController.checkCounts(bounce)) {
                 const Color previous = result;
 
+                // Direct light on the bounce point
                 Color Ld = DirectLightingHelper::Ld(
                     bounceIntersection,
                     mediumPtr,
