@@ -62,11 +62,11 @@ Color BasicVolumeIntegrator::L(
 
         state.mediumPtr = updateMediumPtr(state);
 
+        IntegrationResult integrationResult = IntegrationHelper::noScatter();
         if (state.interaction.isSurface) {
             sample.eyePoints.push_back(bounceIntersection.point);
 
-            // if volume, integrate!
-            const IntegrationResult integrationResult = scatter(
+            integrationResult = scatter(
                 state.mediumPtr,
                 state.lastIntersection.point,
                 bounceIntersection.point,
@@ -74,32 +74,24 @@ Color BasicVolumeIntegrator::L(
                 random
             );
 
-            finishIt(
-                state,
-                integrationResult,
-                bounceIntersection,
-                scene,
-                random,
-                sample
-            );
         } else {
-            const IntegrationResult integrationResult = scatter(
+            integrationResult = scatter(
                 state.mediumPtr,
                 state.interaction.point,
                 bounceIntersection.point,
                 scene,
                 random
             );
-
-            finishIt(
-                state,
-                integrationResult,
-                bounceIntersection,
-                scene,
-                random,
-                sample
-            );
         }
+
+        finishIt(
+            state,
+            integrationResult,
+            bounceIntersection,
+            scene,
+            random,
+            sample
+       );
     }
 
     return state.result;
