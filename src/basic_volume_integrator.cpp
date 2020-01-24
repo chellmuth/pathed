@@ -44,10 +44,12 @@ Color BasicVolumeIntegrator::L(
             : state.interaction.point
         ;
 
-        const Ray bounceRay = state.interaction.isSurface
-            ? Ray(lastPoint, state.bsdfSample.wiWorld)
-            : Ray(lastPoint, state.interaction.wiWorld)
+        const Vector3 lastDirection = state.interaction.isSurface
+            ? state.bsdfSample.wiWorld
+            : state.interaction.wiWorld
         ;
+
+        const Ray bounceRay(lastPoint, lastDirection);
 
         const Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
