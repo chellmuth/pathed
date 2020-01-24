@@ -46,8 +46,9 @@ IntegrationResult HomogeneousMedium::integrate(
     const float distance = travelVector.length();
 
     const float xi = random.next();
-    const float numerator = -std::log(1.f - xi * (1.f - std::exp(-sigmaT * distance)));
-    const float sampleT = numerator / sigmaT;
+    const float sampleT = -std::log(1 - xi) / sigmaT;
+
+    if (sampleT >= distance) { return IntegrationHelper::noScatter(); }
 
     const Ray travelRay(entryPointWorld, travelVector.normalized());
     const Point3 samplePoint = travelRay.at(sampleT);
@@ -55,7 +56,11 @@ IntegrationResult HomogeneousMedium::integrate(
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
     const Color directTransmittance = transmittance(entryPointWorld, samplePoint);
 
-    // todo: this will always scatter
-    return IntegrationHelper::noScatter();
-    // return Ld * directTransmittance * sigmaS(samplePoint);
+    return IntegrationResult({
+        true,
+        samplePoint,
+        directTransmittance,
+        Ld,
+        m_sigmaS / m_sigmaT
+    });
 }

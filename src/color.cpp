@@ -74,6 +74,17 @@ Color& Color::operator*= (const Color &c)
     return *this;
 }
 
+Color Color::operator/ (const Color c) const
+{
+    assert(!c.isBlack());
+
+    return Color(
+        m_r / c.r(),
+        m_g / c.g(),
+        m_b / c.b()
+    );
+}
+
 Color Color::operator/ (const float t) const
 {
     assert(t != 0.f);
