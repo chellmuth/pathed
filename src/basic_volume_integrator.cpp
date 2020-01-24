@@ -84,6 +84,33 @@ bool BasicVolumeIntegrator::processScatter(
         scene,
         random
     );
+
+    return finishIt(
+        state,
+        integrationResult,
+        bounceIntersection,
+        bounceRay,
+        scene,
+        random,
+        sample
+    );
+}
+
+bool BasicVolumeIntegrator::finishIt(
+    LoopState &state,
+    const IntegrationResult &integrationResult,
+    const Intersection &bounceIntersection,
+    const Ray &bounceRay,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    int bounce = state.bounce;
+    Color &modulation = state.modulation;
+    BSDFSample &bsdfSample = state.bsdfSample;
+    std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
+    Color &result = state.result;
+
     if (integrationResult.shouldScatter) {
         modulation *= integrationResult.weight;
 
@@ -186,51 +213,16 @@ bool BasicVolumeIntegrator::processBounce(
         scene,
         random
     );
-    if (integrationResult.shouldScatter) {
-        modulation *= integrationResult.weight;
 
-        const Color Ld = integrationResult.Ld;
-        result += Ld * modulation;
-
-        Interaction scatterInteraction({
-            false,
-            integrationResult.scatterPoint,
-            -bounceRay.direction()
-        });
-
-        state.interaction = scatterInteraction;
-        return true;
-    } else {
-        // modulation *= transmittance(
-        //     mediumPtr,
-        //     point,
-        //     bounceIntersection.point
-        // );
-    }
-
-    bsdfSample = bounceIntersection.material->sample(
-        bounceIntersection, random
+    return finishIt(
+        state,
+        integrationResult,
+        bounceIntersection,
+        bounceRay,
+        scene,
+        random,
+        sample
     );
-
-    lastIntersection = bounceIntersection;
-
-    if (m_bounceController.checkCounts(bounce)) {
-        const Color previous = result;
-
-        Color Ld = DirectLightingHelper::Ld(
-            bounceIntersection,
-            mediumPtr,
-            bsdfSample,
-            scene,
-            random,
-            sample
-        );
-        result += Ld * modulation;
-
-        sample.contributions.push_back({result - previous, invPDF});
-    }
-
-    return true;
 }
 
 Color BasicVolumeIntegrator::transmittance(
