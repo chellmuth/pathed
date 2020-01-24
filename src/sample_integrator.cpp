@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "globals.h"
 #include "job.h"
+#include "volume_helper.h"
 
 #include "omp.h"
 
@@ -38,7 +39,12 @@ void SampleIntegrator::samplePixel(
                     // todo: build a scene that has this and implement
                     assert(!volumetricIntersection.material->emit());
                 } else {
-                    color += scene.environmentL(ray.direction());
+                    Color transmittance = VolumeHelper::rayTransmission(
+                        ray,
+                        volumetricResult.volumeEvents,
+                        nullptr
+                    );
+                    color += scene.environmentL(ray.direction()) * transmittance;
                 }
             }
         }

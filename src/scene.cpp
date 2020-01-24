@@ -302,7 +302,10 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
             context.volumeEvents
         });
     } else {
-        return IntersectionResult({IntersectionHelper::miss});
+        return IntersectionResult({
+            IntersectionHelper::miss,
+            context.volumeEvents
+        });
     }
 }
 
