@@ -44,10 +44,28 @@ Color BasicVolumeIntegrator::L(
             : Ray(state.interaction.point, state.interaction.wiWorld)
         ;
 
+        Intersection bounceIntersection = scene.testIntersect(bounceRay);
+        if (!bounceIntersection.hit) { break; }
+
+        if (state.interaction.isSurface) {
+            const float invPDF = 1.f / bsdfSample.pdf;
+
+            const Vector3 shadingNormal = state.lastIntersection.shadingNormal;
+            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
+
+            modulation *= bsdfSample.throughput
+                * cosTheta
+                * invPDF;
+        }
+
+        if (modulation.isBlack()) {
+            break;
+        }
+
         if (!state.interaction.isSurface) {
-            if (!processScatter(state, bounceRay, scene, random, sample)) { break; }
+            if (!processScatter(state, bounceIntersection, scene, random, sample)) { break; }
         } else {
-            if (!processBounce(state, bounceRay, scene, random, sample)) { break; }
+            if (!processBounce(state, bounceIntersection, scene, random, sample)) { break; }
         }
     }
 
@@ -56,7 +74,7 @@ Color BasicVolumeIntegrator::L(
 
 bool BasicVolumeIntegrator::processScatter(
     LoopState &state,
-    const Ray &bounceRay,
+    const Intersection &bounceIntersection,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -64,15 +82,6 @@ bool BasicVolumeIntegrator::processScatter(
     Interaction &interaction = state.interaction;
     Color &modulation = state.modulation;
     std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
-
-    Intersection bounceIntersection = scene.testIntersect(bounceRay);
-    if (!bounceIntersection.hit) { return false; }
-
-    // modulation unchanged: f_p / pdf = 1, and no cos term
-
-    if (modulation.isBlack()) {
-        return false;
-    }
 
     const IntegrationResult integrationResult = scatter(
         mediumPtr,
@@ -86,7 +95,6 @@ bool BasicVolumeIntegrator::processScatter(
         state,
         integrationResult,
         bounceIntersection,
-        bounceRay,
         scene,
         random,
         sample
@@ -95,7 +103,7 @@ bool BasicVolumeIntegrator::processScatter(
 
 bool BasicVolumeIntegrator::processBounce(
     LoopState &state,
-    const Ray &bounceRay,
+    const Intersection &bounceIntersection,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
@@ -123,21 +131,7 @@ bool BasicVolumeIntegrator::processBounce(
         }
     } // else Reflection, medium does not change
 
-    Intersection bounceIntersection = scene.testIntersect(bounceRay);
-    if (!bounceIntersection.hit) { return false; }
-
     sample.eyePoints.push_back(bounceIntersection.point);
-
-    const float invPDF = 1.f / bsdfSample.pdf;
-    const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
-
-    modulation *= bsdfSample.throughput
-        * cosTheta
-        * invPDF;
-
-    if (modulation.isBlack()) {
-        return false;
-    }
 
     // if volume, integrate!
     const IntegrationResult integrationResult = scatter(
@@ -152,7 +146,6 @@ bool BasicVolumeIntegrator::processBounce(
         state,
         integrationResult,
         bounceIntersection,
-        bounceRay,
         scene,
         random,
         sample
@@ -186,7 +179,6 @@ bool BasicVolumeIntegrator::finishIt(
     LoopState &state,
     const IntegrationResult &integrationResult,
     const Intersection &bounceIntersection,
-    const Ray &bounceRay,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample

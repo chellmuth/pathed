@@ -39,7 +39,7 @@ public:
 private:
     bool processBounce(
         LoopState &loopState,
-        const Ray &bounceRay,
+        const Intersection &bounceIntersection,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample
@@ -47,7 +47,7 @@ private:
 
     bool processScatter(
         LoopState &state,
-        const Ray &bounceRay,
+        const Intersection &bounceIntersection,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample
@@ -71,7 +71,6 @@ private:
         LoopState &state,
         const IntegrationResult &integrationResult,
         const Intersection &bounceIntersection,
-        const Ray &bounceRay,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample
