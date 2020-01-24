@@ -10,7 +10,17 @@ std::ostream &operator<<(std::ostream &os, const GridCell &gridCell)
     return os << "[GridCell: "
               << "x=" << gridCell.x << " "
               << "y=" << gridCell.y << " "
-              << "z=" << gridCell.z << "]" << std::endl;
+              << "z=" << gridCell.z << "]";
+}
+
+std::ostream &operator<<(std::ostream &os, const RegularTrackerStepResult &stepResult)
+{
+    return os << "[RegularTrackerStepResult: "
+              << "isValidStep=" << stepResult.isValidStep << " "
+              << "gridCell=" << stepResult.cell << " "
+              << "cellTime=" << stepResult.cellTime << " "
+              << "enterTime=" << stepResult.enterTime << " "
+              << "currentTime=" << stepResult.currentTime << "]";
 }
 
 static Point3 gridToWorld(const GridInfo &gridInfo, const Point3 &gridPoint)

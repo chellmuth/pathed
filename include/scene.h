@@ -26,6 +26,11 @@ struct VolumeEvent {
     std::shared_ptr<Medium> mediumPtr;
 };
 
+struct IntersectionResult {
+    Intersection intersection;
+    std::vector<VolumeEvent> volumeEvents;
+};
+
 struct OcclusionResult {
     bool isOccluded;
     std::vector<VolumeEvent> volumeEvents;
@@ -33,6 +38,7 @@ struct OcclusionResult {
 
 struct CustomRTCIntersectContext {
     RTCIntersectContext context;
+    bool shouldIntersectPassthroughs;
     const NestedSurfaceVector *surfacesPtr;
     std::vector<VolumeEvent> volumeEvents;
 };
@@ -86,6 +92,7 @@ public:
     const std::vector<std::shared_ptr<Light>> &lights() const { return m_lights; }
 
     Intersection testIntersect(const Ray &ray) const;
+    IntersectionResult testVolumetricIntersect(const Ray &ray) const;
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
@@ -108,7 +115,10 @@ public:
     float environmentPDF(const Vector3 &direction) const;
 
 private:
-    void InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const;
+    void InitCustomRTCIntersectContext(
+        CustomRTCIntersectContext *contextPtr,
+        bool shouldIntersectPassthroughs
+    ) const;
     void registerOcclusionFilters() const;
 
     NestedSurfaceVector m_surfaces;

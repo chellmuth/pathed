@@ -3,6 +3,7 @@
 #include "color.h"
 #include "point.h"
 #include "random_generator.h"
+#include "transform.h"
 
 class Scene;
 
@@ -10,6 +11,22 @@ struct TransmittanceQueryResult {
     bool isValid;
     float distance;
 };
+
+struct IntegrationResult {
+    bool shouldScatter;
+    Point3 scatterPoint;
+    Color transmittance;
+    Color Ld;
+    Color weight;
+};
+
+namespace IntegrationHelper {
+    inline IntegrationResult noScatter() {
+        return IntegrationResult({
+            false, Point3(0.f, 0.f, 0.f), Color(0.f), Color(0.f), Color(0.f)
+        });
+    }
+}
 
 class Medium {
 public:
@@ -23,7 +40,7 @@ public:
     virtual float sigmaT(const Point3 &worldPoint) const = 0;
     virtual float sigmaS(const Point3 &worldPoint) const = 0;
 
-    virtual Color integrate(
+    virtual IntegrationResult integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
         const Scene &scene,

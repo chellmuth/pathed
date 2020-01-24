@@ -57,7 +57,7 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(
-        direction,
+        -direction,
         &phi, &theta
     );
 
@@ -127,7 +127,7 @@ float EnvironmentLight::emitPDF(const Vector3 &direction) const
 
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
 {
-    Vector3 direction = (lightSample.point - surfacePoint).toVector();
+    Vector3 lightWo = (surfacePoint - lightSample.point).toVector();
 
-    return emit(direction.normalized());
+    return emit(lightWo.normalized());
 }

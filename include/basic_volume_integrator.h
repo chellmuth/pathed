@@ -4,11 +4,14 @@
 #include "interaction.h"
 #include "intersection.h"
 #include "material.h"
+#include "medium.h"
 #include "point.h"
 #include "ray.h"
 #include "random_generator.h"
 #include "sample_integrator.h"
 #include "scene.h"
+
+#include <memory>
 
 class BasicVolumeIntegrator : public SampleIntegrator {
 public:
@@ -24,38 +27,23 @@ public:
     ) const override;
 
 private:
-    Color L(
-        const Point3 &point,
-        const Vector3 &direction,
-        const Scene &scene,
-        RandomGenerator &random
+    std::shared_ptr<Medium> updateMediumPtr(
+        const std::shared_ptr<Medium> mediumPtr,
+        const Interaction &interaction
     ) const;
-
-    Interaction sampleInteraction2(
-        const Point3 &sourcePoint,
-        const Intersection &targetIntersection,
-        const Ray &ray,
-        const Scene &scene,
-        RandomGenerator &random
-    ) const;
-
-    Interaction sampleInteraction(
-        const Intersection &sourceIntersection,
-        const Intersection &targetIntersection,
-        const Ray &ray,
-        RandomGenerator &random
-    ) const;
-
-    Color directSampleLights(
-        const Interaction &interaction,
-        const Scene &scene,
-        RandomGenerator &random
-    ) const;
-
 
     Color transmittance(
-        const Intersection &sourceIntersection,
-        const Intersection &targetIntersection
+        const std::shared_ptr<Medium> &mediumPtr,
+        const Point3 &source,
+        const Point3 &target
+    ) const;
+
+    IntegrationResult scatter(
+        const std::shared_ptr<Medium> &mediumPtr,
+        const Point3 &source,
+        const Point3 &target,
+        const Scene &scene,
+        RandomGenerator &random
     ) const;
 
     BounceController m_bounceController;

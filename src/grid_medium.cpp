@@ -14,6 +14,7 @@ static const bool DEBUG = false;
 GridMedium::GridMedium(
     const GridInfo &gridInfo,
     const std::vector<float> &gridData,
+    const Transform &worldToModel,
     float albedo,
     float scale
 ) : m_gridInfo(gridInfo),
@@ -23,6 +24,7 @@ GridMedium::GridMedium(
         gridInfo.cellsZ,
         gridData
     ),
+    m_worldToModel(worldToModel),
     m_albedo(albedo),
     m_scale(scale)
 {
@@ -31,10 +33,22 @@ GridMedium::GridMedium(
     m_widthZ = m_gridInfo.widthZ();
 }
 
+float GridMedium::sigmaT(const Point3 &point, GridFrame frame) const
+{
+    Point3 gridPoint(0.f, 0.f, 0.f);
+
+    switch (frame) {
+    case GridFrame::World: { gridPoint = worldToGrid(point); break; }
+    case GridFrame::Model: { gridPoint = modelToGrid(point); break; }
+    case GridFrame::Grid: { gridPoint = point; break; }
+    }
+
+    return m_grid.interpolate(gridPoint) * m_scale;
+}
+
 float GridMedium::sigmaT(const Point3 &worldPoint) const
 {
-    const Point3 gridPoint = worldToGrid(worldPoint);
-    return m_grid.interpolate(gridPoint) * m_scale;
+    return sigmaT(worldPoint, GridFrame::World);
 }
 
 float GridMedium::sigmaS(const Point3 &worldPoint) const
@@ -45,11 +59,27 @@ float GridMedium::sigmaS(const Point3 &worldPoint) const
 
 Point3 GridMedium::worldToGrid(const Point3 &worldPoint) const
 {
+    const Point3 modelPoint = worldToModel(worldPoint);
+    return modelToGrid(modelPoint);
+}
+
+Point3 GridMedium::modelToGrid(const Point3 &modelPoint) const
+{
     return Point3(
-        ((worldPoint.x() - m_gridInfo.minX) / m_widthX) * (m_gridInfo.cellsX - 1),
-        ((worldPoint.y() - m_gridInfo.minY) / m_widthY) * (m_gridInfo.cellsY - 1),
-        ((worldPoint.z() - m_gridInfo.minZ) / m_widthZ) * (m_gridInfo.cellsZ - 1)
+        ((modelPoint.x() - m_gridInfo.minX) / m_widthX) * (m_gridInfo.cellsX - 1),
+        ((modelPoint.y() - m_gridInfo.minY) / m_widthY) * (m_gridInfo.cellsY - 1),
+        ((modelPoint.z() - m_gridInfo.minZ) / m_widthZ) * (m_gridInfo.cellsZ - 1)
     );
+}
+
+Point3 GridMedium::modelToWorld(const Point3 &worldPoint) const
+{
+    return m_worldToModel.applyInverse(worldPoint);
+}
+
+Point3 GridMedium::worldToModel(const Point3 &worldPoint) const
+{
+    return m_worldToModel.apply(worldPoint);
 }
 
 Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exitPointWorld) const
@@ -58,11 +88,11 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
         m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
-    AABBHit hit = aabb.intersect(entryPointWorld, exitPointWorld);
+    AABBHit hit = aabb.intersect(worldToModel(entryPointWorld), worldToModel(exitPointWorld));
     if (!hit.isHit) { return Color(1.f); }
 
-    const Point3 entryPoint = worldToGrid(hit.enterPoint);
-    const Point3 exitPoint = worldToGrid(hit.exitPoint);
+    const Point3 entryPoint = modelToGrid(hit.enterPoint);
+    const Point3 exitPoint = modelToGrid(hit.exitPoint);
 
     float accumulatedExponent = 0.f;
 
@@ -75,17 +105,14 @@ Color GridMedium::transmittance(const Point3 &entryPointWorld, const Point3 &exi
 
     auto stepResult = trackerState.step();
     while(stepResult.isValidStep) {
-        // const GridCell &currentCell = stepResult.cell;
-        // const float sigmaT = lookupSigmaT(currentCell.x, currentCell.y, currentCell.z);
-
         const float midpointTime = (stepResult.enterTime + stepResult.currentTime) / 2.f;
-        const Point3 midpointWorld = trackerRay.at(midpointTime);
-        const float midpointSigmaT = sigmaT(midpointWorld);
+        const Point3 midpointModel = trackerRay.at(midpointTime);
+        const float midpointSigmaT = sigmaT(midpointModel, GridFrame::Model);
 
         accumulatedExponent += midpointSigmaT * stepResult.cellTime;
 
         if (DEBUG) {
-            std::cout << "[transmittance] midpointWorld: " << midpointWorld.toString() << std::endl;
+            std::cout << "[transmittance] midpointModel: " << midpointModel.toString() << std::endl;
             std::cout << "[transmittance] cell time: " << stepResult.cellTime << " sigmaT: " << midpointSigmaT << std::endl;
         }
 
@@ -140,32 +167,35 @@ TransmittanceQueryResult GridMedium::findTransmittance(
     return TransmittanceQueryResult({ false, -1.f });
 }
 
-Color GridMedium::integrate(
+IntegrationResult GridMedium::integrate(
     const Point3 &entryPointWorld,
     const Point3 &exitPointWorld,
     const Scene &scene,
     RandomGenerator &random
 ) const
 {
-    const Vector3 travelVector = (exitPointWorld - entryPointWorld).toVector();
-    const Ray travelRay(entryPointWorld, travelVector.normalized());
+    const Point3 entryPointModel = worldToModel(entryPointWorld);
+    const Point3 exitPointModel = worldToModel(exitPointWorld);
+
+    const Vector3 travelVector = (exitPointModel - entryPointModel).toVector();
+    const Ray travelRay(entryPointModel, travelVector.normalized());
 
     AABB aabb(
         m_gridInfo.minX, m_gridInfo.minY, m_gridInfo.minZ,
         m_gridInfo.maxX, m_gridInfo.maxY, m_gridInfo.maxZ
     );
     AABBHit hit = aabb.intersect(travelRay);
-    if (!hit.isHit) { return Color(0.f); }
+    if (!hit.isHit) { return IntegrationHelper::noScatter(); }
 
     const float targetTransmittance = random.next();
     const TransmittanceQueryResult queryResult = findTransmittance(
-        hit.enterPoint,
-        hit.exitPoint,
+        modelToWorld(hit.enterPoint),
+        modelToWorld(hit.exitPoint),
         targetTransmittance
     );
 
-    if (!queryResult.isValid) { return Color(0.f); }
-    const Point3 samplePoint = travelRay.at(queryResult.distance);
+    if (!queryResult.isValid) { return IntegrationHelper::noScatter(); }
+    const Point3 samplePoint = modelToWorld(travelRay.at(queryResult.distance));
 
     const Color Ld = VolumeHelper::directSampleLights(*this, samplePoint, scene, random);
 
@@ -174,5 +204,11 @@ Color GridMedium::integrate(
     // = Ld * (sigma_s / sigma_t)
     // = Ld * albedo
 
-    return Ld * m_albedo;
+    return IntegrationResult({
+        true,
+        samplePoint,
+        targetTransmittance,
+        Ld,
+        m_albedo
+    });
 }

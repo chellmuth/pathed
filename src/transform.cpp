@@ -4,6 +4,7 @@
 #include "ray.h"
 #include "vector.h"
 
+#include <assert.h>
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
@@ -16,14 +17,28 @@ static const float identity[4][4] = {
 };
 
 Transform::Transform()
-    : Transform(identity)
+    : Transform(identity, identity)
 {}
 
 Transform::Transform(const float matrix[4][4])
+    : m_hasInverse(false)
 {
     for (int row = 0; row < 4; row++ ) {
         for (int col = 0; col < 4; col++ ) {
             m_matrix[row][col] = matrix[row][col];
+        }
+    }
+}
+
+Transform::Transform(
+    const float matrix[4][4],
+    const float inverse[4][4]
+) : m_hasInverse(true)
+{
+    for (int row = 0; row < 4; row++ ) {
+        for (int col = 0; col < 4; col++ ) {
+            m_matrix[row][col] = matrix[row][col];
+            m_inverse[row][col] = inverse[row][col];
         }
     }
 }
@@ -40,6 +55,12 @@ Transform Transform::transposed() const
     return Transform(transpose);
 }
 
+Transform Transform::inversed() const
+{
+    assert(m_hasInverse);
+    return Transform(m_inverse, m_matrix);
+}
+
 Point3 Transform::apply(const Point3 &point) const
 {
     float x = point.x();
@@ -50,6 +71,21 @@ Point3 Transform::apply(const Point3 &point) const
         m_matrix[0][0] * x + m_matrix[0][1] * y + m_matrix[0][2] * z + m_matrix[0][3],
         m_matrix[1][0] * x + m_matrix[1][1] * y + m_matrix[1][2] * z + m_matrix[1][3],
         m_matrix[2][0] * x + m_matrix[2][1] * y + m_matrix[2][2] * z + m_matrix[2][3]
+    );
+}
+
+Point3 Transform::applyInverse(const Point3 &point) const
+{
+    assert(m_hasInverse);
+
+    float x = point.x();
+    float y = point.y();
+    float z = point.z();
+
+    return Point3(
+        m_inverse[0][0] * x + m_inverse[0][1] * y + m_inverse[0][2] * z + m_inverse[0][3],
+        m_inverse[1][0] * x + m_inverse[1][1] * y + m_inverse[1][2] * z + m_inverse[1][3],
+        m_inverse[2][0] * x + m_inverse[2][1] * y + m_inverse[2][2] * z + m_inverse[2][3]
     );
 }
 

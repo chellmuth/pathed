@@ -13,12 +13,14 @@
 #include <cmath>
 #include <limits>
 
-static int secretValue = 28;
-
-void Scene::InitCustomRTCIntersectContext(CustomRTCIntersectContext *contextPtr) const
+void Scene::InitCustomRTCIntersectContext(
+    CustomRTCIntersectContext *contextPtr,
+    bool shouldIntersectPassthroughs
+) const
 {
     rtcInitIntersectContext(&contextPtr->context);
     contextPtr->surfacesPtr = &m_surfaces;
+    contextPtr->shouldIntersectPassthroughs = shouldIntersectPassthroughs;
 }
 
 Scene::Scene(
@@ -42,6 +44,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
     if (args->context == nullptr) { return; }
 
     CustomRTCIntersectContext *context = (CustomRTCIntersectContext *)args->context;
+    if (context->shouldIntersectPassthroughs) { return; }
 
     RTCHit *hit = (RTCHit *)args->hit;
     if (hit == nullptr) { return; }
@@ -69,6 +72,12 @@ void Scene::registerOcclusionFilters() const
 {
     for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
         RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
+
+        rtcSetGeometryIntersectFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
+
         rtcSetGeometryOccludedFilterFunction(
             rtcGeometry,
             occlusionFilter
@@ -100,12 +109,12 @@ Intersection Scene::testIntersect(const Ray &ray) const
     rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context, true);
 
     rtcIntersect1(
         g_rtcScene,
-        &context,
+        &context.context,
         &rayHit
     );
 
@@ -183,6 +192,123 @@ Intersection Scene::testIntersect(const Ray &ray) const
     }
 }
 
+IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
+{
+    RTCRayHit rayHit;
+    rayHit.ray.org_x = ray.origin().x();
+    rayHit.ray.org_y = ray.origin().y();
+    rayHit.ray.org_z = ray.origin().z();
+
+    rayHit.ray.dir_x = ray.direction().x();
+    rayHit.ray.dir_y = ray.direction().y();
+    rayHit.ray.dir_z = ray.direction().z();
+
+    rayHit.ray.tnear = 1e-3f;
+    rayHit.ray.tfar = 1e5f;
+
+    rayHit.ray.flags = 0;
+
+    rayHit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rayHit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+
+    CustomRTCIntersectContext context;
+    InitCustomRTCIntersectContext(&context, false);
+
+    rtcIntersect1(
+        g_rtcScene,
+        &context.context,
+        &rayHit
+    );
+
+    const RTCHit &hit = rayHit.hit;
+
+    // need parallel arrays of geometry and materials
+    if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+        RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+
+        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &shapePtr = surfacePtr->getShape();
+
+        UV uv;
+        Vector3 geometricNormal(0.f, 0.f, 0.f);
+        Vector3 shadingNormal(0.f, 0.f, 0.f);
+        if (shapePtr->useBackwardsNormals()) {
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                0,
+                &uv.u,
+                2
+            );
+
+            float normalRaw[3];
+            rtcInterpolate0(
+                geometry,
+                hit.primID,
+                hit.u,
+                hit.v,
+                RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE,
+                1,
+                &normalRaw[0],
+                3
+            );
+
+            shadingNormal = Vector3(normalRaw[0], normalRaw[1], normalRaw[2]);
+
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized() * -1.f;
+        } else {
+            // spheres
+            geometricNormal = Vector3(
+                rayHit.hit.Ng_x,
+                rayHit.hit.Ng_y,
+                rayHit.hit.Ng_z
+            ).normalized();
+        }
+
+        if (shadingNormal.length() == 0.f) {
+            shadingNormal = geometricNormal;
+        }
+
+        Intersection hit = {
+            .hit = true,
+            .t = rayHit.ray.tfar,
+            .point = ray.at(rayHit.ray.tfar),
+            .woWorld = -ray.direction(),
+            .normal = geometricNormal,
+            .shadingNormal = shadingNormal.normalized(),
+            // .shadingNormal = geometricNormal,
+            .uv = uv,
+            .material = surfacePtr->getMaterial().get(),
+            .surface = surfacePtr.get()
+        };
+
+        std::sort(
+            context.volumeEvents.begin(),
+            context.volumeEvents.end(),
+            [](VolumeEvent ve1, VolumeEvent ve2) {
+                return ve1.t < ve2.t;
+            }
+        );
+
+        return IntersectionResult({
+            hit,
+            context.volumeEvents
+        });
+    } else {
+        return IntersectionResult({
+            IntersectionHelper::miss,
+            context.volumeEvents
+        });
+    }
+}
+
 bool Scene::testOcclusion(const Ray &ray, float maxT) const
 {
     RTCRay rtcRay;
@@ -200,7 +326,7 @@ bool Scene::testOcclusion(const Ray &ray, float maxT) const
     rtcRay.flags = 0;
 
     CustomRTCIntersectContext context;
-    InitCustomRTCIntersectContext(&context);
+    InitCustomRTCIntersectContext(&context, false);
 
     rtcOccluded1(
         g_rtcScene,
@@ -228,7 +354,7 @@ OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
     rtcRay.flags = 0;
 
     CustomRTCIntersectContext context;
-    InitCustomRTCIntersectContext(&context);
+    InitCustomRTCIntersectContext(&context, false);
 
     rtcOccluded1(
         g_rtcScene,
@@ -244,7 +370,7 @@ OcclusionResult Scene::testVolumetricOcclusion(const Ray &ray, float maxT) const
         context.volumeEvents.begin(),
         context.volumeEvents.end(),
         [](VolumeEvent ve1, VolumeEvent ve2) {
-            return ve1.t > ve2.t;
+            return ve1.t < ve2.t;
         }
     );
 
@@ -325,7 +451,7 @@ float Scene::lightsPDF(
 Color Scene::environmentL(const Vector3 &direction) const
 {
     if (m_environmentLight) {
-        return m_environmentLight->emit(direction);
+        return m_environmentLight->emit(-direction);
     }
     return Color(0.f);
 }

@@ -37,7 +37,6 @@ Color VolumePathTracer::L(
 
         // Refraction, medium changes
         if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
-
             // Internal, entering medium
             if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
                 mediumPtr = lastIntersection.surface->getInternalMedium();
@@ -51,21 +50,22 @@ Color VolumePathTracer::L(
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
-        // if volume, integrate!
-        const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
-        result += Ls * modulation;
-
         const float invPDF = 1.f / bsdfSample.pdf;
         const float cosTheta = WorldFrame::absCosTheta(lastIntersection.shadingNormal, bsdfSample.wiWorld);
 
         modulation *= bsdfSample.throughput
-            * transmittance(
-                mediumPtr,
-                lastIntersection,
-                bounceIntersection
-            )
             * cosTheta
             * invPDF;
+
+        // if volume, integrate!
+        const Color Ls = scatter(mediumPtr, lastIntersection, bounceIntersection, scene, random);
+        result += Ls * modulation;
+
+        modulation *= transmittance(
+            mediumPtr,
+            lastIntersection,
+            bounceIntersection
+        );
 
         if (modulation.isBlack()) {
             break;
@@ -122,6 +122,9 @@ Color VolumePathTracer::scatter(
     const Point3 &source = sourceIntersection.point;
     const Point3 &target = targetIntersection.point;
 
-    return mediumPtr->integrate(source, target, scene, random);
+    IntegrationResult result = mediumPtr->integrate(source, target, scene, random);
+    if (result.shouldScatter) {
+        return result.Ld;
+    }
+    return Color(0.f);
 }
-

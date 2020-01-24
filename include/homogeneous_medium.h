@@ -22,7 +22,7 @@ public:
         float targetTransmittance
     ) const override;
 
-    Color integrate(
+    IntegrationResult integrate(
         const Point3 &entryPointWorld,
         const Point3 &exitPointWorld,
         const Scene &scene,

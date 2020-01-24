@@ -1,3 +1,4 @@
+import json
 import struct
 
 import click
@@ -6,11 +7,34 @@ import numpy as np
 IntBytes = 4
 Float32Bytes = 4
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.argument("path", type=click.Path(exists=True))
+def convert(path):
+    volume_json = json.load(open(path))
+    with open("out.vol", "wb") as f:
+        f.write(b"VOL")
+        f.write(struct.pack("b", 3)) # version
+        f.write(struct.pack("i", 1)) # encoding
+        f.write(struct.pack("i", volume_json["x"]))
+        f.write(struct.pack("i", volume_json["y"]))
+        f.write(struct.pack("i", volume_json["z"]))
+        f.write(struct.pack("i", 1)) # channels
+        f.write(struct.pack("6f", *(volume_json["p0"] + volume_json["p1"]))) # bounds
+        f.write(struct.pack(
+            f"{volume_json['x'] * volume_json['y'] * volume_json['z']}f",
+            *[float(d) for d in volume_json["density"].split(" ")]
+        ))
+
+@cli.command()
 @click.argument("vol_path", type=click.Path(exists=True))
 @click.option("--index", type=int)
 @click.option("--print-max", is_flag=True)
-def init(vol_path, index, print_max):
+def parse(vol_path, index, print_max):
     with open(vol_path, "rb") as f:
         header = f.read(3)
         print(header)
@@ -51,4 +75,4 @@ def init(vol_path, index, print_max):
             print("max:", maximum, "index:", data.index(maximum))
 
 if __name__ == "__main__":
-    init()
+    cli()

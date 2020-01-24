@@ -37,6 +37,7 @@ AABBHit AABB::intersect(const Ray &ray)
     float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
     if (tmin >= tmax) { return miss(); }
+    if (tmin < 0 && tmax == 0) { return miss(); }
 
     if (tmin >= 0 && !std::isinf(tmin) && tmax >= 0 && !std::isinf(tmax)) {
         return AABBHit({
@@ -51,7 +52,7 @@ AABBHit AABB::intersect(const Ray &ray)
     if (tmax >= 0 && !std::isinf(tmax) && tmin < 0) {
         return AABBHit({
             true,
-            ray.at(0.f),
+            ray.origin(),
             ray.at(tmax),
             0.f,
             tmax
@@ -80,3 +81,25 @@ AABBHit AABB::intersect(const Point3 &enterPoint, const Point3 &exitPoint)
         maxT
     });
 }
+
+std::ostream &operator<<(std::ostream &os, const AABB &aabb)
+{
+    return os << "[AABB: "
+              << "minX=" << aabb.m_minX << " "
+              << "maxX=" << aabb.m_maxX << " "
+              << "minY=" << aabb.m_minY << " "
+              << "maxY=" << aabb.m_maxY << " "
+              << "minZ=" << aabb.m_minZ << " "
+              << "maxZ=" << aabb.m_maxZ << "]";
+}
+
+std::ostream &operator<<(std::ostream &os, const AABBHit &hit)
+{
+    return os << "[AABBHit: "
+              << "isHit=" << hit.isHit << " "
+              << "enterPoint=" << hit.enterPoint.toString() << " "
+              << "exitPoint=" << hit.exitPoint.toString() << " "
+              << "enterT=" << hit.enterT << " "
+              << "exitT=" << hit.exitT << "]";
+}
+

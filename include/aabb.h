@@ -20,8 +20,11 @@ public:
     AABBHit intersect(const Ray &ray);
     AABBHit intersect(const Point3 &enterPoint, const Point3 &exitPoint);
 
+    friend std::ostream& operator<<(std::ostream& os, const AABB& aabb);
 private:
     float m_maxX, m_minX;
     float m_maxY, m_minY;
     float m_maxZ, m_minZ;
 };
+
+std::ostream &operator<<(std::ostream &os, const AABBHit &hit);

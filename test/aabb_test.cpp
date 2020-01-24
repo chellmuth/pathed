@@ -201,3 +201,16 @@ TEST_CASE("intersect segment both inside", "[aabb]") {
     REQUIRE_POINT_APPROX(hit.enterPoint, Point3(0.3f, 0.3f, 0.3f));
     REQUIRE_POINT_APPROX(hit.exitPoint, Point3(0.4f, 0.5f, 0.6f));
 }
+
+TEST_CASE("point starting on edge and leaving is a miss", "[regression][aabb]") {
+    AABB aabb(
+        -1.f, -1.f, -1.f,
+        1.f, 1.f, 1.f
+    );
+
+    Point3 enterPoint(0.f, 0.f, 1.f);
+    Point3 exitPoint(100., 100.f, 100.f);
+
+    AABBHit hit = aabb.intersect(enterPoint, exitPoint);
+    REQUIRE(!hit.isHit);
+}
