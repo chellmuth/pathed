@@ -40,17 +40,7 @@ Color BasicVolumeIntegrator::L(
     });
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
-        const Point3 lastPoint = interaction.isSurface
-            ? interaction.intersection.point
-            : interaction.scatterEvent.point
-        ;
-
-        const Vector3 lastDirection = interaction.isSurface
-            ? interaction.bsdfSample.wiWorld
-            : interaction.scatterEvent.wiWorld
-        ;
-
-        const Ray bounceRay(lastPoint, lastDirection);
+        const Ray bounceRay(interaction.point(), interaction.wiWorld());
 
         const Intersection bounceIntersection = scene.testIntersect(bounceRay);
         if (!bounceIntersection.hit) { break; }
@@ -74,7 +64,7 @@ Color BasicVolumeIntegrator::L(
 
         const IntegrationResult integrationResult = scatter(
             mediumPtr,
-            lastPoint,
+            interaction.point(),
             bounceIntersection.point,
             scene,
             random

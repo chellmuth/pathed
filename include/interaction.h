@@ -21,6 +21,20 @@ struct Interaction {
 
     // Volume event
     ScatterEvent scatterEvent;
+
+    Point3 point() const {
+        return isSurface
+            ? intersection.point
+            : scatterEvent.point
+        ;
+    }
+
+    Vector3 wiWorld() const {
+        return isSurface
+            ? bsdfSample.wiWorld
+            : scatterEvent.wiWorld
+        ;
+    }
 };
 
 namespace InteractionHelper {
