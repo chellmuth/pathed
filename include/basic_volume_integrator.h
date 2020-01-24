@@ -29,9 +29,7 @@ public:
 private:
     std::shared_ptr<Medium> updateMediumPtr(
         const std::shared_ptr<Medium> mediumPtr,
-        const Interaction &interaction,
-        const Intersection &lastIntersection,
-        const BSDFSample &bsdfSample
+        const Interaction &interaction
     ) const;
 
     Color transmittance(

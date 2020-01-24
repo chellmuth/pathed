@@ -22,7 +22,7 @@ Color BasicVolumeIntegrator::L(
 
     sample.eyePoints.push_back(intersection.point);
 
-    BSDFSample bsdfSample = intersection.material->sample(intersection, random);
+    const BSDFSample bsdfSample = intersection.material->sample(intersection, random);
 
     Color result(0.f);
     if (m_bounceController.checkCounts(1)) {
@@ -31,19 +31,23 @@ Color BasicVolumeIntegrator::L(
     }
 
     Color modulation = Color(1.f);
-    Intersection lastIntersection = intersection;
 
-    Interaction interaction({ true, Point3(0.f, 0.f, 0.f ), Vector3(0.f), Vector3(0.f) });
+    Interaction interaction({
+        true,
+        intersection,
+        bsdfSample,
+        InteractionHelper::nullScatter()
+    });
 
     for (int bounce = 2; !m_bounceController.checkDone(bounce); bounce++) {
         const Point3 lastPoint = interaction.isSurface
-            ? lastIntersection.point
-            : interaction.point
+            ? interaction.intersection.point
+            : interaction.scatterEvent.point
         ;
 
         const Vector3 lastDirection = interaction.isSurface
-            ? bsdfSample.wiWorld
-            : interaction.wiWorld
+            ? interaction.bsdfSample.wiWorld
+            : interaction.scatterEvent.wiWorld
         ;
 
         const Ray bounceRay(lastPoint, lastDirection);
@@ -52,24 +56,19 @@ Color BasicVolumeIntegrator::L(
         if (!bounceIntersection.hit) { break; }
 
         if (interaction.isSurface) {
-            const float invPDF = 1.f / bsdfSample.pdf;
+            const float invPDF = 1.f / interaction.bsdfSample.pdf;
 
-            const Vector3 shadingNormal = lastIntersection.shadingNormal;
-            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, bsdfSample.wiWorld);
+            const Vector3 shadingNormal = interaction.intersection.shadingNormal;
+            const float cosTheta = WorldFrame::absCosTheta(shadingNormal, interaction.bsdfSample.wiWorld);
 
-            modulation *= bsdfSample.throughput
+            modulation *= interaction.bsdfSample.throughput
                 * cosTheta
                 * invPDF;
         }
 
         if (modulation.isBlack()) { break; }
 
-        mediumPtr = updateMediumPtr(
-            mediumPtr,
-            interaction,
-            lastIntersection,
-            bsdfSample
-        );
+        mediumPtr = updateMediumPtr(mediumPtr, interaction);
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
@@ -81,6 +80,7 @@ Color BasicVolumeIntegrator::L(
             random
         );
 
+        interaction.isSurface = !integrationResult.shouldScatter;
         if (integrationResult.shouldScatter) {
             modulation *= integrationResult.weight;
 
@@ -91,16 +91,15 @@ Color BasicVolumeIntegrator::L(
             const Vector3 woWorld = bounceIntersection.woWorld;
             const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
 
-            Interaction scatterInteraction({
-                false,
+            ScatterEvent scatterEvent({
                 integrationResult.scatterPoint,
                 woWorld,
                 wiWorld
             });
 
-            interaction = scatterInteraction;
+            interaction.scatterEvent = scatterEvent;
         } else {
-            bsdfSample = bounceIntersection.material->sample(
+            interaction.bsdfSample = bounceIntersection.material->sample(
                 bounceIntersection, random
             );
 
@@ -110,7 +109,7 @@ Color BasicVolumeIntegrator::L(
                 Color Ld = DirectLightingHelper::Ld(
                     bounceIntersection,
                     mediumPtr,
-                    bsdfSample,
+                    interaction.bsdfSample,
                     scene,
                     random,
                     sample
@@ -118,7 +117,7 @@ Color BasicVolumeIntegrator::L(
                 result += Ld * modulation;
                 // sample.contributions.push_back({result - previous, invPDF});
             }
-            lastIntersection = bounceIntersection;
+            interaction.intersection = bounceIntersection;
         }
     }
 
@@ -127,16 +126,17 @@ Color BasicVolumeIntegrator::L(
 
 std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(
     const std::shared_ptr<Medium> mediumPtr,
-    const Interaction &interaction,
-    const Intersection &lastIntersection,
-    const BSDFSample &bsdfSample
+    const Interaction &interaction
 ) const {
+    const Intersection &intersection = interaction.intersection;
+    const BSDFSample &bsdfSample = interaction.bsdfSample;
+
     if (interaction.isSurface) {
         // Refraction, medium changes
-        if (lastIntersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
+        if (intersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
             // Internal, entering medium
-            if (lastIntersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
-                return lastIntersection.surface->getInternalMedium();
+            if (intersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
+                return intersection.surface->getInternalMedium();
             } else { // External, exiting medium
                 return nullptr;
             }
