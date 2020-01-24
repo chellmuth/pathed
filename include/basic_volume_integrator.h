@@ -37,22 +37,6 @@ public:
     ) const override;
 
 private:
-    bool processBounce(
-        LoopState &loopState,
-        const Intersection &bounceIntersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
-    bool processScatter(
-        LoopState &state,
-        const Intersection &bounceIntersection,
-        const Scene &scene,
-        RandomGenerator &random,
-        Sample &sample
-    ) const;
-
     Color transmittance(
         const std::shared_ptr<Medium> &mediumPtr,
         const Point3 &source,

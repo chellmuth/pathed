@@ -75,66 +75,50 @@ Color BasicVolumeIntegrator::L(
         }
 
         if (!state.interaction.isSurface) {
-            if (!processScatter(state, bounceIntersection, scene, random, sample)) { break; }
+            const IntegrationResult integrationResult = scatter(
+                state.mediumPtr,
+                state.interaction.point,
+                bounceIntersection.point,
+                scene,
+                random
+            );
+
+            const bool shouldContinue = finishIt(
+                state,
+                integrationResult,
+                bounceIntersection,
+                scene,
+                random,
+                sample
+            );
+
+            if (!shouldContinue) { break; }
         } else {
-            if (!processBounce(state, bounceIntersection, scene, random, sample)) { break; }
+            sample.eyePoints.push_back(bounceIntersection.point);
+
+            // if volume, integrate!
+            const IntegrationResult integrationResult = scatter(
+                state.mediumPtr,
+                state.lastIntersection.point,
+                bounceIntersection.point,
+                scene,
+                random
+            );
+
+            const bool shouldContinue = finishIt(
+                state,
+                integrationResult,
+                bounceIntersection,
+                scene,
+                random,
+                sample
+            );
+
+            if (!shouldContinue) { break; }
         }
     }
 
     return state.result;
-}
-
-bool BasicVolumeIntegrator::processScatter(
-    LoopState &state,
-    const Intersection &bounceIntersection,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    const IntegrationResult integrationResult = scatter(
-        state.mediumPtr,
-        state.interaction.point,
-        bounceIntersection.point,
-        scene,
-        random
-    );
-
-    return finishIt(
-        state,
-        integrationResult,
-        bounceIntersection,
-        scene,
-        random,
-        sample
-    );
-}
-
-bool BasicVolumeIntegrator::processBounce(
-    LoopState &state,
-    const Intersection &bounceIntersection,
-    const Scene &scene,
-    RandomGenerator &random,
-    Sample &sample
-) const {
-    sample.eyePoints.push_back(bounceIntersection.point);
-
-    // if volume, integrate!
-    const IntegrationResult integrationResult = scatter(
-        state.mediumPtr,
-        state.lastIntersection.point,
-        bounceIntersection.point,
-        scene,
-        random
-    );
-
-    return finishIt(
-        state,
-        integrationResult,
-        bounceIntersection,
-        scene,
-        random,
-        sample
-    );
 }
 
 Color BasicVolumeIntegrator::transmittance(
