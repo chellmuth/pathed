@@ -62,6 +62,18 @@ Color BasicVolumeIntegrator::L(
             break;
         }
 
+        if (state.interaction.isSurface) {
+            // Refraction, medium changes
+            if (state.lastIntersection.woWorld.dot(state.bsdfSample.wiWorld) < 0.f) {
+                // Internal, entering medium
+                if (state.lastIntersection.normal.dot(state.bsdfSample.wiWorld) < 0.f) {
+                    state.mediumPtr = state.lastIntersection.surface->getInternalMedium();
+                } else { // External, exiting medium
+                    state.mediumPtr = nullptr;
+                }
+            } // else Reflection, medium does not change
+        }
+
         if (!state.interaction.isSurface) {
             if (!processScatter(state, bounceIntersection, scene, random, sample)) { break; }
         } else {
@@ -120,16 +132,6 @@ bool BasicVolumeIntegrator::processBounce(
     const Vector3 normal = lastIntersection.normal;
     const Vector3 shadingNormal = lastIntersection.shadingNormal;
     const Surface *surfacePtr = lastIntersection.surface;
-
-    // Refraction, medium changes
-    if (woWorld.dot(bsdfSample.wiWorld) < 0.f) {
-        // Internal, entering medium
-        if (normal.dot(bsdfSample.wiWorld) < 0.f) {
-            mediumPtr = surfacePtr->getInternalMedium();
-        } else { // External, exiting medium
-            mediumPtr = nullptr;
-        }
-    } // else Reflection, medium does not change
 
     sample.eyePoints.push_back(bounceIntersection.point);
 
