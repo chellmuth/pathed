@@ -79,14 +79,45 @@ Color BasicVolumeIntegrator::L(
             random
         );
 
-        finishIt(
-            state,
-            integrationResult,
-            bounceIntersection,
-            scene,
-            random,
-            sample
-       );
+        if (integrationResult.shouldScatter) {
+            state.modulation *= integrationResult.weight;
+
+            const Color Ld = integrationResult.Ld;
+            state.result += Ld * state.modulation;
+
+            const Phase phaseFunction;
+            const Vector3 woWorld = bounceIntersection.woWorld;
+            const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
+
+            Interaction scatterInteraction({
+                false,
+                integrationResult.scatterPoint,
+                woWorld,
+                wiWorld
+            });
+
+            state.interaction = scatterInteraction;
+        } else {
+            state.bsdfSample = bounceIntersection.material->sample(
+                bounceIntersection, random
+            );
+
+            if (m_bounceController.checkCounts(bounce)) {
+                const Color previous = result;
+
+                Color Ld = DirectLightingHelper::Ld(
+                    bounceIntersection,
+                    state.mediumPtr,
+                    state.bsdfSample,
+                    scene,
+                    random,
+                    sample
+                );
+                state.result += Ld * state.modulation;
+                // sample.contributions.push_back({result - previous, invPDF});
+            }
+            state.lastIntersection = bounceIntersection;
+        }
     }
 
     return state.result;
@@ -144,46 +175,4 @@ void BasicVolumeIntegrator::finishIt(
     std::shared_ptr<Medium> &mediumPtr = state.mediumPtr;
     Color &result = state.result;
 
-    if (integrationResult.shouldScatter) {
-        modulation *= integrationResult.weight;
-
-        const Color Ld = integrationResult.Ld;
-        result += Ld * modulation;
-
-        const Phase phaseFunction;
-        const Vector3 woWorld = bounceIntersection.woWorld;
-        const Vector3 wiWorld = phaseFunction.sample(woWorld, random);
-
-        Interaction scatterInteraction({
-            false,
-            integrationResult.scatterPoint,
-            woWorld,
-            wiWorld
-        });
-
-        state.interaction = scatterInteraction;
-        return;
-    }
-
-    bsdfSample = bounceIntersection.material->sample(
-        bounceIntersection, random
-    );
-
-    state.lastIntersection = bounceIntersection;
-
-    if (m_bounceController.checkCounts(bounce)) {
-        const Color previous = result;
-
-        Color Ld = DirectLightingHelper::Ld(
-            bounceIntersection,
-            mediumPtr,
-            bsdfSample,
-            scene,
-            random,
-            sample
-        );
-        result += Ld * modulation;
-
-        // sample.contributions.push_back({result - previous, invPDF});
-    }
 }
