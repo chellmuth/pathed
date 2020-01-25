@@ -12,6 +12,16 @@
 #include <iostream>
 
 
+using MediumPtrVector = std::vector<std::shared_ptr<Medium> >;
+
+static std::shared_ptr<Medium> currentMediumPtr(const MediumPtrVector &mediumPtrs) {
+    const int size = mediumPtrs.size();
+    if (size > 0) {
+        return mediumPtrs[size - 1];
+    }
+    return nullptr;
+}
+
 Color BasicVolumeIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
@@ -20,7 +30,7 @@ Color BasicVolumeIntegrator::L(
 ) const {
     Color result(0.f);
     Color modulation = Color(1.f);
-    std::shared_ptr<Medium> mediumPtr(nullptr);
+    MediumPtrVector mediumPtrs;
 
     sample.eyePoints.push_back(intersection.point);
 
@@ -33,7 +43,14 @@ Color BasicVolumeIntegrator::L(
     });
 
     if (m_bounceController.checkCounts(1)) {
-        result = DirectLightingHelper::Ld(intersection, mediumPtr, bsdfSample, scene, random, sample);
+        result = DirectLightingHelper::Ld(
+            intersection,
+            currentMediumPtr(mediumPtrs),
+            bsdfSample,
+            scene,
+            random,
+            sample
+        );
         sample.contributions.push_back({result, 1.f});
     }
 
@@ -61,14 +78,14 @@ Color BasicVolumeIntegrator::L(
         if (modulation.isBlack()) { break; }
 
         // Update the current medium
-        mediumPtr = updateMediumPtr(mediumPtr, interaction);
+        updateMediumPtrs(mediumPtrs, interaction);
 
         sample.eyePoints.push_back(bounceIntersection.point);
 
         // Integrate any volumes,
         // possibly overriding the bounce point with a scatter point
         const IntegrationResult integrationResult = scatter(
-            mediumPtr,
+            currentMediumPtr(mediumPtrs),
             interaction.point(),
             bounceIntersection.point,
             scene,
@@ -106,7 +123,7 @@ Color BasicVolumeIntegrator::L(
                 // Direct light on the bounce point
                 Color Ld = DirectLightingHelper::Ld(
                     bounceIntersection,
-                    mediumPtr,
+                    currentMediumPtr(mediumPtrs),
                     interaction.bsdfSample,
                     scene,
                     random,
@@ -124,8 +141,8 @@ Color BasicVolumeIntegrator::L(
     return result;
 }
 
-std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(
-    const std::shared_ptr<Medium> mediumPtr,
+void BasicVolumeIntegrator::updateMediumPtrs(
+    std::vector<std::shared_ptr<Medium> > &mediumPtrs,
     const Interaction &interaction
 ) const {
     const Intersection &intersection = interaction.intersection;
@@ -136,13 +153,18 @@ std::shared_ptr<Medium> BasicVolumeIntegrator::updateMediumPtr(
         if (intersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
             // Internal, entering medium
             if (intersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
-                return intersection.surface->getInternalMedium();
+                auto mediumPtr = intersection.surface->getInternalMedium();
+                mediumPtrs.push_back(mediumPtr);
+                return;
             } else { // External, exiting medium
-                return nullptr;
+                // todo: shouldn't need this!
+                if (mediumPtrs.size() > 0) {
+                    mediumPtrs.pop_back();
+                }
+                return;
             }
         } // else Reflection, medium does not change
     }
-    return mediumPtr;
 }
 
 Color BasicVolumeIntegrator::transmittance(

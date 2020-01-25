@@ -27,8 +27,8 @@ public:
     ) const override;
 
 private:
-    std::shared_ptr<Medium> updateMediumPtr(
-        const std::shared_ptr<Medium> mediumPtr,
+    void updateMediumPtrs(
+        std::vector<std::shared_ptr<Medium> > &mediumPtrs,
         const Interaction &interaction
     ) const;
 
