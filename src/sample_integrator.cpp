@@ -37,7 +37,7 @@ void SampleIntegrator::samplePixel(
                 const Intersection &volumetricIntersection = volumetricResult.intersection;
                 if (volumetricIntersection.hit) {
                     // todo: build a scene that has this and implement
-                    assert(!volumetricIntersection.material->emit());
+                    assert(volumetricIntersection.material->emit().isBlack());
                 } else {
                     Color transmittance = VolumeHelper::rayTransmission(
                         ray,
