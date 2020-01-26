@@ -150,17 +150,18 @@ void BasicVolumeIntegrator::updateMediumPtrs(
 
     if (interaction.isSurface) {
         // Refraction, medium changes
-        if (intersection.woWorld.dot(bsdfSample.wiWorld) < 0.f) {
+
+        const bool isWoFrontside = intersection.normal.dot(intersection.woWorld) >= 0.f;
+        const bool isWiFrontside = intersection.normal.dot(bsdfSample.wiWorld) >= 0.f;
+        if (isWoFrontside != isWiFrontside) {
+
             // Internal, entering medium
-            if (intersection.normal.dot(bsdfSample.wiWorld) < 0.f) {
+            if (!isWiFrontside) {
                 auto mediumPtr = intersection.surface->getInternalMedium();
                 mediumPtrs.push_back(mediumPtr);
                 return;
             } else { // External, exiting medium
-                // todo: shouldn't need this!
-                if (mediumPtrs.size() > 0) {
-                    mediumPtrs.pop_back();
-                }
+                mediumPtrs.pop_back();
                 return;
             }
         } // else Reflection, medium does not change
