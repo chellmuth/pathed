@@ -71,43 +71,7 @@ float Sphere::pdf(const Point3 &point) const
     return 1.f / area();
 }
 
-Intersection Sphere::testIntersect(const Ray &ray)
-{
-    Point3 origin = ray.origin();
-    Vector3 direction = ray.direction();
-
-    Point3 L = origin - m_center;
-
-    float a = direction.dot(direction);
-    float b = 2 * direction.dot(L);
-    float c = L.dot(L) - m_radius * m_radius;
-
-    QuadraticSolution solution = solveQuadratic(a, b, c);
-    if (solution.hasRealSolutions && solution.solution1 > 0) {
-        Point3 hitPoint = ray.at(solution.solution1);
-        Intersection result = {
-            .hit = true,
-            .t = solution.solution1,
-            .point = hitPoint,
-            .woWorld = -ray.direction(),
-            .normal = (hitPoint - m_center).toVector().normalized(),
-            .shadingNormal = (hitPoint - m_center).toVector().normalized(),
-            .uv = { 0.f, 0.f },
-            .material = nullptr,
-            .surface = nullptr
-        };
-        return result;
-    } else {
-        return IntersectionHelper::miss;
-    }
-}
-
 float Sphere::area() const
 {
     return 4 * M_PI * m_radius * m_radius;
-}
-
-std::shared_ptr<Shape> Sphere::transform(const Transform &transform) const
-{
-    throw "Sphere transform unimplemented";
 }

@@ -29,8 +29,7 @@ ObjParser::ObjParser(
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
-      m_currentGroup(""),
-      m_boundingBox()
+      m_currentGroup("")
 {
     m_geometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
 }
@@ -103,93 +102,12 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     }
     // End "cube-normal" correction
 
-    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
-    float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
-        rtcMesh,                /* geometry */
-        RTC_BUFFER_TYPE_VERTEX, /* type */
-        0,                      /* slot */
-        RTC_FORMAT_FLOAT3,      /* format */
-        3 * sizeof(float),      /* byte stride */
-        m_vertices.size()       /* item count */
+    GeometryParser::processRTCGeometry(
+        m_vertices,
+        m_vertexUVs,
+        m_vertexNormals,
+        correctedFaces
     );
-
-    int i = 0;
-    for (auto &vertex : m_vertices) {
-        rtcVertices[i * 3 + 0] = vertex.x();
-        rtcVertices[i * 3 + 1] = vertex.y();
-        rtcVertices[i * 3 + 2] = vertex.z();
-
-        i += 1;
-    }
-
-    unsigned int *rtcFaces = (unsigned int *)rtcSetNewGeometryBuffer(
-        rtcMesh,
-        RTC_BUFFER_TYPE_INDEX,
-        0,
-        RTC_FORMAT_UINT3,
-        3 * sizeof(unsigned int),
-        correctedFaces.size()
-    );
-
-    i = 0;
-    for (auto face : correctedFaces) {
-        rtcFaces[i + 0] = face.vertices[0].vertexIndex;
-        rtcFaces[i + 1] = face.vertices[1].vertexIndex;
-        rtcFaces[i + 2] = face.vertices[2].vertexIndex;
-        i += 3;
-    }
-
-    rtcSetGeometryVertexAttributeCount(rtcMesh, 2);
-
-    float *rtcUVs = (float *)rtcSetNewGeometryBuffer(
-        rtcMesh,                          /* geometry */
-        RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
-        0,                                /* slot */
-        RTC_FORMAT_FLOAT2,                /* format */
-        2 * sizeof(float),                /* byte stride */
-        m_vertices.size()                 /* item count */
-    );
-
-    float *rtcNormals = (float *)rtcSetNewGeometryBuffer(
-        rtcMesh,                          /* geometry */
-        RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, /* type */
-        1,                                /* slot */
-        RTC_FORMAT_FLOAT3,                /* format */
-        3 * sizeof(float),                /* byte stride */
-        m_vertices.size()                 /* item count */
-    );
-
-    const unsigned long verticesSize = m_vertices.size();
-
-    const unsigned long vertexUVsSize = m_vertexUVs.size();
-    if (vertexUVsSize < verticesSize) {
-        std::cout << "Reserving more vertex UVs (" << vertexUVsSize << ", " << verticesSize << ")" << std::endl;
-        m_vertexUVs.resize(m_vertices.size(), {0.f, 0.f});
-    }
-
-    for (i = 0; i < m_vertices.size(); i++) {
-        rtcUVs[2 * i + 0] = m_vertexUVs[i].u;
-        rtcUVs[2 * i + 1] = m_vertexUVs[i].v;
-    }
-
-    const unsigned long vertexNormalsSize = m_vertexNormals.size();
-    if (vertexNormalsSize < verticesSize) {
-        std::cout << "Reserving more vertex normals (" << vertexNormalsSize << ", " << verticesSize << ")" << std::endl;
-        m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
-    }
-
-    for (i = 0; i < m_vertices.size(); i++) {
-        rtcNormals[3 * i + 0] = m_vertexNormals[i].x();
-        rtcNormals[3 * i + 1] = m_vertexNormals[i].y();
-        rtcNormals[3 * i + 2] = m_vertexNormals[i].z();
-    }
-
-    rtcCommitGeometry(rtcMesh);
-
-    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
-    rtcReleaseGeometry(rtcMesh);
-
-    std::cout << "Added object: " << m_boundingBox.toString() << std::endl;
 
     return m_surfaces;
 }
@@ -241,7 +159,6 @@ void ObjParser::processVertex(string &vertexArgs)
 
     Point3 vertex = m_transform.apply(Point3(x, y, z));
     m_vertices.push_back(vertex);
-    m_boundingBox.update(vertex);
 }
 
 void ObjParser::processNormal(string &normalArgs)

@@ -1,7 +1,16 @@
 #include "ply_parser.h"
 
+#include "color.h"
+#include "geometry_parser.h"
+#include "lambertian.h"
+#include "point.h"
+#include "triangle.h"
+#include "uv.h"
+#include "vector.h"
+
 #include <assert.h>
 #include <iostream>
+#include <memory>
 #include <regex>
 #include <string>
 
@@ -20,6 +29,8 @@ PLYParser::PLYParser(
 
 std::vector<std::shared_ptr<Surface> > PLYParser::parse()
 {
+    std::vector<std::shared_ptr<Surface> > surfaces;
+
     string header;
     std::getline(m_objFile, header);
     assert(header == "ply");
@@ -70,11 +81,16 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
     std::getline(m_objFile, endHeader);
     assert(endHeader == "end_header");
 
+    std::vector<Point3> vertices;
     for (int i = 0; i < vertexCount; i++) {
         float point[3];
         m_objFile.read((char *)&point, 4 * 3);
+
+        Point3 vertex(point[0], point[1], point[2]);
+        vertices.push_back(m_transform.apply(vertex));
     }
 
+    std::vector<FaceIndices> faceIndices;
     for (int i = 0; i < faceCount; i++) {
         uint8_t faceSize;
         m_objFile.read((char *)&faceSize, 1);
@@ -87,10 +103,48 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
         for (int j = 0; j < faceSize; j ++) {
             assert(index[j] < vertexCount);
         }
+
+        faceIndices.push_back({
+            .vertices = {
+                { index[0], -1, -1 },
+                { index[1], -1, -1 },
+                { index[2], -1, -1 }
+            }
+        });
+
+        const Color diffuse(0.f, 1.f, 0.f);
+        const Color emit(0.f, 0.f, 0.f);
+        auto material = std::make_shared<Lambertian>(diffuse, emit);
+
+        auto shape = std::make_shared<Triangle>(
+            vertices[index[0]],
+            vertices[index[1]],
+            vertices[index[2]]
+        );
+        auto surface = std::make_shared<Surface>(
+            shape,
+            material,
+            nullptr
+        );
+
+        surfaces.push_back(surface);
+    }
+
+    string rest;
+    if (std::getline(m_objFile, rest)) {
+        assert(false);
     }
 
     assert(m_objFile.eof());
 
-    std::vector<std::shared_ptr<Surface> > result;
-    return result;
+    std::vector<UV> vertexUVs;
+    std::vector<Vector3> vertexNormals;
+    GeometryParser::processRTCGeometry(
+        vertices,
+        vertexUVs,
+        vertexNormals,
+        faceIndices
+    );
+
+    return surfaces;
 }

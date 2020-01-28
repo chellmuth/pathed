@@ -20,16 +20,6 @@ float Surface::pdf(const Point3 &point) const
     return m_shape->pdf(point);
 }
 
-Intersection Surface::testIntersect(const Ray &ray) const
-{
-    Intersection intersection = m_shape->testIntersect(ray);
-    if (intersection.hit) {
-        intersection.material = m_material.get();
-    }
-
-    return intersection;
-}
-
 std::shared_ptr<Shape> Surface::getShape() const
 {
     return m_shape;
