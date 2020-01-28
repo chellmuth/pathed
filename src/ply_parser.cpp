@@ -79,10 +79,14 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
         uint8_t faceSize;
         m_objFile.read((char *)&faceSize, 1);
 
-        std::cout << (int)faceSize << std::endl;
+        assert(faceSize == 3);
 
         int index[faceSize];
-        m_objFile.read((char *)&index, faceSize * 3);
+        m_objFile.read((char *)&index, faceSize * 4);
+
+        for (int j = 0; j < faceSize; j ++) {
+            assert(index[j] < vertexCount);
+        }
     }
 
     assert(m_objFile.eof());

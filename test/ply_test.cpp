@@ -7,7 +7,7 @@
 
 TEST_CASE("read furry bunny", "[debug]") {
     std::ifstream objFile(
-        "/home/cjh/Dropbox/renderer/furry-bunny/bunny.ply",
+        "../assets/furry-bunny/bunny.ply",
         std::ios_base::binary
     );
 
