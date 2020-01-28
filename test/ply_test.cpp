@@ -7,7 +7,7 @@
 #include <fstream>
 
 
-TEST_CASE("ply tests", "[debug]") {
+TEST_CASE("ply tests", "[ply]") {
     g_rtcDevice = rtcNewDevice(NULL);
     g_rtcScene = rtcNewScene(g_rtcDevice);
 

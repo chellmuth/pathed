@@ -14,6 +14,10 @@
       "filename": "assets/furry-bunny/bunny.ply",
       "transform": {
         "translate": [ "0", "-0.033", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "1", "0" ]
       }
     },
     {
