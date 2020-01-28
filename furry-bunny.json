@@ -1,17 +1,30 @@
 {
   "sensor": {
     "lookAt": {
-      "origin": [ "0", "0", "1" ],
-      "target": [ "0", "0", "0" ],
+      "origin": [ "0", "0.25", "0.2" ],
+      "target": [ "-0.02", "0.07", "0" ],
       "up": [ "0", "1", "0" ]
     },
-    "fov": "35"
+    "fov": "55"
   },
 
   "models": [
     {
       "type": "ply",
-      "filename": "assets/furry-bunny/bunny.ply"
+      "filename": "assets/furry-bunny/bunny.ply",
+      "transform": {
+        "translate": [ "0", "-0.033", "0" ]
+      }
+    },
+    {
+      "type": "quad",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.1", "0.1", "0.1" ]
+      },
+      "transform": {
+        "rotate": [ "90", "0", "0" ]
+      }
     }
   ],
 

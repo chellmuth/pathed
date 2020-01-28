@@ -87,7 +87,7 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
         m_objFile.read((char *)&point, 4 * 3);
 
         Point3 vertex(point[0], point[1], point[2]);
-        vertices.push_back(vertex);
+        vertices.push_back(m_transform.apply(vertex));
     }
 
     std::vector<FaceIndices> faceIndices;
