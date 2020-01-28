@@ -31,8 +31,6 @@ public:
 
     Color getRadiance() const;
 
-    Point3 centroid() const override { return m_shape->centroid(); }
-
 private:
     std::shared_ptr<Shape> m_shape;
     std::shared_ptr<Material> m_material;

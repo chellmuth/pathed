@@ -32,8 +32,6 @@ public:
 
     virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;
 
-    virtual Point3 centroid() const = 0;
-
     virtual float area() const = 0;
 
     virtual void debug() const { printf("Debug not implemented!\n"); };

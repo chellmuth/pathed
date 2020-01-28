@@ -25,8 +25,6 @@ public:
     float pdf(const Point3 &point) const override;
     Intersection testIntersect(const Ray &ray) override;
 
-    Point3 centroid() const override;
-
     void pushVertices(std::vector<float> &vertices) override;
     void pushIndices(std::vector<uint> &indices, int offset) override;
     void pushNormals(std::vector<float> &normals) override;
