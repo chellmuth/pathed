@@ -3,6 +3,7 @@
 #include "area_light.h"
 #include "camera.h"
 #include "checkerboard.h"
+#include "curve.h"
 #include "environment_light.h"
 #include "glass.h"
 #include "globals.h"
@@ -127,6 +128,28 @@ Scene parseScene(std::ifstream &sceneFile)
     if (environmentLight) {
         lights.push_back(environmentLight);
     }
+
+    auto curvePtr = std::make_shared<Curve>(
+        Point3(0.005968f, 0.095212f, -0.003707f),
+        Point3(0.006467f, 0.099219f, -0.005693f),
+        Point3(0.007117f, 0.102842f, -0.008281f),
+        Point3(0.007995f, 0.105534f, -0.011779f),
+        0.010180f,
+        0.010015f 
+    );
+
+    Transform identity;
+    auto materialPtr = std::make_shared<Lambertian>(Color(1.f, 0.f, 0.f), Color(0.f));
+    curvePtr->create(
+        identity,
+        materialPtr
+    );
+
+    std::vector<std::shared_ptr<Surface> > curveSurfaces;
+    auto surfacePtr = std::make_shared<Surface>(curvePtr, materialPtr, nullptr);
+    curveSurfaces.push_back(surfacePtr);
+
+    surfaces.push_back(curveSurfaces);
 
     Scene scene(
         surfaces,
