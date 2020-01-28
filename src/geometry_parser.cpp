@@ -17,7 +17,7 @@ void GeometryParser::processRTCGeometry(
         0,                      /* slot */
         RTC_FORMAT_FLOAT3,      /* format */
         3 * sizeof(float),      /* byte stride */
-        vertices.size()       /* item count */
+        vertices.size()         /* item count */
     );
 
     int i = 0;
@@ -39,7 +39,7 @@ void GeometryParser::processRTCGeometry(
     );
 
     i = 0;
-    for (auto face : faces) {
+    for (auto &face : faces) {
         rtcFaces[i + 0] = face.vertices[0].vertexIndex;
         rtcFaces[i + 1] = face.vertices[1].vertexIndex;
         rtcFaces[i + 2] = face.vertices[2].vertexIndex;
@@ -54,7 +54,7 @@ void GeometryParser::processRTCGeometry(
         0,                                /* slot */
         RTC_FORMAT_FLOAT2,                /* format */
         2 * sizeof(float),                /* byte stride */
-        vertices.size()                 /* item count */
+        vertices.size()                   /* item count */
     );
 
     float *rtcNormals = (float *)rtcSetNewGeometryBuffer(
@@ -63,7 +63,7 @@ void GeometryParser::processRTCGeometry(
         1,                                /* slot */
         RTC_FORMAT_FLOAT3,                /* format */
         3 * sizeof(float),                /* byte stride */
-        vertices.size()                 /* item count */
+        vertices.size()                   /* item count */
     );
 
     const unsigned long verticesSize = vertices.size();
