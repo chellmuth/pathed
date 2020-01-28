@@ -1,5 +1,6 @@
 #pragma once
 
+#include "geometry_parser.h"
 #include "handedness.h"
 #include "mtl_parser.h"
 #include "light.h"
@@ -26,15 +27,6 @@ public:
     std::vector<std::shared_ptr<Surface> > parse();
 
 private:
-    struct FaceIndices {
-        struct VertexIndices {
-            int vertexIndex;
-            int normalIndex;
-            int UVIndex;
-        };
-        VertexIndices vertices[3];
-    };
-
     std::ifstream &m_objFile;
     Transform m_transform;
     Handedness m_handedness;
