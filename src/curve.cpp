@@ -16,7 +16,7 @@ void Curve::create(
     const Transform &transform,
     std::shared_ptr<Material> material
 ) {
-    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_FLAT_BEZIER_CURVE);
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_ROUND_BEZIER_CURVE);
 
     float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
         rtcMesh,                /* geometry */

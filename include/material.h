@@ -49,6 +49,15 @@ public:
 
     Color emit() const;
 
+    virtual void writeStream(std::ostream &os) const {
+        os << "[Material: " << m_emit << "]";
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Material &m) {
+        m.writeStream(os);
+        return os;
+    }
+
 protected:
     Color m_emit;
 };
