@@ -23,8 +23,6 @@ public:
     SurfaceSample sample(RandomGenerator &random) const;
     float pdf(const Point3 &point) const;
 
-    Intersection testIntersect(const Ray &ray) const override;
-
     std::shared_ptr<Shape> getShape() const;
     std::shared_ptr<Material> getMaterial() const;
     std::shared_ptr<Medium> getInternalMedium() const { return m_internalMedium; }

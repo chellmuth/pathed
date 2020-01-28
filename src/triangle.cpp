@@ -52,58 +52,6 @@ float Triangle::pdf(const Point3 &point) const
     return 1.f / area();
 }
 
-Intersection Triangle::testIntersect(const Ray &ray)
-{
-    Intersection miss = IntersectionHelper::miss;
-
-    Vector3 e1 = (m_p1 - m_p0).toVector();
-    Vector3 e2 = (m_p2 - m_p0).toVector();
-
-    Vector3 s1 = ray.direction().cross(e2);
-    float divisor = s1.dot(e1);
-
-    if (divisor == 0.) { return miss; }
-
-    float inverseDivisor = 1.f / divisor;
-
-    Vector3 s = (ray.origin() - m_p0).toVector();
-    float b1 = s.dot(s1) * inverseDivisor;
-
-    if (b1 < 0.f || b1 > 1.f) { return miss; }
-
-    Vector3 s2 = s.cross(e1);
-    float b2 = ray.direction().dot(s2) * inverseDivisor;
-
-    if (b2 < 0.f || (b1 + b2) > 1.f) { return miss; }
-
-    float t = e2.dot(s2) * inverseDivisor;
-    if (t <= 0.001f) { return miss; }
-
-    Point3 hitPoint = m_p0 * (1.f - b1 - b2)  + (m_p1 * b1) + (m_p2 * b2);
-
-    UV uv = { 0.f, 0.f };
-    if (m_hasUVs) {
-        uv = {
-            .u = m_uv0.u * (1.f - b1 - b2) + (m_uv1.u * b1) + (m_uv2.u * b2),
-            .v = m_uv0.v * (1.f - b1 - b2) + (m_uv1.v * b1) + (m_uv2.v * b2),
-        };
-    }
-
-    Intersection hit = {
-        .hit = true,
-        .t = t,
-        .point = hitPoint,
-        .woWorld = -ray.direction(),
-        .normal = e2.cross(e1).normalized(),
-        .shadingNormal = e2.cross(e1).normalized(),
-        .uv = uv,
-        .material = nullptr,
-        .surface = nullptr
-    };
-
-    return hit;
-}
-
 float Triangle::area() const
 {
     Vector3 e1 = (m_p1 - m_p0).toVector();

@@ -23,7 +23,6 @@ public:
 
     SurfaceSample sample(RandomGenerator &random) const override;
     float pdf(const Point3 &point) const override;
-    Intersection testIntersect(const Ray &ray) override;
 
     void pushVertices(std::vector<float> &vertices) override;
     void pushIndices(std::vector<uint> &indices, int offset) override;

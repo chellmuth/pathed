@@ -16,7 +16,6 @@ public:
 
     SurfaceSample sample(RandomGenerator &random) const;
     float pdf(const Point3 &point) const override;
-    Intersection testIntersect(const Ray &ray);
 
     float area() const override;
 
