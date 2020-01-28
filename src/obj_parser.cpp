@@ -29,8 +29,7 @@ ObjParser::ObjParser(
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
-      m_currentGroup(""),
-      m_boundingBox()
+      m_currentGroup("")
 {
     m_geometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
 }
@@ -189,8 +188,6 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
     rtcReleaseGeometry(rtcMesh);
 
-    std::cout << "Added object: " << m_boundingBox.toString() << std::endl;
-
     return m_surfaces;
 }
 
@@ -241,7 +238,6 @@ void ObjParser::processVertex(string &vertexArgs)
 
     Point3 vertex = m_transform.apply(Point3(x, y, z));
     m_vertices.push_back(vertex);
-    m_boundingBox.update(vertex);
 }
 
 void ObjParser::processNormal(string &normalArgs)
