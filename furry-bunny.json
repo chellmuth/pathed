@@ -1,0 +1,22 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "0", "1" ],
+      "target": [ "0", "0", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "35"
+  },
+
+  "models": [
+    {
+      "type": "ply",
+      "filename": "assets/furry-bunny/bunny.ply"
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
+}

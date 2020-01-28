@@ -20,6 +20,7 @@
 #include "perfect_transmission.h"
 #include "phong.h"
 #include "point.h"
+#include "ply_parser.h"
 #include "quad.h"
 #include "scene.h"
 #include "sphere.h"
@@ -62,6 +63,11 @@ static void parseObjects(
     MediaMap &media
 );
 static void parseObj(
+    json objectJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+);
+static void parsePLY(
     json objectJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MediaMap &media
@@ -171,6 +177,8 @@ static void parseObjects(
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
             parseObj(objectJson, localSurfaces, media);
+        } else if (objectJson["type"] == "ply") {
+            parsePLY(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "sphere") {
             parseSphere(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "quad") {
@@ -207,6 +215,42 @@ static void parseObj(
     }
 
     for (auto surfacePtr : objSurfaces) {
+        auto shape = surfacePtr->getShape();
+        if (materialPtr) {
+            auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
+            surfaces.push_back(surface);
+        } else {
+            surfaces.push_back(surfacePtr);
+        }
+    }
+}
+
+static void parsePLY(
+    json plyJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MediaMap &media
+) {
+    std::ifstream plyFile(plyJson["filename"].get<std::string>());
+
+    auto transformJson = plyJson["transform"];
+    Transform transform;
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    PLYParser plyParser(plyFile, transform, false, Handedness::Left);
+    auto plySurfaces = plyParser.parse();
+
+    auto bsdfJson = plyJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+
+    std::shared_ptr<Medium> mediumPtr(nullptr);
+    std::string mediumKey;
+    if (checkString(plyJson["internal_medium"], &mediumKey)) {
+        mediumPtr = media[mediumKey];
+    }
+
+    for (auto surfacePtr : plySurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
             auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
