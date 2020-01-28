@@ -1,5 +1,6 @@
 #pragma once
 
+#include "handedness.h"
 #include "mtl_parser.h"
 #include "light.h"
 #include "point.h"
@@ -15,11 +16,6 @@
 #include <vector>
 
 class Triangle;
-
-enum class Handedness {
-    Right,
-    Left
-};
 
 struct BoundingBox {
     float xMin;
