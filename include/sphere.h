@@ -18,8 +18,6 @@ public:
     float pdf(const Point3 &point) const override;
     Intersection testIntersect(const Ray &ray);
 
-    std::shared_ptr<Shape> transform(const Transform &transform) const override;
-
     float area() const override;
 
     void create(

@@ -29,8 +29,6 @@ public:
     void pushIndices(std::vector<uint> &indices, int offset) override;
     void pushNormals(std::vector<float> &normals) override;
 
-    std::shared_ptr<Shape> transform(const Transform &transform) const override;
-
     void debug() const override;
 
     float area() const override;

@@ -106,8 +106,3 @@ float Sphere::area() const
 {
     return 4 * M_PI * m_radius * m_radius;
 }
-
-std::shared_ptr<Shape> Sphere::transform(const Transform &transform) const
-{
-    throw "Sphere transform unimplemented";
-}

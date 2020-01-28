@@ -30,8 +30,6 @@ public:
 
     virtual Intersection testIntersect(const Ray &ray) = 0;
 
-    virtual std::shared_ptr<Shape> transform(const Transform &transform) const = 0;
-
     virtual float area() const = 0;
 
     virtual void debug() const { printf("Debug not implemented!\n"); };
