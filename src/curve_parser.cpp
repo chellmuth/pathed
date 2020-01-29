@@ -82,12 +82,12 @@ std::vector<std::shared_ptr<Surface> > CurveParser::parse()
         rtcVertices[16 * i + 8 + 0] = curvePtr->p3().x();
         rtcVertices[16 * i + 8 + 1] = curvePtr->p3().y();
         rtcVertices[16 * i + 8 + 2] = curvePtr->p3().z();
-        rtcVertices[16 * i + 8 + 3] = curvePtr->width0();
+        rtcVertices[16 * i + 8 + 3] = curvePtr->width1();
 
         rtcVertices[16 * i + 12 + 0] = curvePtr->p4().x();
         rtcVertices[16 * i + 12 + 1] = curvePtr->p4().y();
         rtcVertices[16 * i + 12 + 2] = curvePtr->p4().z();
-        rtcVertices[16 * i + 12 + 3] = curvePtr->width0();
+        rtcVertices[16 * i + 12 + 3] = curvePtr->width1();
 
         rtcIndices[i] = i * 4;
     }

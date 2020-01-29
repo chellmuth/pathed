@@ -31,6 +31,7 @@ public:
     Point3 p3() const { return m_p3; }
     Point3 p4() const { return m_p4; }
     float width0() const { return m_width0; }
+    float width1() const { return m_width1; }
 
 private:
     Point3 m_p1, m_p2, m_p3, m_p4;
