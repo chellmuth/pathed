@@ -209,6 +209,7 @@ static void parseInstances(
             RTCScene instanceScene = rtcNewScene(g_rtcDevice);
             parseObj(instanceJson, localSurfaces, media, instanceScene);
             instanceLookup[parseString(instanceJson["name"])] = instanceScene;
+            rtcCommitScene(instanceScene);
         } else {
             throw "Unimplemented!";
         }
@@ -239,7 +240,9 @@ static void parseObjects(
             parseInstance(objectJson, instanceLookup);
         }
 
-        surfaces.push_back(localSurfaces);
+        if (localSurfaces.size() > 0) {
+            surfaces.push_back(localSurfaces);
+        }
     }
 }
 
@@ -362,6 +365,24 @@ static void parseInstance(
     RTCGeometry rtcGeometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_INSTANCE);
     rtcSetGeometryInstancedScene(rtcGeometry, rtcScene);
     rtcAttachGeometry(g_rtcScene, rtcGeometry);
+
+    const float transform[12] = {
+        parseFloat(instanceJson["transform"][0]),
+        parseFloat(instanceJson["transform"][1]),
+        parseFloat(instanceJson["transform"][2]),
+        parseFloat(instanceJson["transform"][3]),
+        parseFloat(instanceJson["transform"][4]),
+        parseFloat(instanceJson["transform"][5]),
+        parseFloat(instanceJson["transform"][6]),
+        parseFloat(instanceJson["transform"][7]),
+        parseFloat(instanceJson["transform"][8]),
+        parseFloat(instanceJson["transform"][9]),
+        parseFloat(instanceJson["transform"][10]),
+        parseFloat(instanceJson["transform"][11])
+    };
+
+    rtcSetGeometryTransform(rtcGeometry, 0, RTC_FORMAT_FLOAT3X4_ROW_MAJOR, &transform[0]);
+    rtcSetGeometryTimeStepCount(rtcGeometry, 1);
 
     rtcCommitGeometry(rtcGeometry);
 }

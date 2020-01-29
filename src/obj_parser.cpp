@@ -3,7 +3,6 @@
 #include "area_light.h"
 #include "camera.h"
 #include "color.h"
-#include "globals.h"
 #include "lambertian.h"
 #include "primitive.h"
 #include "string_util.h"
@@ -103,7 +102,7 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     // End "cube-normal" correction
 
     GeometryParser::processRTCGeometry(
-        g_rtcScene,
+        m_rtcScene,
         m_vertices,
         m_vertexUVs,
         m_vertexNormals,

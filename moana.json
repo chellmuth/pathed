@@ -1,0 +1,44 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "-1139.015893", "23.286733", "1479.794723" ],
+      "target": [ "244.814337", "238.807148", "560.380117" ],
+      "up": [ "-0.107149", "0.991691", "0.071190" ]
+    },
+    "fov": "70"
+  },
+
+  "instances": [
+    {
+      "type": "obj",
+      "name": "isHibiscus",
+      "filename": "/home/cjh/moana/island/obj/isHibiscus/isHibiscus.obj"
+    }
+  ],
+
+  "models": [
+    {
+      "type": "instance",
+      "name": "isHibiscus",
+      "transform": [
+        "1.0", "0.0", "0.0", "0.0",
+        "0.0", "1.0", "0.0", "0.0",
+        "0.0", "0.0", "1.0", "0.0"
+      ]
+    },
+    {
+      "type": "instance",
+      "name": "isHibiscus",
+      "transform": [
+        "1.0", "0.0", "0.0", "0.0",
+        "0.0", "1.0", "0.0", "300.0",
+        "0.0", "0.0", "1.0", "0.0"
+      ]
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
+}
