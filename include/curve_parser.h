@@ -21,7 +21,7 @@ public:
         Handedness handedness
     );
 
-    void parse(std::vector<std::vector<std::shared_ptr<Surface> > > &nestedSurfaces);
+    std::vector<std::shared_ptr<Surface> > parse();
 
 private:
     std::shared_ptr<Curve> parseCurve(const std::string &line);

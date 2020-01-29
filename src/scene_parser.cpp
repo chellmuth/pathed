@@ -73,6 +73,10 @@ static void parsePLY(
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MediaMap &media
 );
+static void parseCurve(
+    json curveJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces
+);
 static void parseSphere(
     json sphereJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
@@ -129,10 +133,6 @@ Scene parseScene(std::ifstream &sceneFile)
         lights.push_back(environmentLight);
     }
 
-    std::ifstream curveFile("./assets/furry-bunny/bunnyfur.pbrt");
-    CurveParser curveParser(curveFile);
-    curveParser.parse(surfaces);
-
     Scene scene(
         surfaces,
         lights,
@@ -188,6 +188,8 @@ static void parseObjects(
             parseSphere(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "quad") {
             parseQuad(objectJson, localSurfaces);
+        } else if (objectJson["type"] == "pbrt-curve") {
+            parseCurve(objectJson, localSurfaces);
         }
 
         surfaces.push_back(localSurfaces);
@@ -259,6 +261,35 @@ static void parsePLY(
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
             auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
+            surfaces.push_back(surface);
+        } else {
+            surfaces.push_back(surfacePtr);
+        }
+    }
+}
+
+static void parseCurve(
+    json curveJson,
+    std::vector<std::shared_ptr<Surface> > &surfaces
+) {
+    std::ifstream curveFile(curveJson["filename"].get<std::string>());
+
+    auto transformJson = curveJson["transform"];
+    Transform transform;
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    CurveParser curveParser(curveFile, transform, false, Handedness::Left);
+    auto curveSurfaces = curveParser.parse();
+
+    auto bsdfJson = curveJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+
+    for (auto surfacePtr : curveSurfaces) {
+        auto shape = surfacePtr->getShape();
+        if (materialPtr) {
+            auto surface = std::make_shared<Surface>(shape, materialPtr, nullptr);
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);

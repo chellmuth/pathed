@@ -10,6 +10,10 @@
 
   "models": [
     {
+      "type": "pbrt-curve",
+      "filename": "assets/furry-bunny/bunnyfur.pbrt"
+    },
+    {
       "type": "ply",
       "filename": "assets/furry-bunny/bunny.ply",
       "transform": {

@@ -29,9 +29,7 @@ CurveParser::CurveParser(
     m_handedness(handedness)
 {}
 
-using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
-
-void CurveParser::parse(NestedSurfaceVector &nestedSurfaces)
+std::vector<std::shared_ptr<Surface> > CurveParser::parse()
 {
     std::cout << "Parsing" << std::endl;
     std::vector<std::shared_ptr<Curve> > curves;
@@ -109,9 +107,9 @@ void CurveParser::parse(NestedSurfaceVector &nestedSurfaces)
         surfaces.push_back(surfacePtr);
     }
 
-    nestedSurfaces.push_back(surfaces);
-
     std::cout << "Parsing complete!" << std::endl;
+
+    return surfaces;
 }
 
 std::shared_ptr<Curve> CurveParser::parseCurve(const std::string &line)
