@@ -25,6 +25,10 @@ public:
         RandomGenerator &random
     ) const override;
 
+    void writeStream(std::ostream &os) const override {
+        os << "[Lambertian: diffuse=" << m_diffuse << " emit=" << m_emit << "]";
+    }
+
 private:
     Color m_diffuse;
     std::shared_ptr<Albedo> m_albedo;
