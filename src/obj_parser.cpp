@@ -23,12 +23,14 @@ ObjParser::ObjParser(
     std::ifstream &objFile,
     const Transform &transform,
     bool useFaceNormals,
-    Handedness handedness
+    Handedness handedness,
+    RTCScene rtcScene
 )
     : m_objFile(objFile),
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
+      m_rtcScene(rtcScene),
       m_currentGroup("")
 {}
 

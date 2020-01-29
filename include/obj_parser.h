@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry_parser.h"
+#include "globals.h"
 #include "handedness.h"
 #include "mtl_parser.h"
 #include "light.h"
@@ -20,9 +21,9 @@ class Triangle;
 
 class ObjParser {
 public:
-    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right) {};
-    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right) {};
-    ObjParser(std::ifstream &objFile, const Transform &transform, bool useFaceNormals, Handedness handedness);
+    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right, g_rtcScene) {};
+    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right, g_rtcScene) {};
+    ObjParser(std::ifstream &objFile, const Transform &transform, bool useFaceNormals, Handedness handedness, RTCScene rtcScene);
 
     std::vector<std::shared_ptr<Surface> > parse();
 
@@ -31,6 +32,7 @@ private:
     Transform m_transform;
     Handedness m_handedness;
     bool m_useFaceNormals;
+    RTCScene m_rtcScene;
 
     std::string m_currentGroup;
     std::string m_currentMaterialName;
