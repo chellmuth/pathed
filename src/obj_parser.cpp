@@ -30,9 +30,7 @@ ObjParser::ObjParser(
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
       m_currentGroup("")
-{
-    m_geometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
-}
+{}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {

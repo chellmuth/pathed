@@ -32,8 +32,6 @@ private:
     Handedness m_handedness;
     bool m_useFaceNormals;
 
-    RTCGeometry m_geometry;
-
     std::string m_currentGroup;
     std::string m_currentMaterialName;
 
