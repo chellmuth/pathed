@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "geometry_parser.h"
+#include "globals.h"
 #include "lambertian.h"
 #include "point.h"
 #include "triangle.h"
@@ -140,6 +141,7 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
     std::vector<UV> vertexUVs;
     std::vector<Vector3> vertexNormals;
     GeometryParser::processRTCGeometry(
+        g_rtcScene,
         vertices,
         vertexUVs,
         vertexNormals,

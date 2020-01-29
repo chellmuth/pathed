@@ -2,9 +2,8 @@
 
 #include "globals.h"
 
-#include <embree3/rtcore.h>
-
 void GeometryParser::processRTCGeometry(
+    RTCScene rtcScene,
     const std::vector<Point3> &vertices,
     std::vector<UV> &vertexUVs,
     std::vector<Vector3> vertexNormals,
@@ -93,6 +92,6 @@ void GeometryParser::processRTCGeometry(
 
     rtcCommitGeometry(rtcMesh);
 
-    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
+    unsigned int rtcGeometryID = rtcAttachGeometry(rtcScene, rtcMesh);
     rtcReleaseGeometry(rtcMesh);
 }

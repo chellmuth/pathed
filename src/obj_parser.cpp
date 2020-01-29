@@ -101,6 +101,7 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     // End "cube-normal" correction
 
     GeometryParser::processRTCGeometry(
+        g_rtcScene,
         m_vertices,
         m_vertexUVs,
         m_vertexNormals,

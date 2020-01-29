@@ -4,6 +4,8 @@
 #include "uv.h"
 #include "vector.h"
 
+#include <embree3/rtcore.h>
+
 #include <vector>
 
 struct FaceIndices {
@@ -17,6 +19,7 @@ struct FaceIndices {
 
 namespace GeometryParser {
     void processRTCGeometry(
+        RTCScene rtcScene,
         const std::vector<Point3> &vertices,
         std::vector<UV> &vertexUVs,
         std::vector<Vector3> vertexNormals,
