@@ -11,7 +11,11 @@
   "models": [
     {
       "type": "pbrt-curve",
-      "filename": "assets/furry-bunny/bunnyfur.pbrt"
+      "filename": "assets/furry-bunny/bunnyfur.pbrt",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.5", "0.5", "0.2" ]
+      }
     },
     {
       "type": "ply",
