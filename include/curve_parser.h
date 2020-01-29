@@ -1,5 +1,6 @@
 #pragma once
 
+#include "curve.h"
 #include "handedness.h"
 #include "surface.h"
 #include "transform.h"
@@ -20,10 +21,10 @@ public:
         Handedness handedness
     );
 
-    void parse(std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces);
+    void parse(std::vector<std::vector<std::shared_ptr<Surface> > > &nestedSurfaces);
 
 private:
-    std::vector<std::shared_ptr<Surface> > parseCurve(const std::string &line);
+    std::shared_ptr<Curve> parseCurve(const std::string &line);
 
     std::ifstream &m_curveFile;
     Transform m_transform;
