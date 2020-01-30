@@ -23,6 +23,7 @@
 #include "point.h"
 #include "ply_parser.h"
 #include "quad.h"
+#include "rtc_manager.h"
 #include "scene.h"
 #include "sphere.h"
 #include "surface.h"
@@ -64,18 +65,22 @@ static void parseInstances(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceMap,
-    std::vector<RTCScene> &rtcSceneLookup
+    std::vector<RTCScene> &rtcSceneLookup,
+    RTCManager &rtcManager
 );
 static void parseInstance(
     json instanceJson,
-    InstanceMap &instanceLookup
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    InstanceMap &instanceLookup,
+    RTCManager &rtcManager
 );
 static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLoop,
-    std::vector<RTCScene> &rtcSceneLooup
+    std::vector<RTCScene> &rtcSceneLooup,
+    RTCManager &rtcManager
 );
 static void parseObj(
     json objJson,
@@ -125,6 +130,8 @@ Scene parseScene(std::ifstream &sceneFile)
         resolution
     );
 
+    RTCManager rtcManager(g_rtcScene);
+
     std::map<std::string, std::shared_ptr<Medium> > media;
     auto mediaJson = sceneJson["media"];
     parseMedia(mediaJson, media);
@@ -135,10 +142,10 @@ Scene parseScene(std::ifstream &sceneFile)
     std::vector<RTCScene> rtcSceneLookup;
 
     auto instances = sceneJson["instances"];
-    parseInstances(instances, surfaces, media, instanceLookup, rtcSceneLookup);
+    parseInstances(instances, surfaces, media, instanceLookup, rtcSceneLookup, rtcManager);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces, media, instanceLookup, rtcSceneLookup);
+    parseObjects(objects, surfaces, media, instanceLookup, rtcSceneLookup, rtcManager);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -205,7 +212,8 @@ static void parseInstances(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
-    std::vector<RTCScene> &rtcSceneLookup
+    std::vector<RTCScene> &rtcSceneLookup,
+    RTCManager &rtcManager
 ) {
     for (auto instanceJson : instancesJson) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -215,6 +223,11 @@ static void parseInstances(
             parseObj(instanceJson, localSurfaces, media, instanceScene);
             instanceLookup[parseString(instanceJson["name"])] = instanceScene;
             rtcCommitScene(instanceScene);
+
+            rtcManager.registerInstanceSurfaces(
+                instanceScene,
+                localSurfaces
+            );
 
             rtcSceneLookup.push_back(instanceScene);
         } else {
@@ -230,9 +243,12 @@ static void parseObjects(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
-    std::vector<RTCScene> &rtcSceneLookup
+    std::vector<RTCScene> &rtcSceneLookup,
+    RTCManager &rtcManager
 ) {
     for (auto objectJson : objectsJson) {
+        bool needsRegistration = true;
+
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
             parseObj(objectJson, localSurfaces, media);
@@ -245,13 +261,13 @@ static void parseObjects(
         } else if (objectJson["type"] == "pbrt-curve") {
             parseCurve(objectJson, localSurfaces);
         } else if (objectJson["type"] == "instance") {
-            parseInstance(objectJson, instanceLookup);
+            parseInstance(objectJson, localSurfaces, instanceLookup, rtcManager);
+            needsRegistration = false;
         }
 
-        if (localSurfaces.size() > 0) {
-            surfaces.push_back(localSurfaces);
-            rtcSceneLookup.push_back(g_rtcScene);
-        }
+        surfaces.push_back(localSurfaces);
+        rtcSceneLookup.push_back(g_rtcScene);
+        rtcManager.registerSurfaces(localSurfaces);
     }
 }
 
@@ -367,13 +383,15 @@ static void parseCurve(
 
 static void parseInstance(
     json instanceJson,
-    InstanceMap &instanceLookup
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    InstanceMap &instanceLookup,
+    RTCManager &rtcManager
 ) {
     RTCScene rtcScene = instanceLookup[parseString(instanceJson["name"])];
 
     RTCGeometry rtcGeometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_INSTANCE);
     rtcSetGeometryInstancedScene(rtcGeometry, rtcScene);
-    rtcAttachGeometry(g_rtcScene, rtcGeometry);
+    int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcGeometry);
 
     const float transform[16] = {
         parseFloat(instanceJson["transform"][0]),
@@ -398,6 +416,12 @@ static void parseInstance(
     rtcSetGeometryTimeStepCount(rtcGeometry, 1);
 
     rtcCommitGeometry(rtcGeometry);
+
+    rtcManager.registerInstancedSurfaces(
+        rtcScene,
+        rtcGeometryID,
+        surfaces
+    );
 }
 
 static void parseSphere(
