@@ -13,13 +13,13 @@ public:
     RTCManager(RTCScene rootScene);
 
     void registerSurfaces(
-        int rtcGeometryID,
+        /* int rtcGeometryID, */
         std::vector<std::shared_ptr<Surface> > &geometrySurfaces
     );
 
     void registerInstanceSurfaces(
         RTCScene rtcInstanceScene,
-        int rtcGeometryID,
+        /* int rtcGeometryID, */
         std::vector<std::shared_ptr<Surface> > &geometrySurfaces
     );
 
@@ -45,7 +45,7 @@ private:
 
     void registerSurfaces(
         RTCScene rtcScene,
-        int rtcGeometryID,
+        /* int rtcGeometryID, */
         std::vector<std::shared_ptr<Surface> > &geometrySurfaces
     );
 
