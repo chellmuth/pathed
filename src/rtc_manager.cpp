@@ -4,7 +4,9 @@
 
 RTCManager::RTCManager(RTCScene rootScene)
     : m_rootScene(rootScene)
-{}
+{
+    m_rtcSceneToSurfaces[m_rootScene] = std::vector<std::vector<std::shared_ptr<Surface> > >();
+}
 
 void RTCManager::registerSurfaces(
     RTCScene rtcScene,
@@ -16,7 +18,7 @@ void RTCManager::registerSurfaces(
         m_rtcSceneToSurfaces[rtcScene] = std::vector<std::vector<std::shared_ptr<Surface> > >();
     }
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > &sceneSurfaces = m_rtcSceneToSurfaces[m_rootScene];
+    std::vector<std::vector<std::shared_ptr<Surface> > > &sceneSurfaces = m_rtcSceneToSurfaces[rtcScene];
 
     // assert(sceneSurfaces.size() - 1 == rtcGeometryID);
 

@@ -499,7 +499,7 @@ void ObjParser::processUseMaterial(std::string &materialArgs)
     MtlMaterial currentMaterial = m_materialLookup[materialName];
     Color color = currentMaterial.diffuse;
 
-    std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
+    // std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
 
     m_currentMaterialName = materialArgs;
 }

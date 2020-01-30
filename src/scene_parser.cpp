@@ -168,6 +168,7 @@ Scene parseScene(std::ifstream &sceneFile)
 
     Scene scene(
         surfaces,
+        rtcManager,
         rtcSceneLookup,
         lights,
         environmentLight,

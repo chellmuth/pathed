@@ -7,6 +7,7 @@
 #include "point.h"
 #include "primitive.h"
 #include "random_generator.h"
+#include "rtc_manager.h"
 #include "surface.h"
 #include "world_frame.h"
 #include "vector.h"
@@ -84,6 +85,7 @@ class Scene {
 public:
     Scene(
         NestedSurfaceVector surfaces,
+        RTCManager &rtcManager,
         std::vector<RTCScene> rtcSceneLookup,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
@@ -123,6 +125,7 @@ private:
     void registerOcclusionFilters() const;
 
     NestedSurfaceVector m_surfaces;
+    RTCManager m_rtcManager;
     std::vector<RTCScene> m_rtcSceneLookup;
 
     std::vector<std::shared_ptr<Light> > m_lights;

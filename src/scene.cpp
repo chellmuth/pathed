@@ -25,12 +25,14 @@ void Scene::InitCustomRTCIntersectContext(
 
 Scene::Scene(
     NestedSurfaceVector surfaces,
+    RTCManager &rtcManager,
     std::vector<RTCScene> rtcSceneLookup,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
     : m_surfaces(surfaces),
+      m_rtcManager(rtcManager),
       m_rtcSceneLookup(rtcSceneLookup),
       m_lights(lights),
       m_environmentLight(environmentLight),
@@ -73,17 +75,17 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 void Scene::registerOcclusionFilters() const
 {
     for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
-        RTCGeometry rtcGeometry = rtcGetGeometry(m_rtcSceneLookup[geomID], geomID);
+        // RTCGeometry rtcGeometry = rtcGetGeometry(m_rtcSceneLookup[geomID], geomID);
 
-        rtcSetGeometryIntersectFilterFunction(
-            rtcGeometry,
-            occlusionFilter
-        );
+        // rtcSetGeometryIntersectFilterFunction(
+        //     rtcGeometry,
+        //     occlusionFilter
+        // );
 
-        rtcSetGeometryOccludedFilterFunction(
-            rtcGeometry,
-            occlusionFilter
-        );
+        // rtcSetGeometryOccludedFilterFunction(
+        //     rtcGeometry,
+        //     occlusionFilter
+        // );
     }
 }
 
@@ -126,7 +128,12 @@ Intersection Scene::testIntersect(const Ray &ray) const
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
         RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
 
-        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        // const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &surfacePtr = m_rtcManager.lookupInstancedSurface(
+            rayHit.hit.geomID,
+            rayHit.hit.primID,
+            rayHit.hit.instID[0]
+        );
         const auto &shapePtr = surfacePtr->getShape();
 
         UV uv;
