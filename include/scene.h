@@ -84,6 +84,7 @@ class Scene {
 public:
     Scene(
         NestedSurfaceVector surfaces,
+        std::vector<RTCScene> rtcSceneLookup,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
         std::shared_ptr<Camera> camera
@@ -122,6 +123,7 @@ private:
     void registerOcclusionFilters() const;
 
     NestedSurfaceVector m_surfaces;
+    std::vector<RTCScene> m_rtcSceneLookup;
 
     std::vector<std::shared_ptr<Light> > m_lights;
     std::shared_ptr<EnvironmentLight> m_environmentLight;

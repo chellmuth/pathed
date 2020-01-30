@@ -63,7 +63,8 @@ static void parseInstances(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
-    InstanceMap &instanceMap
+    InstanceMap &instanceMap,
+    std::vector<RTCScene> &rtcSceneLookup
 );
 static void parseInstance(
     json instanceJson,
@@ -73,7 +74,8 @@ static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
-    InstanceMap &instanceLoop
+    InstanceMap &instanceLoop,
+    std::vector<RTCScene> &rtcSceneLooup
 );
 static void parseObj(
     json objJson,
@@ -130,12 +132,13 @@ Scene parseScene(std::ifstream &sceneFile)
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
 
     InstanceMap instanceLookup;
+    std::vector<RTCScene> rtcSceneLookup;
 
     auto instances = sceneJson["instances"];
-    parseInstances(instances, surfaces, media, instanceLookup);
+    parseInstances(instances, surfaces, media, instanceLookup, rtcSceneLookup);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces, media, instanceLookup);
+    parseObjects(objects, surfaces, media, instanceLookup, rtcSceneLookup);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -158,6 +161,7 @@ Scene parseScene(std::ifstream &sceneFile)
 
     Scene scene(
         surfaces,
+        rtcSceneLookup,
         lights,
         environmentLight,
         camera
@@ -200,7 +204,8 @@ static void parseInstances(
     json instancesJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
-    InstanceMap &instanceLookup
+    InstanceMap &instanceLookup,
+    std::vector<RTCScene> &rtcSceneLookup
 ) {
     for (auto instanceJson : instancesJson) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -210,6 +215,8 @@ static void parseInstances(
             parseObj(instanceJson, localSurfaces, media, instanceScene);
             instanceLookup[parseString(instanceJson["name"])] = instanceScene;
             rtcCommitScene(instanceScene);
+
+            rtcSceneLookup.push_back(instanceScene);
         } else {
             throw "Unimplemented!";
         }
@@ -222,7 +229,8 @@ static void parseObjects(
     json objectsJson,
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
-    InstanceMap &instanceLookup
+    InstanceMap &instanceLookup,
+    std::vector<RTCScene> &rtcSceneLookup
 ) {
     for (auto objectJson : objectsJson) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -242,6 +250,7 @@ static void parseObjects(
 
         if (localSurfaces.size() > 0) {
             surfaces.push_back(localSurfaces);
+            rtcSceneLookup.push_back(g_rtcScene);
         }
     }
 }

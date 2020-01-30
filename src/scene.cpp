@@ -25,11 +25,13 @@ void Scene::InitCustomRTCIntersectContext(
 
 Scene::Scene(
     NestedSurfaceVector surfaces,
+    std::vector<RTCScene> rtcSceneLookup,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
     : m_surfaces(surfaces),
+      m_rtcSceneLookup(rtcSceneLookup),
       m_lights(lights),
       m_environmentLight(environmentLight),
       m_camera(camera)
@@ -70,19 +72,19 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    // for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
-    //     RTCGeometry rtcGeometry = rtcGetGeometry(g_rtcScene, geomID);
+    for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
+        RTCGeometry rtcGeometry = rtcGetGeometry(m_rtcSceneLookup[geomID], geomID);
 
-    //     rtcSetGeometryIntersectFilterFunction(
-    //         rtcGeometry,
-    //         occlusionFilter
-    //     );
+        rtcSetGeometryIntersectFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
 
-    //     rtcSetGeometryOccludedFilterFunction(
-    //         rtcGeometry,
-    //         occlusionFilter
-    //     );
-    // }
+        rtcSetGeometryOccludedFilterFunction(
+            rtcGeometry,
+            occlusionFilter
+        );
+    }
 }
 
 NestedSurfaceVector Scene::getSurfaces()
