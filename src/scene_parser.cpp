@@ -366,7 +366,7 @@ static void parseInstance(
     rtcSetGeometryInstancedScene(rtcGeometry, rtcScene);
     rtcAttachGeometry(g_rtcScene, rtcGeometry);
 
-    const float transform[12] = {
+    const float transform[16] = {
         parseFloat(instanceJson["transform"][0]),
         parseFloat(instanceJson["transform"][1]),
         parseFloat(instanceJson["transform"][2]),
@@ -378,10 +378,14 @@ static void parseInstance(
         parseFloat(instanceJson["transform"][8]),
         parseFloat(instanceJson["transform"][9]),
         parseFloat(instanceJson["transform"][10]),
-        parseFloat(instanceJson["transform"][11])
+        parseFloat(instanceJson["transform"][11]),
+        parseFloat(instanceJson["transform"][12]),
+        parseFloat(instanceJson["transform"][13]),
+        parseFloat(instanceJson["transform"][14]),
+        parseFloat(instanceJson["transform"][15]),
     };
 
-    rtcSetGeometryTransform(rtcGeometry, 0, RTC_FORMAT_FLOAT3X4_ROW_MAJOR, &transform[0]);
+    rtcSetGeometryTransform(rtcGeometry, 0, RTC_FORMAT_FLOAT4X4_COLUMN_MAJOR, &transform[0]);
     rtcSetGeometryTimeStepCount(rtcGeometry, 1);
 
     rtcCommitGeometry(rtcGeometry);
