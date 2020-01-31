@@ -122,13 +122,22 @@ Intersection Scene::testIntersect(const Ray &ray) const
 
     // need parallel arrays of geometry and materials
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-        RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
-
-        const auto &surfacePtr = m_rtcManager.lookupInstancedSurface(
-            rayHit.hit.geomID,
-            rayHit.hit.primID,
-            rayHit.hit.instID[0]
-        );
+        RTCGeometry geometry;
+        std::shared_ptr<Surface> surfacePtr;
+        if (rayHit.hit.instID[0] == RTC_INVALID_GEOMETRY_ID) {
+            geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
+            surfacePtr = m_rtcManager.lookupSurface(
+                rayHit.hit.geomID,
+                rayHit.hit.primID
+            );
+        } else {
+            geometry = m_rtcManager.lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            surfacePtr = m_rtcManager.lookupInstancedSurface(
+                rayHit.hit.geomID,
+                rayHit.hit.primID,
+                rayHit.hit.instID[0]
+            );
+        }
         const auto &shapePtr = surfacePtr->getShape();
 
         UV uv;

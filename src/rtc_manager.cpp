@@ -74,3 +74,11 @@ std::shared_ptr<Surface> RTCManager::lookupSurface(RTCScene rtcScene, int rtcGeo
     const std::vector<std::shared_ptr<Surface> > &geometrySurfaces = sceneSurfaces.at(rtcGeometryID);
     return geometrySurfaces.at(rtcPrimitiveID);
 }
+
+RTCGeometry RTCManager::lookupGeometry(
+    int rtcGeometryID,
+    int rtcInstanceID
+) const {
+    RTCScene rtcInstanceScene = m_rtcSceneLookup.at(rtcInstanceID);
+    return rtcGetGeometry(rtcInstanceScene, rtcGeometryID);
+}
