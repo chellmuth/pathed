@@ -25,13 +25,11 @@ void Scene::InitCustomRTCIntersectContext(
 
 Scene::Scene(
     RTCManager &rtcManager,
-    std::vector<RTCScene> rtcSceneLookup,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
     : m_rtcManager(rtcManager),
-      m_rtcSceneLookup(rtcSceneLookup),
       m_lights(lights),
       m_environmentLight(environmentLight),
       m_camera(camera)

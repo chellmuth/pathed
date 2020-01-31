@@ -65,7 +65,6 @@ static void parseInstances(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceMap,
-    std::vector<RTCScene> &rtcSceneLookup,
     RTCManager &rtcManager
 );
 static void parseInstance(
@@ -79,7 +78,6 @@ static void parseObjects(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLoop,
-    std::vector<RTCScene> &rtcSceneLooup,
     RTCManager &rtcManager
 );
 static void parseObj(
@@ -139,13 +137,12 @@ Scene parseScene(std::ifstream &sceneFile)
     std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
 
     InstanceMap instanceLookup;
-    std::vector<RTCScene> rtcSceneLookup;
 
     auto instances = sceneJson["instances"];
-    parseInstances(instances, surfaces, media, instanceLookup, rtcSceneLookup, rtcManager);
+    parseInstances(instances, surfaces, media, instanceLookup, rtcManager);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces, media, instanceLookup, rtcSceneLookup, rtcManager);
+    parseObjects(objects, surfaces, media, instanceLookup, rtcManager);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -168,7 +165,6 @@ Scene parseScene(std::ifstream &sceneFile)
 
     Scene scene(
         rtcManager,
-        rtcSceneLookup,
         lights,
         environmentLight,
         camera
@@ -212,7 +208,6 @@ static void parseInstances(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
-    std::vector<RTCScene> &rtcSceneLookup,
     RTCManager &rtcManager
 ) {
     for (auto instanceJson : instancesJson) {
@@ -228,8 +223,6 @@ static void parseInstances(
                 instanceScene,
                 localSurfaces
             );
-
-            rtcSceneLookup.push_back(instanceScene);
         } else {
             throw "Unimplemented!";
         }
@@ -243,7 +236,6 @@ static void parseObjects(
     std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
-    std::vector<RTCScene> &rtcSceneLookup,
     RTCManager &rtcManager
 ) {
     for (auto objectJson : objectsJson) {
@@ -266,7 +258,6 @@ static void parseObjects(
         }
 
         surfaces.push_back(localSurfaces);
-        rtcSceneLookup.push_back(g_rtcScene);
         rtcManager.registerSurfaces(localSurfaces);
     }
 }
