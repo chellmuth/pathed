@@ -82,3 +82,26 @@ RTCGeometry RTCManager::lookupGeometry(
     RTCScene rtcInstanceScene = m_rtcSceneLookup.at(rtcInstanceID);
     return rtcGetGeometry(rtcInstanceScene, rtcGeometryID);
 }
+
+
+void RTCManager::registerFilters(void (&callback)(const RTCFilterFunctionNArguments *))
+{
+    const NestedSurfaceVector &rootSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
+    for (int rtcRootGeometryID = 0; rtcRootGeometryID < rootSurfaces.size(); rtcRootGeometryID++) {
+        if (m_rtcSceneLookup.count(rtcRootGeometryID) == 0) {
+            const RTCGeometry rtcGeometry = rtcGetGeometry(m_rootScene, rtcRootGeometryID);
+            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
+            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
+            continue;
+        }
+
+        const RTCScene instanceScene = m_rtcSceneLookup.at(rtcRootGeometryID);
+        const NestedSurfaceVector sceneSurfaces = m_rtcSceneToSurfaces.at(instanceScene);
+
+        for (int rtcGeometryID = 0; rtcGeometryID < sceneSurfaces.size(); rtcGeometryID++) {
+            const RTCGeometry rtcGeometry = rtcGetGeometry(instanceScene, rtcGeometryID);
+            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
+            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
+        }
+    }
+}

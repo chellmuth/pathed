@@ -51,6 +51,8 @@ public:
         return m_rtcSceneToSurfaces.at(m_rootScene);
     }
 
+    void registerFilters(void (&callback)(const RTCFilterFunctionNArguments *));
+
 private:
     RTCScene m_rootScene;
 
@@ -65,7 +67,6 @@ private:
         int rtcGeometryID,
         int rtcPrimitiveID
     ) const;
-
 
     std::map<int, RTCScene> m_rtcSceneLookup;
     std::map<RTCScene, NestedSurfaceVector> m_rtcSceneToSurfaces;

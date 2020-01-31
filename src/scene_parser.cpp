@@ -258,7 +258,9 @@ static void parseObjects(
         }
 
         surfaces.push_back(localSurfaces);
-        rtcManager.registerSurfaces(localSurfaces);
+        if (needsRegistration) {
+            rtcManager.registerSurfaces(localSurfaces);
+        }
     }
 }
 

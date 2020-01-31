@@ -49,11 +49,14 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
     RTCHit *hit = (RTCHit *)args->hit;
     if (hit == nullptr) { return; }
 
-    const auto &surfacePtr = context->rtcManagerPtr->lookupInstancedSurface(
-        hit->geomID,
-        hit->primID,
-        hit->instID[0]
-    );
+    const auto &surfacePtr = (hit->instID[0] == RTC_INVALID_GEOMETRY_ID)
+        ? context->rtcManagerPtr->lookupSurface(hit->geomID, hit->primID)
+        : context->rtcManagerPtr->lookupInstancedSurface(
+            hit->geomID,
+            hit->primID,
+            hit->instID[0]
+        )
+    ;
 
     if (!surfacePtr->getMaterial()->isContainer()) { return; }
 
@@ -73,20 +76,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    const auto &surfaces = m_rtcManagerPtr->getSurfaces();
-    for (int geomID = 0; geomID < surfaces.size(); geomID++) {
-        // RTCGeometry rtcGeometry = m_rtcManager.lookupGeometry(g_rtcScene, geomID);
-
-        // rtcSetGeometryIntersectFilterFunction(
-        //     rtcGeometry,
-        //     occlusionFilter
-        // );
-
-        // rtcSetGeometryOccludedFilterFunction(
-        //     rtcGeometry,
-        //     occlusionFilter
-        // );
-    }
+    m_rtcManagerPtr->registerFilters(occlusionFilter);
 }
 
 Intersection Scene::testIntersect(const Ray &ray) const
