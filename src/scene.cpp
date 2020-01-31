@@ -19,20 +19,18 @@ void Scene::InitCustomRTCIntersectContext(
 ) const
 {
     rtcInitIntersectContext(&contextPtr->context);
-    contextPtr->surfacesPtr = &m_surfaces;
+    contextPtr->rtcManagerPtr = &m_rtcManager;
     contextPtr->shouldIntersectPassthroughs = shouldIntersectPassthroughs;
 }
 
 Scene::Scene(
-    NestedSurfaceVector surfaces,
     RTCManager &rtcManager,
     std::vector<RTCScene> rtcSceneLookup,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
-    : m_surfaces(surfaces),
-      m_rtcManager(rtcManager),
+    : m_rtcManager(rtcManager),
       m_rtcSceneLookup(rtcSceneLookup),
       m_lights(lights),
       m_environmentLight(environmentLight),
@@ -53,8 +51,11 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
     RTCHit *hit = (RTCHit *)args->hit;
     if (hit == nullptr) { return; }
 
-    const NestedSurfaceVector *surfaces = context->surfacesPtr;
-    const auto &surfacePtr = (*surfaces)[hit->geomID][hit->primID];
+    const auto &surfacePtr = context->rtcManagerPtr->lookupInstancedSurface(
+        hit->geomID,
+        hit->primID,
+        hit->instID[0]
+    );
 
     if (!surfacePtr->getMaterial()->isContainer()) { return; }
 
@@ -74,7 +75,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
+    // for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
         // RTCGeometry rtcGeometry = rtcGetGeometry(m_rtcSceneLookup[geomID], geomID);
 
         // rtcSetGeometryIntersectFilterFunction(
@@ -86,12 +87,7 @@ void Scene::registerOcclusionFilters() const
         //     rtcGeometry,
         //     occlusionFilter
         // );
-    }
-}
-
-NestedSurfaceVector Scene::getSurfaces()
-{
-    return m_surfaces;
+    // }
 }
 
 Intersection Scene::testIntersect(const Ray &ray) const
@@ -128,7 +124,6 @@ Intersection Scene::testIntersect(const Ray &ray) const
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
         RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
 
-        // const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
         const auto &surfacePtr = m_rtcManager.lookupInstancedSurface(
             rayHit.hit.geomID,
             rayHit.hit.primID,
@@ -235,7 +230,11 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
     if (hit.geomID != RTC_INVALID_GEOMETRY_ID) {
         RTCGeometry geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
 
-        const auto &surfacePtr = m_surfaces[rayHit.hit.geomID][rayHit.hit.primID];
+        const auto &surfacePtr = m_rtcManager.lookupInstancedSurface(
+            rayHit.hit.geomID,
+            rayHit.hit.primID,
+            rayHit.hit.instID[0]
+        );
         const auto &shapePtr = surfacePtr->getShape();
 
         UV uv;

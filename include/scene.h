@@ -40,7 +40,7 @@ struct OcclusionResult {
 struct CustomRTCIntersectContext {
     RTCIntersectContext context;
     bool shouldIntersectPassthroughs;
-    const NestedSurfaceVector *surfacesPtr;
+    const RTCManager *rtcManagerPtr;
     std::vector<VolumeEvent> volumeEvents;
 };
 
@@ -84,7 +84,6 @@ struct LightSample {
 class Scene {
 public:
     Scene(
-        NestedSurfaceVector surfaces,
         RTCManager &rtcManager,
         std::vector<RTCScene> rtcSceneLookup,
         std::vector<std::shared_ptr<Light> > lights,
@@ -99,7 +98,7 @@ public:
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
-    NestedSurfaceVector getSurfaces();
+    NestedSurfaceVector getSurfaces() { return m_rtcManager.getSurfaces(); }
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
@@ -124,7 +123,6 @@ private:
     ) const;
     void registerOcclusionFilters() const;
 
-    NestedSurfaceVector m_surfaces;
     RTCManager m_rtcManager;
     std::vector<RTCScene> m_rtcSceneLookup;
 

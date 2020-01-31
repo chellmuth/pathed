@@ -40,6 +40,11 @@ public:
         int rtcPrimitiveID
     ) const;
 
+    std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces()
+    {
+        return m_rtcSceneToSurfaces[m_rootScene];
+    }
+
 private:
     RTCScene m_rootScene;
 
