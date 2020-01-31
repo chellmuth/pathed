@@ -97,7 +97,7 @@ public:
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
-    NestedSurfaceVector getSurfaces() { return m_rtcManager.getSurfaces(); }
+    const NestedSurfaceVector &getSurfaces() const { return m_rtcManager.getSurfaces(); }
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;

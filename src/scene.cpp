@@ -73,8 +73,9 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    // for (int geomID = 0; geomID < m_surfaces.size(); geomID++) {
-        // RTCGeometry rtcGeometry = rtcGetGeometry(m_rtcSceneLookup[geomID], geomID);
+    const auto &surfaces = m_rtcManager.getSurfaces();
+    for (int geomID = 0; geomID < surfaces.size(); geomID++) {
+        // RTCGeometry rtcGeometry = m_rtcManager.lookupGeometry(g_rtcScene, geomID);
 
         // rtcSetGeometryIntersectFilterFunction(
         //     rtcGeometry,
@@ -85,7 +86,7 @@ void Scene::registerOcclusionFilters() const
         //     rtcGeometry,
         //     occlusionFilter
         // );
-    // }
+    }
 }
 
 Intersection Scene::testIntersect(const Ray &ray) const

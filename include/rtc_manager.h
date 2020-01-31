@@ -45,9 +45,10 @@ public:
         int rtcInstanceID
     ) const;
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > getSurfaces()
+    const std::vector<std::vector<std::shared_ptr<Surface> > > &getSurfaces() const
     {
-        return m_rtcSceneToSurfaces[m_rootScene];
+        const auto &result = m_rtcSceneToSurfaces.at(m_rootScene);
+        return result;
     }
 
 private:

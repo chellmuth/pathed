@@ -4,7 +4,7 @@ gl::Scene::Scene() {}
 
 void gl::Scene::init(::Scene &scene)
 {
-    auto surfaceLists = scene.getSurfaces();
+    const auto &surfaceLists = scene.getSurfaces();
     std::vector<GLfloat> positionsGL;
     std::vector<GLfloat> normalsGL;
     std::vector<GLfloat> colorsGL;
