@@ -29,6 +29,7 @@
 #include "surface.h"
 #include "texture.h"
 #include "transform.h"
+#include "types.h"
 #include "uv.h"
 #include "vector.h"
 #include "vol_parser.h"
@@ -40,7 +41,6 @@ using json = nlohmann::json;
 
 using MediaMap = std::map<std::string, std::shared_ptr<Medium> >;
 using InstanceMap = std::map<std::string, RTCScene>;
-using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
 
 static bool checkFloat(json floatJson, float *value);
 static float parseFloat(json floatJson);

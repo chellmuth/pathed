@@ -5,7 +5,7 @@
 RTCManager::RTCManager(RTCScene rootScene)
     : m_rootScene(rootScene)
 {
-    m_rtcSceneToSurfaces[m_rootScene] = std::vector<std::vector<std::shared_ptr<Surface> > >();
+    m_rtcSceneToSurfaces[m_rootScene] = NestedSurfaceVector();
 }
 
 void RTCManager::registerSurfaces(
@@ -18,7 +18,7 @@ void RTCManager::registerSurfaces(
         m_rtcSceneToSurfaces[rtcScene] = std::vector<std::vector<std::shared_ptr<Surface> > >();
     }
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > &sceneSurfaces = m_rtcSceneToSurfaces[rtcScene];
+    NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces[rtcScene];
 
     // assert(sceneSurfaces.size() - 1 == rtcGeometryID);
 
@@ -54,7 +54,7 @@ std::shared_ptr<Surface> RTCManager::lookupInstancedSurface(
     int rtcPrimitiveID,
     int rtcInstanceID
 ) const {
-    const std::vector<std::vector<std::shared_ptr<Surface> > > &sceneSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
+    const NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
     const std::vector<std::shared_ptr<Surface> > &geometrySurfaces = sceneSurfaces.at(rtcInstanceID);
 
     assert(geometrySurfaces.size() == 0);
@@ -70,7 +70,7 @@ std::shared_ptr<Surface> RTCManager::lookupSurface(int rtcGeometryID, int rtcPri
 
 std::shared_ptr<Surface> RTCManager::lookupSurface(RTCScene rtcScene, int rtcGeometryID, int rtcPrimitiveID) const
 {
-    const std::vector<std::vector<std::shared_ptr<Surface> > > &sceneSurfaces = m_rtcSceneToSurfaces.at(rtcScene);
+    const NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces.at(rtcScene);
     const std::vector<std::shared_ptr<Surface> > &geometrySurfaces = sceneSurfaces.at(rtcGeometryID);
     return geometrySurfaces.at(rtcPrimitiveID);
 }

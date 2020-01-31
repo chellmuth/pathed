@@ -1,6 +1,7 @@
 #pragma once
 
 #include "surface.h"
+#include "types.h"
 
 #include <embree3/rtcore.h>
 
@@ -45,10 +46,9 @@ public:
         int rtcInstanceID
     ) const;
 
-    const std::vector<std::vector<std::shared_ptr<Surface> > > &getSurfaces() const
+    const NestedSurfaceVector &getSurfaces() const
     {
-        const auto &result = m_rtcSceneToSurfaces.at(m_rootScene);
-        return result;
+        return m_rtcSceneToSurfaces.at(m_rootScene);
     }
 
 private:
@@ -68,5 +68,5 @@ private:
 
 
     std::map<int, RTCScene> m_rtcSceneLookup;
-    std::map<RTCScene, std::vector<std::vector<std::shared_ptr<Surface> > > > m_rtcSceneToSurfaces;
+    std::map<RTCScene, NestedSurfaceVector> m_rtcSceneToSurfaces;
 };

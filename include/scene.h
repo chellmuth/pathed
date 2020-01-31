@@ -9,6 +9,7 @@
 #include "random_generator.h"
 #include "rtc_manager.h"
 #include "surface.h"
+#include "types.h"
 #include "world_frame.h"
 #include "vector.h"
 
@@ -19,8 +20,6 @@
 
 class Camera;
 class Ray;
-
-using NestedSurfaceVector = std::vector<std::vector<std::shared_ptr<Surface> > >;
 
 struct VolumeEvent {
     float t;
