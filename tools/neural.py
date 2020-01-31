@@ -16,12 +16,12 @@ import variance
 import visualize
 from mitsuba import run_mitsuba
 
-default_scene_name = "cbox-bw"
-default_output_name = "cbox-bw--walk"
+default_scene_name = "kitchen-diffuse"
+default_output_name = "kitchen-diffuse--1spp"
 
 default_checkpoints = {
     "kitchen": None,
-    "kitchen-diffuse": None,
+    "kitchen-diffuse": "20200128-kitchen-diffuse-4",
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
 }

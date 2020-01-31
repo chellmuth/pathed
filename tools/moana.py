@@ -3,6 +3,8 @@ from pathlib import Path
 
 import fov_converter
 
+MoanaPath = Path("/home/cjh/moana/island")
+
 def convert_camera(camera_json):
     pathed_json = {
         "name": camera_json["name"],
@@ -30,8 +32,47 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
+def convert_element(element_json, out_path):
+    instance_json = {
+        "type": "obj",
+        "name": element_json["name"],
+        "filename": str(MoanaPath / element_json["geomObjFile"])
+    }
+
+    instances_json = [
+        {
+            "type": "instance",
+            "name": element_json["name"],
+            "transform": [ str(f) for f in element_instance_json["transformMatrix"] ]
+        }
+        for element_instance_json in element_json["instancedCopies"].values()
+    ]
+    instances_json.append(
+        {
+            "type": "instance",
+            "name": element_json["name"],
+            "transform": [ str(f) for f in element_json["transformMatrix"] ]
+        }
+    )
+
+    pathed_json = {
+        "instances": [ instance_json ],
+        "models": instances_json
+    }
+
+    with open(out_path, "w") as f:
+        json.dump(pathed_json, f, indent=2)
+
+
 if __name__ == "__main__":
-    convert_cameras(
-        Path("/home/cjh/moana/island/json/cameras"),
-        Path("../moana/sensors.json")
+    # convert_cameras(
+    #     Path("/home/cjh/moana/island/json/cameras"),
+    #     Path("../moana/sensors.json")
+    # )
+
+    element_filename = "/home/cjh/moana/island/json/isPalmRig/isPalmRig.json"
+    out_path = Path("../moana/isPalmRig.json")
+    convert_element(
+        json.load(open(element_filename, "r")),
+        out_path
     )
