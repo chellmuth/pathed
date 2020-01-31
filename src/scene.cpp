@@ -19,17 +19,17 @@ void Scene::InitCustomRTCIntersectContext(
 ) const
 {
     rtcInitIntersectContext(&contextPtr->context);
-    contextPtr->rtcManagerPtr = &m_rtcManager;
+    contextPtr->rtcManagerPtr = m_rtcManagerPtr.get();
     contextPtr->shouldIntersectPassthroughs = shouldIntersectPassthroughs;
 }
 
 Scene::Scene(
-    RTCManager &rtcManager,
+    std::unique_ptr<RTCManager> rtcManagerPtr,
     std::vector<std::shared_ptr<Light> > lights,
     std::shared_ptr<EnvironmentLight> environmentLight,
     std::shared_ptr<Camera> camera
 )
-    : m_rtcManager(rtcManager),
+    : m_rtcManagerPtr(std::move(rtcManagerPtr)),
       m_lights(lights),
       m_environmentLight(environmentLight),
       m_camera(camera)
@@ -73,7 +73,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    const auto &surfaces = m_rtcManager.getSurfaces();
+    const auto &surfaces = m_rtcManagerPtr->getSurfaces();
     for (int geomID = 0; geomID < surfaces.size(); geomID++) {
         // RTCGeometry rtcGeometry = m_rtcManager.lookupGeometry(g_rtcScene, geomID);
 
@@ -125,13 +125,13 @@ Intersection Scene::testIntersect(const Ray &ray) const
         std::shared_ptr<Surface> surfacePtr;
         if (rayHit.hit.instID[0] == RTC_INVALID_GEOMETRY_ID) {
             geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
-            surfacePtr = m_rtcManager.lookupSurface(
+            surfacePtr = m_rtcManagerPtr->lookupSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManager.lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
-            surfacePtr = m_rtcManager.lookupInstancedSurface(
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
                 rayHit.hit.instID[0]
@@ -240,13 +240,13 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
         std::shared_ptr<Surface> surfacePtr;
         if (rayHit.hit.instID[0] == RTC_INVALID_GEOMETRY_ID) {
             geometry = rtcGetGeometry(g_rtcScene, hit.geomID);
-            surfacePtr = m_rtcManager.lookupSurface(
+            surfacePtr = m_rtcManagerPtr->lookupSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManager.lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
-            surfacePtr = m_rtcManager.lookupInstancedSurface(
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
                 rayHit.hit.instID[0]

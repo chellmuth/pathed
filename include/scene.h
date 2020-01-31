@@ -84,7 +84,7 @@ struct LightSample {
 class Scene {
 public:
     Scene(
-        RTCManager &rtcManager,
+        std::unique_ptr<RTCManager> rtcManagerPtr,
         std::vector<std::shared_ptr<Light> > lights,
         std::shared_ptr<EnvironmentLight> environmentLight,
         std::shared_ptr<Camera> camera
@@ -97,7 +97,7 @@ public:
     bool testOcclusion(const Ray &ray, float maxT) const;
     OcclusionResult testVolumetricOcclusion(const Ray &ray, float maxT) const;
 
-    const NestedSurfaceVector &getSurfaces() const { return m_rtcManager.getSurfaces(); }
+    const NestedSurfaceVector &getSurfaces() const { return m_rtcManagerPtr->getSurfaces(); }
     std::shared_ptr<Camera> getCamera() const { return m_camera; }
 
     LightSample sampleLights(RandomGenerator &random) const;
@@ -122,7 +122,7 @@ private:
     ) const;
     void registerOcclusionFilters() const;
 
-    RTCManager m_rtcManager;
+    std::unique_ptr<RTCManager> m_rtcManagerPtr;
 
     std::vector<std::shared_ptr<Light> > m_lights;
     std::shared_ptr<EnvironmentLight> m_environmentLight;

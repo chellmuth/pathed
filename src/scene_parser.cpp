@@ -128,7 +128,7 @@ Scene parseScene(std::ifstream &sceneFile)
         resolution
     );
 
-    RTCManager rtcManager(g_rtcScene);
+    auto rtcManagerPtr = std::make_unique<RTCManager>(g_rtcScene);
 
     std::map<std::string, std::shared_ptr<Medium> > media;
     auto mediaJson = sceneJson["media"];
@@ -139,10 +139,10 @@ Scene parseScene(std::ifstream &sceneFile)
     InstanceMap instanceLookup;
 
     auto instances = sceneJson["instances"];
-    parseInstances(instances, surfaces, media, instanceLookup, rtcManager);
+    parseInstances(instances, surfaces, media, instanceLookup, *rtcManagerPtr);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces, media, instanceLookup, rtcManager);
+    parseObjects(objects, surfaces, media, instanceLookup, *rtcManagerPtr);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : surfaces) {
@@ -164,7 +164,7 @@ Scene parseScene(std::ifstream &sceneFile)
     }
 
     Scene scene(
-        rtcManager,
+        std::move(rtcManagerPtr),
         lights,
         environmentLight,
         camera
