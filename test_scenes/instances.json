@@ -1,0 +1,42 @@
+{
+
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "1", "6.8" ],
+      "target": [ "0", "1", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "33"
+  },
+
+  "instances": [
+    {
+      "type": "obj",
+      "name": "cornell",
+      "filename": "CornellBox-Original.obj"
+    }
+  ],
+
+  "models": [
+    {
+      "type": "instance",
+      "name": "cornell",
+      "transform": [
+        "1", "0", "0", "0",
+        "0", "1", "0", "0",
+        "0", "0", "1", "0",
+        "1.1", "0", "0", "1"
+      ]
+    },
+    {
+      "type": "instance",
+      "name": "cornell",
+      "transform": [
+        "1", "0", "0", "0",
+        "0", "1", "0", "0",
+        "0", "0", "1", "0",
+        "-1.1", "0", "0", "1"
+      ]
+    }
+  ]
+}
