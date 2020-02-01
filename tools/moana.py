@@ -156,7 +156,27 @@ if __name__ == "__main__":
 
     generate_moana_config(
         "shotCam",
-        [ "isHibiscus", "isPalmRig" ],
+        [
+            "isBayCedarA1",
+            "isDunesA",
+            "isHibiscusYoung",
+            "isLavaRocks",
+            "isPalmDead",
+            "isBeach",
+            "isDunesB",
+            # "isIronwoodA1",
+            "isMountainA",
+            "isPalmRig",
+            "isCoastline",
+            "isGardeniaA",
+            # "isIronwoodB",
+            "isMountainB",
+            "isPandanusA",
+            "isCoral",
+            "isHibiscus",
+            "isKava",
+            "isNaupakaA"
+        ],
         Path("../moana"),
         Path("../moana.json")
     )
