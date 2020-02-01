@@ -62,7 +62,6 @@ static void parseMedia(
 );
 static void parseInstances(
     json objectsJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceMap,
     RTCManager &rtcManager
@@ -75,7 +74,6 @@ static void parseInstance(
 );
 static void parseObjects(
     json objectsJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLoop,
     RTCManager &rtcManager
@@ -134,18 +132,16 @@ Scene parseScene(std::ifstream &sceneFile)
     auto mediaJson = sceneJson["media"];
     parseMedia(mediaJson, media);
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > surfaces;
-
     InstanceMap instanceLookup;
 
     auto instances = sceneJson["instances"];
-    parseInstances(instances, surfaces, media, instanceLookup, *rtcManagerPtr);
+    parseInstances(instances, media, instanceLookup, *rtcManagerPtr);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, surfaces, media, instanceLookup, *rtcManagerPtr);
+    parseObjects(objects, media, instanceLookup, *rtcManagerPtr);
 
     std::vector<std::shared_ptr<Light>> lights;
-    for (auto &surfaceList : surfaces) {
+    for (auto &surfaceList : rtcManagerPtr->getSurfaces()) {
         for (auto &surfacePtr : surfaceList) {
             if (surfacePtr->getMaterial()->emit().isBlack()) {
                 continue;
@@ -205,7 +201,6 @@ static void parseMedia(
 
 static void parseInstances(
     json instancesJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -226,14 +221,11 @@ static void parseInstances(
         } else {
             throw "Unimplemented!";
         }
-
-        surfaces.push_back(localSurfaces);
     }
 }
 
 static void parseObjects(
     json objectsJson,
-    std::vector<std::vector<std::shared_ptr<Surface> > > &surfaces,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -257,7 +249,6 @@ static void parseObjects(
             needsRegistration = false;
         }
 
-        surfaces.push_back(localSurfaces);
         if (needsRegistration) {
             rtcManager.registerSurfaces(localSurfaces);
         }
