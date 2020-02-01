@@ -34,10 +34,15 @@ def convert_cameras(cameras_directory, out_path):
         json.dump(pathed_json, f, indent=2)
 
 def find_primitives(element_json):
+    instances = []
+    models = []
+
     key = "instancedPrimitiveJsonFiles"
-    if key in element_json and "xgBonsai" in element_json[key]:
-        bonsai_json = element_json[key]["xgBonsai"]
-        archive_name = bonsai_json["archives"][0]
+    if not (key in element_json and "xgBonsai" in element_json[key]):
+        return [], []
+
+    bonsai_json = element_json[key]["xgBonsai"]
+    for archive_name in bonsai_json["archives"]:
         instance = {
             "type": "instance",
             "name": archive_name,
@@ -52,7 +57,6 @@ def find_primitives(element_json):
         filename = MoanaPath / bonsai_json["jsonFile"]
         primitive_json = json.load(open(filename, "r"))
 
-        models = []
         archive_primitive_json = primitive_json[archive_name]
         for transform in archive_primitive_json.values():
             models.append({
@@ -61,10 +65,9 @@ def find_primitives(element_json):
                 "transform": [ str(f) for f in transform ]
             })
 
-        return [instance], models
+        instances.append(instance)
 
-    return [], []
-
+    return instances, models
 
 def convert_element(element_json, out_path):
     leaf, leaves = find_primitives(element_json)
@@ -152,8 +155,8 @@ if __name__ == "__main__":
     )
 
     generate_moana_config(
-        "dunesACam",
-        [ "isHibiscus" ],
+        "shotCam",
+        [ "isHibiscus", "isPalmRig" ],
         Path("../moana"),
         Path("../moana.json")
     )
