@@ -70,6 +70,37 @@ def convert_elements(elements_directory, out_directory):
         out_path = out_directory / f"{element_directory.name}.json"
         convert_element(json.load(open(element_path, "r")), out_path)
 
+def generate_moana_config(camera_name, element_names, assets_directory, out_path):
+    pathed_json = {
+        "sensor": None,
+
+        "instances": [],
+        "models": [],
+
+        "environmentLight": {
+            "filename": "assets/20060807_wells6_hd.exr",
+            "scale": "1"
+        }
+    }
+
+    sensors_json = json.load(open(assets_directory / "sensors.json", "r"))
+    camera_json = [
+        camera_json
+        for camera_json
+        in sensors_json["sensors"]
+        if camera_json["name"] == camera_name
+    ][0]
+
+    pathed_json["sensor"] = camera_json
+
+    for element_name in element_names:
+        element_json = json.load(open(assets_directory / f"{element_name}.json", "r"))
+
+        pathed_json["instances"].extend(element_json["instances"])
+        pathed_json["models"].extend(element_json["models"])
+
+    with open(out_path, "w") as f:
+        json.dump(pathed_json, f, indent=2)
 
 if __name__ == "__main__":
     # convert_cameras(
@@ -77,7 +108,14 @@ if __name__ == "__main__":
     #     Path("../moana/sensors.json")
     # )
 
-    convert_elements(
-        MoanaPath / "json",
-        Path("../moana/")
+    # convert_elements(
+    #     MoanaPath / "json",
+    #     Path("../moana/")
+    # )
+
+    generate_moana_config(
+        "dunesACam",
+        [ "isHibiscus", "isPandanusA" ],
+        Path("../moana"),
+        Path("../moana.json")
     )
