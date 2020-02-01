@@ -35,30 +35,34 @@ def convert_cameras(cameras_directory, out_path):
 
 def convert_element(element_json, out_path):
     instance_json = {
-        "type": "obj",
+        "type": "instance",
         "name": element_json["name"],
-        "filename": str(MoanaPath / element_json["geomObjFile"])
+        "models": [
+            {
+                "type": "obj",
+                "filename": str(MoanaPath / element_json["geomObjFile"])
+            }
+        ]
     }
 
     instances_json = [
         {
-            "type": "instance",
-            "name": element_json["name"],
+            "type": "instanced",
+            "instance_name": element_json["name"],
             "transform": [ str(f) for f in element_instance_json["transformMatrix"] ]
         }
         for element_instance_json in element_json.get("instancedCopies", {}).values()
     ]
     instances_json.append(
         {
-            "type": "instance",
-            "name": element_json["name"],
+            "type": "instanced",
+            "instance_name": element_json["name"],
             "transform": [ str(f) for f in element_json["transformMatrix"] ]
         }
     )
 
     pathed_json = {
-        "instances": [ instance_json ],
-        "models": instances_json
+        "models": [instance_json] + instances_json
     }
 
     with open(out_path, "w") as f:
@@ -74,7 +78,6 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
     pathed_json = {
         "sensor": None,
 
-        "instances": [],
         "models": [],
 
         "environmentLight": {
@@ -96,7 +99,6 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
     for element_name in element_names:
         element_json = json.load(open(assets_directory / f"{element_name}.json", "r"))
 
-        pathed_json["instances"].extend(element_json["instances"])
         pathed_json["models"].extend(element_json["models"])
 
     with open(out_path, "w") as f:
@@ -108,10 +110,10 @@ if __name__ == "__main__":
     #     Path("../moana/sensors.json")
     # )
 
-    # convert_elements(
-    #     MoanaPath / "json",
-    #     Path("../moana/")
-    # )
+    convert_elements(
+        MoanaPath / "json",
+        Path("../moana/")
+    )
 
     generate_moana_config(
         "dunesACam",

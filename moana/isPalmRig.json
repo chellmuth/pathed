@@ -1,15 +1,18 @@
 {
-  "instances": [
-    {
-      "type": "obj",
-      "name": "isPalmRig",
-      "filename": "/home/cjh/workpad/moana/island/obj/isPalmRig/isPalmRig.obj"
-    }
-  ],
   "models": [
     {
       "type": "instance",
       "name": "isPalmRig",
+      "models": [
+        {
+          "type": "obj",
+          "filename": "/home/cjh/workpad/moana/island/obj/isPalmRig/isPalmRig.obj"
+        }
+      ]
+    },
+    {
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.08295736900266698",
         "0.0",
@@ -30,8 +33,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.8159015764174721",
         "-0.032848624337617933",
@@ -52,8 +55,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6603687470265911",
         "-0.02658679125321447",
@@ -74,8 +77,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6357968433190271",
         "0.0",
@@ -96,8 +99,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.058572531093716934",
         "0.0",
@@ -118,8 +121,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.058572531093716934",
         "0.0",
@@ -140,8 +143,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6529217027027885",
         "0.0",
@@ -162,8 +165,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.5220461017430594",
         "0.0",
@@ -184,8 +187,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.7578181558659715",
         "-0.05412439090095114",
@@ -206,8 +209,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.4175158541015632",
         "-0.012505426173597328",
@@ -228,8 +231,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.19103230292265258",
         "-0.12111745355510152",
@@ -250,8 +253,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.19797717447230237",
         "-0.045265815899516844",
@@ -272,8 +275,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.8",
         "0.0",
@@ -294,8 +297,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.3729849490570851",
         "0.010554996430586194",
@@ -316,8 +319,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.7",
         "0.0",
@@ -338,8 +341,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.0959991446365784",
         "0.34967082657605697",
@@ -360,8 +363,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.5895889943881072",
         "-0.19608546961164708",
@@ -382,8 +385,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.1681888971379668",
         "0.3081747412363714",
@@ -404,8 +407,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.09800665592101451",
         "0.0",
@@ -426,8 +429,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.08428412772727667",
         "0.3155438029038062",
@@ -448,8 +451,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.3455022789358045",
         "-0.3705325791260576",
@@ -470,8 +473,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6654761414219569",
         "-0.20991977766887152",
@@ -492,8 +495,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6809785237405668",
         "-0.020830199612333008",
@@ -514,8 +517,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.6015384871099844",
         "0.013156014817329384",
@@ -536,8 +539,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.5356443329481195",
         "0.0",
@@ -558,8 +561,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.7662692072164017",
         "0.07859798156871312",
@@ -580,8 +583,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.3045802684189267",
         "-0.06963971676848744",
@@ -602,8 +605,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.46701004964950993",
         "0.4238854158669241",
@@ -624,8 +627,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.8456946732787408",
         "-0.4076604019023551",
@@ -646,8 +649,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "0.880334090749422",
         "0.0",
@@ -668,8 +671,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.6720195624834614",
         "0.12289035222438943",
@@ -690,8 +693,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.17330703677677928",
         "0.2273612442586929",
@@ -712,8 +715,8 @@
       ]
     },
     {
-      "type": "instance",
-      "name": "isPalmRig",
+      "type": "instanced",
+      "instance_name": "isPalmRig",
       "transform": [
         "-0.7648113169874913",
         "0.0",
