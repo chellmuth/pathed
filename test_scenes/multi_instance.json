@@ -9,39 +9,6 @@
     "fov": "33"
   },
 
-  "instances": [
-    {
-      "type": "instance",
-      "name": "bunny",
-      "models": [
-        {
-          "type": "obj",
-          "filename": "bunny.obj"
-        }
-      ]
-    },
-    {
-      "type": "obj",
-      "name": "cornell",
-      "models": [
-        {
-          "type": "obj",
-          "filename": "CornellBox-Original.obj"
-        },
-        {
-          "type": "instance",
-          "name": "bunny",
-          "transform": [
-            "0.1", "0", "0", "0",
-            "0", "0.1", "0", "0",
-            "0", "0", "0.1", "0",
-            "0", "0", "0", "1"
-          ]
-        }
-      ]
-    }
-  ],
-
   "models": [
     {
       "type": "instance",
@@ -70,17 +37,27 @@
             "0", "0", "0.1", "0",
             "0", "0", "0", "1"
           ]
+        },
+        {
+          "type": "instanced",
+          "instance_name": "bunny",
+          "transform": [
+            "0.1", "0", "0", "0",
+            "0", "0.1", "0", "0",
+            "0", "0", "0.1", "0",
+            "0", "0.5", "0", "1"
+          ]
         }
       ]
     },
     {
       "type": "instanced",
-      "instance_name": "bunny",
+      "instance_name": "cornell",
       "transform": [
-        "0.1", "0", "0", "0",
-        "0", "0.1", "0", "0",
-        "0", "0", "0.1", "0",
-        "1.1", "0", "0", "1"
+        "0", "1", "0", "0",
+        "-1", "0", "0", "0",
+        "0", "0", "1", "0",
+        "2.1", "0", "0", "1"
       ]
     },
     {

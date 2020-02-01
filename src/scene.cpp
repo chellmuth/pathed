@@ -54,7 +54,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
         : context->rtcManagerPtr->lookupInstancedSurface(
             hit->geomID,
             hit->primID,
-            hit->instID[0]
+            hit->instID
         )
     ;
 
@@ -120,11 +120,11 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID);
             surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
-                rayHit.hit.instID[0]
+                rayHit.hit.instID
             );
         }
         const auto &shapePtr = surfacePtr->getShape();
@@ -235,11 +235,11 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID);
             surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
-                rayHit.hit.instID[0]
+                rayHit.hit.instID
             );
         }
         const auto &shapePtr = surfacePtr->getShape();

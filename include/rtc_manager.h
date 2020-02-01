@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 class RTCManager {
@@ -28,7 +29,7 @@ public:
     std::shared_ptr<Surface> lookupInstancedSurface(
         int rtcGeometryID,
         int rtcPrimitiveID,
-        int rtcInstanceID
+        unsigned int *rtcInstanceIDs
     ) const;
 
     std::shared_ptr<Surface> lookupSurface(
@@ -38,7 +39,7 @@ public:
 
     RTCGeometry lookupGeometry(
         int rtcGeometryID,
-        int rtcInstanceID
+        unsigned int *rtcInstanceIDs
     ) const;
 
     const NestedSurfaceVector &getSurfaces() const
@@ -57,6 +58,6 @@ private:
         int rtcPrimitiveID
     ) const;
 
-    std::map<int, RTCScene> m_rtcSceneLookup;
+    std::map<std::pair<RTCScene, int>, RTCScene> m_rtcSceneLookup;
     std::map<RTCScene, NestedSurfaceVector> m_rtcSceneToSurfaces;
 };
