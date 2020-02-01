@@ -21,6 +21,9 @@ set(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
 set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
 set(EMBREE_TUTORIALS OFF CACHE BOOL "Enable to build Embree tutorials" FORCE)
 set(EMBREE_RAY_MASK OFF CACHE BOOL "Enables ray mask support." FORCE)
+
+SET(EMBREE_MAX_INSTANCE_LEVEL_COUNT 2)
+
 add_subdirectory(embree)
 include_directories(embree/include)
 
