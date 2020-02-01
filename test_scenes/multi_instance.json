@@ -11,26 +11,81 @@
 
   "instances": [
     {
+      "type": "instance",
+      "name": "bunny",
+      "models": [
+        {
+          "type": "obj",
+          "filename": "bunny.obj"
+        }
+      ]
+    },
+    {
       "type": "obj",
       "name": "cornell",
-      "filename": "CornellBox-Original.obj"
+      "models": [
+        {
+          "type": "obj",
+          "filename": "CornellBox-Original.obj"
+        },
+        {
+          "type": "instance",
+          "name": "bunny",
+          "transform": [
+            "0.1", "0", "0", "0",
+            "0", "0.1", "0", "0",
+            "0", "0", "0.1", "0",
+            "0", "0", "0", "1"
+          ]
+        }
+      ]
     }
   ],
 
   "models": [
     {
       "type": "instance",
-      "name": "cornell",
-      "transform": [
-        "1", "0", "0", "0",
-        "0", "1", "0", "0",
-        "0", "0", "1", "0",
-        "1.1", "0", "0", "1"
+      "name": "bunny",
+      "models": [
+        {
+          "type": "obj",
+          "filename": "bunny.obj"
+        }
       ]
     },
     {
       "type": "instance",
       "name": "cornell",
+      "models": [
+        {
+          "type": "obj",
+          "filename": "CornellBox-Original.obj"
+        },
+        {
+          "type": "instanced",
+          "instance_name": "bunny",
+          "transform": [
+            "0.1", "0", "0", "0",
+            "0", "0.1", "0", "0",
+            "0", "0", "0.1", "0",
+            "0", "0", "0", "1"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "instanced",
+      "instance_name": "bunny",
+      "transform": [
+        "0.1", "0", "0", "0",
+        "0", "0.1", "0", "0",
+        "0", "0", "0.1", "0",
+        "1.1", "0", "0", "1"
+      ]
+    },
+    {
+      "type": "instanced",
+      "instance_name": "cornell",
       "transform": [
         "1", "0", "0", "0",
         "0", "1", "0", "0",
@@ -38,5 +93,10 @@
         "-1.1", "0", "0", "1"
       ]
     }
-  ]
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
 }

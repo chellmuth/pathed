@@ -38,5 +38,10 @@
         "-1.1", "0", "0", "1"
       ]
     }
-  ]
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
 }

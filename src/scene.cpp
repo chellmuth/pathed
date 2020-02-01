@@ -76,7 +76,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
 
 void Scene::registerOcclusionFilters() const
 {
-    m_rtcManagerPtr->registerFilters(occlusionFilter);
+    // m_rtcManagerPtr->registerFilters(occlusionFilter);
 }
 
 Intersection Scene::testIntersect(const Ray &ray) const

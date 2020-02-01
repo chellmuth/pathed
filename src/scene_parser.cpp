@@ -68,26 +68,28 @@ static void parseInstances(
 );
 static void parseInstance(
     json instanceJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces,
+    MediaMap &media,
+    InstanceMap &instanceLookup,
+    RTCManager &rtcManager
+);
+static void parseInstanced(
+    json instanceJson,
+    RTCScene rtcCurrentScene,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 );
 static void parseObjects(
     json objectsJson,
+    RTCScene rtcCurrentScene,
     MediaMap &media,
     InstanceMap &instanceLoop,
     RTCManager &rtcManager
 );
 static void parseObj(
     json objJson,
-    std::vector<std::shared_ptr<Surface>> &surfaces,
+    RTCScene rtcCurrentScene,
     MediaMap &media,
-    RTCScene rtcScene
-);
-static void parseObj(
-    json objectJson,
-    std::vector<std::shared_ptr<Surface>> &surfaces,
-    MediaMap &media
+    RTCManager &rtcManager
 );
 static void parsePLY(
     json objectJson,
@@ -134,11 +136,11 @@ Scene parseScene(std::ifstream &sceneFile)
 
     InstanceMap instanceLookup;
 
-    auto instances = sceneJson["instances"];
-    parseInstances(instances, media, instanceLookup, *rtcManagerPtr);
+    // auto instances = sceneJson["instances"];
+    // parseInstances(instances, media, instanceLookup, *rtcManagerPtr);
 
     auto objects = sceneJson["models"];
-    parseObjects(objects, media, instanceLookup, *rtcManagerPtr);
+    parseObjects(objects, g_rtcScene, media, instanceLookup, *rtcManagerPtr);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : rtcManagerPtr->getSurfaces()) {
@@ -199,33 +201,27 @@ static void parseMedia(
     }
 }
 
-static void parseInstances(
-    json instancesJson,
+static void parseInstance(
+    json instanceJson,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 ) {
-    for (auto instanceJson : instancesJson) {
-        std::vector<std::shared_ptr<Surface>> localSurfaces;
-
-        if (instanceJson["type"] == "obj") {
-            RTCScene instanceScene = rtcNewScene(g_rtcDevice);
-            parseObj(instanceJson, localSurfaces, media, instanceScene);
-            instanceLookup[parseString(instanceJson["name"])] = instanceScene;
-            rtcCommitScene(instanceScene);
-
-            rtcManager.registerInstanceSurfaces(
-                instanceScene,
-                localSurfaces
-            );
-        } else {
-            throw "Unimplemented!";
-        }
-    }
+    RTCScene rtcInstanceScene = rtcNewScene(g_rtcDevice);
+    parseObjects(
+        instanceJson["models"],
+        rtcInstanceScene,
+        media,
+        instanceLookup,
+        rtcManager
+    );
+    instanceLookup[parseString(instanceJson["name"])] = rtcInstanceScene;
+    rtcCommitScene(rtcInstanceScene);
 }
 
 static void parseObjects(
     json objectsJson,
+    RTCScene rtcCurrentScene,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -235,7 +231,7 @@ static void parseObjects(
 
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
-            parseObj(objectJson, localSurfaces, media);
+            parseObj(objectJson, rtcCurrentScene, media, rtcManager);
         } else if (objectJson["type"] == "ply") {
             parsePLY(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "sphere") {
@@ -245,30 +241,27 @@ static void parseObjects(
         } else if (objectJson["type"] == "pbrt-curve") {
             parseCurve(objectJson, localSurfaces);
         } else if (objectJson["type"] == "instance") {
-            parseInstance(objectJson, localSurfaces, instanceLookup, rtcManager);
+            parseInstance(objectJson, media, instanceLookup, rtcManager);
+            needsRegistration = false;
+        } else if (objectJson["type"] == "instanced") {
+            parseInstanced(objectJson, rtcCurrentScene, instanceLookup, rtcManager);
             needsRegistration = false;
         }
 
         if (needsRegistration) {
-            rtcManager.registerSurfaces(localSurfaces);
+            rtcManager.registerSurfaces(rtcCurrentScene, localSurfaces);
         }
     }
 }
 
 static void parseObj(
     json objJson,
-    std::vector<std::shared_ptr<Surface>> &surfaces,
-    MediaMap &media
-) {
-    parseObj(objJson, surfaces, media, g_rtcScene);
-}
-
-static void parseObj(
-    json objJson,
-    std::vector<std::shared_ptr<Surface>> &surfaces,
+    RTCScene rtcCurrentScene,
     MediaMap &media,
-    RTCScene rtcScene
+    RTCManager &rtcManager
 ) {
+    std::vector<std::shared_ptr<Surface>> localSurfaces;
+
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
     auto transformJson = objJson["transform"];
@@ -277,7 +270,7 @@ static void parseObj(
         transform = parseTransform(transformJson);
     }
 
-    ObjParser objParser(objFile, transform, false, Handedness::Left, rtcScene);
+    ObjParser objParser(objFile, transform, false, Handedness::Left, rtcCurrentScene);
     auto objSurfaces = objParser.parse();
 
     auto bsdfJson = objJson["bsdf"];
@@ -293,11 +286,13 @@ static void parseObj(
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
             auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
-            surfaces.push_back(surface);
+            localSurfaces.push_back(surface);
         } else {
-            surfaces.push_back(surfacePtr);
+            localSurfaces.push_back(surfacePtr);
         }
     }
+
+    rtcManager.registerSurfaces(rtcCurrentScene, localSurfaces);
 }
 
 static void parsePLY(
@@ -365,17 +360,17 @@ static void parseCurve(
     }
 }
 
-static void parseInstance(
+static void parseInstanced(
     json instanceJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces,
+    RTCScene rtcCurrentScene,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 ) {
-    RTCScene rtcScene = instanceLookup[parseString(instanceJson["name"])];
+    RTCScene rtcParentScene = instanceLookup[parseString(instanceJson["instance_name"])];
 
     RTCGeometry rtcGeometry = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_INSTANCE);
-    rtcSetGeometryInstancedScene(rtcGeometry, rtcScene);
-    int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcGeometry);
+    rtcSetGeometryInstancedScene(rtcGeometry, rtcParentScene);
+    int rtcGeometryID = rtcAttachGeometry(rtcCurrentScene, rtcGeometry);
 
     const float transform[16] = {
         parseFloat(instanceJson["transform"][0]),
@@ -401,10 +396,12 @@ static void parseInstance(
 
     rtcCommitGeometry(rtcGeometry);
 
+    auto fakeVector = std::vector<std::shared_ptr<Surface> >();
     rtcManager.registerInstancedSurfaces(
-        rtcScene,
+        rtcCurrentScene,
+        rtcParentScene,
         rtcGeometryID,
-        surfaces
+        fakeVector
     );
 }
 
