@@ -33,7 +33,42 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
+def find_primitives(element_json):
+    key = "instancedPrimitiveJsonFiles"
+    if key in element_json and "xgBonsai" in element_json[key]:
+        bonsai_json = element_json[key]["xgBonsai"]
+        archive_name = bonsai_json["archives"][0]
+        instance = {
+            "type": "instance",
+            "name": archive_name,
+            "models": [
+                {
+                    "type": "obj",
+                    "filename": str(MoanaPath / archive_name)
+                }
+            ]
+        }
+
+        filename = MoanaPath / bonsai_json["jsonFile"]
+        primitive_json = json.load(open(filename, "r"))
+
+        models = []
+        archive_primitive_json = primitive_json[archive_name]
+        for transform in archive_primitive_json.values():
+            models.append({
+                "type": "instanced",
+                "instance_name": archive_name,
+                "transform": [ str(f) for f in transform ]
+            })
+
+        return [instance], models
+
+    return [], []
+
+
 def convert_element(element_json, out_path):
+    leaf, leaves = find_primitives(element_json)
+
     instance_json = {
         "type": "instance",
         "name": element_json["name"],
@@ -41,7 +76,8 @@ def convert_element(element_json, out_path):
             {
                 "type": "obj",
                 "filename": str(MoanaPath / element_json["geomObjFile"])
-            }
+            },
+            *leaves
         ]
     }
 
@@ -62,7 +98,7 @@ def convert_element(element_json, out_path):
     )
 
     pathed_json = {
-        "models": [instance_json] + instances_json
+        "models": leaf + [instance_json] + instances_json
     }
 
     with open(out_path, "w") as f:
@@ -117,7 +153,7 @@ if __name__ == "__main__":
 
     generate_moana_config(
         "dunesACam",
-        [ "isHibiscus", "isPandanusA" ],
+        [ "isHibiscus" ],
         Path("../moana"),
         Path("../moana.json")
     )
