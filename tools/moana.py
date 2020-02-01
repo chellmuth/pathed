@@ -81,7 +81,7 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
         "models": [],
 
         "environmentLight": {
-            "filename": "assets/20060807_wells6_hd.exr",
+            "filename": "background.exr",
             "scale": "1"
         }
     }
@@ -105,10 +105,10 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
         json.dump(pathed_json, f, indent=2)
 
 if __name__ == "__main__":
-    # convert_cameras(
-    #     Path("/home/cjh/moana/island/json/cameras"),
-    #     Path("../moana/sensors.json")
-    # )
+    convert_cameras(
+        MoanaPath / "json/cameras",
+        Path("../moana/sensors.json")
+    )
 
     convert_elements(
         MoanaPath / "json",
