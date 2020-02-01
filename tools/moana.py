@@ -45,7 +45,7 @@ def convert_element(element_json, out_path):
             "name": element_json["name"],
             "transform": [ str(f) for f in element_instance_json["transformMatrix"] ]
         }
-        for element_instance_json in element_json["instancedCopies"].values()
+        for element_instance_json in element_json.get("instancedCopies", {}).values()
     ]
     instances_json.append(
         {
@@ -63,6 +63,12 @@ def convert_element(element_json, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
+def convert_elements(elements_directory, out_directory):
+    for element_directory in elements_directory.glob("is*"):
+        element_path = element_directory / f"{element_directory.name}.json"
+        out_path = out_directory / f"{element_directory.name}.json"
+        convert_element(json.load(open(element_path, "r")), out_path)
+
 
 if __name__ == "__main__":
     # convert_cameras(
@@ -70,9 +76,7 @@ if __name__ == "__main__":
     #     Path("../moana/sensors.json")
     # )
 
-    element_filename = "/home/cjh/moana/island/json/isPalmRig/isPalmRig.json"
-    out_path = Path("../moana/isPalmRig.json")
-    convert_element(
-        json.load(open(element_filename, "r")),
-        out_path
+    convert_elements(
+        Path("/home/cjh/moana/island/json/"),
+        Path("../moana/")
     )
