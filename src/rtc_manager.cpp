@@ -19,6 +19,10 @@ void RTCManager::registerSurfaces(
 
     NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces[rtcScene];
     sceneSurfaces.push_back(geometrySurfaces);
+
+    if (geometrySurfaces.size() > 0) {
+        m_rtcRegistrationQueue.push_back({rtcScene, sceneSurfaces.size() - 1});
+    }
 }
 
 void RTCManager::registerInstancedSurfaces(
@@ -79,22 +83,9 @@ RTCGeometry RTCManager::lookupGeometry(
 
 void RTCManager::registerFilters(void (&callback)(const RTCFilterFunctionNArguments *))
 {
-    const NestedSurfaceVector &rootSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
-    for (int rtcRootGeometryID = 0; rtcRootGeometryID < rootSurfaces.size(); rtcRootGeometryID++) {
-        if (m_rtcSceneLookup.count({m_rootScene, rtcRootGeometryID}) == 0) {
-            const RTCGeometry rtcGeometry = rtcGetGeometry(m_rootScene, rtcRootGeometryID);
-            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
-            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
-            continue;
-        }
-
-        const RTCScene instanceScene = m_rtcSceneLookup.at({m_rootScene, rtcRootGeometryID});
-        const NestedSurfaceVector sceneSurfaces = m_rtcSceneToSurfaces.at(instanceScene);
-
-        for (int rtcGeometryID = 0; rtcGeometryID < sceneSurfaces.size(); rtcGeometryID++) {
-            const RTCGeometry rtcGeometry = rtcGetGeometry(instanceScene, rtcGeometryID);
-            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
-            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
-        }
+    for (auto &pair : m_rtcRegistrationQueue) {
+        const RTCGeometry rtcGeometry = rtcGetGeometry(pair.first, pair.second);
+        rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
+        rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
     }
 }

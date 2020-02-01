@@ -232,6 +232,7 @@ static void parseObjects(
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
             parseObj(objectJson, rtcCurrentScene, media, rtcManager);
+            needsRegistration = false;
         } else if (objectJson["type"] == "ply") {
             parsePLY(objectJson, localSurfaces, media);
         } else if (objectJson["type"] == "sphere") {

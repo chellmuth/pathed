@@ -90,7 +90,7 @@ void SampleIntegrator::sampleImage(
     // );
     // std::cout << "DONE!" << std::endl;
 
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
             samplePixel(

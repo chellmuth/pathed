@@ -60,4 +60,5 @@ private:
 
     std::map<std::pair<RTCScene, int>, RTCScene> m_rtcSceneLookup;
     std::map<RTCScene, NestedSurfaceVector> m_rtcSceneToSurfaces;
+    std::vector<std::pair<RTCScene, int> > m_rtcRegistrationQueue;
 };
