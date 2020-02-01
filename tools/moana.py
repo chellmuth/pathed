@@ -1,9 +1,10 @@
 import json
+import os
 from pathlib import Path
 
 import fov_converter
 
-MoanaPath = Path("/home/cjh/moana/island")
+MoanaPath = Path(os.environ["MOANA_ROOT"])
 
 def convert_camera(camera_json):
     pathed_json = {
@@ -77,6 +78,6 @@ if __name__ == "__main__":
     # )
 
     convert_elements(
-        Path("/home/cjh/moana/island/json/"),
+        MoanaPath / "json",
         Path("../moana/")
     )
