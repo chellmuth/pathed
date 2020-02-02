@@ -271,7 +271,7 @@ static void parseObj(
         transform = parseTransform(transformJson);
     }
 
-    ObjParser objParser(objFile, transform, false, Handedness::Left, rtcCurrentScene);
+    ObjParser objParser(objFile, transform, false, Handedness::Right, rtcCurrentScene);
     auto objSurfaces = objParser.parse();
 
     auto bsdfJson = objJson["bsdf"];
@@ -374,19 +374,19 @@ static void parseInstanced(
     int rtcGeometryID = rtcAttachGeometry(rtcCurrentScene, rtcGeometry);
 
     const float transform[16] = {
-        -parseFloat(instanceJson["transform"][0]),
+        parseFloat(instanceJson["transform"][0]),
         parseFloat(instanceJson["transform"][1]),
         parseFloat(instanceJson["transform"][2]),
         parseFloat(instanceJson["transform"][3]),
-        -parseFloat(instanceJson["transform"][4]),
+        parseFloat(instanceJson["transform"][4]),
         parseFloat(instanceJson["transform"][5]),
         parseFloat(instanceJson["transform"][6]),
         parseFloat(instanceJson["transform"][7]),
-        -parseFloat(instanceJson["transform"][8]),
+        parseFloat(instanceJson["transform"][8]),
         parseFloat(instanceJson["transform"][9]),
         parseFloat(instanceJson["transform"][10]),
         parseFloat(instanceJson["transform"][11]),
-        -parseFloat(instanceJson["transform"][12]),
+        parseFloat(instanceJson["transform"][12]),
         parseFloat(instanceJson["transform"][13]),
         parseFloat(instanceJson["transform"][14]),
         parseFloat(instanceJson["transform"][15]),

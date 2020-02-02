@@ -6,14 +6,17 @@ import fov_converter
 
 MoanaPath = Path(os.environ["MOANA_ROOT"])
 
+def flip_x(xyz_vector):
+    return [ xyz_vector[0] * -1, xyz_vector[1], xyz_vector[2] ]
+
 def convert_camera(camera_json):
     pathed_json = {
         "name": camera_json["name"],
         "fov": str(fov_converter.fov_x_deg_to_fov_y_deg(camera_json["fov"], 238, 100)),
         "lookAt": {
-            "origin": [ str(f) for f in camera_json["eye"] ],
-            "target": [ str(f) for f in camera_json["look"] ],
-            "up": [ str(f) for f in camera_json["up"] ],
+            "origin": [ str(f) for f in flip_x(camera_json["eye"]) ],
+            "target": [ str(f) for f in flip_x(camera_json["look"]) ],
+            "up": [ str(f) for f in flip_x(camera_json["up"]) ],
         }
     }
 
