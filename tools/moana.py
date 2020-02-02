@@ -41,34 +41,37 @@ def find_primitives(element_json):
     models = []
 
     key = "instancedPrimitiveJsonFiles"
-    if not (key in element_json and "xgBonsai" in element_json[key]):
+    if key not in element_json:
         return [], []
 
-    bonsai_json = element_json[key]["xgBonsai"]
-    for archive_name in bonsai_json["archives"]:
-        instance = {
-            "type": "instance",
-            "name": archive_name,
-            "models": [
-                {
-                    "type": "obj",
-                    "filename": str(MoanaPath / archive_name)
-                }
-            ]
-        }
+    instanced_primitive_json = element_json["instancedPrimitiveJsonFiles"]
+    for primitive_name, primitive_json in instanced_primitive_json.items():
+        print("primitive name:", primitive_name)
+        if primitive_json["type"] != "archive": continue
 
-        filename = MoanaPath / bonsai_json["jsonFile"]
-        primitive_json = json.load(open(filename, "r"))
+        filename = MoanaPath / primitive_json["jsonFile"]
+        instances_json = json.load(open(filename, "r"))
 
-        archive_primitive_json = primitive_json[archive_name]
-        for transform in archive_primitive_json.values():
-            models.append({
-                "type": "instanced",
-                "instance_name": archive_name,
-                "transform": [ str(f) for f in transform ]
-            })
+        for archive_name in primitive_json["archives"]:
+            instance = {
+                "type": "instance",
+                "name": archive_name,
+                "models": [
+                    {
+                        "type": "obj",
+                        "filename": str(MoanaPath / archive_name)
+                    }
+                ]
+            }
+            instances.append(instance)
 
-        instances.append(instance)
+            archive_instances_json = instances_json[archive_name]
+            for transform in archive_instances_json.values():
+                models.append({
+                    "type": "instanced",
+                    "instance_name": archive_name,
+                    "transform": [ str(f) for f in transform ]
+                })
 
     return instances, models
 
@@ -110,8 +113,9 @@ def convert_element(element_json, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
-def convert_elements(elements_directory, out_directory):
+def convert_elements(elements_directory, out_directory, whitelist=None):
     for element_directory in elements_directory.glob("is*"):
+        if whitelist and element_directory.name not in whitelist: continue
         element_path = element_directory / f"{element_directory.name}.json"
         out_path = out_directory / f"{element_directory.name}.json"
         convert_element(json.load(open(element_path, "r")), out_path)
@@ -152,34 +156,36 @@ if __name__ == "__main__":
         Path("../moana/sensors.json")
     )
 
+    elements = [
+        # "isBayCedarA1",
+        "isDunesA",
+        # "isHibiscusYoung",
+        # "isLavaRocks",
+        # "isPalmDead",
+        # "isBeach",
+        # "isDunesB",
+        # "isMountainA",
+        # "isPalmRig",
+        # "isCoastline",
+        # "isGardeniaA",
+        # "isMountainB",
+        # "isPandanusA",
+        # "isCoral",
+        "isHibiscus",
+        # "isKava",
+        # "isNaupakaA",
+        # "isIronwoodA1",
+        # "isIronwoodB"
+        ]
     convert_elements(
         MoanaPath / "json",
-        Path("../moana/")
+        Path("../moana/"),
+        whitelist=elements
     )
 
     generate_moana_config(
-        "shotCam",
-        [
-            "isBayCedarA1",
-            "isDunesA",
-            "isHibiscusYoung",
-            "isLavaRocks",
-            "isPalmDead",
-            "isBeach",
-            "isDunesB",
-            # "isIronwoodA1",
-            "isMountainA",
-            "isPalmRig",
-            "isCoastline",
-            "isGardeniaA",
-            # "isIronwoodB",
-            "isMountainB",
-            "isPandanusA",
-            "isCoral",
-            "isHibiscus",
-            "isKava",
-            "isNaupakaA"
-        ],
+        "beachCam",
+        elements,
         Path("../moana"),
         Path("../moana.json")
     )
