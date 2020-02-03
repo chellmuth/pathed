@@ -1,6 +1,7 @@
 #include "scene_parser.h"
 
 #include "area_light.h"
+#include "b_spline_parser.h"
 #include "camera.h"
 #include "checkerboard.h"
 #include "curve_parser.h"
@@ -99,6 +100,11 @@ static void parsePLY(
 static void parseCurve(
     json curveJson,
     std::vector<std::shared_ptr<Surface> > &surfaces
+);
+static void parseBSpline(
+    json splineJson,
+    RTCScene rtcCurrentScene,
+    RTCManager &rtcManager
 );
 static void parseSphere(
     json sphereJson,
@@ -241,6 +247,9 @@ static void parseObjects(
             parseQuad(objectJson, localSurfaces);
         } else if (objectJson["type"] == "pbrt-curve") {
             parseCurve(objectJson, localSurfaces);
+        } else if (objectJson["type"] == "b-spline") {
+            parseBSpline(objectJson, rtcCurrentScene, rtcManager);
+            needsRegistration = false;
         } else if (objectJson["type"] == "instance") {
             parseInstance(objectJson, media, instanceLookup, rtcManager);
             needsRegistration = false;
@@ -358,6 +367,30 @@ static void parseCurve(
         } else {
             surfaces.push_back(surfacePtr);
         }
+    }
+}
+
+static void parseBSpline(
+    json splineJson,
+    RTCScene rtcCurrentScene,
+    RTCManager &rtcManager
+) {
+    std::ifstream splineFile(splineJson["filename"].get<std::string>());
+
+    auto transformJson = splineJson["transform"];
+    Transform transform;
+    if (transformJson.is_object()) {
+        transform = parseTransform(transformJson);
+    }
+
+    BSplineParser splineParser(splineFile, transform, false, Handedness::Left);
+    auto splineSurfaces = splineParser.parse(rtcCurrentScene);
+
+    for (auto localSurfaces : splineSurfaces) {
+        rtcManager.registerSurfaces(
+            rtcCurrentScene,
+            localSurfaces
+        );
     }
 }
 

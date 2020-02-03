@@ -6,6 +6,8 @@
 #include "shape.h"
 #include "transform.h"
 
+#include <embree3/rtcore.h>
+
 #include <memory>
 #include <vector>
 
@@ -20,7 +22,7 @@ public:
 
     float area() const override { throw "Unimplemented!"; }
 
-    void create();
+    void create(RTCScene rtcScene);
 
     bool useBackwardsNormals() const override { return false; }
 

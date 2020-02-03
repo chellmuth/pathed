@@ -5,7 +5,6 @@
 #include "lambertian.h"
 #include "vector.h"
 
-#include <embree3/rtcore.h>
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -22,7 +21,7 @@ BSplineParser::BSplineParser(
     m_handedness(handedness)
 {}
 
-std::vector<std::shared_ptr<Surface> > BSplineParser::parse()
+std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(RTCScene rtcScene)
 {
     std::cout << "Parsing" << std::endl;
     json splineJson = json::parse(m_splineFile);
@@ -43,17 +42,23 @@ std::vector<std::shared_ptr<Surface> > BSplineParser::parse()
             1.f
         );
         auto surfacePtr = std::make_shared<Surface>(splinePtr, materialPtr, nullptr);
-        surfaces.push_back(surfacePtr);
+        surfaces.push_back({surfacePtr});
     }
 
 
     std::cout << "Creating RTC resources" << std::endl;
     for (auto &surfacePtr : surfaces) {
         auto shapePtr = surfacePtr->getShape();
-        dynamic_cast<BSpline *>(shapePtr.get())->create();
+        dynamic_cast<BSpline *>(shapePtr.get())->create(rtcScene);
+    }
+
+    std::cout << "Creating nested surfaces" << std::endl;
+    std::vector<std::vector<std::shared_ptr<Surface> > > nestedSurfaces;
+    for (auto &surfacePtr : surfaces) {
+        nestedSurfaces.push_back({surfacePtr, surfacePtr, surfacePtr, surfacePtr});
     }
 
     std::cout << "Parsing complete!" << std::endl;
 
-    return surfaces;
+    return nestedSurfaces;
 }

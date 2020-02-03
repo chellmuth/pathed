@@ -4,6 +4,8 @@
 #include "surface.h"
 #include "transform.h"
 
+#include <embree3/rtcore.h>
+
 #include <fstream>
 #include <memory>
 #include <vector>
@@ -20,7 +22,7 @@ public:
         Handedness handedness
     );
 
-    std::vector<std::shared_ptr<Surface> > parse();
+    std::vector<std::vector<std::shared_ptr<Surface> > > parse(RTCScene rtcScene);
 
 private:
     std::ifstream &m_splineFile;

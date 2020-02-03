@@ -67,6 +67,17 @@ def parse_archive(archive_json):
 
     return instances, models
 
+def parse_curve(curve_json):
+    filename = MoanaPath / curve_json["jsonFile"]
+    instances_json = json.load(open(filename, "r"))
+
+    model = {
+        "type": "b-spline",
+        "filename": str(MoanaPath / filename)
+    }
+
+    return [], [model]
+
 def find_primitives(element_json):
     instances = []
     models = []
@@ -78,11 +89,14 @@ def find_primitives(element_json):
     instanced_primitive_json = element_json["instancedPrimitiveJsonFiles"]
     for primitive_name, primitive_json in instanced_primitive_json.items():
         print("primitive name:", primitive_name)
-        if primitive_json["type"] != "archive": continue
-
-        next_instances, next_models = parse_archive(primitive_json)
-        instances.extend(next_instances)
-        models.extend(next_models)
+        if primitive_json["type"] == "archive":
+            next_instances, next_models = parse_archive(primitive_json)
+            instances.extend(next_instances)
+            models.extend(next_models)
+        elif primitive_json["type"] == "curve":
+            next_instances, next_models = parse_curve(primitive_json)
+            instances.extend(next_instances)
+            models.extend(next_models)
 
     return instances, models
 

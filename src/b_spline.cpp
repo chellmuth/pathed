@@ -10,7 +10,7 @@ BSpline::BSpline(std::vector<Point3> points, float width0, float width1)
       m_width1(width1)
 {}
 
-void BSpline::create()
+void BSpline::create(RTCScene rtcScene)
 {
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_ROUND_BSPLINE_CURVE);
 
@@ -45,6 +45,6 @@ void BSpline::create()
 
     rtcCommitGeometry(rtcMesh);
 
-    unsigned int rtcGeometryID = rtcAttachGeometry(g_rtcScene, rtcMesh);
+    unsigned int rtcGeometryID = rtcAttachGeometry(rtcScene, rtcMesh);
     rtcReleaseGeometry(rtcMesh);
 }
