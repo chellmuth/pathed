@@ -102,7 +102,24 @@ def find_primitives(element_json):
 
     return instances, models
 
-def convert_element(element_json, out_path):
+def parse_instances(instanced_copies_json, instance_name):
+    instances_json = []
+    elements_json = []
+    for instanced_copy_json in instanced_copies_json.values():
+        if "geomObjFile" in instanced_copy_json:
+            element_json = parse_element(instanced_copy_json)
+            elements_json.extend(element_json)
+            continue
+
+        instances_json.append({
+            "type": "instanced",
+            "instance_name": instance_name,
+            "transform": [ str(f) for f in instanced_copy_json["transformMatrix"] ]
+        })
+
+    return instances_json, elements_json
+
+def parse_element(element_json):
     leaf, leaves = find_primitives(element_json)
 
     instance_json = {
@@ -117,14 +134,10 @@ def convert_element(element_json, out_path):
         ]
     }
 
-    instances_json = [
-        {
-            "type": "instanced",
-            "instance_name": element_json["name"],
-            "transform": [ str(f) for f in element_instance_json["transformMatrix"] ]
-        }
-        for element_instance_json in element_json.get("instancedCopies", {}).values()
-    ]
+    instances_json, elements_json = parse_instances(
+        element_json.get("instancedCopies", {}),
+        element_json["name"]
+    )
     instances_json.append(
         {
             "type": "instanced",
@@ -133,12 +146,16 @@ def convert_element(element_json, out_path):
         }
     )
 
+    return leaf + [instance_json] + instances_json + elements_json
+
+def convert_element(element_json, out_path):
     pathed_json = {
-        "models": leaf + [instance_json] + instances_json
+        "models": parse_element(element_json)
     }
 
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
+
 
 def convert_elements(elements_directory, out_directory, whitelist=None):
     for element_directory in elements_directory.glob("is*"):
@@ -192,14 +209,14 @@ if __name__ == "__main__":
         # "isBeach",
         # "isDunesB",
         # "isMountainA",
-        # "isPalmRig",
+        "isPalmRig",
         # "isCoastline",
         # "isGardeniaA",
         # "isMountainB",
         "isPandanusA",
         # "isCoral",
-        # "isHibiscus",
-        # "isKava",
+        "isHibiscus",
+        "isKava",
         # "isNaupakaA",
         # "isIronwoodA1",
         # "isIronwoodB"
@@ -211,7 +228,7 @@ if __name__ == "__main__":
     )
 
     generate_moana_config(
-        "beachCam",
+        "shotCam",
         elements,
         Path("../moana"),
         Path("../moana.json")
