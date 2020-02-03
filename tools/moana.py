@@ -36,6 +36,37 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
+def parse_archive(archive_json):
+    instances = []
+    models = []
+
+    filename = MoanaPath / archive_json["jsonFile"]
+    instances_json = json.load(open(filename, "r"))
+
+    for archive_name in archive_json["archives"]:
+        instance = {
+            "type": "instance",
+            "name": archive_name,
+            "models": [
+                {
+                    "type": "obj",
+                    "filename": str(MoanaPath / archive_name)
+                }
+            ]
+        }
+        instances.append(instance)
+
+
+        archive_instances_json = instances_json[archive_name]
+        for transform in archive_instances_json.values():
+            models.append({
+                "type": "instanced",
+                "instance_name": archive_name,
+                "transform": [ str(f) for f in transform ]
+            })
+
+    return instances, models
+
 def find_primitives(element_json):
     instances = []
     models = []
@@ -49,29 +80,9 @@ def find_primitives(element_json):
         print("primitive name:", primitive_name)
         if primitive_json["type"] != "archive": continue
 
-        filename = MoanaPath / primitive_json["jsonFile"]
-        instances_json = json.load(open(filename, "r"))
-
-        for archive_name in primitive_json["archives"]:
-            instance = {
-                "type": "instance",
-                "name": archive_name,
-                "models": [
-                    {
-                        "type": "obj",
-                        "filename": str(MoanaPath / archive_name)
-                    }
-                ]
-            }
-            instances.append(instance)
-
-            archive_instances_json = instances_json[archive_name]
-            for transform in archive_instances_json.values():
-                models.append({
-                    "type": "instanced",
-                    "instance_name": archive_name,
-                    "transform": [ str(f) for f in transform ]
-                })
+        next_instances, next_models = parse_archive(primitive_json)
+        instances.extend(next_instances)
+        models.extend(next_models)
 
     return instances, models
 
@@ -158,7 +169,7 @@ if __name__ == "__main__":
 
     elements = [
         # "isBayCedarA1",
-        "isDunesA",
+        # "isDunesA",
         # "isHibiscusYoung",
         # "isLavaRocks",
         # "isPalmDead",
@@ -169,14 +180,14 @@ if __name__ == "__main__":
         # "isCoastline",
         # "isGardeniaA",
         # "isMountainB",
-        # "isPandanusA",
+        "isPandanusA",
         # "isCoral",
-        "isHibiscus",
+        # "isHibiscus",
         # "isKava",
         # "isNaupakaA",
         # "isIronwoodA1",
         # "isIronwoodB"
-        ]
+    ]
     convert_elements(
         MoanaPath / "json",
         Path("../moana/"),
