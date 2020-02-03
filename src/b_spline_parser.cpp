@@ -70,7 +70,7 @@ void BSplineParser::createRTCGeometry(
     RTCScene rtcScene,
     std::vector<std::shared_ptr<Surface> > &splines
 ) {
-    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_ROUND_BSPLINE_CURVE);
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_FLAT_BSPLINE_CURVE);
 
     size_t pointsCount = 0;
     size_t indicesCount = 0;
