@@ -10,10 +10,8 @@ BSpline::BSpline(std::vector<Point3> points, float width0, float width1)
       m_width1(width1)
 {}
 
-void BSpline::create(
-    const Transform &transform,
-    std::shared_ptr<Material> material
-) {
+void BSpline::create()
+{
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_ROUND_BSPLINE_CURVE);
 
     float *rtcVertices = (float *)rtcSetNewGeometryBuffer(

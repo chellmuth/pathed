@@ -20,10 +20,7 @@ public:
 
     float area() const override { throw "Unimplemented!"; }
 
-    void create(
-        const Transform &transform,
-        std::shared_ptr<Material> material
-    );
+    void create();
 
     bool useBackwardsNormals() const override { return false; }
 
