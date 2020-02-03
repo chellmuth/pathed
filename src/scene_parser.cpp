@@ -384,7 +384,11 @@ static void parseBSpline(
     }
 
     BSplineParser splineParser(splineFile, transform, false, Handedness::Left);
-    auto splineSurfaces = splineParser.parse(rtcCurrentScene);
+    auto splineSurfaces = splineParser.parse(
+        rtcCurrentScene,
+        parseFloat(splineJson["width0"]),
+        parseFloat(splineJson["width1"])
+    );
 
     for (auto localSurfaces : splineSurfaces) {
         rtcManager.registerSurfaces(

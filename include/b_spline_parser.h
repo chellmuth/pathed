@@ -22,7 +22,11 @@ public:
         Handedness handedness
     );
 
-    std::vector<std::vector<std::shared_ptr<Surface> > > parse(RTCScene rtcScene);
+    std::vector<std::vector<std::shared_ptr<Surface> > > parse(
+        RTCScene rtcScene,
+        float width0,
+        float width1
+    );
 
 private:
     std::ifstream &m_splineFile;

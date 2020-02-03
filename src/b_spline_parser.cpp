@@ -21,8 +21,11 @@ BSplineParser::BSplineParser(
     m_handedness(handedness)
 {}
 
-std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(RTCScene rtcScene)
-{
+std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
+    RTCScene rtcScene,
+    float width0,
+    float width1
+) {
     std::cout << "Parsing" << std::endl;
     json splineJson = json::parse(m_splineFile);
 
@@ -38,8 +41,8 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(RTCSce
 
         auto splinePtr = std::make_shared<BSpline>(
             points,
-            1.f,
-            1.f
+            width0,
+            width1
         );
         auto surfacePtr = std::make_shared<Surface>(splinePtr, materialPtr, nullptr);
         surfaces.push_back({surfacePtr});

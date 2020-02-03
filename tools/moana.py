@@ -73,7 +73,9 @@ def parse_curve(curve_json):
 
     model = {
         "type": "b-spline",
-        "filename": str(MoanaPath / filename)
+        "filename": str(MoanaPath / filename),
+        "width0": str(curve_json["widthRoot"]),
+        "width1": str(curve_json["widthTip"]),
     }
 
     return [], [model]
