@@ -2,6 +2,7 @@
 
 #include "b_spline.h"
 #include "color.h"
+#include "globals.h"
 #include "lambertian.h"
 #include "vector.h"
 
@@ -32,6 +33,7 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
     std::cout << "Creating internal surfaces" << std::endl;
     Transform identity;
     std::vector<std::shared_ptr<Surface> > surfaces;
+    std::vector<std::shared_ptr<Surface> > surfacesDuped;
     auto materialPtr = std::make_shared<Lambertian>(Color(1.f, 0.f, 0.f), Color(0.f));
     for (auto &spline : splineJson) {
         std::vector<Point3> points;
@@ -46,22 +48,86 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
         );
         auto surfacePtr = std::make_shared<Surface>(splinePtr, materialPtr, nullptr);
         surfaces.push_back({surfacePtr});
-    }
 
+        for (int i = 0; i < points.size() - 3; i++) {
+            surfacesDuped.push_back({surfacePtr});
+        }
+    }
 
     std::cout << "Creating RTC resources" << std::endl;
-    for (auto &surfacePtr : surfaces) {
-        auto shapePtr = surfacePtr->getShape();
-        dynamic_cast<BSpline *>(shapePtr.get())->create(rtcScene);
-    }
+    createRTCGeometry(rtcScene, surfaces);
 
     std::cout << "Creating nested surfaces" << std::endl;
     std::vector<std::vector<std::shared_ptr<Surface> > > nestedSurfaces;
-    for (auto &surfacePtr : surfaces) {
-        nestedSurfaces.push_back({surfacePtr, surfacePtr, surfacePtr, surfacePtr});
-    }
+    nestedSurfaces.push_back(surfacesDuped);
 
     std::cout << "Parsing complete!" << std::endl;
 
     return nestedSurfaces;
+}
+
+void BSplineParser::createRTCGeometry(
+    RTCScene rtcScene,
+    std::vector<std::shared_ptr<Surface> > &splines
+) {
+    RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_ROUND_BSPLINE_CURVE);
+
+    size_t pointsCount = 0;
+    size_t indicesCount = 0;
+    for (auto &surfacePtr : splines) {
+        auto shapePtr = surfacePtr->getShape();
+        auto &points = dynamic_cast<BSpline *>(shapePtr.get())->points();
+
+        pointsCount += points.size();
+        indicesCount += points.size() - 3;
+    }
+
+    float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
+        rtcMesh,                /* geometry */
+        RTC_BUFFER_TYPE_VERTEX, /* type */
+        0,                      /* slot */
+        RTC_FORMAT_FLOAT4,      /* format */
+        4 * sizeof(float),      /* byte stride */
+        pointsCount             /* item count */
+    );
+
+    unsigned int *rtcIndices = (unsigned int *)rtcSetNewGeometryBuffer(
+        rtcMesh,
+        RTC_BUFFER_TYPE_INDEX,
+        0,
+        RTC_FORMAT_UINT,
+        1 * sizeof(unsigned int),
+        indicesCount
+    );
+
+    int vertexCount = 0;
+    int indexCount = 0;
+
+    for (auto &surfacePtr : splines) {
+        auto shapePtr = surfacePtr->getShape();
+        BSpline *spline = dynamic_cast<BSpline *>(shapePtr.get());
+        const std::vector<Point3> &points = spline->points();
+
+        const size_t count = points.size();
+        for (int i = 0; i < count; i++) {
+            const Point3 &point = points[i];
+            rtcVertices[(vertexCount + i) * 4 + 0] = point.x();
+            rtcVertices[(vertexCount + i) * 4 + 1] = point.y();
+            rtcVertices[(vertexCount + i) * 4 + 2] = point.z();
+            rtcVertices[(vertexCount + i) * 4 + 3] = spline->width0() * (count - 1 - i) + spline->width1() * i;
+
+        }
+
+        for (int i = 0; i < count - 3; i++) {
+            rtcIndices[indexCount + i] = vertexCount + i;
+        }
+
+        vertexCount += count;
+        indexCount += count - 3;
+    }
+
+    rtcCommitGeometry(rtcMesh);
+
+    unsigned int rtcGeometryID = rtcAttachGeometry(rtcScene, rtcMesh);
+    rtcReleaseGeometry(rtcMesh);
 }

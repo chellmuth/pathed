@@ -22,8 +22,6 @@ public:
 
     float area() const override { throw "Unimplemented!"; }
 
-    void create(RTCScene rtcScene);
-
     bool useBackwardsNormals() const override { return false; }
 
     const std::vector<Point3> &points() const { return m_points; }

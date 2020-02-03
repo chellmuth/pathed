@@ -29,6 +29,11 @@ public:
     );
 
 private:
+    void createRTCGeometry(
+        RTCScene rtcScene,
+        std::vector<std::shared_ptr<Surface> > &splines
+    );
+
     std::ifstream &m_splineFile;
     Transform m_transform;
     Handedness m_handedness;
