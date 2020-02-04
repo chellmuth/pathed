@@ -549,7 +549,7 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &mater
     }
 
     if (bsdfJson["type"] == "reference") {
-        return materialLookup[parseString(bsdfJson["name"])];
+        return materialLookup.at(parseString(bsdfJson["name"]));
     } else if (bsdfJson["type"] == "phong") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color specular = parseColor(bsdfJson["specularReflectance"]);
