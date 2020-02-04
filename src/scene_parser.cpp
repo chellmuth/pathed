@@ -96,6 +96,7 @@ static void parseObjects(
 static void parseObj(
     json objJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     MediaMap &media,
     RTCManager &rtcManager
 );
@@ -246,7 +247,7 @@ static void parseObjects(
 
         std::vector<std::shared_ptr<Surface>> localSurfaces;
         if (objectJson["type"] == "obj") {
-            parseObj(objectJson, rtcCurrentScene, media, rtcManager);
+            parseObj(objectJson, rtcCurrentScene, materialLookup, media, rtcManager);
             needsRegistration = false;
         } else if (objectJson["type"] == "ply") {
             parsePLY(objectJson, localSurfaces, media);
@@ -276,6 +277,7 @@ static void parseObjects(
 static void parseObj(
     json objJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     MediaMap &media,
     RTCManager &rtcManager
 ) {
@@ -289,7 +291,14 @@ static void parseObj(
         transform = parseTransform(transformJson);
     }
 
-    ObjParser objParser(objFile, transform, false, Handedness::Right, rtcCurrentScene);
+    ObjParser objParser(
+        objFile,
+        transform,
+        false,
+        Handedness::Right,
+        rtcCurrentScene,
+        materialLookup
+    );
     auto objSurfaces = objParser.parse();
 
     auto bsdfJson = objJson["bsdf"];

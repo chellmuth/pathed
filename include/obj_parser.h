@@ -3,6 +3,7 @@
 #include "geometry_parser.h"
 #include "globals.h"
 #include "handedness.h"
+#include "material.h"
 #include "mtl_parser.h"
 #include "light.h"
 #include "point.h"
@@ -13,6 +14,7 @@
 #include <embree3/rtcore.h>
 
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -21,9 +23,16 @@ class Triangle;
 
 class ObjParser {
 public:
-    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right, g_rtcScene) {};
-    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right, g_rtcScene) {};
-    ObjParser(std::ifstream &objFile, const Transform &transform, bool useFaceNormals, Handedness handedness, RTCScene rtcScene);
+    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right, g_rtcScene, {}) {};
+    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right, g_rtcScene, {}) {};
+    ObjParser(
+        std::ifstream &objFile,
+        const Transform &transform,
+        bool useFaceNormals,
+        Handedness handedness,
+        RTCScene rtcScene,
+        std::map<std::string, std::shared_ptr<Material> > materialLookup
+    );
 
     std::vector<std::shared_ptr<Surface> > parse();
 
@@ -49,7 +58,8 @@ private:
     std::vector<std::shared_ptr<Surface>> m_surfaces;
     std::vector<std::shared_ptr<Light>> m_lights;
 
-    std::map<std::string, MtlMaterial> m_materialLookup;
+    std::map<std::string, MtlMaterial> m_mtlLookup;
+    std::map<std::string, std::shared_ptr<Material> > m_materialLookup;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);

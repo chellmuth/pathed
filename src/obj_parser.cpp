@@ -23,14 +23,16 @@ ObjParser::ObjParser(
     const Transform &transform,
     bool useFaceNormals,
     Handedness handedness,
-    RTCScene rtcScene
+    RTCScene rtcScene,
+    std::map<std::string, std::shared_ptr<Material> > materialLookup
 )
     : m_objFile(objFile),
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
       m_handedness(handedness),
       m_rtcScene(rtcScene),
-      m_currentGroup("")
+      m_currentGroup(""),
+      m_materialLookup(materialLookup)
 {}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
@@ -227,16 +229,21 @@ static void correctIndices(
 
 void ObjParser::processFace(Triangle *face)
 {
-    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
-    Color emit = m_materialLookup[m_currentMaterialName].emit;
-    auto material = std::make_shared<Lambertian>(diffuse, emit);
+    std::shared_ptr<Material> materialPtr;
+    if (m_materialLookup.count(m_currentMaterialName) > 0) {
+        materialPtr = m_materialLookup.at(m_currentMaterialName);
+    } else {
+        Color diffuse = m_mtlLookup[m_currentMaterialName].diffuse;
+        Color emit = m_mtlLookup[m_currentMaterialName].emit;
+        materialPtr = std::make_shared<Lambertian>(diffuse, emit);
+    }
 
     std::shared_ptr<Triangle> shape(face);
-    std::shared_ptr<Surface> surface(new Surface(shape, material, nullptr));
+    std::shared_ptr<Surface> surface(new Surface(shape, materialPtr, nullptr));
 
     m_surfaces.push_back(surface);
 
-    if (emit.isBlack()) { return; }
+    if (materialPtr->emit().isBlack()) { return; }
 
     std::shared_ptr<Light> light(new AreaLight(surface));
 
@@ -490,13 +497,13 @@ void ObjParser::processMaterialLibrary(std::string &libraryArgs)
     string filename = libraryArgs;
     MtlParser mtlParser(filename);
     mtlParser.parse();
-    m_materialLookup = mtlParser.materialLookup();
+    m_mtlLookup = mtlParser.materialLookup();
 }
 
 void ObjParser::processUseMaterial(std::string &materialArgs)
 {
     string materialName = materialArgs;
-    MtlMaterial currentMaterial = m_materialLookup[materialName];
+    MtlMaterial currentMaterial = m_mtlLookup[materialName];
     Color color = currentMaterial.diffuse;
 
     // std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
