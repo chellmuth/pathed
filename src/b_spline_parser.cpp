@@ -13,10 +13,12 @@ using json = nlohmann::json;
 
 BSplineParser::BSplineParser(
     std::ifstream &splineFile,
+    std::shared_ptr<Material> materialPtr,
     const Transform &transform,
     bool useFaceNormals,
     Handedness handedness
 ) : m_splineFile(splineFile),
+    m_materialPtr(materialPtr),
     m_transform(transform),
     m_useFaceNormals(useFaceNormals),
     m_handedness(handedness)
@@ -34,7 +36,7 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
     Transform identity;
     std::vector<std::shared_ptr<Surface> > surfaces;
     std::vector<std::shared_ptr<Surface> > surfacesDuped;
-    auto materialPtr = std::make_shared<Lambertian>(Color(1.f, 0.f, 0.f), Color(0.f));
+
     for (auto &spline : splineJson) {
         std::vector<Point3> points;
         for (auto &pointList : spline) {
@@ -46,7 +48,7 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
             width0,
             width1
         );
-        auto surfacePtr = std::make_shared<Surface>(splinePtr, materialPtr, nullptr);
+        auto surfacePtr = std::make_shared<Surface>(splinePtr, m_materialPtr, nullptr);
         surfaces.push_back({surfacePtr});
 
         for (int i = 0; i < points.size() - 3; i++) {

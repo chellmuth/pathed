@@ -108,6 +108,7 @@ static void parseCurve(
 static void parseBSpline(
     json splineJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     RTCManager &rtcManager
 );
 static void parseSphere(
@@ -259,7 +260,7 @@ static void parseObjects(
         } else if (objectJson["type"] == "pbrt-curve") {
             parseCurve(objectJson, localSurfaces, materialLookup);
         } else if (objectJson["type"] == "b-spline") {
-            parseBSpline(objectJson, rtcCurrentScene, rtcManager);
+            parseBSpline(objectJson, rtcCurrentScene, materialLookup, rtcManager);
             needsRegistration = false;
         } else if (objectJson["type"] == "instance") {
             parseInstance(objectJson, materialLookup, media, instanceLookup, rtcManager);
@@ -394,6 +395,7 @@ static void parseCurve(
 static void parseBSpline(
     json splineJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     RTCManager &rtcManager
 ) {
     std::ifstream splineFile(splineJson["filename"].get<std::string>());
@@ -404,7 +406,10 @@ static void parseBSpline(
         transform = parseTransform(transformJson);
     }
 
-    BSplineParser splineParser(splineFile, transform, false, Handedness::Left);
+    auto bsdfJson = splineJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
+
+    BSplineParser splineParser(splineFile, materialPtr, transform, false, Handedness::Left);
     auto splineSurfaces = splineParser.parse(
         rtcCurrentScene,
         parseFloat(splineJson["width0"]) / 2.f,

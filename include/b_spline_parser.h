@@ -1,6 +1,7 @@
 #pragma once
 
 #include "handedness.h"
+#include "material.h"
 #include "surface.h"
 #include "transform.h"
 
@@ -12,11 +13,9 @@
 
 class BSplineParser {
 public:
-    BSplineParser(std::ifstream &splineFile)
-        : BSplineParser(splineFile, Transform(), false, Handedness::Right) {};
-
     BSplineParser(
         std::ifstream &splineFile,
+        std::shared_ptr<Material> materialPtr,
         const Transform &transform,
         bool useFaceNormals,
         Handedness handedness
@@ -35,6 +34,7 @@ private:
     );
 
     std::ifstream &m_splineFile;
+    std::shared_ptr<Material> m_materialPtr;
     Transform m_transform;
     Handedness m_handedness;
     bool m_useFaceNormals;
