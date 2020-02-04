@@ -36,6 +36,21 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
+def parse_materials(materials_json):
+    materials = []
+    for name, material_json in materials_json.items():
+        materials.append({
+            "name": name,
+            "type": "lambertian",
+            "diffuseReflectance": [
+                str(base_color)
+                for base_color
+                in material_json["baseColor"]
+            ]
+        })
+
+    return materials
+
 def parse_archive(archive_json):
     instances = []
     models = []
@@ -147,7 +162,11 @@ def parse_element(element_json):
     return leaf + [instance_json] + instances_json
 
 def convert_element(element_json, out_path):
+    materials_filename = MoanaPath / element_json["matFile"]
+    materials_json = json.load(open(materials_filename, "r"))
+
     pathed_json = {
+        "materials": parse_materials(materials_json),
         "models": parse_element(element_json)
     }
 
@@ -166,6 +185,7 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
     pathed_json = {
         "sensor": None,
 
+        "materials": [],
         "models": [],
 
         "environmentLight": {
@@ -187,6 +207,7 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
     for element_name in element_names:
         element_json = json.load(open(assets_directory / f"{element_name}.json", "r"))
 
+        pathed_json["materials"].extend(element_json["materials"])
         pathed_json["models"].extend(element_json["models"])
 
     with open(out_path, "w") as f:
@@ -207,7 +228,7 @@ if __name__ == "__main__":
         # "isBeach",
         # "isDunesB",
         # "isMountainA",
-        "isPalmRig",
+        # "isPalmRig",
         # "isCoastline",
         # "isGardeniaA",
         # "isMountainB",
