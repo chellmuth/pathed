@@ -82,20 +82,29 @@ def parse_archive(archive_json):
 
     return instances, models
 
-def parse_curve(curve_json):
+def parse_curve(curve_name, curve_json, material_assignments):
     filename = MoanaPath / curve_json["jsonFile"]
     instances_json = json.load(open(filename, "r"))
 
+    material_json = {}
+    if curve_name in material_assignments:
+        material_json["bsdf"] = {
+            "type": "reference",
+            "name": material_assignments[curve_name]
+        }
+
     model = {
         "type": "b-spline",
+        "name": curve_name,
         "filename": str(MoanaPath / filename),
         "width0": str(curve_json["widthRoot"]),
         "width1": str(curve_json["widthTip"]),
+        **material_json
     }
 
     return [], [model]
 
-def find_primitives(element_json):
+def find_primitives(element_json, material_assignments):
     instances = []
     models = []
 
@@ -111,17 +120,21 @@ def find_primitives(element_json):
             instances.extend(next_instances)
             models.extend(next_models)
         elif primitive_json["type"] == "curve":
-            next_instances, next_models = parse_curve(primitive_json)
+            next_instances, next_models = parse_curve(
+                primitive_name,
+                primitive_json,
+                material_assignments
+            )
             instances.extend(next_instances)
             models.extend(next_models)
 
     return instances, models
 
-def parse_instances(instanced_copies_json, instance_name):
+def parse_instances(instanced_copies_json, instance_name, material_assignments):
     instances_json = []
     for instanced_copy_json in instanced_copies_json.values():
         if "geomObjFile" in instanced_copy_json:
-            element_json = parse_element(instanced_copy_json)
+            element_json = parse_element(instanced_copy_json, material_assignmetns)
             instances_json.extend(element_json)
         else:
             instances_json.append({
@@ -132,42 +145,55 @@ def parse_instances(instanced_copies_json, instance_name):
 
     return instances_json
 
-def parse_element(element_json):
-    leaf, leaves = find_primitives(element_json)
+def parse_element(element_json, material_assignments):
+    leaf, leaves = find_primitives(element_json, material_assignments)
+
+    element_name = element_json["name"]
 
     instance_json = {
         "type": "instance",
-        "name": element_json["name"],
+        "name": element_name,
         "models": [
             {
                 "type": "obj",
                 "filename": str(MoanaPath / element_json["geomObjFile"])
             },
             *leaves
-        ]
+        ],
     }
 
     instances_json = parse_instances(
         element_json.get("instancedCopies", {}),
-        element_json["name"]
+        element_name,
+        material_assignments
     )
     instances_json.append(
         {
             "type": "instanced",
-            "instance_name": element_json["name"],
+            "instance_name": element_name,
             "transform": [ str(f) for f in element_json["transformMatrix"] ]
         }
     )
 
     return leaf + [instance_json] + instances_json
 
+def parse_material_assignments(materials_json):
+    assignments = {}
+    for material_name, material_json in materials_json.items():
+        for assignee in material_json.get("assignment", []):
+            assignments[assignee] = material_name
+
+    return assignments
+
 def convert_element(element_json, out_path):
     materials_filename = MoanaPath / element_json["matFile"]
     materials_json = json.load(open(materials_filename, "r"))
 
+    material_assignments = parse_material_assignments(materials_json)
+
     pathed_json = {
         "materials": parse_materials(materials_json),
-        "models": parse_element(element_json)
+        "models": parse_element(element_json, material_assignments)
     }
 
     with open(out_path, "w") as f:
@@ -232,7 +258,7 @@ if __name__ == "__main__":
         # "isCoastline",
         # "isGardeniaA",
         # "isMountainB",
-        # "isPandanusA",
+        "isPandanusA",
         # "isCoral",
         "isHibiscus",
         # "isKava",
@@ -247,7 +273,7 @@ if __name__ == "__main__":
     )
 
     generate_moana_config(
-        "shotCam",
+        "beachCam",
         elements,
         Path("../moana"),
         Path("../moana.json")
