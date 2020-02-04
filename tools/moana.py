@@ -104,20 +104,18 @@ def find_primitives(element_json):
 
 def parse_instances(instanced_copies_json, instance_name):
     instances_json = []
-    elements_json = []
     for instanced_copy_json in instanced_copies_json.values():
         if "geomObjFile" in instanced_copy_json:
             element_json = parse_element(instanced_copy_json)
-            elements_json.extend(element_json)
-            continue
+            instances_json.extend(element_json)
+        else:
+            instances_json.append({
+                "type": "instanced",
+                "instance_name": instance_name,
+                "transform": [ str(f) for f in instanced_copy_json["transformMatrix"] ]
+            })
 
-        instances_json.append({
-            "type": "instanced",
-            "instance_name": instance_name,
-            "transform": [ str(f) for f in instanced_copy_json["transformMatrix"] ]
-        })
-
-    return instances_json, elements_json
+    return instances_json
 
 def parse_element(element_json):
     leaf, leaves = find_primitives(element_json)
@@ -134,7 +132,7 @@ def parse_element(element_json):
         ]
     }
 
-    instances_json, elements_json = parse_instances(
+    instances_json = parse_instances(
         element_json.get("instancedCopies", {}),
         element_json["name"]
     )
@@ -146,7 +144,7 @@ def parse_element(element_json):
         }
     )
 
-    return leaf + [instance_json] + instances_json + elements_json
+    return leaf + [instance_json] + instances_json
 
 def convert_element(element_json, out_path):
     pathed_json = {
@@ -213,10 +211,10 @@ if __name__ == "__main__":
         # "isCoastline",
         # "isGardeniaA",
         # "isMountainB",
-        "isPandanusA",
+        # "isPandanusA",
         # "isCoral",
         "isHibiscus",
-        "isKava",
+        # "isKava",
         # "isNaupakaA",
         # "isIronwoodA1",
         # "isIronwoodB"
