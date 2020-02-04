@@ -56,7 +56,7 @@ static Color parseColor(json colorJson, Color defaultColor);
 static UV parseUV(json UVJson);
 static Transform parseTransform(json transformJson);
 static Transform parseTransform(json transformJson, Transform defaultTransform);
-static std::shared_ptr<Material> parseMaterial(json bsdfJson);
+static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &materialLookup);
 
 static void parseMedia(
     json mediaJson,
@@ -64,13 +64,7 @@ static void parseMedia(
 );
 static void parseMaterials(
     json materialsJson,
-    MaterialMap &materialMap
-);
-static void parseInstances(
-    json objectsJson,
-    MediaMap &media,
-    InstanceMap &instanceMap,
-    RTCManager &rtcManager
+    MaterialMap &materialLookup
 );
 static void parseInstance(
     json instanceJson,
@@ -103,11 +97,13 @@ static void parseObj(
 static void parsePLY(
     json objectJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup,
     MediaMap &media
 );
 static void parseCurve(
     json curveJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    MaterialMap &materialLookup
 );
 static void parseBSpline(
     json splineJson,
@@ -117,9 +113,14 @@ static void parseBSpline(
 static void parseSphere(
     json sphereJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup,
     MediaMap &media
 );
-static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces);
+static void parseQuad(
+    json quadJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup
+);
 static void parseEnvironmentLight(
     json environmentLightJson,
     std::shared_ptr<EnvironmentLight> &environmentLight
@@ -250,13 +251,13 @@ static void parseObjects(
             parseObj(objectJson, rtcCurrentScene, materialLookup, media, rtcManager);
             needsRegistration = false;
         } else if (objectJson["type"] == "ply") {
-            parsePLY(objectJson, localSurfaces, media);
+            parsePLY(objectJson, localSurfaces, materialLookup, media);
         } else if (objectJson["type"] == "sphere") {
-            parseSphere(objectJson, localSurfaces, media);
+            parseSphere(objectJson, localSurfaces, materialLookup, media);
         } else if (objectJson["type"] == "quad") {
-            parseQuad(objectJson, localSurfaces);
+            parseQuad(objectJson, localSurfaces, materialLookup);
         } else if (objectJson["type"] == "pbrt-curve") {
-            parseCurve(objectJson, localSurfaces);
+            parseCurve(objectJson, localSurfaces, materialLookup);
         } else if (objectJson["type"] == "b-spline") {
             parseBSpline(objectJson, rtcCurrentScene, rtcManager);
             needsRegistration = false;
@@ -302,7 +303,7 @@ static void parseObj(
     auto objSurfaces = objParser.parse();
 
     auto bsdfJson = objJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
     std::string mediumKey;
@@ -326,6 +327,7 @@ static void parseObj(
 static void parsePLY(
     json plyJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup,
     MediaMap &media
 ) {
     std::ifstream plyFile(plyJson["filename"].get<std::string>());
@@ -340,7 +342,7 @@ static void parsePLY(
     auto plySurfaces = plyParser.parse();
 
     auto bsdfJson = plyJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
     std::string mediumKey;
@@ -361,7 +363,8 @@ static void parsePLY(
 
 static void parseCurve(
     json curveJson,
-    std::vector<std::shared_ptr<Surface> > &surfaces
+    std::vector<std::shared_ptr<Surface> > &surfaces,
+    MaterialMap &materialLookup
 ) {
     std::ifstream curveFile(curveJson["filename"].get<std::string>());
 
@@ -375,7 +378,7 @@ static void parseCurve(
     auto curveSurfaces = curveParser.parse();
 
     auto bsdfJson = curveJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     for (auto surfacePtr : curveSurfaces) {
         auto shape = surfacePtr->getShape();
@@ -464,10 +467,11 @@ static void parseInstanced(
 static void parseSphere(
     json sphereJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup,
     MediaMap &media
 ) {
     auto bsdfJson = sphereJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
     std::string mediumKey;
@@ -492,10 +496,13 @@ static void parseSphere(
     sphere->create(transform, materialPtr);
 }
 
-static void parseQuad(json quadJson, std::vector<std::shared_ptr<Surface>> &surfaces)
-{
+static void parseQuad(
+    json quadJson,
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    MaterialMap &materialLookup
+) {
     auto bsdfJson = quadJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson));
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     Transform transform;
     auto transformJson = quadJson["transform"];
@@ -522,7 +529,7 @@ static void parseEnvironmentLight(
 
 static void parseMaterials(
     json materialsJson,
-    MaterialMap &materialMap
+    MaterialMap &materialLookup
 ) {
     if (!materialsJson.is_array()) {
         return;
@@ -530,18 +537,20 @@ static void parseMaterials(
 
     for (auto &materialJson : materialsJson) {
         std::string materialName = parseString(materialJson["name"]);
-        std::shared_ptr<Material> materialPtr = parseMaterial(materialJson);
-        materialMap[materialName] = materialPtr;
+        std::shared_ptr<Material> materialPtr = parseMaterial(materialJson, materialLookup);
+        materialLookup[materialName] = materialPtr;
     }
 }
 
-static std::shared_ptr<Material> parseMaterial(json bsdfJson)
+static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &materialLookup)
 {
     if (!bsdfJson.is_object()) {
         return std::shared_ptr<Material>(nullptr);
     }
 
-    if (bsdfJson["type"] == "phong") {
+    if (bsdfJson["type"] == "reference") {
+        return materialLookup[parseString(bsdfJson["name"])];
+    } else if (bsdfJson["type"] == "phong") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color specular = parseColor(bsdfJson["specularReflectance"]);
         return std::make_shared<Phong>(
