@@ -42,6 +42,7 @@ using json = nlohmann::json;
 
 using MediaMap = std::map<std::string, std::shared_ptr<Medium> >;
 using InstanceMap = std::map<std::string, RTCScene>;
+using MaterialMap = std::map<std::string, std::shared_ptr<Material> >;
 
 static bool checkFloat(json floatJson, float *value);
 static float parseFloat(json floatJson);
@@ -60,6 +61,10 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson);
 static void parseMedia(
     json mediaJson,
     MediaMap &media
+);
+static void parseMaterials(
+    json materialsJson,
+    MaterialMap &materialMap
 );
 static void parseInstances(
     json objectsJson,
@@ -141,10 +146,6 @@ Scene parseScene(std::ifstream &sceneFile)
     parseMedia(mediaJson, media);
 
     InstanceMap instanceLookup;
-
-    // auto instances = sceneJson["instances"];
-    // parseInstances(instances, media, instanceLookup, *rtcManagerPtr);
-
     auto objects = sceneJson["models"];
     parseObjects(objects, g_rtcScene, media, instanceLookup, *rtcManagerPtr);
 
@@ -499,6 +500,21 @@ static void parseEnvironmentLight(
         ));
 
         std::cout << environmentLight->toString() << std::endl;
+    }
+}
+
+static void parseMaterials(
+    json materialsJson,
+    MaterialMap &materialMap
+) {
+    if (!materialsJson.is_array()) {
+        return;
+    }
+
+    for (auto &materialJson : materialsJson) {
+        std::string materialName = parseString(materialJson["name"]);
+        std::shared_ptr<Material> materialPtr = parseMaterial(materialJson);
+        materialMap[materialName] = materialPtr;
     }
 }
 
