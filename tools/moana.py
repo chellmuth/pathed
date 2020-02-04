@@ -39,6 +39,7 @@ def convert_cameras(cameras_directory, out_path):
 def parse_materials(materials_json):
     materials = []
     for name, material_json in materials_json.items():
+        if "baseColor" not in material_json: continue
         materials.append({
             "name": name,
             "type": "lambertian",
@@ -134,7 +135,7 @@ def parse_instances(instanced_copies_json, instance_name, material_assignments):
     instances_json = []
     for instanced_copy_json in instanced_copies_json.values():
         if "geomObjFile" in instanced_copy_json:
-            element_json = parse_element(instanced_copy_json, material_assignmetns)
+            element_json = parse_element(instanced_copy_json, material_assignments)
             instances_json.extend(element_json)
         else:
             instances_json.append({
