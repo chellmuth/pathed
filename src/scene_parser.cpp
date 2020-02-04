@@ -74,6 +74,7 @@ static void parseInstances(
 );
 static void parseInstance(
     json instanceJson,
+    MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -87,6 +88,7 @@ static void parseInstanced(
 static void parseObjects(
     json objectsJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLoop,
     RTCManager &rtcManager
@@ -141,13 +143,16 @@ Scene parseScene(std::ifstream &sceneFile)
 
     auto rtcManagerPtr = std::make_unique<RTCManager>(g_rtcScene);
 
-    std::map<std::string, std::shared_ptr<Medium> > media;
+    MaterialMap materialLookup;
+    parseMaterials(sceneJson["materials"], materialLookup);
+
+    MediaMap media;
     auto mediaJson = sceneJson["media"];
     parseMedia(mediaJson, media);
 
     InstanceMap instanceLookup;
     auto objects = sceneJson["models"];
-    parseObjects(objects, g_rtcScene, media, instanceLookup, *rtcManagerPtr);
+    parseObjects(objects, g_rtcScene, materialLookup, media, instanceLookup, *rtcManagerPtr);
 
     std::vector<std::shared_ptr<Light>> lights;
     for (auto &surfaceList : rtcManagerPtr->getSurfaces()) {
@@ -210,6 +215,7 @@ static void parseMedia(
 
 static void parseInstance(
     json instanceJson,
+    MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -218,6 +224,7 @@ static void parseInstance(
     parseObjects(
         instanceJson["models"],
         rtcInstanceScene,
+        materialLookup,
         media,
         instanceLookup,
         rtcManager
@@ -229,6 +236,7 @@ static void parseInstance(
 static void parseObjects(
     json objectsJson,
     RTCScene rtcCurrentScene,
+    MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -252,7 +260,7 @@ static void parseObjects(
             parseBSpline(objectJson, rtcCurrentScene, rtcManager);
             needsRegistration = false;
         } else if (objectJson["type"] == "instance") {
-            parseInstance(objectJson, media, instanceLookup, rtcManager);
+            parseInstance(objectJson, materialLookup, media, instanceLookup, rtcManager);
             needsRegistration = false;
         } else if (objectJson["type"] == "instanced") {
             parseInstanced(objectJson, rtcCurrentScene, instanceLookup, rtcManager);
