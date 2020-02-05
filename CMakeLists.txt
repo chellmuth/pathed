@@ -27,8 +27,14 @@ SET(EMBREE_MAX_INSTANCE_LEVEL_COUNT 2)
 add_subdirectory(embree)
 include_directories(embree/include)
 
+# ptex
+SET(PTEX_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
+
+ADD_SUBDIRECTORY(ptex)
+INCLUDE_DIRECTORIES (ptex/src/ptex)
+
 # For reliability of parallel build, make the NanoGUI targets dependencies
-set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
+set_property(TARGET glfw glfw_objects nanogui Ptex_static PROPERTY FOLDER "dependencies")
 
 # .h files
 include_directories(include)
@@ -49,10 +55,10 @@ add_executable(pathed app/main.cpp ${SOURCES})
 
 # Lastly, additional libraries may have been built for you.  In addition to linking
 # against NanoGUI, we need to link against those as well.
-target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree)
+target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)
 
 add_executable(pathed_tests ${TESTS} ${SOURCES})
-target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree)
+target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)
 
 # add_executable(testbed app/testbed.cpp ${SOURCES})
-# target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree)
+# target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)
