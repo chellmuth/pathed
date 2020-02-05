@@ -53,7 +53,7 @@ void SampleIntegrator::samplePixel(
 
         sampleLookup[row * width + col] = sample;
     } else {
-        color += scene.environmentL(ray.direction());
+        color += Color(0.1f, 0.2f, 0.5f);
     }
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
