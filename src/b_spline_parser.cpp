@@ -116,8 +116,9 @@ void BSplineParser::createRTCGeometry(
             rtcVertices[(vertexCount + i) * 4 + 0] = point.x();
             rtcVertices[(vertexCount + i) * 4 + 1] = point.y();
             rtcVertices[(vertexCount + i) * 4 + 2] = point.z();
-            rtcVertices[(vertexCount + i) * 4 + 3] = spline->width0() * (count - 1 - i) + spline->width1() * i;
 
+            const float alpha = (1.f * i) / (count - 1);
+            rtcVertices[(vertexCount + i) * 4 + 3] = spline->width0() * (1.f - alpha) + spline->width1() * alpha;
         }
 
         for (int i = 0; i < count - 3; i++) {
