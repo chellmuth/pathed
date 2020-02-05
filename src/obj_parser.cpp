@@ -255,6 +255,13 @@ void ObjParser::processTriangle(
     int normalIndex0, int normalIndex1, int normalIndex2,
     int UVIndex0, int UVIndex1, int UVIndex2
 ) {
+    if (m_uvs.size() == 0) {
+        m_uvs.push_back({0.f, 1.f});
+        m_uvs.push_back({1.f, 0.f});
+        m_uvs.push_back({1.f, 1.f});
+        m_uvs.push_back({0.f, 0.f});
+    }
+
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
     correctIndices(m_uvs, &UVIndex0, &UVIndex1, &UVIndex2);
@@ -452,12 +459,14 @@ bool ObjParser::processDoubleFaceTripletsVertexAndNormal(std::string &faceArgs)
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
-        normalIndex0, normalIndex1, normalIndex2
+        normalIndex0, normalIndex1, normalIndex2,
+        1, 2, 3
     );
 
     processTriangle(
         vertexIndex0, vertexIndex2, vertexIndex3,
-        normalIndex0, normalIndex2, normalIndex3
+        normalIndex0, normalIndex2, normalIndex3,
+        1, 3, 4
     );
 
     return true;
