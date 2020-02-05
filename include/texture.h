@@ -13,9 +13,10 @@ public:
     void load();
     Color lookup(UV uv) const override;
 
-private:
+protected:
     std::string m_texturePath;
 
+private:
     unsigned char *m_data;
     int m_width;
     int m_height;

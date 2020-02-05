@@ -23,6 +23,7 @@
 #include "phong.h"
 #include "point.h"
 #include "ply_parser.h"
+#include "ptex_local.h"
 #include "quad.h"
 #include "rtc_manager.h"
 #include "scene.h"
@@ -305,6 +306,14 @@ static void parseObj(
 
     auto bsdfJson = objJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
+
+    auto texturePtr = std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPandanusA/Color/trunka_temp_geo.ptx");
+    materialPtr = std::make_shared<Lambertian>(
+        texturePtr,
+        Color(0.f)
+   );
+
+    std::cout << "MATPTR: " << materialPtr << std::endl;
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
     std::string mediumKey;
