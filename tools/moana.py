@@ -186,7 +186,7 @@ def parse_material_assignments(materials_json):
 
     return assignments
 
-def parse_textures(materials_json):
+def parse_textures(materials_json, element_name):
     texture_paths = set()
 
     for material_name, material_json in materials_json.items():
@@ -198,6 +198,7 @@ def parse_textures(materials_json):
     return [
         {
             "name": texture_path.stem,
+            "element": element_name,
             "type": "ptex",
             "filename": str(texture_path),
         }
@@ -211,7 +212,8 @@ def convert_element(element_json, out_path):
     material_assignments = parse_material_assignments(materials_json)
 
     pathed_json = {
-        "materials": parse_materials(materials_json) + parse_textures(materials_json),
+        "materials": parse_materials(materials_json) \
+            + parse_textures(materials_json, element_json["name"]),
         "models": parse_element(element_json, material_assignments)
     }
 
