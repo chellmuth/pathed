@@ -36,12 +36,12 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
-def parse_materials(materials_json, element_name):
+def parse_materials(materials_json, root_name):
     materials = []
     for name, material_json in materials_json.items():
         if "baseColor" not in material_json: continue
         materials.append({
-            "name": f"{element_name}|{name}",
+            "name": f"{root_name}|{name}",
             "type": "lambertian",
             "diffuseReflectance": [
                 str(base_color)
@@ -52,7 +52,7 @@ def parse_materials(materials_json, element_name):
 
     return materials
 
-def parse_archive(archive_json):
+def parse_archive(archive_json, root_name):
     instances = []
     models = []
 
@@ -66,6 +66,7 @@ def parse_archive(archive_json):
             "models": [
                 {
                     "type": "obj",
+                    "materialPrefix": f"{root_name}|",
                     "filename": str(MoanaPath / archive_name)
                 }
             ]
@@ -105,7 +106,7 @@ def parse_curve(curve_name, curve_json, material_assignments):
 
     return [], [model]
 
-def find_primitives(element_json, material_assignments):
+def find_primitives(element_json, root_name, material_assignments):
     instances = []
     models = []
 
@@ -117,7 +118,7 @@ def find_primitives(element_json, material_assignments):
     for primitive_name, primitive_json in instanced_primitive_json.items():
         print("primitive name:", primitive_name)
         if primitive_json["type"] == "archive":
-            next_instances, next_models = parse_archive(primitive_json)
+            next_instances, next_models = parse_archive(primitive_json, root_name)
             instances.extend(next_instances)
             models.extend(next_models)
         elif primitive_json["type"] == "curve":
@@ -131,11 +132,11 @@ def find_primitives(element_json, material_assignments):
 
     return instances, models
 
-def parse_instances(instanced_copies_json, instance_name, material_assignments):
+def parse_instances(instanced_copies_json, instance_name, root_name, material_assignments):
     instances_json = []
     for instanced_copy_json in instanced_copies_json.values():
         if "geomObjFile" in instanced_copy_json:
-            element_json = parse_element(instanced_copy_json, material_assignments)
+            element_json = parse_element(instanced_copy_json, root_name, material_assignments)
             instances_json.extend(element_json)
         else:
             instances_json.append({
@@ -146,8 +147,8 @@ def parse_instances(instanced_copies_json, instance_name, material_assignments):
 
     return instances_json
 
-def parse_element(element_json, material_assignments):
-    leaf, leaves = find_primitives(element_json, material_assignments)
+def parse_element(element_json, root_name, material_assignments):
+    leaf, leaves = find_primitives(element_json, root_name, material_assignments)
 
     element_name = element_json["name"]
 
@@ -157,7 +158,7 @@ def parse_element(element_json, material_assignments):
         "models": [
             {
                 "type": "obj",
-                "materialPrefix": f"{element_name}|",
+                "materialPrefix": f"{root_name}|",
                 "filename": str(MoanaPath / element_json["geomObjFile"])
             },
             *leaves
@@ -167,6 +168,7 @@ def parse_element(element_json, material_assignments):
     instances_json = parse_instances(
         element_json.get("instancedCopies", {}),
         element_name,
+        root_name,
         material_assignments
     )
     instances_json.append(
@@ -179,15 +181,15 @@ def parse_element(element_json, material_assignments):
 
     return leaf + [instance_json] + instances_json
 
-def parse_material_assignments(materials_json, element_name):
+def parse_material_assignments(materials_json, root_name):
     assignments = {}
     for material_name, material_json in materials_json.items():
         for assignee in material_json.get("assignment", []):
-            assignments[assignee] = f"{element_name}|{material_name}"
+            assignments[assignee] = f"{root_name}|{material_name}"
 
     return assignments
 
-def parse_textures(materials_json, element_name):
+def parse_textures(materials_json, root_name):
     texture_paths = set()
 
     for material_name, material_json in materials_json.items():
@@ -198,7 +200,7 @@ def parse_textures(materials_json, element_name):
 
     return [
         {
-            "name": f"{element_name}|{texture_path.stem}",
+            "name": f"{root_name}|{texture_path.stem}",
             "type": "ptex",
             "filename": str(texture_path),
         }
@@ -209,13 +211,13 @@ def convert_element(element_json, out_path):
     materials_filename = MoanaPath / element_json["matFile"]
     materials_json = json.load(open(materials_filename, "r"))
 
-    element_name = element_json["name"]
-    material_assignments = parse_material_assignments(materials_json, element_name)
+    root_name = element_json["name"]
+    material_assignments = parse_material_assignments(materials_json, root_name)
 
     pathed_json = {
-        "materials": parse_materials(materials_json, element_name) \
-            + parse_textures(materials_json, element_name),
-        "models": parse_element(element_json, material_assignments)
+        "materials": parse_materials(materials_json, root_name) \
+            + parse_textures(materials_json, root_name),
+        "models": parse_element(element_json, root_name, material_assignments)
     }
 
     with open(out_path, "w") as f:
