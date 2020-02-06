@@ -237,11 +237,12 @@ static void correctIndices(
 void ObjParser::processFace(Triangle *face)
 {
     std::shared_ptr<Material> materialPtr;
-    std::string materialKey = m_materialPrefix + m_currentGroup;
-    if (m_materialLookup.count(materialKey) > 0) {
-        materialPtr = m_materialLookup.at(materialKey);
-    } else if (m_materialLookup.count(m_currentMaterialName) > 0) {
-        materialPtr = m_materialLookup.at(m_currentMaterialName);
+    std::string materialGroupKey = m_materialPrefix + m_currentGroup;
+    std::string materialMtlKey = m_materialPrefix + m_currentMaterialName;
+    if (m_materialLookup.count(materialGroupKey) > 0) {
+        materialPtr = m_materialLookup.at(materialGroupKey);
+    } else if (m_materialLookup.count(materialMtlKey) > 0) {
+        materialPtr = m_materialLookup.at(materialMtlKey);
     } else {
         Color diffuse = m_mtlLookup[m_currentMaterialName].diffuse;
         Color emit = m_mtlLookup[m_currentMaterialName].emit;

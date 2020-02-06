@@ -25,6 +25,8 @@ public:
         RandomGenerator &random
     ) const override;
 
+    Color albedo(const Intersection &intersection) const override;
+
     void writeStream(std::ostream &os) const override {
         os << "[Lambertian: diffuse=" << m_diffuse << " emit=" << m_emit << "]";
     }

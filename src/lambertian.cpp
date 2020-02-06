@@ -51,3 +51,12 @@ BSDFSample Lambertian::sample(
 
     return sample;
 }
+
+Color Lambertian::albedo(const Intersection &intersection) const
+{
+    if (m_albedo) {
+        return m_albedo->lookup(intersection);
+    } else {
+        return m_diffuse;
+    }
+}

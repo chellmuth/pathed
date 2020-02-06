@@ -36,12 +36,12 @@ def convert_cameras(cameras_directory, out_path):
     with open(out_path, "w") as f:
         json.dump(pathed_json, f, indent=2)
 
-def parse_materials(materials_json):
+def parse_materials(materials_json, element_name):
     materials = []
     for name, material_json in materials_json.items():
         if "baseColor" not in material_json: continue
         materials.append({
-            "name": name,
+            "name": f"{element_name}|{name}",
             "type": "lambertian",
             "diffuseReflectance": [
                 str(base_color)
@@ -179,11 +179,11 @@ def parse_element(element_json, material_assignments):
 
     return leaf + [instance_json] + instances_json
 
-def parse_material_assignments(materials_json):
+def parse_material_assignments(materials_json, element_name):
     assignments = {}
     for material_name, material_json in materials_json.items():
         for assignee in material_json.get("assignment", []):
-            assignments[assignee] = material_name
+            assignments[assignee] = f"{element_name}|{material_name}"
 
     return assignments
 
@@ -209,11 +209,12 @@ def convert_element(element_json, out_path):
     materials_filename = MoanaPath / element_json["matFile"]
     materials_json = json.load(open(materials_filename, "r"))
 
-    material_assignments = parse_material_assignments(materials_json)
+    element_name = element_json["name"]
+    material_assignments = parse_material_assignments(materials_json, element_name)
 
     pathed_json = {
-        "materials": parse_materials(materials_json) \
-            + parse_textures(materials_json, element_json["name"]),
+        "materials": parse_materials(materials_json, element_name) \
+            + parse_textures(materials_json, element_name),
         "models": parse_element(element_json, material_assignments)
     }
 

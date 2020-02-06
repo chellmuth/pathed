@@ -1,5 +1,6 @@
 #include "job.h"
 
+#include "albedo_integrator.h"
 #include "basic_volume_integrator.h"
 #include "data_parallel_integrator.h"
 #include "depositer.h"
@@ -86,6 +87,8 @@ std::shared_ptr<Integrator> Job::integrator() const
         return std::make_shared<DataParallelIntegrator>(m_bounceController);
     } else if (integrator == "RenderBacksides") {
         return std::make_shared<RenderBacksides>();
+    } else if (integrator == "AlbedoIntegrator") {
+        return std::make_shared<AlbedoIntegrator>();
     }
     throw "Unimplemented";
 }
