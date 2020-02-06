@@ -2,7 +2,7 @@
 
 #include "albedo.h"
 #include "color.h"
-#include "uv.h"
+#include "intersection.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@ public:
     Texture(const std::string &texturePath);
 
     void load();
-    Color lookup(UV uv) const override;
+    Color lookup(const Intersection &intersection) const override;
 
 protected:
     std::string m_texturePath;

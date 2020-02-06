@@ -30,8 +30,10 @@ void Texture::load()
     }
 }
 
-Color Texture::lookup(UV uv) const
+Color Texture::lookup(const Intersection &intersection) const
 {
+    const UV &uv = intersection.uv;
+
     // Handle wrapping
     float u = uv.u - (int)floorf(uv.u);
     float v = uv.v - (int)floorf(uv.v);

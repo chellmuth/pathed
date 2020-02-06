@@ -23,8 +23,10 @@ void PtexLocal::load()
 {
 }
 
-Color PtexLocal::lookup(UV uv) const
+Color PtexLocal::lookup(const Intersection &intersection) const
 {
+    const UV &uv = intersection.uv;
+
     // Handle wrapping
     float u = uv.u - (int)floorf(uv.u);
     float v = uv.v - (int)floorf(uv.v);
@@ -35,7 +37,10 @@ Color PtexLocal::lookup(UV uv) const
     Ptex::PtexFilter *filter = Ptex::PtexFilter::getFilter(texture, opts);
 
     float result[3];
-    filter->eval(result, 0, texture->numChannels(), 0, uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
+    filter->eval(result, 0, texture->numChannels(), 10, uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
+
+    filter->release();
+    texture->release();
 
     return Color(result[0], result[1], result[2]);
 }

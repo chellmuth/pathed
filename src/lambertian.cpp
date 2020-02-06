@@ -28,7 +28,7 @@ Color Lambertian::f(
     *pdf = UniformHemispherePdf(wi);
 
     if (m_albedo) {
-        return m_albedo->lookup(intersection.uv) / M_PI;
+        return m_albedo->lookup(intersection) / M_PI;
     } else {
         return m_diffuse / M_PI;
     }

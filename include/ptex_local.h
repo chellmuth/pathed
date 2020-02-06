@@ -2,8 +2,8 @@
 
 #include "albedo.h"
 #include "color.h"
+#include "intersection.h"
 #include "texture.h"
-#include "uv.h"
 
 #include <string>
 
@@ -12,5 +12,5 @@ public:
     PtexLocal(const std::string &texturePath);
 
     void load();
-    Color lookup(UV uv) const override;
+    Color lookup(const Intersection &intersection) const override;
 };

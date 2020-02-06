@@ -1,9 +1,9 @@
 #pragma once
 
 #include "color.h"
-#include "uv.h"
+#include "intersection.h"
 
 class Albedo {
 public:
-    virtual Color lookup(UV uv) const = 0;
+    virtual Color lookup(const Intersection &intersection) const = 0;
 };
