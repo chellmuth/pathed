@@ -247,8 +247,8 @@ if __name__ == "__main__":
     )
 
     elements = [
-        "isBayCedarA1",
-        "isDunesA",
+        # "isBayCedarA1",
+        # "isDunesA",
         # "isHibiscusYoung",
         # "isLavaRocks",
         # "isPalmDead",
@@ -257,13 +257,13 @@ if __name__ == "__main__":
         # "isMountainA",
         "isPalmRig",
         # "isCoastline",
-        "isGardeniaA",
+        # "isGardeniaA",
         # "isMountainB",
-        "isPandanusA",
+        # "isPandanusA",
         # "isCoral",
-        "isHibiscus",
-        "isKava",
-        "isNaupakaA",
+        # "isHibiscus",
+        # "isKava",
+        # "isNaupakaA",
         # "isIronwoodA1",
         # "isIronwoodB"
     ]
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     )
 
     generate_moana_config(
-        "dunesACam",
+        "palmsCam",
         elements,
         Path("../moana"),
         Path("../moana.json")

@@ -356,6 +356,41 @@ static void parseObj(
     materialLookup["trunka_temp_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPandanusA/Color/trunka_temp_geo.ptx"), Color(0.f));
     materialLookup["trunkb_temp_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPandanusA/Color/trunkb_temp_geo.ptx"), Color(0.f));
 
+    materialLookup["trunk0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/trunk0001_geo.ptx"), Color(0.f));
+    materialLookup["roots_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/roots_geo.ptx"), Color(0.f));
+    materialLookup["skirt_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/skirt_geo.ptx"), Color(0.f));
+    materialLookup["deadstrand0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/deadstrand0001_geo.ptx"), Color(0.f));
+    materialLookup["deadstrand0004_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/deadstrand0004_geo.ptx"), Color(0.f));
+    materialLookup["deadstrand0003_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/deadstrand0003_geo.ptx"), Color(0.f));
+    materialLookup["deadstrand0005_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/deadstrand0005_geo.ptx"), Color(0.f));
+    materialLookup["deadstrand0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/deadstrand0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathe0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathe0001_geo.ptx"), Color(0.f));
+    materialLookup["sheatha0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheatha0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathg0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathg0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathf0004_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathf0004_geo.ptx"), Color(0.f));
+    materialLookup["sheathb0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathb0001_geo.ptx"), Color(0.f));
+    materialLookup["sheatha0003_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheatha0003_geo.ptx"), Color(0.f));
+    materialLookup["sheathc0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathc0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathh0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathh0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathc0005_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathc0005_geo.ptx"), Color(0.f));
+    materialLookup["sheathc0004_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathc0004_geo.ptx"), Color(0.f));
+    materialLookup["sheatha0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheatha0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathd0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathd0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathf0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathf0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathc0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathc0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathe0004_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathe0004_geo.ptx"), Color(0.f));
+    materialLookup["sheathb0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathb0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathi0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathi0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathe0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathe0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathb0003_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathb0003_geo.ptx"), Color(0.f));
+    materialLookup["sheathg0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathg0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathh0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathh0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathd0001_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathd0001_geo.ptx"), Color(0.f));
+    materialLookup["sheathf0002_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathf0002_geo.ptx"), Color(0.f));
+    materialLookup["sheathf0005_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathf0005_geo.ptx"), Color(0.f));
+    materialLookup["sheathe0005_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathe0005_geo.ptx"), Color(0.f));
+    materialLookup["sheathd0003_geo"] = std::make_shared<Lambertian>(std::make_shared<PtexLocal>("/home/cjh/moana/island/textures/isPalmRig/Color/sheathd0003_geo.ptx"), Color(0.f));
+
     ObjParser objParser(
         objFile,
         transform,
