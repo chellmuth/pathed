@@ -204,6 +204,7 @@ void ObjParser::processGroup(string &groupArgs)
 {
     string name = lTrim(groupArgs);
     m_currentGroup = name;
+    m_currentFaceIndex = 0;
 }
 
 template <class T>
@@ -241,9 +242,10 @@ void ObjParser::processFace(Triangle *face)
     }
 
     std::shared_ptr<Triangle> shape(face);
-    std::shared_ptr<Surface> surface(new Surface(shape, materialPtr, nullptr));
+    std::shared_ptr<Surface> surface(new Surface(shape, materialPtr, nullptr, m_currentFaceIndex));
 
     m_surfaces.push_back(surface);
+    m_currentFaceIndex += 1;
 
     if (materialPtr->emit().isBlack()) { return; }
 

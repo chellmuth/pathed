@@ -1,5 +1,7 @@
 #include "ptex_local.h"
 
+#include "surface.h"
+
 #include <Ptexture.h>
 
 #include <cmath>
@@ -37,7 +39,7 @@ Color PtexLocal::lookup(const Intersection &intersection) const
     Ptex::PtexFilter *filter = Ptex::PtexFilter::getFilter(texture, opts);
 
     float result[3];
-    filter->eval(result, 0, texture->numChannels(), 10, uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
+    filter->eval(result, 0, texture->numChannels(), intersection.surface->getFaceIndex(), uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
 
     filter->release();
     texture->release();
