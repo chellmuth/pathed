@@ -39,7 +39,8 @@ Color PtexLocal::lookup(const Intersection &intersection) const
     Ptex::PtexFilter *filter = Ptex::PtexFilter::getFilter(texture, opts);
 
     float result[3];
-    filter->eval(result, 0, texture->numChannels(), intersection.surface->getFaceIndex(), uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
+    const int faceIndex = (int)std::floor(intersection.surface->getFaceIndex() / 2);
+    filter->eval(result, 0, texture->numChannels(), faceIndex, uv.u, uv.v, 0.f, 0.f, 0.f, 0.f);
 
     filter->release();
     texture->release();
