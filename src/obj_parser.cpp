@@ -418,7 +418,7 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
 {
-    static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
+    static std::regex expression("(-?\\d+)//(-?\\d+)\\s+(-?\\d+)//(-?\\d+)\\s+(-?\\d+)//(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
