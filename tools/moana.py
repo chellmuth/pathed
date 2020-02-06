@@ -186,6 +186,24 @@ def parse_material_assignments(materials_json):
 
     return assignments
 
+def parse_textures(materials_json):
+    texture_paths = set()
+
+    for material_name, material_json in materials_json.items():
+        if material_json.get("colorMap", False):
+            textures_path = MoanaPath / material_json["colorMap"]
+            for texture_path in textures_path.glob("*.ptx"):
+                texture_paths.add(texture_path)
+
+    return [
+        {
+            "name": texture_path.stem,
+            "type": "ptex",
+            "filename": str(texture_path),
+        }
+        for texture_path in texture_paths
+    ]
+
 def convert_element(element_json, out_path):
     materials_filename = MoanaPath / element_json["matFile"]
     materials_json = json.load(open(materials_filename, "r"))
@@ -193,7 +211,7 @@ def convert_element(element_json, out_path):
     material_assignments = parse_material_assignments(materials_json)
 
     pathed_json = {
-        "materials": parse_materials(materials_json),
+        "materials": parse_materials(materials_json) + parse_textures(materials_json),
         "models": parse_element(element_json, material_assignments)
     }
 
