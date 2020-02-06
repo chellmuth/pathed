@@ -45,5 +45,9 @@ Color PtexLocal::lookup(const Intersection &intersection) const
     filter->release();
     texture->release();
 
-    return Color(result[0], result[1], result[2]);
+    return Color(
+        std::pow(result[0], 2.2f),
+        std::pow(result[1], 2.2f),
+        std::pow(result[2], 2.2f)
+    );
 }
