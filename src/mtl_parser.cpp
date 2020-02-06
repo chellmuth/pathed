@@ -1,9 +1,11 @@
 #include "mtl_parser.h"
 
+#include "lambertian.h"
+#include "material.h"
+#include "string_util.h"
+
 #include <assert.h>
 #include <iostream>
-
-#include "string_util.h"
 
 using string = std::string;
 
@@ -17,6 +19,22 @@ void MtlParser::parse()
     while(std::getline(m_mtlFile, line)) {
         parseLine(line);
     }
+
+    bakeLookup();
+}
+
+void MtlParser::bakeLookup()
+{
+    std::map<std::string, std::shared_ptr<Material>> materialLookup;
+    for (const std::pair<std::string, MtlMaterial> &item : m_mtlLookup) {
+        Color diffuse = item.second.diffuse;
+        Color emit = item.second.emit;
+
+        materialLookup[item.first] = std::make_shared<Lambertian>(
+            diffuse, emit
+        );
+    }
+    m_materialLookup = materialLookup;
 }
 
 void MtlParser::parseLine(string &line)
@@ -46,7 +64,7 @@ void MtlParser::processNewMaterial(std::queue<string> &arguments)
     m_currentMaterialName = name;
 
     MtlMaterial m;
-    m_materialLookup[m_currentMaterialName] = m;
+    m_mtlLookup[m_currentMaterialName] = m;
 }
 
 void MtlParser::processDiffuse(std::queue<string> &arguments)
@@ -63,7 +81,7 @@ void MtlParser::processDiffuse(std::queue<string> &arguments)
     arguments.pop();
 
     Color diffuse(r, g, b);
-    m_materialLookup[m_currentMaterialName].diffuse = diffuse;
+    m_mtlLookup[m_currentMaterialName].diffuse = diffuse;
 }
 
 void MtlParser::processEmit(std::queue<string> &arguments)
@@ -80,5 +98,5 @@ void MtlParser::processEmit(std::queue<string> &arguments)
     arguments.pop();
 
     Color emit(r, g, b);
-    m_materialLookup[m_currentMaterialName].emit = emit;
+    m_mtlLookup[m_currentMaterialName].emit = emit;
 }

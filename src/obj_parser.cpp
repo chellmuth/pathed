@@ -244,9 +244,7 @@ void ObjParser::processFace(Triangle *face)
     } else if (m_materialLookup.count(materialMtlKey) > 0) {
         materialPtr = m_materialLookup.at(materialMtlKey);
     } else {
-        Color diffuse = m_mtlLookup[m_currentMaterialName].diffuse;
-        Color emit = m_mtlLookup[m_currentMaterialName].emit;
-        materialPtr = std::make_shared<Lambertian>(diffuse, emit);
+        materialPtr = m_mtlLookup[m_currentMaterialName];
     }
 
     std::shared_ptr<Triangle> shape(face);
@@ -255,7 +253,7 @@ void ObjParser::processFace(Triangle *face)
     m_surfaces.push_back(surface);
     m_currentFaceIndex += 1;
 
-    if (materialPtr->emit().isBlack()) { return; }
+    if (materialPtr && materialPtr->emit().isBlack()) { return; }
 
     std::shared_ptr<Light> light(new AreaLight(surface));
 
@@ -515,10 +513,6 @@ void ObjParser::processMaterialLibrary(std::string &libraryArgs)
 void ObjParser::processUseMaterial(std::string &materialArgs)
 {
     string materialName = materialArgs;
-    MtlMaterial currentMaterial = m_mtlLookup[materialName];
-    Color color = currentMaterial.diffuse;
-
-    // std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
-
-    m_currentMaterialName = materialArgs;
+    std::cout << "Using material: " << materialName << std::endl;
+    m_currentMaterialName = materialName;
 }

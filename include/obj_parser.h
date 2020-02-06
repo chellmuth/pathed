@@ -58,8 +58,8 @@ private:
     std::vector<std::shared_ptr<Surface>> m_surfaces;
     std::vector<std::shared_ptr<Light>> m_lights;
 
-    std::map<std::string, MtlMaterial> m_mtlLookup;
     std::map<std::string, std::shared_ptr<Material> > m_materialLookup;
+    std::map<std::string, std::shared_ptr<Material> > m_mtlLookup;
     std::string m_materialPrefix;
 
     void parseLine(std::string &line);
