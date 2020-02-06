@@ -50,6 +50,7 @@ static float parseFloat(json floatJson);
 static float parseFloat(json floatJson, float defaultValue);
 static bool checkString(json stringJson, std::string *value);
 static std::string parseString(json stringJson);
+static std::string parseString(json stringJson, std::string defaultString);
 static Point3 parsePoint(json pointJson, bool flipHandedness = false);
 static Vector3 parseVector(json vectorJson);
 static Color parseColor(json colorJson, bool required = false);
@@ -294,13 +295,15 @@ static void parseObj(
         transform = parseTransform(transformJson);
     }
 
+    std::string materialPrefix = parseString(objJson["materialPrefix"], "");
     ObjParser objParser(
         objFile,
         transform,
         false,
         Handedness::Right,
         rtcCurrentScene,
-        materialLookup
+        materialLookup,
+        materialPrefix
     );
     auto objSurfaces = objParser.parse();
 
@@ -803,6 +806,15 @@ static bool checkString(json stringJson, std::string *value)
         return true;
     } catch (nlohmann::detail::type_error) {
         return false;
+    }
+}
+
+static std::string parseString(json stringJson, std::string defaultString)
+{
+    try {
+        return parseString(stringJson);
+    } catch (nlohmann::detail::type_error) {
+        return defaultString;
     }
 }
 

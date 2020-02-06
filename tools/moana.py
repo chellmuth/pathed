@@ -157,6 +157,7 @@ def parse_element(element_json, material_assignments):
         "models": [
             {
                 "type": "obj",
+                "materialPrefix": f"{element_name}|",
                 "filename": str(MoanaPath / element_json["geomObjFile"])
             },
             *leaves
@@ -197,8 +198,7 @@ def parse_textures(materials_json, element_name):
 
     return [
         {
-            "name": texture_path.stem,
-            "element": element_name,
+            "name": f"{element_name}|{texture_path.stem}",
             "type": "ptex",
             "filename": str(texture_path),
         }

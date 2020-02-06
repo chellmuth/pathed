@@ -23,15 +23,14 @@ class Triangle;
 
 class ObjParser {
 public:
-    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right, g_rtcScene, {}) {};
-    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right, g_rtcScene, {}) {};
     ObjParser(
         std::ifstream &objFile,
         const Transform &transform,
         bool useFaceNormals,
         Handedness handedness,
         RTCScene rtcScene,
-        std::map<std::string, std::shared_ptr<Material> > materialLookup
+        std::map<std::string, std::shared_ptr<Material> > materialLookup,
+        std::string &materialPrefix
     );
 
     std::vector<std::shared_ptr<Surface> > parse();
@@ -61,6 +60,7 @@ private:
 
     std::map<std::string, MtlMaterial> m_mtlLookup;
     std::map<std::string, std::shared_ptr<Material> > m_materialLookup;
+    std::string m_materialPrefix;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);

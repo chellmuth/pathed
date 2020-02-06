@@ -24,7 +24,8 @@ ObjParser::ObjParser(
     bool useFaceNormals,
     Handedness handedness,
     RTCScene rtcScene,
-    std::map<std::string, std::shared_ptr<Material> > materialLookup
+    std::map<std::string, std::shared_ptr<Material> > materialLookup,
+    string &materialPrefix
 )
     : m_objFile(objFile),
       m_transform(transform),
@@ -32,7 +33,8 @@ ObjParser::ObjParser(
       m_handedness(handedness),
       m_rtcScene(rtcScene),
       m_currentGroup(""),
-      m_materialLookup(materialLookup)
+      m_materialLookup(materialLookup),
+      m_materialPrefix(materialPrefix)
 {}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
@@ -235,8 +237,9 @@ static void correctIndices(
 void ObjParser::processFace(Triangle *face)
 {
     std::shared_ptr<Material> materialPtr;
-    if (m_materialLookup.count(m_currentGroup) > 0) {
-        materialPtr = m_materialLookup.at(m_currentGroup);
+    std::string materialKey = m_materialPrefix + m_currentGroup;
+    if (m_materialLookup.count(materialKey) > 0) {
+        materialPtr = m_materialLookup.at(materialKey);
     } else if (m_materialLookup.count(m_currentMaterialName) > 0) {
         materialPtr = m_materialLookup.at(m_currentMaterialName);
     } else {
