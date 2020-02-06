@@ -144,6 +144,14 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 2
             );
 
+            if (surfacePtr->getFaceIndex() % 2 == 0) {
+                uv.u = hit.u * 0.f + hit.v * 0.f + (1.f - hit.u - hit.v) * 1.f;
+                uv.v = hit.u * 0.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 0.f;
+            } else {
+                uv.u = hit.u * 0.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 1.f;
+                uv.v = hit.u * 1.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 0.f;
+            }
+
             float normalRaw[3];
             rtcInterpolate0(
                 geometry,

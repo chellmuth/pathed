@@ -60,6 +60,10 @@ void SampleIntegrator::samplePixel(
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
 
+    // radianceLookup[3 * (row * width + col) + 0] += intersection.uv.u;
+    // radianceLookup[3 * (row * width + col) + 1] += intersection.uv.v;
+    // radianceLookup[3 * (row * width + col) + 2] += 0.f;
+
     // Point3 point = intersection.point;
     // radianceLookup[3 * (row * width + col) + 0] += point.x();
     // radianceLookup[3 * (row * width + col) + 1] += point.y();
