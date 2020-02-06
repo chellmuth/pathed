@@ -15,7 +15,7 @@ PtexLocal::PtexLocal(const std::string &texturePath)
     : Texture(texturePath)
 {
     if (!cache) {
-        cache = Ptex::PtexCache::create(1, 1ull << 32, true, nullptr, &errorHandler);
+        cache = Ptex::PtexCache::create(100, 1ull << 32, true, nullptr, &errorHandler);
     }
 }
 

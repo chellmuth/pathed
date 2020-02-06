@@ -230,7 +230,9 @@ static void correctIndices(
 void ObjParser::processFace(Triangle *face)
 {
     std::shared_ptr<Material> materialPtr;
-    if (m_materialLookup.count(m_currentMaterialName) > 0) {
+    if (m_materialLookup.count(m_currentGroup) > 0) {
+        materialPtr = m_materialLookup.at(m_currentGroup);
+    } else if (m_materialLookup.count(m_currentMaterialName) > 0) {
         materialPtr = m_materialLookup.at(m_currentMaterialName);
     } else {
         Color diffuse = m_mtlLookup[m_currentMaterialName].diffuse;
