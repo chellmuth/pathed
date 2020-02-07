@@ -1,6 +1,7 @@
 #include "obj_parser.h"
 
 #include "area_light.h"
+#include "blank_shape.h"
 #include "camera.h"
 #include "color.h"
 #include "lambertian.h"
@@ -40,6 +41,8 @@ ObjParser::ObjParser(
         Color(1.f, 0.f, 0.f),
         Color(0.f)
     );
+
+    m_defaultShapePtr = std::make_shared<BlankShape>();
 }
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
@@ -254,8 +257,12 @@ void ObjParser::processFace(Triangle *face)
         materialPtr = m_defaultMaterialPtr;
     }
 
-    std::shared_ptr<Triangle> shape(face);
-    std::shared_ptr<Surface> surface(new Surface(shape, materialPtr, nullptr, m_currentFaceIndex));
+    std::shared_ptr<Surface> surface = std::make_shared<Surface>(
+        m_defaultShapePtr,
+        materialPtr,
+        nullptr,
+        m_currentFaceIndex
+    );
 
     m_surfaces.push_back(surface);
     m_currentFaceIndex += 1;
@@ -276,13 +283,13 @@ void ObjParser::processTriangle(
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
     correctIndices(m_uvs, &UVIndex0, &UVIndex1, &UVIndex2);
 
-    Triangle *face = new Triangle(
-        m_vertices[vertexIndex0],
-        m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2]
-    );
+    // Triangle *face = new Triangle(
+    //     m_vertices[vertexIndex0],
+    //     m_vertices[vertexIndex1],
+    //     m_vertices[vertexIndex2]
+    // );
 
-    processFace(face);
+    processFace(nullptr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -315,13 +322,13 @@ void ObjParser::processTriangle(
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
 
-    Triangle *face = new Triangle(
-        m_vertices[vertexIndex0],
-        m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2]
-    );
+    // Triangle *face = new Triangle(
+    //     m_vertices[vertexIndex0],
+    //     m_vertices[vertexIndex1],
+    //     m_vertices[vertexIndex2]
+    // );
 
-    processFace(face);
+    processFace(nullptr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -345,13 +352,13 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
 
-    Triangle *face = new Triangle(
-        m_vertices[vertexIndex0],
-        m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2]
-    );
+    // Triangle *face = new Triangle(
+    //     m_vertices[vertexIndex0],
+    //     m_vertices[vertexIndex1],
+    //     m_vertices[vertexIndex2]
+    // );
 
-    processFace(face);
+    processFace(nullptr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "blank_shape.h"
 #include "geometry_parser.h"
 #include "globals.h"
 #include "handedness.h"
@@ -62,6 +63,8 @@ private:
     std::map<std::string, std::shared_ptr<Material> > m_mtlLookup;
     std::string m_materialPrefix;
     std::shared_ptr<Material> m_defaultMaterialPtr;
+
+    std::shared_ptr<BlankShape> m_defaultShapePtr;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
