@@ -55,8 +55,6 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
     std::map<int, int> normalLookup;
     std::map<std::pair<int, int>, int> correctionLookup;
 
-    std::vector<FaceIndices> correctedFaces;
-
     // Start "cube-normal" correction
     // Look for re-used vertices with differing normals
     // When found, create a new vertex (add to the back of m_vertices)
@@ -96,8 +94,11 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
             }
         }
 
-        correctedFaces.push_back(correctedFace);
+        m_faceIndices[i] = correctedFace;
+        // correctedFaces.push_back(correctedFace);
     }
+
+    std::vector<FaceIndices> &correctedFaces = m_faceIndices;
 
     m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
     for (int i = 0; i < correctedFaces.size(); i++) {
