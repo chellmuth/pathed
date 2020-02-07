@@ -1,6 +1,7 @@
 #include "rtc_manager.h"
 
 #include <assert.h>
+#include <iostream>
 
 RTCManager::RTCManager(RTCScene rootScene)
     : m_rootScene(rootScene)
@@ -88,4 +89,27 @@ void RTCManager::registerFilters(void (&callback)(const RTCFilterFunctionNArgume
         rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
         rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
     }
+}
+
+void RTCManager::printStats()
+{
+    int counter = 0;
+    int bytesCounter = 0;
+    for (const auto &item : m_rtcSceneToSurfaces) {
+        const auto &nestedSurfaces = item.second;
+        for (const auto &surfaces : nestedSurfaces) {
+            counter += surfaces.size();
+
+            for (const auto &surface : surfaces) {
+                bytesCounter += sizeof(surface);
+                bytesCounter += sizeof(surface->getShape());
+                bytesCounter += sizeof(surface->getMaterial());
+                bytesCounter += sizeof(surface->getInternalMedium());
+            }
+        }
+    }
+
+    std::cout << "RTCManager Stats: " << counter << std::endl;
+    std::cout << " related bytes: " << bytesCounter << std::endl;
+    std::cout << " sizeof Surface: " << sizeof(Surface) << std::endl;
 }

@@ -323,6 +323,7 @@ static void parseObj(
         if (materialPtr) {
             auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
             localSurfaces.push_back(surface);
+
         } else {
             localSurfaces.push_back(surfacePtr);
         }

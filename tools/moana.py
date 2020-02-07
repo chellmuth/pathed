@@ -16,7 +16,7 @@ def convert_camera(camera_json):
         "lookAt": {
             "origin": [ str(f) for f in flip_x(camera_json["eye"]) ],
             "target": [ str(f) for f in flip_x(camera_json["look"]) ],
-            "up": [ str(f) for f in flip_x(camera_json["up"]) ],
+            "up": [ str(f) for f in camera_json["up"] ],
         }
     }
 
@@ -40,15 +40,23 @@ def parse_materials(materials_json, root_name):
     materials = []
     for name, material_json in materials_json.items():
         if "baseColor" not in material_json: continue
-        materials.append({
-            "name": f"{root_name}|{name}",
-            "type": "lambertian",
-            "diffuseReflectance": [
-                str(base_color)
-                for base_color
-                in material_json["baseColor"]
-            ]
-        })
+
+        if "refractive" in material_json:
+            materials.append({
+                "name": f"{root_name}|{name}",
+                "type": "glass",
+                "ior": str(material_json["ior"]),
+            })
+        else:
+            materials.append({
+                "name": f"{root_name}|{name}",
+                "type": "lambertian",
+                "diffuseReflectance": [
+                    str(base_color)
+                    for base_color
+                    in material_json["baseColor"]
+                ]
+            })
 
     return materials
 
@@ -225,7 +233,7 @@ def convert_element(element_json, out_path):
 
 
 def convert_elements(elements_directory, out_directory, whitelist=None):
-    for element_directory in elements_directory.glob("is*"):
+    for element_directory in elements_directory.glob("[io]s*"):
         if whitelist and element_directory.name not in whitelist: continue
         element_path = element_directory / f"{element_directory.name}.json"
         out_path = out_directory / f"{element_directory.name}.json"
@@ -270,34 +278,38 @@ if __name__ == "__main__":
     )
 
     elements = [
-        # "isBayCedarA1",
-        # "isDunesA",
-        # "isHibiscusYoung",
-        # "isLavaRocks",
-        # "isPalmDead",
-        # "isBeach",
-        # "isDunesB",
-        # "isMountainA",
+        "isBayCedarA1",
+        "isDunesA",
+        "isGardeniaA",
+        "isHibiscus",
+        "isHibiscusYoung",
+        "isKava",
+        "isLavaRocks",
+        "isMountainA",
+        "isNaupakaA",
+        "isPalmDead",
+        "isPandanusA",
+
+        "isIronwoodA1",
         "isPalmRig",
-        # "isCoastline",
-        # "isGardeniaA",
-        # "isMountainB",
-        # "isPandanusA",
-        # "isCoral",
-        # "isHibiscus",
-        # "isKava",
-        # "isNaupakaA",
-        # "isIronwoodA1",
+        "isDunesB",
+        "isMountainB",
+        "isCoastline",
+        "osOcean",
+
         # "isIronwoodB"
+        # "isBeach",
+        # "isCoral",
     ]
-    convert_elements(
-        MoanaPath / "json",
-        Path("../moana/"),
-        whitelist=elements
-    )
+
+    # convert_elements(
+    #     MoanaPath / "json",
+    #     Path("../moana/"),
+    #     whitelist=elements
+    # )
 
     generate_moana_config(
-        "palmsCam",
+        "shotCam",
         elements,
         Path("../moana"),
         Path("../moana.json")

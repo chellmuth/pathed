@@ -49,6 +49,8 @@ public:
 
     void registerFilters(void (&callback)(const RTCFilterFunctionNArguments *));
 
+    void printStats();
+
 private:
     RTCScene m_rootScene;
 

@@ -30,6 +30,13 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
     float width0,
     float width1
 ) {
+    if (!m_materialPtr) {
+        m_materialPtr = std::make_shared<Lambertian>(
+            Color(1.f, 0.f, 0.f),
+            Color(0.f)
+        );
+    }
+
     std::cout << "Parsing" << std::endl;
     json splineJson = json::parse(m_splineFile);
 
