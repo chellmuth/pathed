@@ -9,18 +9,8 @@
 #include <math.h>
 #include <stdio.h>
 
-Triangle::Triangle(
-    Point3 p0, Point3 p1, Point3 p2,
-    UV uv0, UV uv1, UV uv2
-)
-    : m_p0(p0), m_p1(p1), m_p2(p2),
-      m_hasUVs(true),
-      m_uv0(uv0), m_uv1(uv1), m_uv2(uv2)
-{}
-
 Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
-    : m_p0(p0), m_p1(p1), m_p2(p2),
-      m_hasUVs(false)
+    : m_p0(p0), m_p1(p1), m_p2(p2)
 {}
 
 SurfaceSample Triangle::sample(RandomGenerator &random) const

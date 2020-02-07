@@ -279,10 +279,7 @@ void ObjParser::processTriangle(
     Triangle *face = new Triangle(
         m_vertices[vertexIndex0],
         m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2],
-        m_uvs[UVIndex0],
-        m_uvs[UVIndex1],
-        m_uvs[UVIndex2]
+        m_vertices[vertexIndex2]
     );
 
     processFace(face);
