@@ -45,44 +45,44 @@ using MediaMap = std::map<std::string, std::shared_ptr<Medium> >;
 using InstanceMap = std::map<std::string, RTCScene>;
 using MaterialMap = std::map<std::string, std::shared_ptr<Material> >;
 
-static bool checkFloat(json floatJson, float *value);
-static float parseFloat(json floatJson);
-static float parseFloat(json floatJson, float defaultValue);
-static bool checkString(json stringJson, std::string *value);
-static std::string parseString(json stringJson);
-static std::string parseString(json stringJson, std::string defaultString);
-static Point3 parsePoint(json pointJson, bool flipHandedness = false);
-static Vector3 parseVector(json vectorJson);
-static Color parseColor(json colorJson, bool required = false);
-static Color parseColor(json colorJson, Color defaultColor);
-static UV parseUV(json UVJson);
-static Transform parseTransform(json transformJson);
-static Transform parseTransform(json transformJson, Transform defaultTransform);
-static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &materialLookup);
+static bool checkFloat(json &floatJson, float *value);
+static float parseFloat(json &floatJson);
+static float parseFloat(json &floatJson, float defaultValue);
+static bool checkString(json &stringJson, std::string *value);
+static std::string parseString(json &stringJson);
+static std::string parseString(json &stringJson, std::string defaultString);
+static Point3 parsePoint(json &pointJson, bool flipHandedness = false);
+static Vector3 parseVector(json &vectorJson);
+static Color parseColor(json &colorJson, bool required = false);
+static Color parseColor(json &colorJson, Color defaultColor);
+static UV parseUV(json &UVJson);
+static Transform parseTransform(json &transformJson);
+static Transform parseTransform(json &transformJson, Transform defaultTransform);
+static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &materialLookup);
 
 static void parseMedia(
-    json mediaJson,
+    json &mediaJson,
     MediaMap &media
 );
 static void parseMaterials(
-    json materialsJson,
+    json &materialsJson,
     MaterialMap &materialLookup
 );
 static void parseInstance(
-    json instanceJson,
+    json &instanceJson,
     MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 );
 static void parseInstanced(
-    json instanceJson,
+    json &instanceJson,
     RTCScene rtcCurrentScene,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 );
 static void parseObjects(
-    json objectsJson,
+    json &objectsJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     MediaMap &media,
@@ -90,50 +90,52 @@ static void parseObjects(
     RTCManager &rtcManager
 );
 static void parseObj(
-    json objJson,
+    json &objJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     MediaMap &media,
     RTCManager &rtcManager
 );
 static void parsePLY(
-    json objectJson,
+    json &objectJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup,
     MediaMap &media
 );
 static void parseCurve(
-    json curveJson,
+    json &curveJson,
     std::vector<std::shared_ptr<Surface> > &surfaces,
     MaterialMap &materialLookup
 );
 static void parseBSpline(
-    json splineJson,
+    json &splineJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     RTCManager &rtcManager
 );
 static void parseSphere(
-    json sphereJson,
+    json &sphereJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup,
     MediaMap &media
 );
 static void parseQuad(
-    json quadJson,
+    json &quadJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup
 );
 static void parseEnvironmentLight(
-    json environmentLightJson,
+    json &environmentLightJson,
     std::shared_ptr<EnvironmentLight> &environmentLight
 );
 
 Scene parseScene(std::ifstream &sceneFile)
 {
+    std::cout << "Parsing json scene..." << std::endl;
     json sceneJson = json::parse(sceneFile);
+    std::cout << "Done!" << std::endl;
 
-    auto sensor = sceneJson["sensor"];
+    auto &sensor = sceneJson["sensor"];
 
     float fov = parseFloat(sensor["fov"]);
 
@@ -152,11 +154,11 @@ Scene parseScene(std::ifstream &sceneFile)
     parseMaterials(sceneJson["materials"], materialLookup);
 
     MediaMap media;
-    auto mediaJson = sceneJson["media"];
+    auto &mediaJson = sceneJson["media"];
     parseMedia(mediaJson, media);
 
     InstanceMap instanceLookup;
-    auto objects = sceneJson["models"];
+    auto &objects = sceneJson["models"];
     parseObjects(objects, g_rtcScene, materialLookup, media, instanceLookup, *rtcManagerPtr);
 
     std::vector<std::shared_ptr<Light>> lights;
@@ -189,7 +191,7 @@ Scene parseScene(std::ifstream &sceneFile)
 }
 
 static void parseMedia(
-    json mediaJson,
+    json &mediaJson,
     std::map<std::string, std::shared_ptr<Medium> > &media
 ) {
     if (!mediaJson.is_array()) { return; }
@@ -219,7 +221,7 @@ static void parseMedia(
 }
 
 static void parseInstance(
-    json instanceJson,
+    json &instanceJson,
     MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
@@ -239,14 +241,14 @@ static void parseInstance(
 }
 
 static void parseObjects(
-    json objectsJson,
+    json &objectsJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     MediaMap &media,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
 ) {
-    for (auto objectJson : objectsJson) {
+    for (auto &objectJson : objectsJson) {
         bool needsRegistration = true;
 
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -279,7 +281,7 @@ static void parseObjects(
 }
 
 static void parseObj(
-    json objJson,
+    json &objJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     MediaMap &media,
@@ -289,7 +291,7 @@ static void parseObj(
 
     std::ifstream objFile(objJson["filename"].get<std::string>());
 
-    auto transformJson = objJson["transform"];
+    auto &transformJson = objJson["transform"];
     Transform transform;
     if (transformJson.is_object()) {
         transform = parseTransform(transformJson);
@@ -307,7 +309,7 @@ static void parseObj(
     );
     auto objSurfaces = objParser.parse();
 
-    auto bsdfJson = objJson["bsdf"];
+    auto &bsdfJson = objJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
@@ -330,7 +332,7 @@ static void parseObj(
 }
 
 static void parsePLY(
-    json plyJson,
+    json &plyJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup,
     MediaMap &media
@@ -346,7 +348,7 @@ static void parsePLY(
     PLYParser plyParser(plyFile, transform, false, Handedness::Left);
     auto plySurfaces = plyParser.parse();
 
-    auto bsdfJson = plyJson["bsdf"];
+    auto &bsdfJson = plyJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
@@ -367,7 +369,7 @@ static void parsePLY(
 }
 
 static void parseCurve(
-    json curveJson,
+    json &curveJson,
     std::vector<std::shared_ptr<Surface> > &surfaces,
     MaterialMap &materialLookup
 ) {
@@ -382,7 +384,7 @@ static void parseCurve(
     CurveParser curveParser(curveFile, transform, false, Handedness::Left);
     auto curveSurfaces = curveParser.parse();
 
-    auto bsdfJson = curveJson["bsdf"];
+    auto &bsdfJson = curveJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     for (auto surfacePtr : curveSurfaces) {
@@ -397,7 +399,7 @@ static void parseCurve(
 }
 
 static void parseBSpline(
-    json splineJson,
+    json &splineJson,
     RTCScene rtcCurrentScene,
     MaterialMap &materialLookup,
     RTCManager &rtcManager
@@ -410,7 +412,7 @@ static void parseBSpline(
         transform = parseTransform(transformJson);
     }
 
-    auto bsdfJson = splineJson["bsdf"];
+    auto &bsdfJson = splineJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     BSplineParser splineParser(splineFile, materialPtr, transform, false, Handedness::Left);
@@ -429,7 +431,7 @@ static void parseBSpline(
 }
 
 static void parseInstanced(
-    json instanceJson,
+    json &instanceJson,
     RTCScene rtcCurrentScene,
     InstanceMap &instanceLookup,
     RTCManager &rtcManager
@@ -474,12 +476,12 @@ static void parseInstanced(
 }
 
 static void parseSphere(
-    json sphereJson,
+    json &sphereJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup,
     MediaMap &media
 ) {
-    auto bsdfJson = sphereJson["bsdf"];
+    auto &bsdfJson = sphereJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
@@ -506,11 +508,11 @@ static void parseSphere(
 }
 
 static void parseQuad(
-    json quadJson,
+    json &quadJson,
     std::vector<std::shared_ptr<Surface>> &surfaces,
     MaterialMap &materialLookup
 ) {
-    auto bsdfJson = quadJson["bsdf"];
+    auto &bsdfJson = quadJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     Transform transform;
@@ -523,7 +525,7 @@ static void parseQuad(
 }
 
 static void parseEnvironmentLight(
-    json environmentLightJson,
+    json &environmentLightJson,
     std::shared_ptr<EnvironmentLight> &environmentLight
 ) {
     if (environmentLightJson.is_object()) {
@@ -537,7 +539,7 @@ static void parseEnvironmentLight(
 }
 
 static void parseMaterials(
-    json materialsJson,
+    json &materialsJson,
     MaterialMap &materialLookup
 ) {
     if (!materialsJson.is_array()) {
@@ -551,7 +553,7 @@ static void parseMaterials(
     }
 }
 
-static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &materialLookup)
+static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &materialLookup)
 {
     if (!bsdfJson.is_object()) {
         return std::shared_ptr<Material>(nullptr);
@@ -610,7 +612,7 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &mater
             bsdfJson["albedo"].is_object()
             && bsdfJson["albedo"]["type"] == "checkerboard"
         ) {
-            auto albedoJson = bsdfJson["albedo"];
+            auto &albedoJson = bsdfJson["albedo"];
             Color onColor = parseColor(albedoJson["onColor"]);
             Color offColor = parseColor(albedoJson["offColor"]);
             UV resolution = parseUV(albedoJson["resolution"]);
@@ -627,13 +629,13 @@ static std::shared_ptr<Material> parseMaterial(json bsdfJson, MaterialMap &mater
     }
 }
 
-static Transform parseTransform(json transformJson, Transform defaultTransform)
+static Transform parseTransform(json &transformJson, Transform defaultTransform)
 {
     if (!transformJson.is_object()) { return defaultTransform; }
     return parseTransform(transformJson);
 }
 
-static Transform parseTransform(json transformJson)
+static Transform parseTransform(json &transformJson)
 {
     float matrix[4][4];
     float inverse[4][4];
@@ -642,14 +644,14 @@ static Transform parseTransform(json transformJson)
     float scaleY = 1.f;
     float scaleZ = 1.f;
 
-    auto scale = transformJson["scale"];
+    auto &scale = transformJson["scale"];
     if (scale.is_array()) {
         scaleX = parseFloat(scale[0]);
         scaleY = parseFloat(scale[1]);
         scaleZ = parseFloat(scale[2]);
     }
 
-    auto rotate = transformJson["rotate"];
+    auto &rotate = transformJson["rotate"];
     float rotateX = 0.f;
     float rotateY = 0.f;
     float rotateZ = 0.f;
@@ -660,7 +662,7 @@ static Transform parseTransform(json transformJson)
          rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
     }
 
-    auto translate = transformJson["translate"];
+    auto &translate = transformJson["translate"];
     float translateX = 0.f;
     float translateY = 0.f;
     float translateZ = 0.f;
@@ -717,7 +719,7 @@ static Transform parseTransform(json transformJson)
     );
 }
 
-static bool checkFloat(json floatJson, float *value)
+static bool checkFloat(json &floatJson, float *value)
 {
     try {
         *value = parseFloat(floatJson);
@@ -727,7 +729,7 @@ static bool checkFloat(json floatJson, float *value)
     }
 }
 
-static float parseFloat(json floatJson, float defaultValue)
+static float parseFloat(json &floatJson, float defaultValue)
 {
     try {
         return parseFloat(floatJson);
@@ -736,12 +738,12 @@ static float parseFloat(json floatJson, float defaultValue)
     }
 }
 
-static float parseFloat(json floatJson)
+static float parseFloat(json &floatJson)
 {
     return stof(floatJson.get<std::string>());
 }
 
-static Point3 parsePoint(json pointJson, bool flipHandedness)
+static Point3 parsePoint(json &pointJson, bool flipHandedness)
 {
     const float x = stof(pointJson[0].get<std::string>());
     const float y = stof(pointJson[1].get<std::string>());
@@ -754,7 +756,7 @@ static Point3 parsePoint(json pointJson, bool flipHandedness)
     }
 }
 
-static Vector3 parseVector(json vectorJson)
+static Vector3 parseVector(json &vectorJson)
 {
     return Vector3(
         stof(vectorJson[0].get<std::string>()),
@@ -763,7 +765,7 @@ static Vector3 parseVector(json vectorJson)
     );
 }
 
-static Color parseColor(json colorJson, bool required)
+static Color parseColor(json &colorJson, bool required)
 {
     if (colorJson.is_array()) {
         return Color(
@@ -778,7 +780,7 @@ static Color parseColor(json colorJson, bool required)
     }
 }
 
-static Color parseColor(json colorJson, Color defaultColor)
+static Color parseColor(json &colorJson, Color defaultColor)
 {
     if (colorJson.is_array()) {
         return Color(
@@ -791,7 +793,7 @@ static Color parseColor(json colorJson, Color defaultColor)
     }
 }
 
-static UV parseUV(json UVJson)
+static UV parseUV(json &UVJson)
 {
     return UV {
         stof(UVJson["u"].get<std::string>()),
@@ -799,7 +801,7 @@ static UV parseUV(json UVJson)
     };
 }
 
-static bool checkString(json stringJson, std::string *value)
+static bool checkString(json &stringJson, std::string *value)
 {
     try {
         *value = parseString(stringJson);
@@ -809,7 +811,7 @@ static bool checkString(json stringJson, std::string *value)
     }
 }
 
-static std::string parseString(json stringJson, std::string defaultString)
+static std::string parseString(json &stringJson, std::string defaultString)
 {
     try {
         return parseString(stringJson);
@@ -818,7 +820,7 @@ static std::string parseString(json stringJson, std::string defaultString)
     }
 }
 
-static std::string parseString(json stringJson)
+static std::string parseString(json &stringJson)
 {
     return stringJson.get<std::string>();
 }
