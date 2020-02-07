@@ -61,6 +61,7 @@ private:
     std::map<std::string, std::shared_ptr<Material> > m_materialLookup;
     std::map<std::string, std::shared_ptr<Material> > m_mtlLookup;
     std::string m_materialPrefix;
+    std::shared_ptr<Material> m_defaultMaterialPtr;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);

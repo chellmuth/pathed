@@ -35,7 +35,12 @@ ObjParser::ObjParser(
       m_currentGroup(""),
       m_materialLookup(materialLookup),
       m_materialPrefix(materialPrefix)
-{}
+{
+    m_defaultMaterialPtr = std::make_shared<Lambertian>(
+        Color(1.f, 0.f, 0.f),
+        Color(0.f)
+    );
+}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {
@@ -243,8 +248,10 @@ void ObjParser::processFace(Triangle *face)
         materialPtr = m_materialLookup.at(materialGroupKey);
     } else if (m_materialLookup.count(materialMtlKey) > 0) {
         materialPtr = m_materialLookup.at(materialMtlKey);
+    } else if (m_mtlLookup.count(m_currentMaterialName) > 0) {
+        materialPtr = m_mtlLookup.at(m_currentMaterialName);
     } else {
-        materialPtr = m_mtlLookup[m_currentMaterialName];
+        materialPtr = m_defaultMaterialPtr;
     }
 
     std::shared_ptr<Triangle> shape(face);
