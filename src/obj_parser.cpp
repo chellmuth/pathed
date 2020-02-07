@@ -517,6 +517,6 @@ void ObjParser::processMaterialLibrary(std::string &libraryArgs)
 void ObjParser::processUseMaterial(std::string &materialArgs)
 {
     string materialName = materialArgs;
-    std::cout << "Using material: " << materialName << std::endl;
+    // std::cout << "Using material: " << materialName << std::endl;
     m_currentMaterialName = materialName;
 }

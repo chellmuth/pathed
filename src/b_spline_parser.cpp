@@ -1,6 +1,7 @@
 #include "b_spline_parser.h"
 
 #include "b_spline.h"
+#include "blank_shape.h"
 #include "color.h"
 #include "globals.h"
 #include "lambertian.h"
@@ -52,7 +53,13 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
         surfaces.push_back({surfacePtr});
 
         for (int i = 0; i < points.size() - 3; i++) {
-            surfacesDuped.push_back({surfacePtr});
+            surfacesDuped.push_back({
+                std::make_shared<Surface>(
+                    std::make_shared<BlankShape>(),
+                    m_materialPtr,
+                    nullptr
+                )
+            });
         }
     }
 
