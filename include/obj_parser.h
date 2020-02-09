@@ -64,7 +64,7 @@ private:
     std::string m_materialPrefix;
     std::shared_ptr<Material> m_defaultMaterialPtr;
 
-    std::shared_ptr<BlankShape> m_defaultShapePtr;
+    std::shared_ptr<BlankTriangle> m_defaultShapePtr;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);

@@ -62,7 +62,7 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
         for (int i = 0; i < points.size() - 3; i++) {
             surfacesDuped.push_back({
                 std::make_shared<Surface>(
-                    std::make_shared<BlankShape>(),
+                    std::make_shared<BlankSpline>(),
                     m_materialPtr,
                     nullptr
                 )

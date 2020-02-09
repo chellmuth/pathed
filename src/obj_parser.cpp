@@ -42,7 +42,7 @@ ObjParser::ObjParser(
         Color(0.f)
     );
 
-    m_defaultShapePtr = std::make_shared<BlankShape>();
+    m_defaultShapePtr = std::make_shared<BlankTriangle>();
 }
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
