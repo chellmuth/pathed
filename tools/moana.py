@@ -64,6 +64,14 @@ def parse_archive(archive_json, root_name):
     instances = []
     models = []
 
+    blacklist = [
+        "json/isBeach/isBeach_xgGroundCover.json"
+    ]
+
+    if archive_json["jsonFile"] in blacklist:
+        print("SKIPPED!")
+        return instances, models
+
     filename = MoanaPath / archive_json["jsonFile"]
     instances_json = json.load(open(filename, "r"))
 
@@ -297,8 +305,8 @@ if __name__ == "__main__":
         "isCoastline",
         "osOcean",
 
-        # "isIronwoodB"
-        # "isBeach",
+        "isIronwoodB",
+        "isBeach",
         # "isCoral",
     ]
 
