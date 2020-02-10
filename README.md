@@ -28,8 +28,8 @@ My most recent endeavor has been attempting to render Disney's Moana research sc
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/glass-and-mirror.png?x=1" width="400">
-<br /><b>Cornell box with glass and mirror material</b>
+<img src="https://pathed.s3-us-west-2.amazonaws.com/mirrors-cornell.png" width="400">
+<br /><b>Cornell box with mirror material</b>
 </p>
 
 <p align="center">
