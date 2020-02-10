@@ -4,7 +4,7 @@ Pathed is a path tracer I have been working on to re-familiarize myself with C++
 
 Some of Pathed features include: Lambertian, Oren-Nayar, Beckmann microfacet, Mirror, and Glass scattering models; multiple importance sampling and next event estimation; environment maps; and heterogeneous volumetric scattering.
 
-My most recent endeavor has attempting to render Disney's Moana research scene. So far I've added support for B-spline curves, ptex textures, and hierarchical instancing. Currently I'm working on optimization, bug fixes, and supporting the Disney BRDF.
+My most recent endeavor has been attempting to render Disney's Moana research scene. So far I've added support for B-spline curves, ptex textures, and hierarchical instancing. Currently I'm working on optimization, bug fixes, and supporting the Disney BRDF.
 
 ## Rendered Images ##
 <p align="center">
