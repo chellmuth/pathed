@@ -47,9 +47,14 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
 
     for (auto &spline : splineJson) {
         std::vector<Point3> points;
+
+        auto &firstPoint = spline[0];
+        points.push_back(Point3(firstPoint[0], firstPoint[1], firstPoint[2]));
         for (auto &pointList : spline) {
             points.push_back(Point3(pointList[0], pointList[1], pointList[2]));
         }
+        auto &lastPoint = spline[spline.size() - 1];
+        points.push_back(Point3(lastPoint[0], lastPoint[1], lastPoint[2]));
 
         auto splinePtr = std::make_shared<BSpline>(
             points,
