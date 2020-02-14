@@ -1,0 +1,51 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0.", "0", "0" ],
+      "origin": [ "0", "0", "10" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "35"
+  },
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/test/box.obj",
+      "transform": {
+        "translate": [ "1", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "0", "0" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/test/box.obj",
+      "transform": {
+        "translate": [ "0", "1", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "1", "0" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/test/box.obj",
+      "transform": {
+        "translate": [ "0", "0", "1" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "0", "1" ]
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/20060807_wells6_hd.exr",
+    "scale": "1"
+  }
+}
