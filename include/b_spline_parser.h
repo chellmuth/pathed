@@ -1,6 +1,5 @@
 #pragma once
 
-#include "handedness.h"
 #include "material.h"
 #include "surface.h"
 #include "transform.h"
@@ -17,8 +16,7 @@ public:
         std::ifstream &splineFile,
         std::shared_ptr<Material> materialPtr,
         const Transform &transform,
-        bool useFaceNormals,
-        Handedness handedness
+        bool useFaceNormals
     );
 
     std::vector<std::vector<std::shared_ptr<Surface> > > parse(
@@ -36,6 +34,5 @@ private:
     std::ifstream &m_splineFile;
     std::shared_ptr<Material> m_materialPtr;
     Transform m_transform;
-    Handedness m_handedness;
     bool m_useFaceNormals;
 };

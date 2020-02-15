@@ -21,12 +21,10 @@ using string = std::string;
 CurveParser::CurveParser(
     std::ifstream &curveFile,
     const Transform &transform,
-    bool useFaceNormals,
-    Handedness handedness
+    bool useFaceNormals
 ) : m_curveFile(curveFile),
     m_transform(transform),
-    m_useFaceNormals(useFaceNormals),
-    m_handedness(handedness)
+    m_useFaceNormals(useFaceNormals)
 {}
 
 std::vector<std::shared_ptr<Surface> > CurveParser::parse()

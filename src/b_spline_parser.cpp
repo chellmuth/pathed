@@ -16,13 +16,11 @@ BSplineParser::BSplineParser(
     std::ifstream &splineFile,
     std::shared_ptr<Material> materialPtr,
     const Transform &transform,
-    bool useFaceNormals,
-    Handedness handedness
+    bool useFaceNormals
 ) : m_splineFile(splineFile),
     m_materialPtr(materialPtr),
     m_transform(transform),
-    m_useFaceNormals(useFaceNormals),
-    m_handedness(handedness)
+    m_useFaceNormals(useFaceNormals)
 {}
 
 std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(

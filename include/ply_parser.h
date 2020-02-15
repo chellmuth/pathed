@@ -1,6 +1,5 @@
 #pragma once
 
-#include "handedness.h"
 #include "surface.h"
 #include "transform.h"
 
@@ -11,13 +10,12 @@
 class PLYParser {
 public:
     PLYParser(std::ifstream &plyFile)
-        : PLYParser(plyFile, Transform(), false, Handedness::Right) {};
+        : PLYParser(plyFile, Transform(), false) {};
 
     PLYParser(
         std::ifstream &objFile,
         const Transform &transform,
-        bool useFaceNormals,
-        Handedness handedness
+        bool useFaceNormals
     );
 
     std::vector<std::shared_ptr<Surface> > parse();
@@ -25,6 +23,5 @@ public:
 private:
     std::ifstream &m_objFile;
     Transform m_transform;
-    Handedness m_handedness;
     bool m_useFaceNormals;
 };

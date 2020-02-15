@@ -20,12 +20,10 @@ using string = std::string;
 PLYParser::PLYParser(
     std::ifstream &objFile,
     const Transform &transform,
-    bool useFaceNormals,
-    Handedness handedness
+    bool useFaceNormals
 ) : m_objFile(objFile),
     m_transform(transform),
-    m_useFaceNormals(useFaceNormals),
-    m_handedness(handedness)
+    m_useFaceNormals(useFaceNormals)
 {}
 
 std::vector<std::shared_ptr<Surface> > PLYParser::parse()

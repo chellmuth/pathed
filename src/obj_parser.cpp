@@ -23,7 +23,6 @@ ObjParser::ObjParser(
     std::ifstream &objFile,
     const Transform &transform,
     bool useFaceNormals,
-    Handedness handedness,
     RTCScene rtcScene,
     std::map<std::string, std::shared_ptr<Material> > materialLookup,
     string &materialPrefix
@@ -31,7 +30,6 @@ ObjParser::ObjParser(
     : m_objFile(objFile),
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
-      m_handedness(handedness),
       m_rtcScene(rtcScene),
       m_currentGroup(""),
       m_materialLookup(materialLookup),
@@ -164,9 +162,6 @@ void ObjParser::processVertex(string &vertexArgs)
     string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        x *= -1.f;
-    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -184,9 +179,6 @@ void ObjParser::processNormal(string &normalArgs)
     string rest = normalArgs;
 
     float x = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        x *= -1.f;
-    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -207,9 +199,6 @@ void ObjParser::processUV(string &uvArgs)
 
     rest = rest.substr(index);
     float v = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        v = 1 - v;
-    }
 
     UV uv = { u, v };
     m_uvs.push_back(uv);

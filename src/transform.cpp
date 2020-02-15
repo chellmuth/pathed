@@ -137,7 +137,7 @@ void Transform::debug() const
 
 Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
 {
-    Vector3 direction = (target - source).toVector().normalized();
+    Vector3 direction = (source - target).toVector().normalized();
 
     if (direction == up) {
         std::cout << "Look direction cannot equal up vector - quitting!" << std::endl;
@@ -159,7 +159,7 @@ Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
 
 Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector3 &up)
 {
-    Vector3 direction = (target - source).toVector().normalized();
+    Vector3 direction = (source - target).toVector().normalized();
     Vector3 xAxis = up.normalized().cross(direction).normalized();
     Vector3 yAxis = direction.cross(xAxis);
 

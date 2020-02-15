@@ -51,7 +51,7 @@ static float parseFloat(json &floatJson, float defaultValue);
 static bool checkString(json &stringJson, std::string *value);
 static std::string parseString(json &stringJson);
 static std::string parseString(json &stringJson, std::string defaultString);
-static Point3 parsePoint(json &pointJson, bool flipHandedness = false);
+static Point3 parsePoint(json &pointJson);
 static Vector3 parseVector(json &vectorJson);
 static Color parseColor(json &colorJson, bool required = false);
 static Color parseColor(json &colorJson, Color defaultColor);
@@ -141,8 +141,8 @@ Scene parseScene(std::ifstream &sceneFile)
 
     Resolution resolution = { g_job->width(), g_job->height() };
     auto camera = std::make_shared<Camera>(
-        parsePoint(sensor["lookAt"]["origin"], true),
-        parsePoint(sensor["lookAt"]["target"], true),
+        parsePoint(sensor["lookAt"]["origin"]),
+        parsePoint(sensor["lookAt"]["target"]),
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI,
         resolution
@@ -205,8 +205,7 @@ static void parseMedia(
                 mediumJson["filename"],
                 albedo,
                 scale,
-                parseTransform(mediumJson["transform"], Transform()),
-                Handedness::Left
+                parseTransform(mediumJson["transform"], Transform())
             );
 
             media[mediumJson["name"]] = mediumPtr;
@@ -302,7 +301,6 @@ static void parseObj(
         objFile,
         transform,
         false,
-        Handedness::Right,
         rtcCurrentScene,
         materialLookup,
         materialPrefix
@@ -346,7 +344,7 @@ static void parsePLY(
         transform = parseTransform(transformJson);
     }
 
-    PLYParser plyParser(plyFile, transform, false, Handedness::Left);
+    PLYParser plyParser(plyFile, transform, false);
     auto plySurfaces = plyParser.parse();
 
     auto &bsdfJson = plyJson["bsdf"];
@@ -382,7 +380,7 @@ static void parseCurve(
         transform = parseTransform(transformJson);
     }
 
-    CurveParser curveParser(curveFile, transform, false, Handedness::Left);
+    CurveParser curveParser(curveFile, transform, false);
     auto curveSurfaces = curveParser.parse();
 
     auto &bsdfJson = curveJson["bsdf"];
@@ -416,7 +414,7 @@ static void parseBSpline(
     auto &bsdfJson = splineJson["bsdf"];
     std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
-    BSplineParser splineParser(splineFile, materialPtr, transform, false, Handedness::Left);
+    BSplineParser splineParser(splineFile, materialPtr, transform, false);
     auto splineSurfaces = splineParser.parse(
         rtcCurrentScene,
         parseFloat(splineJson["width0"]) / 2.f,
@@ -669,7 +667,7 @@ static Transform parseTransform(json &transformJson)
     float translateZ = 0.f;
 
     if (translate.is_array()) {
-        translateX = -parseFloat(translate[0]); // todo: handedness
+        translateX = parseFloat(translate[0]);
         translateY = parseFloat(translate[1]);
         translateZ = parseFloat(translate[2]);
     }
@@ -744,17 +742,13 @@ static float parseFloat(json &floatJson)
     return stof(floatJson.get<std::string>());
 }
 
-static Point3 parsePoint(json &pointJson, bool flipHandedness)
+static Point3 parsePoint(json &pointJson)
 {
     const float x = stof(pointJson[0].get<std::string>());
     const float y = stof(pointJson[1].get<std::string>());
     const float z = stof(pointJson[2].get<std::string>());
 
-    if (flipHandedness) {
-        return Point3(-x, y, z);
-    } else {
-        return Point3(x, y, z);
-    }
+    return Point3(x, y, z);
 }
 
 static Vector3 parseVector(json &vectorJson)

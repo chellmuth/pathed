@@ -3,7 +3,6 @@
 #include "blank_shape.h"
 #include "geometry_parser.h"
 #include "globals.h"
-#include "handedness.h"
 #include "material.h"
 #include "mtl_parser.h"
 #include "light.h"
@@ -28,7 +27,6 @@ public:
         std::ifstream &objFile,
         const Transform &transform,
         bool useFaceNormals,
-        Handedness handedness,
         RTCScene rtcScene,
         std::map<std::string, std::shared_ptr<Material> > materialLookup,
         std::string &materialPrefix
@@ -39,7 +37,6 @@ public:
 private:
     std::ifstream &m_objFile;
     Transform m_transform;
-    Handedness m_handedness;
     bool m_useFaceNormals;
     RTCScene m_rtcScene;
 

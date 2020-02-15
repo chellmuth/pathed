@@ -38,7 +38,7 @@ Ray Camera::generateRay(float row, float col) const
     Vector3 direction = Vector3(
         width * (col + 0.5f) / m_resolution.x - width / 2.f,
         height * (row + 0.5f) / m_resolution.y - height / 2.f,
-        m_zNear
+        -m_zNear
     ).normalized();
 
     Ray transformedRay = m_cameraToWorld.apply(Ray(origin, direction));
