@@ -252,7 +252,8 @@ def generate_moana_config(camera_name, element_names, assets_directory, out_path
         "models": [],
 
         "environmentLight": {
-            "filename": "background.exr",
+            "filename": str(MoanaPath / "textures/islandsun.exr"),
+            "rotation": "115",
             "scale": "1"
         }
     }

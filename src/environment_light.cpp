@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <cmath>
 
-EnvironmentLight::EnvironmentLight(std::string filename, float scale)
-    : Light(), m_filename(filename), m_scale(scale)
+EnvironmentLight::EnvironmentLight(std::string filename, float scale, float rotation)
+    : Light(), m_filename(filename), m_scale(scale), m_rotation(rotation)
 {
     const char *error = nullptr;
 
@@ -55,13 +55,15 @@ Color EnvironmentLight::emit() const
 
 Color EnvironmentLight::emit(const Vector3 &direction) const
 {
-    return Color(0.7f);
-
     float phi, theta;
     cartesianToSpherical(
         -direction,
         &phi, &theta
     );
+
+    phi += m_rotation / 180.f * M_PI;
+    if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
+    if (phi < 0.f) { phi += M_TWO_PI; }
 
     const float phiCanonical = util::clampClose(phi / M_TWO_PI, 0.f, 1.f);
     const float thetaCanonical = util::clampClose(theta / M_PI, 0.f, 1.f);
@@ -84,8 +86,12 @@ SurfaceSample EnvironmentLight::sample(const Point3 &point, RandomGenerator &ran
     const float phiCanonical = (phiStep + 0.5f) / m_width;
     const float thetaCanonical = (thetaStep + 0.5f) / m_height;
 
-    const float phi = phiCanonical * M_TWO_PI;
+    float phi = phiCanonical * M_TWO_PI;
     const float theta = thetaCanonical * M_PI;
+
+    phi -= m_rotation / 180.f * M_PI;
+    if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
+    if (phi < 0.f) { phi += M_TWO_PI; }
 
     const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
 
@@ -114,6 +120,10 @@ float EnvironmentLight::emitPDF(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(direction, &phi, &theta);
+
+    phi += m_rotation / 180.f * M_PI;
+    if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
+    if (phi < 0.f) { phi += M_TWO_PI; }
 
     const float phiCanonical = phi / M_TWO_PI;
     const float thetaCanonical = theta / M_PI;

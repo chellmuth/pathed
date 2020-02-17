@@ -530,7 +530,8 @@ static void parseEnvironmentLight(
     if (environmentLightJson.is_object()) {
         environmentLight.reset(new EnvironmentLight(
             environmentLightJson["filename"].get<std::string>(),
-            parseFloat(environmentLightJson["scale"], 1.f)
+            parseFloat(environmentLightJson["scale"], 1.f),
+            parseFloat(environmentLightJson["rotation"], 0.f)
         ));
 
         std::cout << environmentLight->toString() << std::endl;

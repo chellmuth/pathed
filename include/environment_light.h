@@ -15,7 +15,7 @@
 
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight(std::string filename, float scale);
+    EnvironmentLight(std::string filename, float scale, float rotation);
 
     Color emit() const override;
     Color emit(const Vector3 &direction) const;
@@ -45,6 +45,7 @@ public:
 
 private:
     float m_scale;
+    float m_rotation;
 
     std::vector<float> m_cdf;
 
