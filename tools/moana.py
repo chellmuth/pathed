@@ -62,7 +62,8 @@ def parse_archive(archive_json, root_name):
     models = []
 
     blacklist = [
-        "json/isBeach/isBeach_xgGroundCover.json"
+        "json/isBeach/isBeach_xgGroundCover.json",
+        "json/isIronwoodA1/isIronwoodA1_xgBonsai.json"
     ]
 
     if archive_json["jsonFile"] in blacklist:

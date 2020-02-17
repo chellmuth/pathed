@@ -288,7 +288,8 @@ static void parseObj(
 ) {
     std::vector<std::shared_ptr<Surface>> localSurfaces;
 
-    std::ifstream objFile(objJson["filename"].get<std::string>());
+    std::string objFilename = objJson["filename"].get<std::string>();
+    std::ifstream objFile(objFilename);
 
     auto &transformJson = objJson["transform"];
     Transform transform;
