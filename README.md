@@ -8,7 +8,7 @@ My most recent endeavor has been attempting to render Disney's Moana research sc
 
 ## Rendered Images ##
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/moana-wip--shotCam.png">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/moana-20200217.png">
 <b>Current WIP: Moana scene</b>
 </p>
 
