@@ -10,6 +10,7 @@
 #include "triangle.h"
 #include "vector.h"
 
+#include <assert.h>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -33,7 +34,8 @@ ObjParser::ObjParser(
       m_rtcScene(rtcScene),
       m_currentGroup(""),
       m_materialLookup(materialLookup),
-      m_materialPrefix(materialPrefix)
+      m_materialPrefix(materialPrefix),
+      m_parseFunction(nullptr)
 {
     m_defaultMaterialPtr = std::make_shared<Lambertian>(
         Color(1.f, 0.f, 0.f),
@@ -441,14 +443,101 @@ bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
     return true;
 }
 
+static bool parseInt(const std::string &faceArgs, int size, int &i, int *out)
+{
+    if (i == size) { return false; }
+
+    int sign = 1;
+    if (faceArgs[i] == '-') { sign = -1; i++; }
+
+    if (i == size) { return false; }
+
+    int result = 0;
+    while (i < size) {
+        char digit = faceArgs[i];
+
+        int value;
+        if (digit == '0') { value = 0; }
+        else if (digit == '1') { value = 1; }
+        else if (digit == '2') { value = 2; }
+        else if (digit == '3') { value = 3; }
+        else if (digit == '4') { value = 4; }
+        else if (digit == '5') { value = 5; }
+        else if (digit == '6') { value = 6; }
+        else if (digit == '7') { value = 7; }
+        else if (digit == '8') { value = 8; }
+        else if (digit == '9') { value = 9; }
+        else { break; }
+
+        result = result * 10 + value;
+        i++;
+    }
+
+    *out = result;
+
+    return true;
+}
+
+static bool manual(
+    std::string &faceArgs,
+    int &vertexIndex0, int &vertexIndex1, int &vertexIndex2, int &vertexIndex3,
+    int &normalIndex0, int &normalIndex1, int &normalIndex2, int &normalIndex3
+) {
+
+    int i = 0;
+    const size_t size = faceArgs.size();
+
+    while (i < size && faceArgs[i] == ' ') { i++; }
+    if (!parseInt(faceArgs, size, i, &vertexIndex0)) { return false; }
+    if (faceArgs[i] != '/' || faceArgs[i+1] != '/') { return false; }
+    i += 2;
+    if (!parseInt(faceArgs, size, i, &normalIndex0)) { return false; }
+
+    while (i < size && faceArgs[i] == ' ') { i++; }
+    if (!parseInt(faceArgs, size, i, &vertexIndex1)) { return false; }
+    if (faceArgs[i] != '/' || faceArgs[i+1] != '/') { return false; }
+    i += 2;
+    if (!parseInt(faceArgs, size, i, &normalIndex1)) { return false; }
+
+    while (i < size && faceArgs[i] == ' ') { i++; }
+    if (!parseInt(faceArgs, size, i, &vertexIndex2)) { return false; }
+    if (faceArgs[i] != '/' || faceArgs[i+1] != '/') { return false; }
+    i += 2;
+    if (!parseInt(faceArgs, size, i, &normalIndex2)) { return false; }
+
+    while (i < size && faceArgs[i] == ' ') { i++; }
+    if (!parseInt(faceArgs, size, i, &vertexIndex3)) { return false; }
+    if (faceArgs[i] != '/' || faceArgs[i+1] != '/') { return false; }
+    i += 2;
+    if (!parseInt(faceArgs, size, i, &normalIndex3)) { return false; }
+
+    return true;
+}
+
 bool ObjParser::processDoubleFaceTripletsVertexAndNormal(std::string &faceArgs)
 {
+    // int vertexIndex0_;
+    // int vertexIndex1_;
+    // int vertexIndex2_;
+    // int vertexIndex3_;
+
+    // int normalIndex0_;
+    // int normalIndex1_;
+    // int normalIndex2_;
+    // int normalIndex3_;
+    // bool manualResult = manual(faceArgs, vertexIndex0_, vertexIndex1_, vertexIndex2_, vertexIndex3_, normalIndex0_, normalIndex1_, normalIndex2_, normalIndex3_);
+
+    // if (!manualResult) { return false; }
+
     static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
     if (match.empty()) {
+        // assert(!manualResult);
         return false;
+    } else {
+        // assert(manualResult);
     }
 
     int vertexIndex0 = std::stoi(match[1]);
@@ -460,6 +549,17 @@ bool ObjParser::processDoubleFaceTripletsVertexAndNormal(std::string &faceArgs)
     int normalIndex1 = std::stoi(match[4]);
     int normalIndex2 = std::stoi(match[6]);
     int normalIndex3 = std::stoi(match[8]);
+
+
+    // assert(vertexIndex0_ == vertexIndex0);
+    // assert(vertexIndex1_ == vertexIndex1);
+    // assert(vertexIndex2_ == vertexIndex2);
+    // assert(vertexIndex3_ == vertexIndex3);
+
+    // assert(normalIndex0_ == normalIndex0);
+    // assert(normalIndex1_ == normalIndex1);
+    // assert(normalIndex2_ == normalIndex2);
+    // assert(normalIndex3_ == normalIndex3);
 
     processTriangle(
         vertexIndex0, vertexIndex1, vertexIndex2,
@@ -476,10 +576,27 @@ bool ObjParser::processDoubleFaceTripletsVertexAndNormal(std::string &faceArgs)
 
 void ObjParser::processFace(string &faceArgs)
 {
-    if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
-    if (processSingleFaceTriplets(faceArgs)) { return; }
-    if (processSingleFaceTripletsVertexAndNormal(faceArgs)) { return; }
-    if (processDoubleFaceTripletsVertexAndNormal(faceArgs)) { return; }
+    if (m_parseFunction) {
+        (this->*m_parseFunction)(faceArgs);
+        return;
+    } else {
+        if (processDoubleFaceGeometryOnly(faceArgs)) {
+            m_parseFunction = &ObjParser::processDoubleFaceGeometryOnly;
+            return;
+        }
+        if (processSingleFaceTriplets(faceArgs)) {
+            m_parseFunction = &ObjParser::processSingleFaceTriplets;
+            return;
+        }
+        if (processSingleFaceTripletsVertexAndNormal(faceArgs)) {
+            m_parseFunction = &ObjParser::processSingleFaceTripletsVertexAndNormal;
+            return;
+        }
+        if (processDoubleFaceTripletsVertexAndNormal(faceArgs)) {
+            m_parseFunction = &ObjParser::processDoubleFaceTripletsVertexAndNormal;
+            return;
+        }
+    }
 
     string::size_type index;
     string rest = faceArgs;

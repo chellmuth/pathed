@@ -44,6 +44,8 @@ private:
     std::string m_currentMaterialName;
     int m_currentFaceIndex;
 
+    bool (ObjParser::*m_parseFunction)(std::string&);
+
     std::vector<Point3> m_vertices;
     std::vector<unsigned int> m_faces;
     std::vector<Vector3> m_normals;
