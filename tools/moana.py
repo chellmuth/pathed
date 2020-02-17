@@ -49,7 +49,7 @@ def parse_materials(materials_json, root_name):
                 "name": f"{root_name}|{name}",
                 "type": "lambertian",
                 "diffuseReflectance": [
-                    str(base_color)
+                    str(base_color ** 2.2)
                     for base_color
                     in material_json["baseColor"]
                 ]
