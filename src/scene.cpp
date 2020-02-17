@@ -151,6 +151,8 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 uv.u = hit.u * 0.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 1.f;
                 uv.v = hit.u * 1.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 0.f;
             }
+            uv.u = 1.f - uv.u;
+
 
             float normalRaw[3];
             rtcInterpolate0(
