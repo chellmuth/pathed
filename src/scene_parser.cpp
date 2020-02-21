@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "checkerboard.h"
 #include "curve_parser.h"
+#include "disney.h"
 #include "environment_light.h"
 #include "glass.h"
 #include "globals.h"
@@ -598,7 +599,10 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         auto texture = std::make_shared<PtexLocal>(texturePath);
         texture->load();
 
-        return std::make_shared<Lambertian>(texture, Color(0.f));
+        return std::make_shared<Disney>(texture);
+    } else if (bsdfJson["type"] == "disney") {
+        Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        return std::make_shared<Disney>(diffuse);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

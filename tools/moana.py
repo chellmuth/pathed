@@ -47,7 +47,7 @@ def parse_materials(materials_json, root_name):
         else:
             materials.append({
                 "name": f"{root_name}|{name}",
-                "type": "lambertian",
+                "type": "disney",
                 "diffuseReflectance": [
                     str(base_color ** 2.2)
                     for base_color
