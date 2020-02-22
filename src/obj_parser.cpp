@@ -25,7 +25,8 @@ ObjParser::ObjParser(
     bool useFaceNormals,
     RTCScene rtcScene,
     std::map<std::string, std::shared_ptr<Material> > materialLookup,
-    string &materialPrefix
+    string &materialPrefix,
+    std::shared_ptr<Material> defaultMaterialPtr
 )
     : m_objFile(objFile),
       m_transform(transform),
@@ -33,12 +34,15 @@ ObjParser::ObjParser(
       m_rtcScene(rtcScene),
       m_currentGroup(""),
       m_materialLookup(materialLookup),
-      m_materialPrefix(materialPrefix)
+      m_materialPrefix(materialPrefix),
+      m_defaultMaterialPtr(defaultMaterialPtr)
 {
-    m_defaultMaterialPtr = std::make_shared<Lambertian>(
-        Color(1.f, 0.f, 0.f),
-        Color(0.f)
-    );
+    if (!m_defaultMaterialPtr) {
+        m_defaultMaterialPtr = std::make_shared<Lambertian>(
+            Color(1.f, 0.f, 0.f),
+            Color(0.f)
+        );
+    }
 
     m_defaultShapePtr = std::make_shared<BlankTriangle>();
 }
@@ -232,7 +236,7 @@ static void correctIndices(
     correctIndex(indices, index2);
 }
 
-void ObjParser::processFace(Triangle *face)
+void ObjParser::processFace(std::shared_ptr<Shape> facePtr)
 {
     std::shared_ptr<Material> materialPtr;
     std::string materialGroupKey = m_materialPrefix + m_currentGroup;
@@ -247,8 +251,15 @@ void ObjParser::processFace(Triangle *face)
         materialPtr = m_defaultMaterialPtr;
     }
 
+    std::shared_ptr<Shape> shapePtr;
+    if (materialPtr->emit().isBlack()) {
+        shapePtr = m_defaultShapePtr;
+    } else {
+        shapePtr = facePtr;
+    }
+
     std::shared_ptr<Surface> surface = std::make_shared<Surface>(
-        m_defaultShapePtr,
+        shapePtr,
         materialPtr,
         nullptr,
         m_currentFaceIndex
@@ -257,7 +268,7 @@ void ObjParser::processFace(Triangle *face)
     m_surfaces.push_back(surface);
     m_currentFaceIndex += 1;
 
-    if (materialPtr && materialPtr->emit().isBlack()) { return; }
+    if (materialPtr->emit().isBlack()) { return; }
 
     std::shared_ptr<Light> light(new AreaLight(surface));
 
@@ -273,13 +284,13 @@ void ObjParser::processTriangle(
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
     correctIndices(m_uvs, &UVIndex0, &UVIndex1, &UVIndex2);
 
-    // Triangle *face = new Triangle(
-    //     m_vertices[vertexIndex0],
-    //     m_vertices[vertexIndex1],
-    //     m_vertices[vertexIndex2]
-    // );
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
 
-    processFace(nullptr);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -312,13 +323,13 @@ void ObjParser::processTriangle(
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
 
-    // Triangle *face = new Triangle(
-    //     m_vertices[vertexIndex0],
-    //     m_vertices[vertexIndex1],
-    //     m_vertices[vertexIndex2]
-    // );
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
 
-    processFace(nullptr);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -342,13 +353,13 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
 
-    // Triangle *face = new Triangle(
-    //     m_vertices[vertexIndex0],
-    //     m_vertices[vertexIndex1],
-    //     m_vertices[vertexIndex2]
-    // );
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
+        m_vertices[vertexIndex0],
+        m_vertices[vertexIndex1],
+        m_vertices[vertexIndex2]
+    );
 
-    processFace(nullptr);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);

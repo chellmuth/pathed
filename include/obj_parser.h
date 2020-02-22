@@ -29,7 +29,8 @@ public:
         bool useFaceNormals,
         RTCScene rtcScene,
         std::map<std::string, std::shared_ptr<Material> > materialLookup,
-        std::string &materialPrefix
+        std::string &materialPrefix,
+        std::shared_ptr<Material> defaultMaterialPtr
     );
 
     std::vector<std::shared_ptr<Surface> > parse();
@@ -72,7 +73,7 @@ private:
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
 
-    void processFace(Triangle *face);
+    void processFace(std::shared_ptr<Shape> facePtr);
 
     void processTriangle(
         int vertexIndex0, int vertexIndex1, int vertexIndex2,

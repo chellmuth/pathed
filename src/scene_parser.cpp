@@ -287,8 +287,6 @@ static void parseObj(
     MediaMap &media,
     RTCManager &rtcManager
 ) {
-    std::vector<std::shared_ptr<Surface>> localSurfaces;
-
     std::string objFilename = objJson["filename"].get<std::string>();
     std::ifstream objFile(objFilename);
 
@@ -298,6 +296,9 @@ static void parseObj(
         transform = parseTransform(transformJson);
     }
 
+    auto &bsdfJson = objJson["bsdf"];
+    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
+
     std::string materialPrefix = parseString(objJson["materialPrefix"], "");
     ObjParser objParser(
         objFile,
@@ -305,12 +306,10 @@ static void parseObj(
         false,
         rtcCurrentScene,
         materialLookup,
-        materialPrefix
+        materialPrefix,
+        materialPtr
     );
     auto objSurfaces = objParser.parse();
-
-    auto &bsdfJson = objJson["bsdf"];
-    std::shared_ptr<Material> materialPtr(parseMaterial(bsdfJson, materialLookup));
 
     std::shared_ptr<Medium> mediumPtr(nullptr);
     std::string mediumKey;
@@ -318,18 +317,21 @@ static void parseObj(
         mediumPtr = media[mediumKey];
     }
 
-    for (auto surfacePtr : objSurfaces) {
-        auto shape = surfacePtr->getShape();
-        if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
+    if (mediumPtr) {
+        std::vector<std::shared_ptr<Surface>> localSurfaces;
+
+        for (auto surfacePtr : objSurfaces) {
+            auto shapePtr = surfacePtr->getShape();
+            auto materialPtr = surfacePtr->getMaterial();
+
+            auto surface = std::make_shared<Surface>(shapePtr, materialPtr, mediumPtr);
             localSurfaces.push_back(surface);
-
-        } else {
-            localSurfaces.push_back(surfacePtr);
         }
-    }
 
-    rtcManager.registerSurfaces(rtcCurrentScene, localSurfaces);
+        rtcManager.registerSurfaces(rtcCurrentScene, localSurfaces);
+    } else {
+        rtcManager.registerSurfaces(rtcCurrentScene, objSurfaces);
+    }
 }
 
 static void parsePLY(
