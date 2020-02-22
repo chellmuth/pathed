@@ -186,11 +186,13 @@ Intersection Scene::testIntersect(const Ray &ray) const
             shadingNormal = geometricNormal;
         }
 
-        if (geometricNormal.dot(-ray.direction()) < 0.f) {
-            geometricNormal = -geometricNormal;
-        }
-        if (shadingNormal.dot(-ray.direction()) < 0.f) {
-            shadingNormal = -shadingNormal;
+        if (!surfacePtr->getMaterial()->doubleSided()) {
+            if (geometricNormal.dot(-ray.direction()) < 0.f) {
+                geometricNormal = -geometricNormal;
+            }
+            if (shadingNormal.dot(-ray.direction()) < 0.f) {
+                shadingNormal = -shadingNormal;
+            }
         }
 
         Intersection hit = {

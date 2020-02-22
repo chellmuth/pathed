@@ -46,6 +46,7 @@ public:
 
     virtual bool isDelta() const { return false; }
     virtual bool isContainer() const { return false; }
+    virtual bool doubleSided() const { return false; }
 
     Color emit() const;
     virtual Color albedo(const Intersection &intersection) const {
