@@ -172,7 +172,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.Ng_x,
                 rayHit.hit.Ng_y,
                 rayHit.hit.Ng_z
-            ).normalized() * -1.f;
+            ).normalized();
         } else {
             // spheres
             geometricNormal = Vector3(
@@ -186,7 +186,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
             shadingNormal = geometricNormal;
         }
 
-        if (!surfacePtr->getMaterial()->doubleSided()) {
+        if (surfacePtr->getMaterial()->doubleSided()) {
             if (geometricNormal.dot(-ray.direction()) < 0.f) {
                 geometricNormal = -geometricNormal;
             }
@@ -296,7 +296,7 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
                 rayHit.hit.Ng_x,
                 rayHit.hit.Ng_y,
                 rayHit.hit.Ng_z
-            ).normalized() * -1.f;
+            ).normalized();
         } else {
             // spheres
             geometricNormal = Vector3(
