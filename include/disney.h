@@ -27,7 +27,7 @@ public:
 
     Color albedo(const Intersection &intersection) const override;
 
-    bool doubleSided() const override { return false; }
+    bool doubleSided() const override { return true; }
 
     void writeStream(std::ostream &os) const override {
         os << "[Disney: diffuse=" << m_diffuse << "]";
