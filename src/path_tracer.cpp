@@ -171,7 +171,9 @@ Color PathTracer::directSampleBSDF(
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 
-    if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
+    if (bounceIntersection.hit && bounceIntersection.isEmitter()
+        && bounceIntersection.woWorld.dot(bounceIntersection.shadingNormal) >= 0.f
+    ) {
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();
         const float lightPDF = scene.lightsPDF(
             intersection.point,
