@@ -3,10 +3,21 @@
 #include "color.h"
 #include "intersection.h"
 #include "material.h"
+#include "point.h"
 #include "random_generator.h"
 #include "sample.h"
 #include "sample_integrator.h"
 #include "scene.h"
+#include "vector.h"
+
+#include <optional>
+
+struct TechniqueRecord {
+    std::optional<Point3> lightPoint;
+    Vector3 wi;
+    float solidAnglePDF;
+    Color f;
+};
 
 class OptimalMISIntegrator : public SampleIntegrator {
 public:
@@ -28,7 +39,7 @@ private:
         Sample &sample
     ) const;
 
-    Color directSampleLights(
+    TechniqueRecord directSampleLights(
         const Intersection &intersection,
         const BSDFSample &bsdfSample,
         const Scene &scene,
@@ -36,7 +47,7 @@ private:
         Sample &sample
     ) const;
 
-    Color directSampleBSDF(
+    TechniqueRecord directSampleBSDF(
         const Intersection &intersection,
         const BSDFSample &bsdfSample,
         const Scene &scene,

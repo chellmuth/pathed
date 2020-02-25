@@ -1,7 +1,6 @@
 #include "optimal_mis_integrator.h"
 
 #include "mis.h"
-#include "point.h"
 #include "ray.h"
 #include "vector.h"
 #include "world_frame.h"
@@ -23,15 +22,9 @@ Color OptimalMISIntegrator::direct(
     RandomGenerator &random,
     Sample &sample
 ) const {
-    Color emit = intersection.material->emit();
-    if (!emit.isBlack()) {
-        // part of my old logic - if you hit an emitter, don't do direct lighting?
-        return Color(0.f, 0.f, 0.f);
-    }
-
     Color result(0.f);
 
-    result += directSampleLights(
+    const auto lightRecord = directSampleLights(
         intersection,
         bsdfSample,
         scene,
@@ -39,7 +32,7 @@ Color OptimalMISIntegrator::direct(
         sample
     );
 
-    result += directSampleBSDF(
+    const auto bsdfRecord = directSampleBSDF(
         intersection,
         bsdfSample,
         scene,
@@ -50,61 +43,50 @@ Color OptimalMISIntegrator::direct(
     return result;
 }
 
-Color OptimalMISIntegrator::directSampleLights(
+TechniqueRecord OptimalMISIntegrator::directSampleLights(
     const Intersection &intersection,
     const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
 ) const {
-    if (bsdfSample.material->isDelta()) { return 0.f; }
-
     const LightSample lightSample = scene.sampleDirectLights(intersection.point, random);
 
     const Vector3 lightDirection = (lightSample.point - intersection.point).toVector();
     const Vector3 wiWorld = lightDirection.normalized();
 
-    if (lightSample.normal.dot(wiWorld) >= 0.f) {
-        // Sample hit back of light
-        sample.shadowTests.push_back({
-            intersection.point,
-            lightSample.point,
-            true
-        });
-
-        return Color(0.f);
-    }
-
     const Ray shadowRay = Ray(intersection.point, wiWorld);
     const float lightDistance = lightDirection.length();
     const bool occluded = scene.testOcclusion(shadowRay, lightDistance);
 
-    sample.shadowTests.push_back({
-        intersection.point,
-        lightSample.point,
-        occluded
-    });
-
-    if (occluded) {
-        return Color(0.f);
-    }
-
     const float pdf = lightSample.solidAnglePDF(intersection.point);
-    const float brdfPDF = bsdfSample.material->pdf(intersection, wiWorld);
-    const float lightWeight = MIS::balanceWeight(1, 1, pdf, brdfPDF);
-
     const Vector3 lightWo = -lightDirection.normalized();
 
-    const Color lightContribution = lightSample.light->emit(lightWo)
-        * lightWeight
-        * intersection.material->f(intersection, wiWorld)
-        * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld)
-        / pdf;
+    if (bsdfSample.material->isDelta()
+        || occluded
+        || lightSample.normal.dot(wiWorld) >= 0.f
+    ) {
+        return TechniqueRecord({
+            std::optional<Point3> { lightSample.point },
+            wiWorld,
+            pdf,
+            Color(0.f)
+        });
+    } else {
+        const Color f = lightSample.light->emit(lightWo)
+            * intersection.material->f(intersection, wiWorld)
+            * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld);
 
-    return lightContribution;
+        return TechniqueRecord({
+            std::optional<Point3> { lightSample.point },
+            wiWorld,
+            pdf,
+            f
+        });
+    }
 }
 
-Color OptimalMISIntegrator::directSampleBSDF(
+TechniqueRecord OptimalMISIntegrator::directSampleBSDF(
     const Intersection &intersection,
     const BSDFSample &bsdfSample,
     const Scene &scene,
@@ -114,43 +96,34 @@ Color OptimalMISIntegrator::directSampleBSDF(
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 
+    if (!bounceIntersection.hit) {
+        return TechniqueRecord({
+            std::nullopt,
+            bsdfSample.wiWorld,
+            bsdfSample.pdf,
+            Color(0.f)
+        });
+    }
+
     if (bounceIntersection.hit && bounceIntersection.isEmitter()
         && bounceIntersection.woWorld.dot(bounceIntersection.shadingNormal) >= 0.f
     ) {
-        const float distance = (bounceIntersection.point - intersection.point).toVector().length();
-        const float lightPDF = scene.lightsPDF(
-            intersection.point,
-            bounceIntersection,
-            Measure::SolidAngle
-        );
-        const float brdfWeight = bsdfSample.material->isDelta()
-            ? 1.f
-            : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
-
-        const Color brdfContribution = bounceIntersection.material->emit()
-            * brdfWeight
+        const Color f = bounceIntersection.material->emit()
             * bsdfSample.throughput
-            * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
-            / bsdfSample.pdf;
+            * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld);
 
-        return brdfContribution;
-    } else if (!bounceIntersection.hit) {
-        const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
-        if (!environmentL.isBlack()) {
-            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
-            const float brdfWeight = bsdfSample.material->isDelta()
-                ? 1.f
-                : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
-
-            const Color brdfContribution = environmentL
-                * brdfWeight
-                * bsdfSample.throughput
-                * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld)
-                / bsdfSample.pdf;
-
-            return brdfContribution;
-        }
+        return TechniqueRecord({
+            std::optional<Point3> { bounceIntersection.point },
+            bsdfSample.wiWorld,
+            bsdfSample.pdf,
+            f
+        });
+    } else {
+        return TechniqueRecord({
+            std::optional<Point3> { bounceIntersection.point },
+            bsdfSample.wiWorld,
+            bsdfSample.pdf,
+            Color(0.f)
+        });
     }
-
-    return Color(0.f);
 }
