@@ -15,6 +15,89 @@ Color OptimalMISIntegrator::L(
     return direct(intersection, bsdfSample, scene, random, sample);
 }
 
+std::vector<float> OptimalMISIntegrator::buildS(const PDFLookup &allPDFs) const
+{
+    std::vector<float> S;
+
+    for (const auto &samplePDFs : allPDFs) {
+        float s = 1.f / (
+            samplePDFs[0] + samplePDFs[1]
+        );
+        S.push_back(s);
+    }
+
+    return S;
+}
+
+std::vector<EVector2f> OptimalMISIntegrator::buildW(const PDFLookup &allPDFs, const std::vector<float> &S) const
+{
+    std::vector<EVector2f> W;
+    for (int i = 0; i < allPDFs.size(); i++) {
+        const auto &samplePDFs = allPDFs[i];
+        EVector2f w(samplePDFs[0], samplePDFs[1]);
+        W.push_back(w * S[i]);
+    }
+
+    return W;
+}
+
+Eigen::Matrix2f OptimalMISIntegrator::estimateA(
+    const std::vector<EVector2f> &W,
+    const std::vector<float> &S
+) const {
+    Eigen::Matrix2f A(Eigen::Matrix2f::Zero());
+
+    for (int i = 0; i < W.size(); i++) {
+        const EVector2f &w = W[i];
+        A += w * w.transpose();
+    }
+
+    return A;
+}
+
+EVector2f OptimalMISIntegrator::estimateb(
+    const std::vector<EVector2f> &W,
+    const std::vector<float> &S,
+    const std::array<float, 2> &f
+) const {
+    EVector2f b(EVector2f::Zero());
+
+    for (int i = 0; i < W.size(); i++) {
+        b += W[i] * S[i] * f[i];
+    }
+
+    return b;
+}
+
+EVector2f OptimalMISIntegrator::solveAlpha(
+    const Eigen::Matrix2f &A,
+    const EVector2f &b
+) const {
+    const EVector2f alpha = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+    return alpha;
+}
+
+std::vector<float> OptimalMISIntegrator::computeWeights(
+    const EVector2f &alpha,
+    const std::array<float, 2> pdfs,
+    float f
+) const {
+    if (f == 0.f) {
+        return { 0.f, 0.f };
+    }
+
+    std::vector<float> weights;
+    for (int i = 0; i < pdfs.size(); i++) {
+        const float term1 = alpha[i] * pdfs[i] / f;
+        const float term2 = pdfs[i] / (pdfs[0] + pdfs[1]);
+        const float term3 = 1.f - (alpha[0] * pdfs[0] + alpha[1] * pdfs[1]) / f;
+
+        weights.push_back(term1 + term2 * term3);
+    }
+
+    return weights;
+}
+
 Color OptimalMISIntegrator::direct(
     const Intersection &intersection,
     const BSDFSample &bsdfSample,
@@ -49,12 +132,27 @@ Color OptimalMISIntegrator::direct(
         );
     }
 
-    const float pdfs[2][2] = {
+    const PDFLookup allPDFs = {{
         { lightRecord.solidAnglePDF, bsdfSample.material->pdf(intersection, lightRecord.wi) },
         { lightPDFForBSDFSample, bsdfRecord.solidAnglePDF }
-    };
+    }};
 
-    return result;
+    const std::vector<float> S = buildS(allPDFs);
+    const std::vector<EVector2f> W = buildW(allPDFs, S);
+    const Eigen::Matrix2f A = estimateA(W, S);
+    const std::array<float, 2> f = { lightRecord.f.average(), bsdfRecord.f.average() };
+    const EVector2f b = estimateb(W, S, f);
+
+    const EVector2f alpha = solveAlpha(A, b);
+    // std::cout << alpha << std::endl;
+
+    if (std::isnan(alpha[0]) || std::isnan(alpha[1])) { return Color(1.f, 0.f, 0.f); }
+
+    const std::vector<float> sample1Weights = computeWeights(alpha, allPDFs[0], f[0]);
+    const std::vector<float> sample2Weights = computeWeights(alpha, allPDFs[1], f[1]);
+
+    return (lightRecord.f * sample1Weights[0] / allPDFs[0][0]) +
+        (bsdfRecord.f * sample2Weights[1] / allPDFs[1][1]);
 }
 
 TechniqueRecord OptimalMISIntegrator::directSampleLights(
