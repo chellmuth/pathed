@@ -41,6 +41,7 @@
 using json = nlohmann::json;
 
 #include <map>
+#include <stdexcept>
 
 using MediaMap = std::map<std::string, std::shared_ptr<Medium> >;
 using InstanceMap = std::map<std::string, RTCScene>;
@@ -632,7 +633,7 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
             return std::make_shared<Lambertian>(diffuse, emit);
         }
     } else {
-        throw "Unimplemented";
+        throw std::runtime_error("Unimplemented material: " + parseString(bsdfJson["type"], "<missing>"));
     }
 }
 
