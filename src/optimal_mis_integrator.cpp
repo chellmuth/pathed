@@ -67,7 +67,7 @@ TechniqueRecord OptimalMISIntegrator::directSampleLights(
         || lightSample.normal.dot(wiWorld) >= 0.f
     ) {
         return TechniqueRecord({
-            std::optional<Point3> { lightSample.point },
+            lightSample.point,
             wiWorld,
             pdf,
             Color(0.f)
@@ -78,7 +78,7 @@ TechniqueRecord OptimalMISIntegrator::directSampleLights(
             * WorldFrame::absCosTheta(intersection.shadingNormal, wiWorld);
 
         return TechniqueRecord({
-            std::optional<Point3> { lightSample.point },
+            lightSample.point,
             wiWorld,
             pdf,
             f
@@ -113,14 +113,14 @@ TechniqueRecord OptimalMISIntegrator::directSampleBSDF(
             * WorldFrame::absCosTheta(intersection.shadingNormal, bsdfSample.wiWorld);
 
         return TechniqueRecord({
-            std::optional<Point3> { bounceIntersection.point },
+            bounceIntersection.point,
             bsdfSample.wiWorld,
             bsdfSample.pdf,
             f
         });
     } else {
         return TechniqueRecord({
-            std::optional<Point3> { bounceIntersection.point },
+            bounceIntersection.point,
             bsdfSample.wiWorld,
             bsdfSample.pdf,
             Color(0.f)
