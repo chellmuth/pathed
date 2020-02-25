@@ -10,10 +10,13 @@
 #include "scene.h"
 #include "vector.h"
 
+#include <memory>
 #include <optional>
 
 struct TechniqueRecord {
     std::optional<Point3> lightPoint;
+    std::optional<Vector3> lightNormal;
+    std::optional<Intersection> bounceIntersection;
     Vector3 wi;
     float solidAnglePDF;
     Color f;

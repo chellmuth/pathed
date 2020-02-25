@@ -40,6 +40,20 @@ Color OptimalMISIntegrator::direct(
         sample
     );
 
+    float lightPDFForBSDFSample = 0.f;
+    if (!bsdfRecord.f.isBlack() && bsdfRecord.bounceIntersection) {
+        lightPDFForBSDFSample = scene.lightsPDF(
+            intersection.point,
+            *bsdfRecord.bounceIntersection,
+            Measure::SolidAngle
+        );
+    }
+
+    const float pdfs[2][2] = {
+        { lightRecord.solidAnglePDF, bsdfSample.material->pdf(intersection, lightRecord.wi) },
+        { lightPDFForBSDFSample, bsdfRecord.solidAnglePDF }
+    };
+
     return result;
 }
 
@@ -68,6 +82,8 @@ TechniqueRecord OptimalMISIntegrator::directSampleLights(
     ) {
         return TechniqueRecord({
             lightSample.point,
+            lightSample.normal,
+            std::nullopt,
             wiWorld,
             pdf,
             Color(0.f)
@@ -79,6 +95,8 @@ TechniqueRecord OptimalMISIntegrator::directSampleLights(
 
         return TechniqueRecord({
             lightSample.point,
+            lightSample.normal,
+            std::nullopt,
             wiWorld,
             pdf,
             f
@@ -99,6 +117,8 @@ TechniqueRecord OptimalMISIntegrator::directSampleBSDF(
     if (!bounceIntersection.hit) {
         return TechniqueRecord({
             std::nullopt,
+            std::nullopt,
+            std::nullopt,
             bsdfSample.wiWorld,
             bsdfSample.pdf,
             Color(0.f)
@@ -114,6 +134,8 @@ TechniqueRecord OptimalMISIntegrator::directSampleBSDF(
 
         return TechniqueRecord({
             bounceIntersection.point,
+            bounceIntersection.shadingNormal,
+            bounceIntersection,
             bsdfSample.wiWorld,
             bsdfSample.pdf,
             f
@@ -121,6 +143,8 @@ TechniqueRecord OptimalMISIntegrator::directSampleBSDF(
     } else {
         return TechniqueRecord({
             bounceIntersection.point,
+            bounceIntersection.shadingNormal,
+            bounceIntersection,
             bsdfSample.wiWorld,
             bsdfSample.pdf,
             Color(0.f)
