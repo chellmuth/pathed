@@ -14,6 +14,7 @@ OptimalMISIntegrator::OptimalMISIntegrator()
 
     m_AEstimates.reserve(width * height);
     m_bEstimates.reserve(width * height);
+    m_alphas.reserve(width * height);
 }
 
 void OptimalMISIntegrator::preprocessPixel(
@@ -22,7 +23,9 @@ void OptimalMISIntegrator::preprocessPixel(
     const Scene &scene,
     RandomGenerator &random
 ) {
-    const int iterationCount = 1;
+    const int pixelIndex = row * width + col;
+
+    const int iterationCount = 16;
     for (int i = 0; i < iterationCount; i++) {
         Sample sample;
 
@@ -32,8 +35,10 @@ void OptimalMISIntegrator::preprocessPixel(
         if (!intersection.hit) { return; }
 
         const BSDFSample bsdfSample = intersection.material->sample(intersection, random);
-        direct(intersection, bsdfSample, scene, random, sample);
+        updateEstimates(pixelIndex, intersection, bsdfSample, scene, random, sample);
     }
+
+    m_alphas[pixelIndex] = solveAlpha(m_AEstimates[pixelIndex], m_bEstimates[pixelIndex]);
 }
 
 void OptimalMISIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
@@ -61,10 +66,60 @@ Color OptimalMISIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     BSDFSample bsdfSample = intersection.material->sample(intersection, random);
-    return direct(intersection, bsdfSample, scene, random, sample);
+    return direct(intersection, bsdfSample, m_alphas[pixelIndex], scene, random, sample);
+}
+
+Color OptimalMISIntegrator::direct(
+    const Intersection &intersection,
+    const BSDFSample &bsdfSample,
+    const EVector2f &alphas,
+    const Scene &scene,
+    RandomGenerator &random,
+    Sample &sample
+) const {
+    if (std::isnan(alphas[0]) || std::isnan(alphas[1])) { return Color(1.f, 0.f, 0.f); }
+
+    const auto lightRecord = directSampleLights(
+        intersection,
+        bsdfSample,
+        scene,
+        random,
+        sample
+    );
+
+    const auto bsdfRecord = directSampleBSDF(
+        intersection,
+        bsdfSample,
+        scene,
+        random,
+        sample
+    );
+
+    float lightPDFForBSDFSample = 0.f;
+    if (!bsdfRecord.f.isBlack() && bsdfRecord.bounceIntersection) {
+        lightPDFForBSDFSample = scene.lightsPDF(
+            intersection.point,
+            *bsdfRecord.bounceIntersection,
+            Measure::SolidAngle
+        );
+    }
+
+    const PDFLookup allPDFs = {{
+        { lightRecord.solidAnglePDF, bsdfSample.material->pdf(intersection, lightRecord.wi) },
+        { lightPDFForBSDFSample, bsdfRecord.solidAnglePDF }
+    }};
+
+    const std::array<float, 2> f = { lightRecord.f.average(), bsdfRecord.f.average() };
+
+    const float sample1Weight = computeWeight(0, alphas, allPDFs[0], f[0]);
+    const float sample2Weight = computeWeight(1, alphas, allPDFs[1], f[1]);
+
+    return (lightRecord.f * sample1Weight / allPDFs[0][0]) +
+        (bsdfRecord.f * sample2Weight / allPDFs[1][1]);
 }
 
 std::vector<float> OptimalMISIntegrator::buildS(const PDFLookup &allPDFs) const
@@ -129,36 +184,31 @@ EVector2f OptimalMISIntegrator::solveAlpha(
     return alpha;
 }
 
-std::vector<float> OptimalMISIntegrator::computeWeights(
-    const EVector2f &alpha,
+float OptimalMISIntegrator::computeWeight(
+    int techniqueIndex,
+    const EVector2f &alphas,
     const std::array<float, 2> pdfs,
     float f
 ) const {
     if (f == 0.f) {
-        return { 0.f, 0.f };
+        return 0.f;
     }
 
-    std::vector<float> weights;
-    for (int i = 0; i < pdfs.size(); i++) {
-        const float term1 = alpha[i] * pdfs[i] / f;
-        const float term2 = pdfs[i] / (pdfs[0] + pdfs[1]);
-        const float term3 = 1.f - (alpha[0] * pdfs[0] + alpha[1] * pdfs[1]) / f;
+    const float term1 = alphas[techniqueIndex] * pdfs[techniqueIndex] / f;
+    const float term2 = pdfs[techniqueIndex] / (pdfs[0] + pdfs[1]);
+    const float term3 = 1.f - (alphas[0] * pdfs[0] + alphas[1] * pdfs[1]) / f;
 
-        weights.push_back(term1 + term2 * term3);
-    }
-
-    return weights;
+    return term1 + term2 * term3;
 }
 
-Color OptimalMISIntegrator::direct(
+void OptimalMISIntegrator::updateEstimates(
+    int index,
     const Intersection &intersection,
     const BSDFSample &bsdfSample,
     const Scene &scene,
     RandomGenerator &random,
     Sample &sample
-) const {
-    Color result(0.f);
-
+) {
     const auto lightRecord = directSampleLights(
         intersection,
         bsdfSample,
@@ -195,16 +245,8 @@ Color OptimalMISIntegrator::direct(
     const std::array<float, 2> f = { lightRecord.f.average(), bsdfRecord.f.average() };
     const EVector2f b = estimateb(W, S, f);
 
-    const EVector2f alpha = solveAlpha(A, b);
-    // std::cout << alpha << std::endl;
-
-    if (std::isnan(alpha[0]) || std::isnan(alpha[1])) { return Color(1.f, 0.f, 0.f); }
-
-    const std::vector<float> sample1Weights = computeWeights(alpha, allPDFs[0], f[0]);
-    const std::vector<float> sample2Weights = computeWeights(alpha, allPDFs[1], f[1]);
-
-    return (lightRecord.f * sample1Weights[0] / allPDFs[0][0]) +
-        (bsdfRecord.f * sample2Weights[1] / allPDFs[1][1]);
+    m_AEstimates[index] += A;
+    m_bEstimates[index] += b;
 }
 
 TechniqueRecord OptimalMISIntegrator::directSampleLights(

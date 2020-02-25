@@ -162,6 +162,7 @@ Color BDPT::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     // sample.eyePoints.push_back(intersection.point);

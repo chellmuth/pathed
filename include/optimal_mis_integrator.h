@@ -37,12 +37,14 @@ public:
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
+        int pixelIndex,
         Sample &sample
     ) const override;
 
 private:
     std::vector<Eigen::Matrix2f> m_AEstimates;
     std::vector<EVector2f> m_bEstimates;
+    std::vector<EVector2f> m_alphas;
 
     using PDFLookup = std::array<std::array<float, 2>, 2>;
 
@@ -61,8 +63,9 @@ private:
         const Eigen::Matrix2f &A,
         const EVector2f &b
     ) const;
-    std::vector<float> computeWeights(
-        const EVector2f &alpha,
+    float computeWeight(
+        int techniqueIndex,
+        const EVector2f &alphas,
         const std::array<float, 2> pdfs,
         float f
     ) const;
@@ -74,13 +77,14 @@ private:
         RandomGenerator &random
     );
 
-    Color direct(
+    void updateEstimates(
+        int index,
         const Intersection &intersection,
         const BSDFSample &bsdfSample,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample
-    ) const;
+    );
 
     TechniqueRecord directSampleLights(
         const Intersection &intersection,
@@ -93,6 +97,15 @@ private:
     TechniqueRecord directSampleBSDF(
         const Intersection &intersection,
         const BSDFSample &bsdfSample,
+        const Scene &scene,
+        RandomGenerator &random,
+        Sample &sample
+    ) const;
+
+    Color direct(
+        const Intersection &intersection,
+        const BSDFSample &bsdfSample,
+        const EVector2f &alphas,
         const Scene &scene,
         RandomGenerator &random,
         Sample &sample

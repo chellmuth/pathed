@@ -26,6 +26,7 @@ Color BasicVolumeIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     Color result(0.f);
