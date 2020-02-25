@@ -1,9 +1,61 @@
 #include "optimal_mis_integrator.h"
 
+#include "camera.h"
+#include "globals.h"
 #include "mis.h"
 #include "ray.h"
 #include "vector.h"
 #include "world_frame.h"
+
+OptimalMISIntegrator::OptimalMISIntegrator()
+{
+    const int width = g_job->width();
+    const int height = g_job->height();
+
+    m_AEstimates.reserve(width * height);
+    m_bEstimates.reserve(width * height);
+}
+
+void OptimalMISIntegrator::preprocessPixel(
+    int row, int col,
+    int width, int height,
+    const Scene &scene,
+    RandomGenerator &random
+) {
+    const int iterationCount = 1;
+    for (int i = 0; i < iterationCount; i++) {
+        Sample sample;
+
+        const Ray ray = scene.getCamera()->generateRay(row, col);
+
+        const Intersection intersection = scene.testIntersect(ray);
+        if (!intersection.hit) { return; }
+
+        const BSDFSample bsdfSample = intersection.material->sample(intersection, random);
+        direct(intersection, bsdfSample, scene, random, sample);
+    }
+}
+
+void OptimalMISIntegrator::preprocess(const Scene &scene, RandomGenerator &random)
+{
+    std::cout << "Calculating estimate of optimal weights..." << std::endl;
+
+    const int width = g_job->width();
+    const int height = g_job->height();
+
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            preprocessPixel(
+                row, col,
+                width, height,
+                scene,
+                random
+            );
+        }
+    }
+
+    std::cout << "Estimate complete!" << std::endl;
+}
 
 Color OptimalMISIntegrator::L(
     const Intersection &intersection,

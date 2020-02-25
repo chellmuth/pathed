@@ -29,7 +29,9 @@ struct TechniqueRecord {
 
 class OptimalMISIntegrator : public SampleIntegrator {
 public:
-    OptimalMISIntegrator() {}
+    OptimalMISIntegrator();
+
+    void preprocess(const Scene &scene, RandomGenerator &random) override;
 
     Color L(
         const Intersection &intersection,
@@ -39,6 +41,9 @@ public:
     ) const override;
 
 private:
+    std::vector<Eigen::Matrix2f> m_AEstimates;
+    std::vector<EVector2f> m_bEstimates;
+
     using PDFLookup = std::array<std::array<float, 2>, 2>;
 
     std::vector<float> buildS(const PDFLookup &allPDFs) const;
@@ -61,6 +66,13 @@ private:
         const std::array<float, 2> pdfs,
         float f
     ) const;
+
+    void preprocessPixel(
+        int row, int col,
+        int width, int height,
+        const Scene &scene,
+        RandomGenerator &random
+    );
 
     Color direct(
         const Intersection &intersection,
