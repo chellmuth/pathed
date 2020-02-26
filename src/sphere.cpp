@@ -107,7 +107,7 @@ SurfaceSample Sphere::sample(
 
     // compute internal angle to sample
     const float cosAlpha = util::clampClose(
-        (sampleDistance2 - centerDistance2 - radius2)
+        (centerDistance2 + radius2 - sampleDistance2)
         / (2.f * m_radius * centerDistance),
         0.f, 1.f
     );
@@ -115,7 +115,7 @@ SurfaceSample Sphere::sample(
 
     const Vector3 localSample = sphericalToCartesian(phi, cosAlpha, sinAlpha);
     const Transform localToWorld = normalToWorldSpace((referencePoint - m_center).toVector().normalized());
-    const Vector3 worldSample = localToWorld.apply(localSample);
+    const Vector3 worldSample = localToWorld.apply(localSample).normalized();
 
     SurfaceSample sample = {
         .point = m_center + worldSample * m_radius,
