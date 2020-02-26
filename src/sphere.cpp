@@ -1,9 +1,11 @@
 #include "sphere.h"
 
+#include "coordinate.h"
 #include "globals.h"
 #include "measure.h"
 #include "ray.h"
 #include "trig.h"
+#include "transform.h"
 #include "util.h"
 
 #include <embree3/rtcore.h>
@@ -67,6 +69,11 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     return sample;
 }
 
+static float UniformConePdf(float cosThetaMax)
+{
+    return 1.f / (2.f * M_PI * (1.f - cosThetaMax));
+}
+
 SurfaceSample Sphere::sample(
     RandomGenerator &random,
     const Point3 &referencePoint
@@ -104,9 +111,25 @@ SurfaceSample Sphere::sample(
         / (2.f * m_radius * centerDistance),
         0.f, 1.f
     );
+    const float sinAlpha = Trig::sinFromCos(cosAlpha);
 
-    // TODO: Go from alpha -> a sample.
-    // Need coordinate system
+    const Vector3 localSample = sphericalToCartesian(phi, cosAlpha, sinAlpha);
+    const Transform localToWorld = normalToWorldSpace((referencePoint - m_center).toVector());
+    const Vector3 worldSample = localToWorld.apply(localSample);
+
+    SurfaceSample sample = {
+        .point = m_center + worldSample * m_radius,
+        .normal = worldSample.normalized(),
+        .invPDF = 1.f / UniformConePdf(cosThetaMax),
+        .measure = Measure::SolidAngle
+    };
+
+    return sample;
+}
+
+float Sphere::pdf(const Point3 &point, const Point3 &referencePoint) const
+{
+    return 0.f;
 }
 
 float Sphere::pdf(const Point3 &point) const
