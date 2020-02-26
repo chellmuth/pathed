@@ -3,7 +3,9 @@
 #include "albedo.h"
 #include "color.h"
 #include "intersection.h"
+#include "lambertian.h"
 #include "material.h"
+#include "microfacet.h"
 #include "random_generator.h"
 #include "vector.h"
 
@@ -25,10 +27,10 @@ public:
     ) const override;
 
     void writeStream(std::ostream &os) const override {
-        os << "[Plastic: diffuse=" << m_diffuse << "]";
+        os << "[Plastic lambertian=" << m_lambertian << " microfacet=" << m_microfacet << "]";
     }
 
 private:
-    Color m_diffuse;
-    float m_roughness;
+    Lambertian m_lambertian;
+    Microfacet m_microfacet;
 };

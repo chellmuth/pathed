@@ -4,7 +4,9 @@
 #include "transform.h"
 
 Plastic::Plastic(Color diffuse, float roughness)
-    : Material(Color(0.f)), m_diffuse(diffuse), m_roughness(roughness)
+    : Material(Color(0.f)),
+      m_lambertian(diffuse, Color(0.f)),
+      m_microfacet(roughness)
 {}
 
 Color Plastic::f(
@@ -21,7 +23,7 @@ Color Plastic::f(
     const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
     *pdf = CosineHemispherePdf(wi);
 
-    return m_diffuse / M_PI;
+    return m_lambertian.albedo(intersection) / M_PI;
 }
 
 BSDFSample Plastic::sample(
