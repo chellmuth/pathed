@@ -70,6 +70,45 @@
         "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
         "specularReflectance": [ "0.06", "0.06", "0.06" ]
        }
+    },
+    {
+      "type": "ply",
+      "filename": "assets/mis-pbrt/geometry/plate2.ply",
+      "bsdf": {
+        "type": "beckmann",
+        "alpha": "0.01",
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
+        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+       }
+    },
+    {
+      "type": "ply",
+      "filename": "assets/mis-pbrt/geometry/plate3.ply",
+      "bsdf": {
+        "type": "beckmann",
+        "alpha": "0.01",
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
+        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+       }
+    },
+    {
+      "type": "ply",
+      "filename": "assets/mis-pbrt/geometry/plate4.ply",
+      "bsdf": {
+        "type": "beckmann",
+        "alpha": "0.01",
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
+        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+       }
+    },
+
+    {
+      "type": "ply",
+      "filename": "assets/mis-pbrt/geometry/floor.ply",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.4", "0.4", "0.4" ]
+       }
     }
   ]
 }

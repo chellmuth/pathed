@@ -343,7 +343,10 @@ static void parsePLY(
     MaterialMap &materialLookup,
     MediaMap &media
 ) {
-    std::ifstream plyFile(plyJson["filename"].get<std::string>());
+    const std::string filename = plyJson["filename"].get<std::string>();
+    std::cout << "Parsing PLY file: " << filename << std::endl;
+
+    std::ifstream plyFile(filename);
 
     auto transformJson = plyJson["transform"];
     Transform transform;
