@@ -2,6 +2,7 @@
 
 #include "intersection.h"
 #include "material.h"
+#include "measure.h"
 #include "point.h"
 #include "shape.h"
 #include "transform.h"
@@ -18,7 +19,7 @@ public:
     BSpline(std::vector<Point3>, float width0, float width1);
 
     SurfaceSample sample(RandomGenerator &random) const override { throw "Unimplemented!"; }
-    float pdf(const Point3 &point) const override { throw "Unimplemented!"; }
+    float pdf(const Point3 &point, Measure measure) const override { throw "Unimplemented!"; }
 
     float area() const override { throw "Unimplemented!"; }
 

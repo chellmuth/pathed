@@ -37,9 +37,28 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     return sample;
 }
 
-float Triangle::pdf(const Point3 &point) const
+float Triangle::pdf(const Point3 &point, Measure measure) const
 {
+    if (measure != Measure::Area) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     return 1.f / area();
+}
+
+float Triangle::pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const
+{
+    const float areaPDF = pdf(point, Measure::Area);
+
+    if (measure == Measure::Area) {
+        return areaPDF;
+    }
+
+    const Vector3 e1 = (m_p1 - m_p0).toVector();
+    const Vector3 e2 = (m_p2 - m_p0).toVector();
+    const Vector3 normal = e1.cross(e2).normalized();
+
+    return MeasureConversion::areaToSolidAngle(areaPDF, referencePoint, point, normal);
 }
 
 float Triangle::area() const

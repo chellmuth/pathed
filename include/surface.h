@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "material.h"
+#include "measure.h"
 #include "medium.h"
 #include "point.h"
 #include "primitive.h"
@@ -31,8 +32,8 @@ public:
     SurfaceSample sample(RandomGenerator &random) const;
     SurfaceSample sample(const Point3 &referencePoint, RandomGenerator &random) const;
 
-    float pdf(const Point3 &point) const;
-    float pdf(const Point3 &point, const Point3 &referencePoint) const;
+    float pdf(const Point3 &point, Measure measure) const;
+    float pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const;
 
     std::shared_ptr<Shape> getShape() const;
     std::shared_ptr<Material> getMaterial() const;

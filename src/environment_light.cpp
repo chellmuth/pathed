@@ -116,8 +116,12 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
     return fake;
 }
 
-float EnvironmentLight::emitPDF(const Vector3 &direction) const
+float EnvironmentLight::emitPDF(const Vector3 &direction, Measure measure) const
 {
+    if (measure != Measure::SolidAngle) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     float phi, theta;
     cartesianToSpherical(direction, &phi, &theta);
 

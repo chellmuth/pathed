@@ -30,9 +30,9 @@ public:
         return sample(random);
     }
 
-    virtual float pdf(const Point3 &point) const = 0;
-    virtual float pdf(const Point3 &point, const Point3 &referencePoint) const {
-        return pdf(point);
+    virtual float pdf(const Point3 &point, Measure measure) const = 0;
+    virtual float pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const {
+        return pdf(point, measure);
     }
 
     virtual float area() const = 0;

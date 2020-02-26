@@ -195,7 +195,7 @@ Color PathTracer::directSampleBSDF(
     } else if (!bounceIntersection.hit) {
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
-            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
+            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld, Measure::SolidAngle);
             const float brdfWeight = bsdfSample.material->isDelta()
                 ? 1.f
                 : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);

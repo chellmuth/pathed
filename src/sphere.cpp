@@ -127,14 +127,16 @@ SurfaceSample Sphere::sample(
     return sample;
 }
 
-float Sphere::pdf(const Point3 &point, const Point3 &referencePoint) const
+float Sphere::pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const
 {
+    if (measure == Measure::Area) { throw std::runtime_error("Unsupported measure"); }
+
     // Redo some of the sampling logic to generate cosThetaMax
     const float centerDistance = (m_center - referencePoint).toVector().length();
     const float centerDistance2 = centerDistance * centerDistance;
     if (centerDistance <= m_radius) {
         std::cout << "TODO: Needs to be converted to solid angle measure" << std::endl;
-        return pdf(point);
+        return pdf(point, measure);
     }
 
     const float radius2 = m_radius * m_radius;
@@ -144,8 +146,10 @@ float Sphere::pdf(const Point3 &point, const Point3 &referencePoint) const
     return UniformConePdf(cosThetaMax);
 }
 
-float Sphere::pdf(const Point3 &point) const
+float Sphere::pdf(const Point3 &point, Measure measure) const
 {
+    if (measure == Measure::SolidAngle) { throw std::runtime_error("Unsupported measure"); }
+
     return 1.f / area();
 }
 
