@@ -50,6 +50,7 @@ using MaterialMap = std::map<std::string, std::shared_ptr<Material> >;
 static bool checkFloat(json &floatJson, float *value);
 static float parseFloat(json &floatJson);
 static float parseFloat(json &floatJson, float defaultValue);
+static bool parseBool(json &boolJson, bool defaultValue);
 static bool checkString(json &stringJson, std::string *value);
 static std::string parseString(json &stringJson);
 static std::string parseString(json &stringJson, std::string defaultString);
@@ -147,7 +148,8 @@ Scene parseScene(std::ifstream &sceneFile)
         parsePoint(sensor["lookAt"]["target"]),
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI,
-        resolution
+        resolution,
+        parseBool(sensor["flipHandedness"], false)
     );
 
     auto rtcManagerPtr = std::make_unique<RTCManager>(g_rtcScene);
@@ -827,4 +829,13 @@ static std::string parseString(json &stringJson, std::string defaultString)
 static std::string parseString(json &stringJson)
 {
     return stringJson.get<std::string>();
+}
+
+static bool parseBool(json &boolJson, bool defaultValue)
+{
+    try {
+        return boolJson.get<bool>();
+    } catch (nlohmann::detail::type_error) {
+        return defaultValue;
+    }
 }

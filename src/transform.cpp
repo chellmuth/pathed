@@ -135,8 +135,12 @@ void Transform::debug() const
     printf("|%8.4f %8.4f %8.4f %8.4f|\n", m_matrix[3][0], m_matrix[3][1], m_matrix[3][2], m_matrix[3][3]);
 }
 
-Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
-{
+Transform lookAt(
+    const Point3 &source,
+    const Point3 &target,
+    const Vector3 &up,
+    bool flipHandedness
+) {
     Vector3 direction = (source - target).toVector().normalized();
 
     if (direction == up) {
@@ -147,10 +151,12 @@ Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up)
     Vector3 xAxis = up.normalized().cross(direction).normalized();
     Vector3 yAxis = direction.cross(xAxis);
 
+    float sign = flipHandedness ? -1 : 1;
+
     float matrix[4][4] {
-        { xAxis.x(), yAxis.x(), direction.x(), source.x() },
-        { xAxis.y(), yAxis.y(), direction.y(), source.y() },
-        { xAxis.z(), yAxis.z(), direction.z(), source.z() },
+        { sign * xAxis.x(), yAxis.x(), direction.x(), source.x() },
+        { sign * xAxis.y(), yAxis.y(), direction.y(), source.y() },
+        { sign * xAxis.z(), yAxis.z(), direction.z(), source.z() },
         { 0.f, 0.f, 0.f, 1.f }
     };
 

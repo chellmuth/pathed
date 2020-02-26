@@ -18,7 +18,14 @@ struct Resolution {
 
 class Camera {
 public:
-    Camera(Point3 origin, Point3 target, Vector3 up, float verticalFOV, Resolution resolution);
+    Camera(
+        Point3 origin,
+        Point3 target,
+        Vector3 up,
+        float verticalFOV,
+        Resolution resolution,
+        bool flipHandedness
+    );
 
     float getVerticalFOV() const { return m_verticalFOV; }
     Point3 getOrigin() const { return m_origin; }

@@ -13,7 +13,8 @@ TEST_CASE("Camera hello", "[camera]") {
         Point3(0.f, 0.f, 10.f),
         Vector3(0.f, 1.f, 0.f),
         36.f / 180.f * M_PI,
-        { 1, 1 }
+        { 1, 1 },
+        false
     );
 
     Pixel *pixel = nullptr;
@@ -30,7 +31,8 @@ TEST_CASE("Camera miss", "[camera]") {
         Point3(0.f, 0.f, 10.f),
         Vector3(0.f, 1.f, 0.f),
         36.f / 180.f * M_PI,
-        { 1, 1 }
+        { 1, 1 },
+        false
     );
 
     Pixel *pixel = nullptr;
@@ -44,7 +46,8 @@ TEST_CASE("Camera hits a specific pixel easy", "[camera]") {
         Point3(0.f, 0.f, 10.f),
         Vector3(0.f, 1.f, 0.f),
         90.f / 180.f * M_PI,
-        { 100, 100 }
+        { 100, 100 },
+        false
     );
 
     Pixel *pixel = nullptr;
@@ -61,7 +64,8 @@ TEST_CASE("Camera hits a specific pixel tougher", "[camera]") {
         Point3(0.f, 0.f, 10.f),
         Vector3(0.f, 1.f, 0.f),
         90.f / 180.f * M_PI,
-        { 100, 100 }
+        { 100, 100 },
+        false
     );
 
     Pixel *pixel = nullptr;
@@ -78,7 +82,8 @@ TEST_CASE("Cornell light", "[camera]") {
         Point3(0.f, 1.f, 0.f),
         Vector3(0.f, 1.f, 0.f),
         19.5f / 180.f * M_PI,
-        { 100, 100 }
+        { 100, 100 },
+        false
     );
 
     auto lightPoint = Point3(0.174274f, 1.980000f, -0.149822f);
