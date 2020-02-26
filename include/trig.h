@@ -20,4 +20,11 @@ namespace Trig {
     {
         return std::max(0.f, 1.f - (cosTheta * cosTheta));
     }
+
+    inline float cosFromSin2(float sin2Theta)
+    {
+        return std::sqrt(
+            std::max(0.f, 1.f - sin2Theta)
+        );
+    }
 };

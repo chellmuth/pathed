@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "measure.h"
 #include "ray.h"
+#include "trig.h"
 #include "util.h"
 
 #include <embree3/rtcore.h>
@@ -64,6 +65,48 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     };
 
     return sample;
+}
+
+SurfaceSample Sphere::sample(
+    RandomGenerator &random,
+    const Point3 &referencePoint
+) const {
+    // early quit if we're inside the sphere
+    const float centerDistance = (m_center - referencePoint).toVector().length();
+    const float centerDistance2 = centerDistance * centerDistance;
+    if (centerDistance <= m_radius) {
+        return sample(random);
+    }
+
+    // compute angle of cone bounding what referencePoint can "see" on sphere
+    const float radius2 = m_radius * m_radius;
+    const float sin2ThetaMax = m_radius * m_radius / centerDistance2;
+    const float cosThetaMax = Trig::cosFromSin2(sin2ThetaMax);
+
+    // linearly interpolate between [cosThetaMax, 1];
+    // theta will be between [0, cosThetaMax]
+    const float xi1 = random.next();
+    const float cosTheta = (1.f - xi1) + xi1 * cosThetaMax;
+    const float phi = random.next() * 2.f * M_PI;
+
+    // compute distance to sample point on sphere
+    const float sinTheta = Trig::sinFromCos(cosTheta);
+    const float sideOppositeTheta = centerDistance * sinTheta;
+    const float sideHelper = std::sqrt(
+        std::max(0.f, m_radius * m_radius - sideOppositeTheta * sideOppositeTheta)
+    );
+    const float sampleDistance = centerDistance * cosTheta - sideHelper;
+    const float sampleDistance2 = sampleDistance * sampleDistance;
+
+    // compute internal angle to sample
+    const float cosAlpha = util::clampClose(
+        (sampleDistance2 - centerDistance2 - radius2)
+        / (2.f * m_radius * centerDistance),
+        0.f, 1.f
+    );
+
+    // TODO: Go from alpha -> a sample.
+    // Need coordinate system
 }
 
 float Sphere::pdf(const Point3 &point) const
