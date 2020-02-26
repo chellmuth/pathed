@@ -133,6 +133,7 @@ float Sphere::pdf(const Point3 &point, const Point3 &referencePoint) const
     const float centerDistance = (m_center - referencePoint).toVector().length();
     const float centerDistance2 = centerDistance * centerDistance;
     if (centerDistance <= m_radius) {
+        std::cout << "TODO: Needs to be converted to solid angle measure" << std::endl;
         return pdf(point);
     }
 
