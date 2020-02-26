@@ -13,7 +13,7 @@ Color AreaLight::emit() const
 
 SurfaceSample AreaLight::sample(const Point3 &point, RandomGenerator &random) const
 {
-    return m_surface->sample(random);
+    return m_surface->sample(point, random);
 }
 
 SurfaceSample AreaLight::sampleEmit(RandomGenerator &random) const

@@ -75,8 +75,8 @@ static float UniformConePdf(float cosThetaMax)
 }
 
 SurfaceSample Sphere::sample(
-    RandomGenerator &random,
-    const Point3 &referencePoint
+    const Point3 &referencePoint,
+    RandomGenerator &random
 ) const {
     // early quit if we're inside the sphere
     const float centerDistance = (m_center - referencePoint).toVector().length();
@@ -114,7 +114,7 @@ SurfaceSample Sphere::sample(
     const float sinAlpha = Trig::sinFromCos(cosAlpha);
 
     const Vector3 localSample = sphericalToCartesian(phi, cosAlpha, sinAlpha);
-    const Transform localToWorld = normalToWorldSpace((referencePoint - m_center).toVector());
+    const Transform localToWorld = normalToWorldSpace((referencePoint - m_center).toVector().normalized());
     const Vector3 worldSample = localToWorld.apply(localSample);
 
     SurfaceSample sample = {
@@ -129,7 +129,18 @@ SurfaceSample Sphere::sample(
 
 float Sphere::pdf(const Point3 &point, const Point3 &referencePoint) const
 {
-    return 0.f;
+    // Redo some of the sampling logic to generate cosThetaMax
+    const float centerDistance = (m_center - referencePoint).toVector().length();
+    const float centerDistance2 = centerDistance * centerDistance;
+    if (centerDistance <= m_radius) {
+        return pdf(point);
+    }
+
+    const float radius2 = m_radius * m_radius;
+    const float sin2ThetaMax = m_radius * m_radius / centerDistance2;
+    const float cosThetaMax = Trig::cosFromSin2(sin2ThetaMax);
+
+    return UniformConePdf(cosThetaMax);
 }
 
 float Sphere::pdf(const Point3 &point) const

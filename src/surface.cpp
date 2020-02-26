@@ -25,9 +25,19 @@ SurfaceSample Surface::sample(RandomGenerator &random) const
     return m_shape->sample(random);
 }
 
+SurfaceSample Surface::sample(const Point3 &referencePoint, RandomGenerator &random) const
+{
+    return m_shape->sample(referencePoint, random);
+}
+
 float Surface::pdf(const Point3 &point) const
 {
     return m_shape->pdf(point);
+}
+
+float Surface::pdf(const Point3 &point, const Point3 &referencePoint) const
+{
+    return m_shape->pdf(point, referencePoint);
 }
 
 std::shared_ptr<Shape> Surface::getShape() const

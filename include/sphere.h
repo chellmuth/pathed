@@ -16,10 +16,10 @@ public:
     Sphere(Point3 center, float radius);
 
     SurfaceSample sample(RandomGenerator &random) const override;
-    SurfaceSample sample(RandomGenerator &random, const Point3 &referencePoint) const;
+    SurfaceSample sample(const Point3 &referencePoint, RandomGenerator &random) const override;
 
-    float pdf(const Point3 &point, const Point3 &referencePoint) const;
     float pdf(const Point3 &point) const override;
+    float pdf(const Point3 &point, const Point3 &referencePoint) const override;
 
     float area() const override;
 

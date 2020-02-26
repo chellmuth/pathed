@@ -26,7 +26,14 @@ public:
     virtual void pushIndices(std::vector<uint> &indices, int offset) {};
 
     virtual SurfaceSample sample(RandomGenerator &random) const = 0;
+    virtual SurfaceSample sample(const Point3 &referencePoint, RandomGenerator &random) const {
+        return sample(random);
+    }
+
     virtual float pdf(const Point3 &point) const = 0;
+    virtual float pdf(const Point3 &point, const Point3 &referencePoint) const {
+        return pdf(point);
+    }
 
     virtual float area() const = 0;
 
