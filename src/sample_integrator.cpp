@@ -49,7 +49,7 @@ void SampleIntegrator::samplePixel(
             }
         }
 
-        color += L(intersection, scene, random, sample);
+        color += L(intersection, scene, random, row * width + col, sample);
 
         sampleLookup[row * width + col] = sample;
     } else {

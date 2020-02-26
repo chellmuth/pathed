@@ -67,8 +67,9 @@
       "type": "sphere",
       "center": [ "10", "10", "4" ],
       "radius": "0.5",
-      "radiance": [ "0", "800", "0" ],
       "bsdf": {
+        "type": "lambertian",
+        "emit": [ "0", "800", "0" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }
@@ -77,8 +78,9 @@
       "type": "sphere",
       "center": [ "-1.25", "0", "0" ],
       "radius": "0.1",
-      "radiance": [ "0", "0", "100" ],
       "bsdf": {
+        "type": "lambertian",
+        "emit": [ "0", "0", "100" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }
@@ -87,8 +89,9 @@
       "type": "sphere",
       "center": [ "-3.75", "0", "0" ],
       "radius": "0.03333",
-      "radiance": [ "901.803", "0", "901.803" ],
       "bsdf": {
+        "type": "lambertian",
+        "emit": [ "901.803", "0", "901.803" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }
@@ -97,8 +100,9 @@
       "type": "sphere",
       "center": [ "1.25", "0", "0" ],
       "radius": "0.3",
-      "radiance": [ "0", "11.1111", "11.1111" ],
       "bsdf": {
+        "type": "lambertian",
+        "emit": [ "0", "11.1111", "11.1111" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }
@@ -107,8 +111,9 @@
       "type": "sphere",
       "center": [ "3.75", "0", "0" ],
       "radius": "0.9",
-      "radiance": [ "1.23457", "1.23457", "0" ],
       "bsdf": {
+        "type": "lambertian",
+        "emit": [ "1.23457", "1.23457", "0" ],
         "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
         "specularReflectance": "0"
       }

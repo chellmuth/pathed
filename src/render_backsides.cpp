@@ -4,6 +4,7 @@ Color RenderBacksides::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     if (!intersection.hit) { return Color(0.f); }

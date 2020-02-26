@@ -55,6 +55,7 @@ std::shared_ptr<Image> renderPDF(
                         fisheyeIntersection,
                         scene,
                         random,
+                        -1,
                         dummySample
                     ) / spp;
                 }

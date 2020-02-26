@@ -284,6 +284,7 @@ void PDFIntegrator::renderPDF(
                     fisheyeIntersection,
                     scene,
                     random,
+                    -1,
                     sample
                 );
 

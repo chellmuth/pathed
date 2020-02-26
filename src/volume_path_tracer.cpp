@@ -15,6 +15,7 @@ Color VolumePathTracer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     std::shared_ptr<Medium> mediumPtr(nullptr);

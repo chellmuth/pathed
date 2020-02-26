@@ -97,6 +97,7 @@ void SelfIntegrator::renderPDF(
                     fisheyeIntersection,
                     scene,
                     random,
+                    -1,
                     sample
                 );
             }
@@ -130,6 +131,7 @@ Color SelfIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     Color result(0.f);
