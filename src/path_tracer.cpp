@@ -23,6 +23,8 @@ Color PathTracer::L(
     int pixelIndex,
     Sample &sample
 ) const {
+    // if (pixelIndex != (600 - 152) * 800 + 225) { return Color(0.f); }
+
     sample.eyePoints.push_back(intersection.point);
 
     BSDFSample bsdfSample = intersection.material->sample(intersection, random);

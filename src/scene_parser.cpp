@@ -23,6 +23,7 @@
 #include "perfect_transmission.h"
 #include "phong.h"
 #include "point.h"
+#include "plastic.h"
 #include "ply_parser.h"
 #include "ptex_local.h"
 #include "quad.h"
@@ -611,6 +612,10 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
     } else if (bsdfJson["type"] == "disney") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         return std::make_shared<Disney>(diffuse);
+    } else if (bsdfJson["type"] == "plastic") {
+        const Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        const float roughness = parseFloat(bsdfJson["roughness"]);
+        return std::make_shared<Plastic>(diffuse, roughness);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
