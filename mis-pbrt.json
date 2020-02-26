@@ -65,40 +65,36 @@
       "type": "ply",
       "filename": "assets/mis-pbrt/geometry/plate1.ply",
       "bsdf": {
-        "type": "beckmann",
+        "type": "lambertian",
         "alpha": "0.01",
-        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
-        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
     {
       "type": "ply",
       "filename": "assets/mis-pbrt/geometry/plate2.ply",
       "bsdf": {
-        "type": "beckmann",
+        "type": "lambertian",
         "alpha": "0.01",
-        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
-        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
     {
       "type": "ply",
       "filename": "assets/mis-pbrt/geometry/plate3.ply",
       "bsdf": {
-        "type": "beckmann",
+        "type": "lambertian",
         "alpha": "0.01",
-        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
-        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
     {
       "type": "ply",
       "filename": "assets/mis-pbrt/geometry/plate4.ply",
       "bsdf": {
-        "type": "beckmann",
+        "type": "lambertian",
         "alpha": "0.01",
-        "diffuseReflectance": [ "0.07", "0.09", "0.13" ],
-        "specularReflectance": [ "0.06", "0.06", "0.06" ]
+        "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
 
