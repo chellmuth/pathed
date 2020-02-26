@@ -25,7 +25,7 @@ Color Disney::f(
     }
 
     const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
-    *pdf = UniformHemispherePdf(wi);
+    *pdf = CosineHemispherePdf(wi);
 
     if (m_albedo) {
         return m_albedo->lookup(intersection) / M_PI;
@@ -44,7 +44,7 @@ BSDFSample Disney::sample(
 
     BSDFSample sample = {
         .wiWorld = worldSample,
-        .pdf = UniformHemispherePdf(localSample),
+        .pdf = CosineHemispherePdf(localSample),
         .throughput = Material::f(intersection, worldSample),
         .material = this
     };
