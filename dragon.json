@@ -10,20 +10,6 @@
 
   "models": [
     {
-      "type": "obj",
-      "filename": "veach-ajar/models/Light.obj",
-      "transform": {
-        "scale": [ "10", "10", "50" ],
-        "rotate": [ "0", "90", "0" ],
-        "translate": [ "100", "40", "100" ]
-      },
-      "bsdf": {
-        "type": "lambertian",
-        "emit": [ "20", "20", "20" ],
-        "diffuseReflectance": [ "0.0", "0.0", "0.0" ]
-      }
-    },
-    {
       "type": "quad",
       "transform": {
         "scale": [ "1000", "1000", "1" ],
@@ -40,12 +26,13 @@
       "filename": "assets/dragon.obj",
       "transform": {
         "scale": [ "1", "1", "1" ],
-        "rotate": [ "0", "53", "0" ],
+        "rotate": [ "0", "-53", "0" ],
         "translate": [ "0", "0", "0" ]
       },
       "bsdf": {
-        "type": "beckmann",
-        "alpha": "0.1"
+        "type": "plastic",
+        "diffuseReflectance": [ "0.1", "0.3", "0.7" ],
+        "roughness": "0.1"
       }
     }
   ],
