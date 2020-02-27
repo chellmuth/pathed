@@ -33,11 +33,27 @@ BSDFSample Plastic::sample(
     const float xi = random.next();
     if (xi > 0.5f) {
         BSDFSample sample = m_lambertian.sample(intersection, random);
-        sample.pdf /= 2.f;
-        return sample;
+
+        float microfacetPDF;
+        Color microfacetThroughput = m_microfacet.f(intersection, sample.wiWorld, &microfacetPDF);
+
+        return BSDFSample({
+            sample.wiWorld,
+            (sample.pdf + microfacetPDF) / 2.f,
+            sample.throughput + microfacetThroughput,
+            sample.material
+        });
     } else {
         BSDFSample sample = m_microfacet.sample(intersection, random);
-        sample.pdf /= 2.f;
-        return sample;
+
+        float lambertianPDF;
+        Color lambertianThroughput = m_lambertian.f(intersection, sample.wiWorld, &lambertianPDF);
+
+        return BSDFSample({
+            sample.wiWorld,
+            (sample.pdf + lambertianPDF) / 2.f,
+            sample.throughput + lambertianThroughput,
+            sample.material
+        });
     }
 }
