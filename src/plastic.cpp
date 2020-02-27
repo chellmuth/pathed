@@ -41,7 +41,7 @@ BSDFSample Plastic::sample(
             sample.wiWorld,
             (sample.pdf + microfacetPDF) / 2.f,
             sample.throughput + microfacetThroughput,
-            sample.material
+            this
         });
     } else {
         BSDFSample sample = m_microfacet.sample(intersection, random);
@@ -53,7 +53,7 @@ BSDFSample Plastic::sample(
             sample.wiWorld,
             (sample.pdf + lambertianPDF) / 2.f,
             sample.throughput + lambertianThroughput,
-            sample.material
+            this
         });
     }
 }
