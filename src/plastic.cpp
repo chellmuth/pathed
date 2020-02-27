@@ -15,15 +15,14 @@ Color Plastic::f(
     float *pdf
 ) const
 {
-    if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
-        *pdf = 0.f;
-        return Color(0.f);
-    }
+    float lambertianPDF;
+    float microfacetPDF;
+    const Color f = m_lambertian.f(intersection, wiWorld, &lambertianPDF) +
+        m_microfacet.f(intersection, wiWorld, &microfacetPDF);
 
-    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
-    *pdf = CosineHemispherePdf(wi);
+    *pdf = (lambertianPDF + microfacetPDF) / 2.f;
 
-    return m_lambertian.albedo(intersection) / M_PI;
+    return f;
 }
 
 BSDFSample Plastic::sample(
@@ -31,15 +30,14 @@ BSDFSample Plastic::sample(
     RandomGenerator &random
 ) const
 {
-    Vector3 localSample = CosineSampleHemisphere(random);
-    Vector3 worldSample = intersection.tangentToWorld.apply(localSample);
-
-    BSDFSample sample = {
-        .wiWorld = worldSample,
-        .pdf = CosineHemispherePdf(localSample),
-        .throughput = Material::f(intersection, worldSample),
-        .material = this
-    };
-
-    return sample;
+    const float xi = random.next();
+    if (xi > 0.5f) {
+        BSDFSample sample = m_lambertian.sample(intersection, random);
+        sample.pdf /= 2.f;
+        return sample;
+    } else {
+        BSDFSample sample = m_microfacet.sample(intersection, random);
+        sample.pdf /= 2.f;
+        return sample;
+    }
 }
