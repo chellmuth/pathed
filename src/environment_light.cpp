@@ -11,8 +11,12 @@
 #include <algorithm>
 #include <cmath>
 
-EnvironmentLight::EnvironmentLight(std::string filename, float scale, float rotation)
-    : Light(), m_filename(filename), m_scale(scale), m_rotation(rotation)
+EnvironmentLight::EnvironmentLight(std::string filename, float scale, Transform mapToWorld)
+    : Light(),
+      m_filename(filename),
+      m_scale(scale),
+      m_mapToWorld(mapToWorld),
+      m_worldToMap(mapToWorld.inversed())
 {
     const char *error = nullptr;
 
@@ -57,13 +61,13 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(
-        -direction,
+        m_worldToMap.apply(direction).normalized(),
         &phi, &theta
     );
 
-    phi += m_rotation / 180.f * M_PI;
-    if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
-    if (phi < 0.f) { phi += M_TWO_PI; }
+    // phi += m_rotation / 180.f * M_PI;
+    // if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
+    // if (phi < 0.f) { phi += M_TWO_PI; }
 
     const float phiCanonical = util::clampClose(phi / M_TWO_PI, 0.f, 1.f);
     const float thetaCanonical = util::clampClose(theta / M_PI, 0.f, 1.f);
@@ -89,13 +93,13 @@ SurfaceSample EnvironmentLight::sample(const Point3 &point, RandomGenerator &ran
     float phi = phiCanonical * M_TWO_PI;
     const float theta = thetaCanonical * M_PI;
 
-    phi -= m_rotation / 180.f * M_PI;
-    if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
-    if (phi < 0.f) { phi += M_TWO_PI; }
+    // phi -= m_rotation / 180.f * M_PI;
+    // if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
+    // if (phi < 0.f) { phi += M_TWO_PI; }
 
     const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
 
-    const Vector3 direction = sphericalToCartesian(phi, theta);
+    const Vector3 direction = m_mapToWorld.apply(sphericalToCartesian(phi, theta));
 
     SurfaceSample inProgress = {
         .point = point + direction * 10000.f,
@@ -123,9 +127,9 @@ float EnvironmentLight::emitPDF(const Vector3 &direction, Measure measure) const
     }
 
     float phi, theta;
-    cartesianToSpherical(direction, &phi, &theta);
+    cartesianToSpherical(m_worldToMap.apply(direction), &phi, &theta);
 
-    phi += m_rotation / 180.f * M_PI;
+    // phi += m_rotation / 180.f * M_PI;
     if (phi >= M_TWO_PI) { phi -= M_TWO_PI; }
     if (phi < 0.f) { phi += M_TWO_PI; }
 

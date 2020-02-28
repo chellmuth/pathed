@@ -8,6 +8,7 @@
 #include "point.h"
 #include "random_generator.h"
 #include "surface.h"
+#include "transform.h"
 
 #include <iostream>
 #include <sstream>
@@ -16,7 +17,7 @@
 
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight(std::string filename, float scale, float rotation);
+    EnvironmentLight(std::string filename, float scale, Transform mapToWorld);
 
     Color emit() const override;
     Color emit(const Vector3 &direction) const;
@@ -46,7 +47,8 @@ public:
 
 private:
     float m_scale;
-    float m_rotation;
+    Transform m_mapToWorld;
+    Transform m_worldToMap;
 
     std::vector<float> m_cdf;
 
