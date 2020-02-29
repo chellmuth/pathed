@@ -1,6 +1,6 @@
 # Pathed
 
-Pathed is a path tracer I have been working on to re-familiarize myself with C++ and solidify my understanding of rendering techniques and algorithms.
+Pathed is a path tracer written in C++ that I have been working on to solidify my understanding of rendering techniques and algorithms.
 
 Some of Pathed features include: Lambertian, Oren-Nayar, Beckmann microfacet, Mirror, and Glass scattering models; multiple importance sampling and next event estimation; environment maps; and heterogeneous volumetric scattering.
 
