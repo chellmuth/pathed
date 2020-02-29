@@ -15,7 +15,8 @@ Camera::Camera(
     Point3 target,
     Vector3 up,
     float verticalFOV,
-    Resolution resolution
+    Resolution resolution,
+    bool flipHandedness
 )
     : m_zNear(0.01f),
       m_origin(origin),
@@ -24,7 +25,7 @@ Camera::Camera(
       m_verticalFOV(verticalFOV),
       m_resolution(resolution)
 {
-    m_cameraToWorld = lookAt(origin, target, up);
+    m_cameraToWorld = lookAt(origin, target, up, flipHandedness);
     m_worldToCamera = lookAtInverse(origin, target, up);
 }
 

@@ -1,38 +1,25 @@
 {
   "sensor": {
     "lookAt": {
-      "target": [ "0", "60", "-30" ],
       "origin": [ "277", "-240", "250" ],
+      "target": [ "0", "60", "-30" ],
       "up": [ "0", "0", "1" ]
     },
-    "fov": "33"
+    "fov": "33",
+    "flipHandedness": true
   },
 
   "models": [
-    {
-      "type": "obj",
-      "filename": "veach-ajar/models/Light.obj",
-      "transform": {
-        "scale": [ "10", "10", "50" ],
-        "rotate": [ "0", "90", "0" ],
-        "translate": [ "100", "40", "100" ]
-      },
-      "bsdf": {
-        "type": "lambertian",
-        "emit": [ "20", "20", "20" ],
-        "diffuseReflectance": [ "0.0", "0.0", "0.0" ]
-      }
-    },
     {
       "type": "quad",
       "transform": {
         "scale": [ "1000", "1000", "1" ],
         "rotate": [ "0", "0", "0" ],
-        "translate": [ "0", "0", "-44" ]
+        "translate": [ "0", "0", "-40" ]
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
+        "diffuseReflectance": [ "0.7", "0.7", "0.7" ]
       }
     },
     {
@@ -40,18 +27,23 @@
       "filename": "assets/dragon.obj",
       "transform": {
         "scale": [ "1", "1", "1" ],
-        "rotate": [ "0", "53", "0" ],
+        "rotate": [ "0", "-53", "0" ],
         "translate": [ "0", "0", "0" ]
       },
       "bsdf": {
-        "type": "beckmann",
-        "alpha": "0.1"
+        "type": "plastic",
+        "diffuseReflectance": [ "0.1", "0.1", "0.4" ],
+        "roughness": "0.03"
       }
     }
   ],
 
   "environmentLight": {
     "filename": "assets/20060807_wells6_hd.exr",
-    "scale": "1"
+    "scale": "2.5",
+    "transform": {
+      "scale": [ "1", "-1", "1" ],
+      "rotate": [ "180", "0", "-90" ]
+    }
   }
 }

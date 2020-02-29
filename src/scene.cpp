@@ -469,29 +469,25 @@ float Scene::lightsPDF(
     const Point3 lightPoint = lightIntersection.point;
 
     const int lightCount = m_lights.size();
-    const float areaMeasurePDF = lightIntersection.surface->pdf(lightPoint) / lightCount;
+    float measurePDF = lightIntersection.surface->pdf(lightPoint, referencePoint, measure);
 
-    const Vector3 lightDirection = (referencePoint - lightPoint).toVector();
-    const Vector3 lightWo = lightDirection.normalized();
-    const float distance = lightDirection.length();
-
-    const float distance2 = distance * distance;
-    const float projectedArea = WorldFrame::cosTheta(lightIntersection.normal, lightWo);
-
-    const float solidAngleMeasurePDF = areaMeasurePDF * distance2 / projectedArea;
-    return solidAngleMeasurePDF;
+    return measurePDF / lightCount;
 }
 
 Color Scene::environmentL(const Vector3 &direction) const
 {
     if (m_environmentLight) {
-        return m_environmentLight->emit(-direction);
+        return m_environmentLight->emit(direction);
     }
     return Color(0.f);
 }
 
-float Scene::environmentPDF(const Vector3 &direction) const
+float Scene::environmentPDF(const Vector3 &direction, Measure measure) const
 {
+    if (measure != Measure::SolidAngle) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     assert(m_environmentLight);
-    return m_environmentLight->emitPDF(direction) / lights().size();
+    return m_environmentLight->emitPDF(direction, measure) / lights().size();
 }

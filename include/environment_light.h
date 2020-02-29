@@ -4,9 +4,11 @@
 #include "distribution.h"
 #include "light.h"
 #include "material.h"
+#include "measure.h"
 #include "point.h"
 #include "random_generator.h"
 #include "surface.h"
+#include "transform.h"
 
 #include <iostream>
 #include <sstream>
@@ -15,7 +17,7 @@
 
 class EnvironmentLight : public Light {
 public:
-    EnvironmentLight(std::string filename, float scale, float rotation);
+    EnvironmentLight(std::string filename, float scale, Transform mapToWorld);
 
     Color emit() const override;
     Color emit(const Vector3 &direction) const;
@@ -26,11 +28,11 @@ public:
     ) const override;
 
     SurfaceSample sampleEmit(RandomGenerator &random) const override;
-    float emitPDF(const Point3 &point, const Vector3 &direction) const override
+    float emitPDF(const Point3 &point, const Vector3 &direction, Measure measure) const override
     {
-        return emitPDF(direction);
+        return emitPDF(direction, measure);
     }
-    float emitPDF(const Vector3 &direction) const;
+    float emitPDF(const Vector3 &direction, Measure measure) const;
 
     Color biradiance(
         const SurfaceSample &lightSample,
@@ -45,7 +47,8 @@ public:
 
 private:
     float m_scale;
-    float m_rotation;
+    Transform m_mapToWorld;
+    Transform m_worldToMap;
 
     std::vector<float> m_cdf;
 

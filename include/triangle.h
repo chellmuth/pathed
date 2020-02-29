@@ -18,7 +18,8 @@ public:
     Point3 p2() const { return m_p2; }
 
     SurfaceSample sample(RandomGenerator &random) const override;
-    float pdf(const Point3 &point) const override;
+    float pdf(const Point3 &point, Measure measure) const override;
+    float pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const override;
 
     void pushVertices(std::vector<float> &vertices) override;
     void pushIndices(std::vector<uint> &indices, int offset) override;

@@ -2,7 +2,9 @@
 
 #include "intersection.h"
 #include "material.h"
+#include "measure.h"
 #include "point.h"
+#include "random_generator.h"
 #include "shape.h"
 #include "transform.h"
 
@@ -14,8 +16,11 @@ class Sphere : public Shape {
 public:
     Sphere(Point3 center, float radius);
 
-    SurfaceSample sample(RandomGenerator &random) const;
-    float pdf(const Point3 &point) const override;
+    SurfaceSample sample(RandomGenerator &random) const override;
+    SurfaceSample sample(const Point3 &referencePoint, RandomGenerator &random) const override;
+
+    float pdf(const Point3 &point, Measure measure) const override;
+    float pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const override;
 
     float area() const override;
 

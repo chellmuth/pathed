@@ -4,6 +4,7 @@
 
 #include "color.h"
 #include "material.h"
+#include "measure.h"
 #include "point.h"
 #include "random_generator.h"
 #include "surface.h"
@@ -19,7 +20,7 @@ public:
     ) const = 0;
 
     virtual SurfaceSample sampleEmit(RandomGenerator &random) const = 0;
-    virtual float emitPDF(const Point3 &point, const Vector3 &direction) const = 0;
+    virtual float emitPDF(const Point3 &point, const Vector3 &direction, Measure measure) const = 0;
 
     // DEPRECATED
     virtual Color biradiance(

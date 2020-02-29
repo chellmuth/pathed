@@ -23,6 +23,7 @@
 #include "perfect_transmission.h"
 #include "phong.h"
 #include "point.h"
+#include "plastic.h"
 #include "ply_parser.h"
 #include "ptex_local.h"
 #include "quad.h"
@@ -50,6 +51,7 @@ using MaterialMap = std::map<std::string, std::shared_ptr<Material> >;
 static bool checkFloat(json &floatJson, float *value);
 static float parseFloat(json &floatJson);
 static float parseFloat(json &floatJson, float defaultValue);
+static bool parseBool(json &boolJson, bool defaultValue);
 static bool checkString(json &stringJson, std::string *value);
 static std::string parseString(json &stringJson);
 static std::string parseString(json &stringJson, std::string defaultString);
@@ -147,7 +149,8 @@ Scene parseScene(std::ifstream &sceneFile)
         parsePoint(sensor["lookAt"]["target"]),
         parseVector(sensor["lookAt"]["up"]),
         fov / 180.f * M_PI,
-        resolution
+        resolution,
+        parseBool(sensor["flipHandedness"], false)
     );
 
     auto rtcManagerPtr = std::make_unique<RTCManager>(g_rtcScene);
@@ -341,7 +344,10 @@ static void parsePLY(
     MaterialMap &materialLookup,
     MediaMap &media
 ) {
-    std::ifstream plyFile(plyJson["filename"].get<std::string>());
+    const std::string filename = plyJson["filename"].get<std::string>();
+    std::cout << "Parsing PLY file: " << filename << std::endl;
+
+    std::ifstream plyFile(filename);
 
     auto transformJson = plyJson["transform"];
     Transform transform;
@@ -536,7 +542,7 @@ static void parseEnvironmentLight(
         environmentLight.reset(new EnvironmentLight(
             environmentLightJson["filename"].get<std::string>(),
             parseFloat(environmentLightJson["scale"], 1.f),
-            parseFloat(environmentLightJson["rotation"], 0.f)
+            parseTransform(environmentLightJson["transform"], Transform())
         ));
 
         std::cout << environmentLight->toString() << std::endl;
@@ -606,6 +612,10 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
     } else if (bsdfJson["type"] == "disney") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         return std::make_shared<Disney>(diffuse);
+    } else if (bsdfJson["type"] == "plastic") {
+        const Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
+        const float roughness = parseFloat(bsdfJson["roughness"]);
+        return std::make_shared<Plastic>(diffuse, roughness);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
@@ -827,4 +837,13 @@ static std::string parseString(json &stringJson, std::string defaultString)
 static std::string parseString(json &stringJson)
 {
     return stringJson.get<std::string>();
+}
+
+static bool parseBool(json &boolJson, bool defaultValue)
+{
+    try {
+        return boolJson.get<bool>();
+    } catch (nlohmann::detail::type_error) {
+        return defaultValue;
+    }
 }

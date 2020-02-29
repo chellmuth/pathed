@@ -32,7 +32,12 @@ private:
     float m_inverse[4][4];
 };
 
-Transform lookAt(const Point3 &source, const Point3 &target, const Vector3 &up);
+Transform lookAt(
+    const Point3 &source,
+    const Point3 &target,
+    const Vector3 &up,
+    bool flipHandedness
+);
 Transform lookAtInverse(const Point3 &source, const Point3 &target, const Vector3 &up);
 Transform normalToWorldSpace(const Vector3 &normal, const Vector3 &rayDirection);
 Transform normalToWorldSpace(const Vector3 &normal);
