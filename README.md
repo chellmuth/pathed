@@ -24,7 +24,12 @@ My most recent project has been attempting to render Disney's Moana research sce
 
 <p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/curves-bunny.png" width="400">
-<br /><b>Bunny with fur modeled as Bezier curves</b>
+<br /><b>Bunny with Bezier curve fur</b>
+</p>
+
+<p align="center">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/plastic--dragon.png" width="400">
+<br /><b>Plastic material modeled with Beckmann microfacet reflection</b>
 </p>
 
 <p align="center">
@@ -41,12 +46,3 @@ My most recent project has been attempting to render Disney's Moana research sce
 <img src="https://pathed.s3-us-west-2.amazonaws.com/cornell.png" width="400">
 <br /><b>Traditional Cornell box</b>
 </p>
-
-[moana-shotCam]: https://pathed.s3-us-west-2.amazonaws.com/moana-wip--shotCam.png "Moana shotCam WIP"
-[teapot]: https://pathed.s3-us-west-2.amazonaws.com/homogeneous-absorption-teapot.png "Homogeneous absorption teapot"
-[curves]: https://pathed.s3-us-west-2.amazonaws.com/curves-bunny.png "Bunny with Bezier-curved fur"
-[volumetric-caustic]: https://pathed.s3-us-west-2.amazonaws.com/volumetric-caustic.png "Volumetric caustic from scattering media"
-[mirrors]: https://pathed.s3-us-west-2.amazonaws.com/mirrors-cornell.png "Mirrored Cornell box"
-[mis]: https://pathed.s3-us-west-2.amazonaws.com/mis-veach.png "Veach MIS scene"
-[cornell]: https://pathed.s3-us-west-2.amazonaws.com/cornell.png "Classic Cornell box scene"
-[microfacet]: https://pathed.s3-us-west-2.amazonaws.com/microfacet--dragon.png "Beckmann microfacet"
