@@ -29,7 +29,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 
 <p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/plastic--dragon.png" width="400">
-<br /><b>Plastic material modeled with Beckmann microfacet reflection</b>
+<br /><b>Microfacet reflection modeled with Beckmann distribution</b>
 </p>
 
 <p align="center">
