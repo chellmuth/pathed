@@ -23,7 +23,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/curves-bunny.png" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/bunny.png" width="400">
 <br /><b>Bunny with Bezier curve fur</b>
 </p>
 
