@@ -72,14 +72,24 @@ Color VolumeHelper::rayTransmission(
 
             transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
         } else {
-            assert(eventCount == 2);
+            assert(eventCount == 1 || eventCount == 2);
 
             const std::shared_ptr<Medium> mediumPtr = volumeEvents[0].mediumPtr;
 
-            const Point3 enterPoint = ray.at(volumeEvents[0].t);
-            const Point3 exitPoint = ray.at(volumeEvents[1].t);
+            if (eventCount == 2) {
+                const Point3 enterPoint = ray.at(volumeEvents[0].t);
+                const Point3 exitPoint = ray.at(volumeEvents[1].t);
 
-            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            } else if (eventCount == 1) {
+                // TODO: Remove the tnear in embree, and remove this code!
+                // if there's only one event, assume the volume was too close to
+                // the point to register as a hit
+                const Point3 enterPoint = ray.at(0.f);
+                const Point3 exitPoint = ray.at(volumeEvents[0].t);
+
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            }
         }
     }
 
