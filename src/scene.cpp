@@ -69,7 +69,16 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
         mediumPtr
     });
 
-    context->volumeEvents.push_back(event);
+    bool validEvent = true;
+    for (const VolumeEvent &existingEvent : context->volumeEvents) {
+        if (event.t == existingEvent.t) {
+            validEvent = false;
+        }
+    }
+
+    if (validEvent) {
+        context->volumeEvents.push_back(event);
+    }
 
     args->valid[0] = 0;
 }
