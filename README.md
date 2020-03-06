@@ -23,13 +23,18 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/bunny.png" width="400">
-<br /><b>Bunny with Bezier curve fur</b>
+<img src="https://pathed.s3-us-west-2.amazonaws.com/plastic--dragon.png" width="400">
+<br /><b>Microfacet reflection modeled with Beckmann distribution</b>
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/plastic--dragon.png" width="400">
-<br /><b>Microfacet reflection modeled with Beckmann distribution</b>
+<img src="https://pathed.s3-us-west-2.amazonaws.com/smoke.png" width="400">
+<br /><b>Heterogeneous volume scattering</b>
+</p>
+
+<p align="center">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/bunny.png" width="400">
+<br /><b>Bunny with Bezier curve fur</b>
 </p>
 
 <p align="center">
