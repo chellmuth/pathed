@@ -35,15 +35,16 @@ void SampleIntegrator::samplePixel(
             if (intersection.material->isContainer()) {
                 const IntersectionResult volumetricResult = scene.testVolumetricIntersect(ray);
                 const Intersection &volumetricIntersection = volumetricResult.intersection;
+
+                const Color transmittance = VolumeHelper::rayTransmission(
+                    ray,
+                    volumetricResult.volumeEvents,
+                    nullptr
+                );
+
                 if (volumetricIntersection.hit) {
-                    // todo: build a scene that has this and implement
-                    assert(volumetricIntersection.material->emit().isBlack());
+                    color += volumetricIntersection.material->emit() * transmittance;
                 } else {
-                    Color transmittance = VolumeHelper::rayTransmission(
-                        ray,
-                        volumetricResult.volumeEvents,
-                        nullptr
-                    );
                     color += scene.environmentL(ray.direction()) * transmittance;
                 }
             }
