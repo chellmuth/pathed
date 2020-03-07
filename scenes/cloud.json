@@ -16,7 +16,7 @@
       "scale": "100",
       "transform": {
         "translate": [ "-1", "0", "-1.2" ],
-        "rotate": [ "90", "0", "0" ]
+        "rotate": [ "-90", "0", "0" ]
       },
       "filename": "assets/cloud/density.vol"
     },
@@ -35,7 +35,7 @@
       "internal_medium": "cloud",
       "transform": {
         "translate": [ "-1", "0", "-1.2" ],
-        "rotate": [ "90", "0", "0" ]
+        "rotate": [ "-90", "0", "0" ]
       },
       "bsdf": {
         "type": "passthrough"
