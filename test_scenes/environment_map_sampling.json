@@ -1,0 +1,29 @@
+{
+  "sensor": {
+    "lookAt": {
+      "target": [ "0", "1", "0" ],
+      "origin": [ "0", "2", "10" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "35"
+  },
+
+  "models": [
+    {
+      "type": "quad",
+      "transform": {
+        "scale": [ "3", "3", "3" ],
+        "rotate": [ "90", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "test_scenes/1_pixel_test.exr",
+    "scale": "1"
+  }
+}
