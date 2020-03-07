@@ -45,6 +45,10 @@
 
   "environmentLight": {
     "filename": "assets/cloud/skylight-morn.exr",
-    "scale": "1"
+    "transform": {
+      "scale": [ "1", "-1", "1" ],
+      "rotate": [ "90", "0", "0" ]
+    },
+    "scale": "3"
   }
 }
