@@ -24,14 +24,14 @@ set(EMBREE_RAY_MASK OFF CACHE BOOL "Enables ray mask support." FORCE)
 
 SET(EMBREE_MAX_INSTANCE_LEVEL_COUNT 2)
 
-add_subdirectory(embree)
-include_directories(embree/include)
+add_subdirectory(ext/embree)
+include_directories(ext/embree/include)
 
 # ptex
 SET(PTEX_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
 
-ADD_SUBDIRECTORY(ptex)
-INCLUDE_DIRECTORIES (ptex/src/ptex)
+ADD_SUBDIRECTORY(ext/ptex)
+INCLUDE_DIRECTORIES (ext/ptex/src/ptex)
 
 # For reliability of parallel build, make the NanoGUI targets dependencies
 set_property(TARGET glfw glfw_objects nanogui Ptex_static PROPERTY FOLDER "dependencies")
