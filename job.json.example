@@ -1,14 +1,17 @@
 {
   "spp": -1,
-  "output_directory": "default-output",
-  "output_name": "Default",
   "integrator": "PathTracer",
-  "scene": "veach-ajar.json",
-  "showUI": false,
+  "scene": "scenes/cornell.json",
 
   "startBounce": 0,
-  "lastBounce": -1,
+  "lastBounce": 10,
 
-  "width": 400,
-  "height": 400
+  "output_directory": "cornell-render",
+  "showUI": true,
+  "force": true,
+
+  "width": 600,
+  "height": 600,
+
+  "output_name": "--"
 }
