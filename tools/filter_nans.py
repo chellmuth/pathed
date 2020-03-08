@@ -37,7 +37,10 @@ def run(input_filename, output_filename):
 
     height, width, channels = exr.shape
 
-    nan_indices = np.argwhere(np.isnan(exr))
+    nan_indices = np.concatenate([
+        np.argwhere(np.isinf(exr)),
+        np.argwhere(np.isnan(exr))
+    ])
 
     for index in nan_indices:
         exr[tuple(index)] = neighborhood_average(exr, index)
