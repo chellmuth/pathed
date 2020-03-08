@@ -112,7 +112,7 @@ public:
     ) const;
 
     Color environmentL(const Vector3 &direction) const;
-    float environmentPDF(const Vector3 &direction) const;
+    float environmentPDF(const Vector3 &direction, Measure measure) const;
 
 private:
     void InitCustomRTCIntersectContext(

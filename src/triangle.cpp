@@ -9,18 +9,8 @@
 #include <math.h>
 #include <stdio.h>
 
-Triangle::Triangle(
-    Point3 p0, Point3 p1, Point3 p2,
-    UV uv0, UV uv1, UV uv2
-)
-    : m_p0(p0), m_p1(p1), m_p2(p2),
-      m_hasUVs(true),
-      m_uv0(uv0), m_uv1(uv1), m_uv2(uv2)
-{}
-
 Triangle::Triangle(Point3 p0, Point3 p1, Point3 p2)
-    : m_p0(p0), m_p1(p1), m_p2(p2),
-      m_hasUVs(false)
+    : m_p0(p0), m_p1(p1), m_p2(p2)
 {}
 
 SurfaceSample Triangle::sample(RandomGenerator &random) const
@@ -36,7 +26,7 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
 
     Vector3 e1 = (m_p1 - m_p0).toVector();
     Vector3 e2 = (m_p2 - m_p0).toVector();
-    Vector3 normal = e2.cross(e1).normalized();
+    Vector3 normal = e1.cross(e2).normalized();
 
     SurfaceSample sample = {
         .point = point,
@@ -47,9 +37,28 @@ SurfaceSample Triangle::sample(RandomGenerator &random) const
     return sample;
 }
 
-float Triangle::pdf(const Point3 &point) const
+float Triangle::pdf(const Point3 &point, Measure measure) const
 {
+    if (measure != Measure::Area) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     return 1.f / area();
+}
+
+float Triangle::pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const
+{
+    const float areaPDF = pdf(point, Measure::Area);
+
+    if (measure == Measure::Area) {
+        return areaPDF;
+    }
+
+    const Vector3 e1 = (m_p1 - m_p0).toVector();
+    const Vector3 e2 = (m_p2 - m_p0).toVector();
+    const Vector3 normal = e1.cross(e2).normalized();
+
+    return MeasureConversion::areaToSolidAngle(areaPDF, referencePoint, point, normal);
 }
 
 float Triangle::area() const
@@ -87,7 +96,7 @@ void Triangle::pushNormals(std::vector<float> &normals)
 {
     Vector3 e1 = (m_p1 - m_p0).toVector();
     Vector3 e2 = (m_p2 - m_p0).toVector();
-    Vector3 normal = e2.cross(e1).normalized();
+    Vector3 normal = e1.cross(e2).normalized();
 
     normals.push_back(normal.x());
     normals.push_back(normal.y());

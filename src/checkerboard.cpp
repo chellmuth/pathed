@@ -6,7 +6,9 @@ Checkerboard::Checkerboard(Color onColor, Color offColor, UV resolution)
     : m_onColor(onColor), m_offColor(offColor), m_resolution(resolution)
 {}
 
-Color Checkerboard::lookup(UV uv) const {
+Color Checkerboard::lookup(const Intersection &intersection) const {
+    const UV &uv = intersection.uv;
+
     int uIndex = (int)floorf(uv.u * m_resolution.u);
     int vIndex = (int)floorf(uv.v * m_resolution.v);
 

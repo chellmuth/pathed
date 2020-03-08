@@ -11,8 +11,12 @@
 #include <algorithm>
 #include <cmath>
 
-EnvironmentLight::EnvironmentLight(std::string filename, float scale)
-    : Light(), m_filename(filename), m_scale(scale)
+EnvironmentLight::EnvironmentLight(std::string filename, float scale, Transform mapToWorld)
+    : Light(),
+      m_filename(filename),
+      m_scale(scale),
+      m_mapToWorld(mapToWorld),
+      m_worldToMap(mapToWorld.inversed())
 {
     const char *error = nullptr;
 
@@ -57,7 +61,7 @@ Color EnvironmentLight::emit(const Vector3 &direction) const
 {
     float phi, theta;
     cartesianToSpherical(
-        -direction,
+        m_worldToMap.apply(direction).normalized(),
         &phi, &theta
     );
 
@@ -82,12 +86,12 @@ SurfaceSample EnvironmentLight::sample(const Point3 &point, RandomGenerator &ran
     const float phiCanonical = (phiStep + 0.5f) / m_width;
     const float thetaCanonical = (thetaStep + 0.5f) / m_height;
 
-    const float phi = phiCanonical * M_TWO_PI;
+    float phi = phiCanonical * M_TWO_PI;
     const float theta = thetaCanonical * M_PI;
 
     const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
 
-    const Vector3 direction = sphericalToCartesian(phi, theta);
+    const Vector3 direction = m_mapToWorld.apply(sphericalToCartesian(phi, theta));
 
     SurfaceSample inProgress = {
         .point = point + direction * 10000.f,
@@ -108,10 +112,14 @@ SurfaceSample EnvironmentLight::sampleEmit(RandomGenerator &random) const
     return fake;
 }
 
-float EnvironmentLight::emitPDF(const Vector3 &direction) const
+float EnvironmentLight::emitPDF(const Vector3 &direction, Measure measure) const
 {
+    if (measure != Measure::SolidAngle) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     float phi, theta;
-    cartesianToSpherical(direction, &phi, &theta);
+    cartesianToSpherical(m_worldToMap.apply(direction), &phi, &theta);
 
     const float phiCanonical = phi / M_TWO_PI;
     const float thetaCanonical = theta / M_PI;

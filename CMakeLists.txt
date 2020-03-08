@@ -4,7 +4,7 @@ project (pathed_tests)
 project (testbed)
 
 # Compiler settings
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 # Disable building extras we won't need (pure C++ project)
@@ -21,11 +21,20 @@ set(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
 set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
 set(EMBREE_TUTORIALS OFF CACHE BOOL "Enable to build Embree tutorials" FORCE)
 set(EMBREE_RAY_MASK OFF CACHE BOOL "Enables ray mask support." FORCE)
+
+SET(EMBREE_MAX_INSTANCE_LEVEL_COUNT 2)
+
 add_subdirectory(embree)
 include_directories(embree/include)
 
+# ptex
+SET(PTEX_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
+
+ADD_SUBDIRECTORY(ptex)
+INCLUDE_DIRECTORIES (ptex/src/ptex)
+
 # For reliability of parallel build, make the NanoGUI targets dependencies
-set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
+set_property(TARGET glfw glfw_objects nanogui Ptex_static PROPERTY FOLDER "dependencies")
 
 # .h files
 include_directories(include)
@@ -46,10 +55,10 @@ add_executable(pathed app/main.cpp ${SOURCES})
 
 # Lastly, additional libraries may have been built for you.  In addition to linking
 # against NanoGUI, we need to link against those as well.
-target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree)
+target_link_libraries(pathed nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)
 
 add_executable(pathed_tests ${TESTS} ${SOURCES})
-target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree)
+target_link_libraries(pathed_tests nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)
 
 # add_executable(testbed app/testbed.cpp ${SOURCES})
-# target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree)
+# target_link_libraries(testbed nanogui ${NANOGUI_EXTRA_LIBS} embree Ptex_static)

@@ -29,17 +29,17 @@ Color Microfacet::f(
         return Color(0.f);
     }
 
-    const float cosThetaO = fabsf(TangentFrame::cosTheta(wo));
-    const float cosThetaI = fabsf(TangentFrame::cosTheta(wi));
+    const float cosThetaO = TangentFrame::absCosTheta(wo);
+    const float cosThetaI = TangentFrame::absCosTheta(wi);
     const Vector3 wh = (wo + wi).normalized();
 
-    *pdf = beckmannPDF(m_alpha, wh);
+    *pdf = beckmannPDF(m_alpha, wh) / (4.f * wo.dot(wh));
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
-    if (wh.x() == 0.f || wh.y() == 0.f || wh.z() == 0.f) { return Color(0.f); }
+    if (wh.isZero()) { return Color(0.f); }
 
     float cosThetaIncident = util::clampClose(wi.dot(wh), 0.f, 1.f);
-    float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.4f));
+    float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f));
     float distribution = beckmannD(m_alpha, wh);
     float masking = beckmannG(m_alpha, m_alpha, wo, wi);
     Color albedo(1.f);
@@ -70,7 +70,7 @@ BSDFSample Microfacet::sample(
 
     BSDFSample sample = {
         .wiWorld = wiWorld,
-        .pdf = beckmannPDF(m_alpha, wh),
+        .pdf = beckmannPDF(m_alpha, wh) / (4.f * wo.dot(wh)),
         .throughput = Material::f(intersection, wiWorld),
         .material = this
     };

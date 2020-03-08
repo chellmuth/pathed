@@ -28,7 +28,7 @@ Distribution::Distribution(const std::vector<float> &values)
         }
     }
 
-    assert(fabs(m_cdf[size - 1] - 1.f) < 1e-4);
+    assert(fabs(m_cdf[size - 1] - 1.f) < 1e-3);
     m_cdf[size - 1] = 1.f;
 }
 

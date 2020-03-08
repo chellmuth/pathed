@@ -46,8 +46,12 @@ public:
 
     virtual bool isDelta() const { return false; }
     virtual bool isContainer() const { return false; }
+    virtual bool doubleSided() const { return false; }
 
     Color emit() const;
+    virtual Color albedo(const Intersection &intersection) const {
+        return Color(1.f, 0.f, 0.f);
+    }
 
     virtual void writeStream(std::ostream &os) const {
         os << "[Material: " << m_emit << "]";

@@ -20,8 +20,11 @@ Color PathTracer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
+    // if (pixelIndex != (600 - 152) * 800 + 225) { return Color(0.f); }
+
     sample.eyePoints.push_back(intersection.point);
 
     BSDFSample bsdfSample = intersection.material->sample(intersection, random);
@@ -171,7 +174,9 @@ Color PathTracer::directSampleBSDF(
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 
-    if (bounceIntersection.hit && bounceIntersection.isEmitter()) {
+    if (bounceIntersection.hit && bounceIntersection.isEmitter()
+        && bounceIntersection.woWorld.dot(bounceIntersection.shadingNormal) >= 0.f
+    ) {
         const float distance = (bounceIntersection.point - intersection.point).toVector().length();
         const float lightPDF = scene.lightsPDF(
             intersection.point,
@@ -192,7 +197,7 @@ Color PathTracer::directSampleBSDF(
     } else if (!bounceIntersection.hit) {
         const Color environmentL = scene.environmentL(bsdfSample.wiWorld);
         if (!environmentL.isBlack()) {
-            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld);
+            const float lightPDF = scene.environmentPDF(bsdfSample.wiWorld, Measure::SolidAngle);
             const float brdfWeight = bsdfSample.material->isDelta()
                 ? 1.f
                 : MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);

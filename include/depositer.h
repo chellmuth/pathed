@@ -16,6 +16,7 @@ public:
         const Intersection &intersection,
         const Scene &scene,
         RandomGenerator &random,
+        int pixelIndex,
         Sample &sample
     ) const override;
 

@@ -40,12 +40,25 @@ Color VolumeHelper::directSampleLights(
         const std::vector<VolumeEvent> &volumeEvents = occlusionResult.volumeEvents;
         const size_t eventCount = volumeEvents.size();
         if (eventCount > 0) {
-            assert(eventCount == 1);
+            assert(eventCount == 1 || eventCount == 2);
 
-            const Point3 enterPoint = samplePoint;
-            const Point3 exitPoint = shadowRay.at(volumeEvents[0].t);
+            if (eventCount == 1) {
+                const Point3 enterPoint = samplePoint;
+                const Point3 exitPoint = shadowRay.at(volumeEvents[0].t);
 
-            shadowTransmittance = medium.transmittance(enterPoint, exitPoint);
+                shadowTransmittance = medium.transmittance(enterPoint, exitPoint);
+            } else if (eventCount == 2) {
+                // TODO: Remove tnear in embree, and remove this code!
+                // If there are two events, assume we leaked out of the volume
+                // without intersecting the passthrough model.
+                //
+                // This fixes the direct lighting, but our integrator will still
+                // believe it is inside the volume, affecting future bounces
+                const Point3 enterPoint = shadowRay.at(volumeEvents[0].t);
+                const Point3 exitPoint = shadowRay.at(volumeEvents[1].t);
+
+                shadowTransmittance = medium.transmittance(enterPoint, exitPoint);
+            }
         }
 
         return lightSample.light->emit(lightWo)
@@ -65,21 +78,44 @@ Color VolumeHelper::rayTransmission(
     const size_t eventCount = volumeEvents.size();
     if (eventCount > 0) {
         if (mediumPtr) {
-            assert(eventCount == 1);
+            assert(eventCount == 1 || eventCount == 2);
 
-            const Point3 enterPoint = ray.origin();
-            const Point3 exitPoint = ray.at(volumeEvents[0].t);
+            if (eventCount == 1) {
+                const Point3 enterPoint = ray.origin();
+                const Point3 exitPoint = ray.at(volumeEvents[0].t);
 
-            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            } else if (eventCount == 2) {
+                // TODO: Remove tnear in embree, and remove this code!
+                // If there are two events, assume we leaked out of the volume
+                // without intersecting the passthrough model.
+                //
+                // This fixes this computation, but our integrator will still
+                // believe it is inside the volume, affecting future bounces
+                const Point3 enterPoint = ray.at(volumeEvents[0].t);
+                const Point3 exitPoint = ray.at(volumeEvents[1].t);
+
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            }
         } else {
-            assert(eventCount == 2);
+            assert(eventCount == 1 || eventCount == 2);
 
             const std::shared_ptr<Medium> mediumPtr = volumeEvents[0].mediumPtr;
 
-            const Point3 enterPoint = ray.at(volumeEvents[0].t);
-            const Point3 exitPoint = ray.at(volumeEvents[1].t);
+            if (eventCount == 2) {
+                const Point3 enterPoint = ray.at(volumeEvents[0].t);
+                const Point3 exitPoint = ray.at(volumeEvents[1].t);
 
-            transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            } else if (eventCount == 1) {
+                // TODO: Remove tnear in embree, and remove this code!
+                // If there's only one event, assume the volume was too close to
+                // the point to register as a hit
+                const Point3 enterPoint = ray.origin();
+                const Point3 exitPoint = ray.at(volumeEvents[0].t);
+
+                transmittance *= mediumPtr->transmittance(enterPoint, exitPoint);
+            }
         }
     }
 

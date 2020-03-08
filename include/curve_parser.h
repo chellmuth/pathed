@@ -1,7 +1,6 @@
 #pragma once
 
 #include "curve.h"
-#include "handedness.h"
 #include "surface.h"
 #include "transform.h"
 
@@ -12,13 +11,12 @@
 class CurveParser {
 public:
     CurveParser(std::ifstream &curveFile)
-        : CurveParser(curveFile, Transform(), false, Handedness::Right) {};
+        : CurveParser(curveFile, Transform(), false) {};
 
     CurveParser(
         std::ifstream &curveFile,
         const Transform &transform,
-        bool useFaceNormals,
-        Handedness handedness
+        bool useFaceNormals
     );
 
     std::vector<std::shared_ptr<Surface> > parse();
@@ -28,6 +26,5 @@ private:
 
     std::ifstream &m_curveFile;
     Transform m_transform;
-    Handedness m_handedness;
     bool m_useFaceNormals;
 };

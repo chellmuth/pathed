@@ -54,7 +54,7 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
         : context->rtcManagerPtr->lookupInstancedSurface(
             hit->geomID,
             hit->primID,
-            hit->instID[0]
+            hit->instID
         )
     ;
 
@@ -69,7 +69,16 @@ static void occlusionFilter(const RTCFilterFunctionNArguments *args)
         mediumPtr
     });
 
-    context->volumeEvents.push_back(event);
+    bool validEvent = true;
+    for (const VolumeEvent &existingEvent : context->volumeEvents) {
+        if (event.t == existingEvent.t) {
+            validEvent = false;
+        }
+    }
+
+    if (validEvent) {
+        context->volumeEvents.push_back(event);
+    }
 
     args->valid[0] = 0;
 }
@@ -120,11 +129,11 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID);
             surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
-                rayHit.hit.instID[0]
+                rayHit.hit.instID
             );
         }
         const auto &shapePtr = surfacePtr->getShape();
@@ -144,6 +153,16 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 2
             );
 
+            if (surfacePtr->getFaceIndex() % 2 == 0) {
+                uv.u = hit.u * 0.f + hit.v * 0.f + (1.f - hit.u - hit.v) * 1.f;
+                uv.v = hit.u * 0.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 0.f;
+            } else {
+                uv.u = hit.u * 0.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 1.f;
+                uv.v = hit.u * 1.f + hit.v * 1.f + (1.f - hit.u - hit.v) * 0.f;
+            }
+            uv.u = 1.f - uv.u;
+
+
             float normalRaw[3];
             rtcInterpolate0(
                 geometry,
@@ -162,7 +181,7 @@ Intersection Scene::testIntersect(const Ray &ray) const
                 rayHit.hit.Ng_x,
                 rayHit.hit.Ng_y,
                 rayHit.hit.Ng_z
-            ).normalized() * -1.f;
+            ).normalized();
         } else {
             // spheres
             geometricNormal = Vector3(
@@ -174,6 +193,15 @@ Intersection Scene::testIntersect(const Ray &ray) const
 
         if (shadingNormal.length() == 0.f) {
             shadingNormal = geometricNormal;
+        }
+
+        if (surfacePtr->getMaterial()->doubleSided()) {
+            if (geometricNormal.dot(-ray.direction()) < 0.f) {
+                geometricNormal = -geometricNormal;
+            }
+            if (shadingNormal.dot(-ray.direction()) < 0.f) {
+                shadingNormal = -shadingNormal;
+            }
         }
 
         Intersection hit = {
@@ -235,11 +263,11 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
                 rayHit.hit.primID
             );
         } else {
-            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID[0]);
+            geometry = m_rtcManagerPtr->lookupGeometry(hit.geomID, rayHit.hit.instID);
             surfacePtr = m_rtcManagerPtr->lookupInstancedSurface(
                 rayHit.hit.geomID,
                 rayHit.hit.primID,
-                rayHit.hit.instID[0]
+                rayHit.hit.instID
             );
         }
         const auto &shapePtr = surfacePtr->getShape();
@@ -277,7 +305,7 @@ IntersectionResult Scene::testVolumetricIntersect(const Ray &ray) const
                 rayHit.hit.Ng_x,
                 rayHit.hit.Ng_y,
                 rayHit.hit.Ng_z
-            ).normalized() * -1.f;
+            ).normalized();
         } else {
             // spheres
             geometricNormal = Vector3(
@@ -450,29 +478,25 @@ float Scene::lightsPDF(
     const Point3 lightPoint = lightIntersection.point;
 
     const int lightCount = m_lights.size();
-    const float areaMeasurePDF = lightIntersection.surface->pdf(lightPoint) / lightCount;
+    float measurePDF = lightIntersection.surface->pdf(lightPoint, referencePoint, measure);
 
-    const Vector3 lightDirection = (referencePoint - lightPoint).toVector();
-    const Vector3 lightWo = lightDirection.normalized();
-    const float distance = lightDirection.length();
-
-    const float distance2 = distance * distance;
-    const float projectedArea = WorldFrame::cosTheta(lightIntersection.normal, lightWo);
-
-    const float solidAngleMeasurePDF = areaMeasurePDF * distance2 / projectedArea;
-    return solidAngleMeasurePDF;
+    return measurePDF / lightCount;
 }
 
 Color Scene::environmentL(const Vector3 &direction) const
 {
     if (m_environmentLight) {
-        return m_environmentLight->emit(-direction);
+        return m_environmentLight->emit(direction);
     }
     return Color(0.f);
 }
 
-float Scene::environmentPDF(const Vector3 &direction) const
+float Scene::environmentPDF(const Vector3 &direction, Measure measure) const
 {
+    if (measure != Measure::SolidAngle) {
+        throw std::runtime_error("Unsupported measure");
+    }
+
     assert(m_environmentLight);
-    return m_environmentLight->emitPDF(direction) / lights().size();
+    return m_environmentLight->emitPDF(direction, measure) / lights().size();
 }

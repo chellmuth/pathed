@@ -1,8 +1,9 @@
 #pragma once
 
+#include "blank_shape.h"
 #include "geometry_parser.h"
 #include "globals.h"
-#include "handedness.h"
+#include "material.h"
 #include "mtl_parser.h"
 #include "light.h"
 #include "point.h"
@@ -13,6 +14,7 @@
 #include <embree3/rtcore.h>
 
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -21,21 +23,27 @@ class Triangle;
 
 class ObjParser {
 public:
-    ObjParser(std::ifstream &objFile) : ObjParser(objFile, Transform(), false, Handedness::Right, g_rtcScene) {};
-    ObjParser(std::ifstream &objFile, bool useFaceNormals) : ObjParser(objFile, Transform(), useFaceNormals, Handedness::Right, g_rtcScene) {};
-    ObjParser(std::ifstream &objFile, const Transform &transform, bool useFaceNormals, Handedness handedness, RTCScene rtcScene);
+    ObjParser(
+        std::ifstream &objFile,
+        const Transform &transform,
+        bool useFaceNormals,
+        RTCScene rtcScene,
+        std::map<std::string, std::shared_ptr<Material> > materialLookup,
+        std::string &materialPrefix,
+        std::shared_ptr<Material> defaultMaterialPtr
+    );
 
     std::vector<std::shared_ptr<Surface> > parse();
 
 private:
     std::ifstream &m_objFile;
     Transform m_transform;
-    Handedness m_handedness;
     bool m_useFaceNormals;
     RTCScene m_rtcScene;
 
     std::string m_currentGroup;
     std::string m_currentMaterialName;
+    int m_currentFaceIndex;
 
     std::vector<Point3> m_vertices;
     std::vector<unsigned int> m_faces;
@@ -49,7 +57,12 @@ private:
     std::vector<std::shared_ptr<Surface>> m_surfaces;
     std::vector<std::shared_ptr<Light>> m_lights;
 
-    std::map<std::string, MtlMaterial> m_materialLookup;
+    std::map<std::string, std::shared_ptr<Material> > m_materialLookup;
+    std::map<std::string, std::shared_ptr<Material> > m_mtlLookup;
+    std::string m_materialPrefix;
+    std::shared_ptr<Material> m_defaultMaterialPtr;
+
+    std::shared_ptr<BlankTriangle> m_defaultShapePtr;
 
     void parseLine(std::string &line);
     void processVertex(std::string &vertexArgs);
@@ -60,7 +73,7 @@ private:
     void processMaterialLibrary(std::string &libraryArgs);
     void processUseMaterial(std::string &materialArgs);
 
-    void processFace(Triangle *face);
+    void processFace(std::shared_ptr<Shape> facePtr);
 
     void processTriangle(
         int vertexIndex0, int vertexIndex1, int vertexIndex2,

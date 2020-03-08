@@ -13,7 +13,7 @@ Color AreaLight::emit() const
 
 SurfaceSample AreaLight::sample(const Point3 &point, RandomGenerator &random) const
 {
-    return m_surface->sample(random);
+    return m_surface->sample(point, random);
 }
 
 SurfaceSample AreaLight::sampleEmit(RandomGenerator &random) const
@@ -21,9 +21,9 @@ SurfaceSample AreaLight::sampleEmit(RandomGenerator &random) const
     return m_surface->sample(random);
 }
 
-float AreaLight::emitPDF(const Point3 &point, const Vector3 &direction) const
+float AreaLight::emitPDF(const Point3 &point, const Vector3 &direction, Measure measure) const
 {
-    return m_surface->pdf(point);
+    return m_surface->pdf(point, measure);
 }
 
 // DEPRECATED

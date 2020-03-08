@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 class RTCManager {
@@ -14,17 +15,12 @@ public:
     RTCManager(RTCScene rootScene);
 
     void registerSurfaces(
-        /* int rtcGeometryID, */
-        std::vector<std::shared_ptr<Surface> > &geometrySurfaces
-    );
-
-    void registerInstanceSurfaces(
-        RTCScene rtcInstanceScene,
-        /* int rtcGeometryID, */
+        RTCScene rtcScene,
         std::vector<std::shared_ptr<Surface> > &geometrySurfaces
     );
 
     void registerInstancedSurfaces(
+        RTCScene rtcScene,
         RTCScene rtcInstanceScene,
         int rtcGeometryID,
         std::vector<std::shared_ptr<Surface> > &geometrySurfaces
@@ -33,7 +29,7 @@ public:
     std::shared_ptr<Surface> lookupInstancedSurface(
         int rtcGeometryID,
         int rtcPrimitiveID,
-        int rtcInstanceID
+        unsigned int *rtcInstanceIDs
     ) const;
 
     std::shared_ptr<Surface> lookupSurface(
@@ -43,7 +39,7 @@ public:
 
     RTCGeometry lookupGeometry(
         int rtcGeometryID,
-        int rtcInstanceID
+        unsigned int *rtcInstanceIDs
     ) const;
 
     const NestedSurfaceVector &getSurfaces() const
@@ -53,14 +49,10 @@ public:
 
     void registerFilters(void (&callback)(const RTCFilterFunctionNArguments *));
 
+    void printStats();
+
 private:
     RTCScene m_rootScene;
-
-    void registerSurfaces(
-        RTCScene rtcScene,
-        /* int rtcGeometryID, */
-        std::vector<std::shared_ptr<Surface> > &geometrySurfaces
-    );
 
     std::shared_ptr<Surface> lookupSurface(
         RTCScene rtcScene,
@@ -68,6 +60,7 @@ private:
         int rtcPrimitiveID
     ) const;
 
-    std::map<int, RTCScene> m_rtcSceneLookup;
+    std::map<std::pair<RTCScene, int>, RTCScene> m_rtcSceneLookup;
     std::map<RTCScene, NestedSurfaceVector> m_rtcSceneToSurfaces;
+    std::vector<std::pair<RTCScene, int> > m_rtcRegistrationQueue;
 };

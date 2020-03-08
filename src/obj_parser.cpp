@@ -1,6 +1,7 @@
 #include "obj_parser.h"
 
 #include "area_light.h"
+#include "blank_shape.h"
 #include "camera.h"
 #include "color.h"
 #include "lambertian.h"
@@ -22,16 +23,29 @@ ObjParser::ObjParser(
     std::ifstream &objFile,
     const Transform &transform,
     bool useFaceNormals,
-    Handedness handedness,
-    RTCScene rtcScene
+    RTCScene rtcScene,
+    std::map<std::string, std::shared_ptr<Material> > materialLookup,
+    string &materialPrefix,
+    std::shared_ptr<Material> defaultMaterialPtr
 )
     : m_objFile(objFile),
       m_transform(transform),
       m_useFaceNormals(useFaceNormals),
-      m_handedness(handedness),
       m_rtcScene(rtcScene),
-      m_currentGroup("")
-{}
+      m_currentGroup(""),
+      m_materialLookup(materialLookup),
+      m_materialPrefix(materialPrefix),
+      m_defaultMaterialPtr(defaultMaterialPtr)
+{
+    if (!m_defaultMaterialPtr) {
+        m_defaultMaterialPtr = std::make_shared<Lambertian>(
+            Color(1.f, 0.f, 0.f),
+            Color(0.f)
+        );
+    }
+
+    m_defaultShapePtr = std::make_shared<BlankTriangle>();
+}
 
 std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 {
@@ -42,8 +56,6 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
 
     std::map<int, int> normalLookup;
     std::map<std::pair<int, int>, int> correctionLookup;
-
-    std::vector<FaceIndices> correctedFaces;
 
     // Start "cube-normal" correction
     // Look for re-used vertices with differing normals
@@ -84,8 +96,11 @@ std::vector<std::shared_ptr<Surface> > ObjParser::parse()
             }
         }
 
-        correctedFaces.push_back(correctedFace);
+        m_faceIndices[i] = correctedFace;
+        // correctedFaces.push_back(correctedFace);
     }
+
+    std::vector<FaceIndices> &correctedFaces = m_faceIndices;
 
     m_vertexNormals.resize(m_vertices.size(), Vector3(0.f));
     for (int i = 0; i < correctedFaces.size(); i++) {
@@ -133,6 +148,10 @@ void ObjParser::parseLine(string &line)
     } else if (command == "g") {
         processGroup(rest);
     } else if (command == "f") {
+        if (m_currentMaterialName == "hidden") {
+            return;
+        }
+
         processFace(rest);
     } else if (command == "mtllib") {
         processMaterialLibrary(rest);
@@ -147,9 +166,6 @@ void ObjParser::processVertex(string &vertexArgs)
     string rest = vertexArgs;
 
     float x = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        x *= -1.f;
-    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -167,9 +183,6 @@ void ObjParser::processNormal(string &normalArgs)
     string rest = normalArgs;
 
     float x = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        x *= -1.f;
-    }
 
     rest = rest.substr(index);
     float y = std::stof(rest, &index);
@@ -190,9 +203,6 @@ void ObjParser::processUV(string &uvArgs)
 
     rest = rest.substr(index);
     float v = std::stof(rest, &index);
-    if (m_handedness == Handedness::Left) {
-        v = 1 - v;
-    }
 
     UV uv = { u, v };
     m_uvs.push_back(uv);
@@ -202,6 +212,7 @@ void ObjParser::processGroup(string &groupArgs)
 {
     string name = lTrim(groupArgs);
     m_currentGroup = name;
+    m_currentFaceIndex = 0;
 }
 
 template <class T>
@@ -225,18 +236,39 @@ static void correctIndices(
     correctIndex(indices, index2);
 }
 
-void ObjParser::processFace(Triangle *face)
+void ObjParser::processFace(std::shared_ptr<Shape> facePtr)
 {
-    Color diffuse = m_materialLookup[m_currentMaterialName].diffuse;
-    Color emit = m_materialLookup[m_currentMaterialName].emit;
-    auto material = std::make_shared<Lambertian>(diffuse, emit);
+    std::shared_ptr<Material> materialPtr;
+    std::string materialGroupKey = m_materialPrefix + m_currentGroup;
+    std::string materialMtlKey = m_materialPrefix + m_currentMaterialName;
+    if (m_materialLookup.count(materialGroupKey) > 0) {
+        materialPtr = m_materialLookup.at(materialGroupKey);
+    } else if (m_materialLookup.count(materialMtlKey) > 0) {
+        materialPtr = m_materialLookup.at(materialMtlKey);
+    } else if (m_mtlLookup.count(m_currentMaterialName) > 0) {
+        materialPtr = m_mtlLookup.at(m_currentMaterialName);
+    } else {
+        materialPtr = m_defaultMaterialPtr;
+    }
 
-    std::shared_ptr<Triangle> shape(face);
-    std::shared_ptr<Surface> surface(new Surface(shape, material, nullptr));
+    std::shared_ptr<Shape> shapePtr;
+    if (materialPtr->emit().isBlack()) {
+        shapePtr = m_defaultShapePtr;
+    } else {
+        shapePtr = facePtr;
+    }
+
+    std::shared_ptr<Surface> surface = std::make_shared<Surface>(
+        shapePtr,
+        materialPtr,
+        nullptr,
+        m_currentFaceIndex
+    );
 
     m_surfaces.push_back(surface);
+    m_currentFaceIndex += 1;
 
-    if (emit.isBlack()) { return; }
+    if (materialPtr->emit().isBlack()) { return; }
 
     std::shared_ptr<Light> light(new AreaLight(surface));
 
@@ -252,16 +284,13 @@ void ObjParser::processTriangle(
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
     correctIndices(m_uvs, &UVIndex0, &UVIndex1, &UVIndex2);
 
-    Triangle *face = new Triangle(
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
         m_vertices[vertexIndex0],
         m_vertices[vertexIndex1],
-        m_vertices[vertexIndex2],
-        m_uvs[UVIndex0],
-        m_uvs[UVIndex1],
-        m_uvs[UVIndex2]
+        m_vertices[vertexIndex2]
     );
 
-    processFace(face);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -294,13 +323,13 @@ void ObjParser::processTriangle(
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
     correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
 
-    Triangle *face = new Triangle(
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
         m_vertices[vertexIndex0],
         m_vertices[vertexIndex1],
         m_vertices[vertexIndex2]
     );
 
-    processFace(face);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -324,13 +353,13 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
 
-    Triangle *face = new Triangle(
+    std::shared_ptr<Shape> facePtr = std::make_shared<Triangle>(
         m_vertices[vertexIndex0],
         m_vertices[vertexIndex1],
         m_vertices[vertexIndex2]
     );
 
-    processFace(face);
+    processFace(facePtr);
 
     m_faces.push_back(vertexIndex0);
     m_faces.push_back(vertexIndex1);
@@ -399,7 +428,7 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
 
 bool ObjParser::processSingleFaceTripletsVertexAndNormal(std::string &faceArgs)
 {
-    static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
+    static std::regex expression("(-?\\d+)//(-?\\d+)\\s+(-?\\d+)//(-?\\d+)\\s+(-?\\d+)//(-?\\d+)\\s*");
     std::smatch match;
     std::regex_match (faceArgs, match, expression);
 
@@ -490,16 +519,12 @@ void ObjParser::processMaterialLibrary(std::string &libraryArgs)
     string filename = libraryArgs;
     MtlParser mtlParser(filename);
     mtlParser.parse();
-    m_materialLookup = mtlParser.materialLookup();
+    m_mtlLookup = mtlParser.materialLookup();
 }
 
 void ObjParser::processUseMaterial(std::string &materialArgs)
 {
     string materialName = materialArgs;
-    MtlMaterial currentMaterial = m_materialLookup[materialName];
-    Color color = currentMaterial.diffuse;
-
-    // std::cout << "Using material: " << materialName << " | Diffuse: " << color.r() << " " << color.g() << " " << color.b() <<std::endl;
-
-    m_currentMaterialName = materialArgs;
+    // std::cout << "Using material: " << materialName << std::endl;
+    m_currentMaterialName = materialName;
 }

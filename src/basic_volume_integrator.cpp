@@ -26,6 +26,7 @@ Color BasicVolumeIntegrator::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     Color result(0.f);
@@ -161,7 +162,11 @@ void BasicVolumeIntegrator::updateMediumPtrs(
                 mediumPtrs.push_back(mediumPtr);
                 return;
             } else { // External, exiting medium
-                mediumPtrs.pop_back();
+                auto mediumPtr = intersection.surface->getInternalMedium();
+                auto findResult = std::find(mediumPtrs.begin(), mediumPtrs.end(), mediumPtr);
+                if (findResult != mediumPtrs.end()) {
+                    mediumPtrs.erase(findResult);
+                }
                 return;
             }
         } // else Reflection, medium does not change

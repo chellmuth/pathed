@@ -20,12 +20,10 @@ using string = std::string;
 PLYParser::PLYParser(
     std::ifstream &objFile,
     const Transform &transform,
-    bool useFaceNormals,
-    Handedness handedness
+    bool useFaceNormals
 ) : m_objFile(objFile),
     m_transform(transform),
-    m_useFaceNormals(useFaceNormals),
-    m_handedness(handedness)
+    m_useFaceNormals(useFaceNormals)
 {}
 
 std::vector<std::shared_ptr<Surface> > PLYParser::parse()
@@ -49,7 +47,6 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
     assert(!vertexElementMatch.empty());
 
     const int vertexCount = std::stoi(vertexElementMatch[1]);
-    std::cout << vertexCount << std::endl;
 
     string propertyX;
     string propertyY;
@@ -72,11 +69,13 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
     assert(!faceElementMatch.empty());
 
     const int faceCount = std::stoi(faceElementMatch[1]);
-    std::cout << faceCount << std::endl;
 
     string propertyVertexIndices;
     std::getline(m_objFile, propertyVertexIndices);
-    assert(propertyVertexIndices == "property list uint8 int vertex_indices");
+    assert(
+        propertyVertexIndices == "property list uint8 int vertex_indices" \
+        || propertyVertexIndices == "property list uchar int vertex_indices"
+    );
 
     string endHeader;
     std::getline(m_objFile, endHeader);

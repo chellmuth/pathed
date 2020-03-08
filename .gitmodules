@@ -1,3 +1,9 @@
 [submodule "ext/nanogui"]
 	path = ext/nanogui
 	url = https://github.com/wjakob/nanogui.git
+[submodule "embree"]
+	path = embree
+	url = https://github.com/embree/embree.git
+[submodule "ptex"]
+	path = ptex
+	url = https://github.com/wdas/ptex.git

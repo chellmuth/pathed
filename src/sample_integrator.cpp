@@ -35,30 +35,36 @@ void SampleIntegrator::samplePixel(
             if (intersection.material->isContainer()) {
                 const IntersectionResult volumetricResult = scene.testVolumetricIntersect(ray);
                 const Intersection &volumetricIntersection = volumetricResult.intersection;
+
+                const Color transmittance = VolumeHelper::rayTransmission(
+                    ray,
+                    volumetricResult.volumeEvents,
+                    nullptr
+                );
+
                 if (volumetricIntersection.hit) {
-                    // todo: build a scene that has this and implement
-                    assert(volumetricIntersection.material->emit().isBlack());
+                    color += volumetricIntersection.material->emit() * transmittance;
                 } else {
-                    Color transmittance = VolumeHelper::rayTransmission(
-                        ray,
-                        volumetricResult.volumeEvents,
-                        nullptr
-                    );
                     color += scene.environmentL(ray.direction()) * transmittance;
                 }
             }
         }
 
-        color += L(intersection, scene, random, sample);
+        color += L(intersection, scene, random, row * width + col, sample);
 
         sampleLookup[row * width + col] = sample;
     } else {
+        // color += Color(0.1f, 0.2f, 0.5f);
         color += scene.environmentL(ray.direction());
     }
 
     radianceLookup[3 * (row * width + col) + 0] += color.r();
     radianceLookup[3 * (row * width + col) + 1] += color.g();
     radianceLookup[3 * (row * width + col) + 2] += color.b();
+
+    // radianceLookup[3 * (row * width + col) + 0] += intersection.uv.u;
+    // radianceLookup[3 * (row * width + col) + 1] += intersection.uv.v;
+    // radianceLookup[3 * (row * width + col) + 2] += 0.f;
 
     // Point3 point = intersection.point;
     // radianceLookup[3 * (row * width + col) + 0] += point.x();

@@ -35,8 +35,8 @@
         "type": "lambertian",
         "albedo": {
           "type": "checkerboard",
-          "onColor": [ "0.8", "0.8", "0.8" ],
-          "offColor": [ "0.2", "0.2", "0.2" ],
+          "onColor": [ "0.2", "0.2", "0.2" ],
+          "offColor": [ "0.8", "0.8", "0.8" ],
           "resolution": { "u": "40", "v": "160" }
         },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],

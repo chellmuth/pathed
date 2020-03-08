@@ -24,11 +24,16 @@ Color Lambertian::f(
         return Color(0.f);
     }
 
+    if (wiWorld.dot(intersection.shadingNormal) < 0.f) {
+        *pdf = 0.f;
+        return Color(0.f);
+    }
+
     const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
-    *pdf = UniformHemispherePdf(wi);
+    *pdf = CosineHemispherePdf(wi);
 
     if (m_albedo) {
-        return m_albedo->lookup(intersection.uv) / M_PI;
+        return m_albedo->lookup(intersection) / M_PI;
     } else {
         return m_diffuse / M_PI;
     }
@@ -44,10 +49,19 @@ BSDFSample Lambertian::sample(
 
     BSDFSample sample = {
         .wiWorld = worldSample,
-        .pdf = UniformHemispherePdf(localSample),
+        .pdf = CosineHemispherePdf(localSample),
         .throughput = Material::f(intersection, worldSample),
         .material = this
     };
 
     return sample;
+}
+
+Color Lambertian::albedo(const Intersection &intersection) const
+{
+    if (m_albedo) {
+        return m_albedo->lookup(intersection);
+    } else {
+        return m_diffuse;
+    }
 }

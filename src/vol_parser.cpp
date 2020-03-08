@@ -11,8 +11,7 @@ std::shared_ptr<Medium> VolParser::parse(
     const std::string &filename,
     float albedo,
     float scale,
-    const Transform &transform,
-    Handedness handedness
+    const Transform &transform
 ) {
     std::ifstream volStream(filename, std::ifstream::binary);
 
@@ -58,31 +57,18 @@ std::shared_ptr<Medium> VolParser::parse(
     // std::cout << "gridData[326910]: " << gridData[326910] << std::endl;
     // std::cout << "gridData[326911]: " << gridData[326911] << std::endl;
 
-    GridInfo gridInfo = handedness == Handedness::Right ?
-        GridInfo({
-            cellsX,
-            cellsY,
-            cellsZ,
+    GridInfo gridInfo = GridInfo({
+        cellsX,
+        cellsY,
+        cellsZ,
 
-            bounds[0],
-            bounds[1],
-            bounds[2],
-            bounds[3],
-            bounds[4],
-            bounds[5]
-        }) : GridInfo({
-            cellsX,
-            cellsY,
-            cellsZ,
-
-            -bounds[3],
-            bounds[1],
-            bounds[2],
-            -bounds[0],
-            bounds[4],
-            bounds[5]
-        })
-    ;
+        bounds[0],
+        bounds[1],
+        bounds[2],
+        bounds[3],
+        bounds[4],
+        bounds[5]
+    });
 
     return std::make_shared<GridMedium>(
         gridInfo,

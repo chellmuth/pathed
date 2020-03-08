@@ -197,6 +197,7 @@ Color Depositer::L(
     const Intersection &intersection,
     const Scene &scene,
     RandomGenerator &random,
+    int pixelIndex,
     Sample &sample
 ) const {
     sample.eyePoints.push_back(intersection.point);
@@ -458,6 +459,7 @@ void Depositer::debug2(const Intersection &intersection, const Scene &scene) con
                         fisheyeIntersection,
                         scene,
                         random,
+                        -1,
                         sample
                     ) / spp;
 

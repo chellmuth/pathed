@@ -1,6 +1,7 @@
 #include "rtc_manager.h"
 
 #include <assert.h>
+#include <iostream>
 
 RTCManager::RTCManager(RTCScene rootScene)
     : m_rootScene(rootScene)
@@ -10,7 +11,6 @@ RTCManager::RTCManager(RTCScene rootScene)
 
 void RTCManager::registerSurfaces(
     RTCScene rtcScene,
-    // int rtcGeometryID,
     std::vector<std::shared_ptr<Surface> > &geometrySurfaces
 ) {
     const int keyCount = m_rtcSceneToSurfaces.count(rtcScene);
@@ -19,48 +19,41 @@ void RTCManager::registerSurfaces(
     }
 
     NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces[rtcScene];
-
-    // assert(sceneSurfaces.size() - 1 == rtcGeometryID);
-
     sceneSurfaces.push_back(geometrySurfaces);
-}
 
-void RTCManager::registerSurfaces(
-    // int rtcGeometryID,
-    std::vector<std::shared_ptr<Surface> > &geometrySurfaces
-) {
-    registerSurfaces(m_rootScene, /*rtcGeometryID,*/ geometrySurfaces);
-}
-
-void RTCManager::registerInstanceSurfaces(
-    RTCScene rtcInstanceScene,
-    // int rtcGeometryID,
-    std::vector<std::shared_ptr<Surface> > &geometrySurfaces
-) {
-    registerSurfaces(rtcInstanceScene, /*rtcGeometryID,*/ geometrySurfaces);
+    if (geometrySurfaces.size() > 0) {
+        m_rtcRegistrationQueue.push_back({rtcScene, sceneSurfaces.size() - 1});
+    }
 }
 
 void RTCManager::registerInstancedSurfaces(
+    RTCScene rtcScene,
     RTCScene rtcInstanceScene,
     int rtcGeometryID,
     std::vector<std::shared_ptr<Surface> > &geometrySurfaces
 ) {
-    registerSurfaces(/*rtcGeometryID, */ geometrySurfaces);
-    m_rtcSceneLookup[rtcGeometryID] = rtcInstanceScene;
+    registerSurfaces(rtcScene, geometrySurfaces);
+    m_rtcSceneLookup[{rtcScene, rtcGeometryID}] = rtcInstanceScene;
 }
 
 std::shared_ptr<Surface> RTCManager::lookupInstancedSurface(
     int rtcGeometryID,
     int rtcPrimitiveID,
-    int rtcInstanceID
+    unsigned int *rtcInstanceIDs
 ) const {
-    const NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
-    const std::vector<std::shared_ptr<Surface> > &geometrySurfaces = sceneSurfaces.at(rtcInstanceID);
+    int i = 0;
+    RTCScene rtcCurrentScene = m_rootScene;
+    while (rtcInstanceIDs[i] != RTC_INVALID_GEOMETRY_ID && i < 2) {
+        // const NestedSurfaceVector &sceneSurfaces = m_rtcSceneToSurfaces.at(rtcCurrentScene);
+        // const std::vector<std::shared_ptr<Surface> > &geometrySurfaces = sceneSurfaces.at(rtcInstanceID);
 
-    assert(geometrySurfaces.size() == 0);
+        // assert(geometrySurfaces.size() == 0);
 
-    RTCScene rtcInstanceScene = m_rtcSceneLookup.at(rtcInstanceID);
-    return lookupSurface(rtcInstanceScene, rtcGeometryID, rtcPrimitiveID);
+        rtcCurrentScene = m_rtcSceneLookup.at({rtcCurrentScene, rtcInstanceIDs[i]});
+        i++;
+    }
+
+    return lookupSurface(rtcCurrentScene, rtcGeometryID, rtcPrimitiveID);
 }
 
 std::shared_ptr<Surface> RTCManager::lookupSurface(int rtcGeometryID, int rtcPrimitiveID) const
@@ -77,31 +70,46 @@ std::shared_ptr<Surface> RTCManager::lookupSurface(RTCScene rtcScene, int rtcGeo
 
 RTCGeometry RTCManager::lookupGeometry(
     int rtcGeometryID,
-    int rtcInstanceID
+    unsigned int *rtcInstanceIDs
 ) const {
-    RTCScene rtcInstanceScene = m_rtcSceneLookup.at(rtcInstanceID);
-    return rtcGetGeometry(rtcInstanceScene, rtcGeometryID);
-}
+    int i = 0;
+    RTCScene rtcCurrentScene = m_rootScene;
+    while (rtcInstanceIDs[i] != RTC_INVALID_GEOMETRY_ID && i < 2) {
+        rtcCurrentScene = m_rtcSceneLookup.at({rtcCurrentScene, rtcInstanceIDs[i]});
+        i++;
+    }
 
+    return rtcGetGeometry(rtcCurrentScene, rtcGeometryID);
+}
 
 void RTCManager::registerFilters(void (&callback)(const RTCFilterFunctionNArguments *))
 {
-    const NestedSurfaceVector &rootSurfaces = m_rtcSceneToSurfaces.at(m_rootScene);
-    for (int rtcRootGeometryID = 0; rtcRootGeometryID < rootSurfaces.size(); rtcRootGeometryID++) {
-        if (m_rtcSceneLookup.count(rtcRootGeometryID) == 0) {
-            const RTCGeometry rtcGeometry = rtcGetGeometry(m_rootScene, rtcRootGeometryID);
-            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
-            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
-            continue;
-        }
+    for (auto &pair : m_rtcRegistrationQueue) {
+        const RTCGeometry rtcGeometry = rtcGetGeometry(pair.first, pair.second);
+        rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
+        rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
+    }
+}
 
-        const RTCScene instanceScene = m_rtcSceneLookup.at(rtcRootGeometryID);
-        const NestedSurfaceVector sceneSurfaces = m_rtcSceneToSurfaces.at(instanceScene);
+void RTCManager::printStats()
+{
+    int counter = 0;
+    int bytesCounter = 0;
+    for (const auto &item : m_rtcSceneToSurfaces) {
+        const auto &nestedSurfaces = item.second;
+        for (const auto &surfaces : nestedSurfaces) {
+            counter += surfaces.size();
 
-        for (int rtcGeometryID = 0; rtcGeometryID < sceneSurfaces.size(); rtcGeometryID++) {
-            const RTCGeometry rtcGeometry = rtcGetGeometry(instanceScene, rtcGeometryID);
-            rtcSetGeometryIntersectFilterFunction(rtcGeometry, callback);
-            rtcSetGeometryOccludedFilterFunction(rtcGeometry, callback);
+            for (const auto &surface : surfaces) {
+                bytesCounter += sizeof(surface);
+                bytesCounter += sizeof(surface->getShape());
+                bytesCounter += sizeof(surface->getMaterial());
+                bytesCounter += sizeof(surface->getInternalMedium());
+            }
         }
     }
+
+    std::cout << "RTCManager Stats: " << counter << std::endl;
+    std::cout << " related bytes: " << bytesCounter << std::endl;
+    std::cout << " sizeof Surface: " << sizeof(Surface) << std::endl;
 }

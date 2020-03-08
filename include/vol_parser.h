@@ -1,7 +1,7 @@
 #pragma once
 
 #include "medium.h"
-#include "obj_parser.h"
+#include "transform.h"
 
 #include <memory>
 #include <string>
@@ -13,7 +13,6 @@ namespace VolParser {
         const std::string &filename,
         float albedo,
         float scale,
-        const Transform &transform,
-        Handedness handedness
+        const Transform &transform
     );
 };

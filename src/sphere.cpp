@@ -1,8 +1,11 @@
 #include "sphere.h"
 
+#include "coordinate.h"
 #include "globals.h"
 #include "measure.h"
 #include "ray.h"
+#include "trig.h"
+#include "transform.h"
 #include "util.h"
 
 #include <embree3/rtcore.h>
@@ -66,8 +69,87 @@ SurfaceSample Sphere::sample(RandomGenerator &random) const
     return sample;
 }
 
-float Sphere::pdf(const Point3 &point) const
+static float UniformConePdf(float cosThetaMax)
 {
+    return 1.f / (2.f * M_PI * (1.f - cosThetaMax));
+}
+
+SurfaceSample Sphere::sample(
+    const Point3 &referencePoint,
+    RandomGenerator &random
+) const {
+    // early quit if we're inside the sphere
+    const float centerDistance = (m_center - referencePoint).toVector().length();
+    const float centerDistance2 = centerDistance * centerDistance;
+    if (centerDistance <= m_radius) {
+        return sample(random);
+    }
+
+    // compute angle of cone bounding what referencePoint can "see" on sphere
+    const float radius2 = m_radius * m_radius;
+    const float sin2ThetaMax = m_radius * m_radius / centerDistance2;
+    const float cosThetaMax = Trig::cosFromSin2(sin2ThetaMax);
+
+    // linearly interpolate between [cosThetaMax, 1];
+    // theta will be between [0, cosThetaMax]
+    const float xi1 = random.next();
+    const float cosTheta = (1.f - xi1) + xi1 * cosThetaMax;
+    const float phi = random.next() * 2.f * M_PI;
+
+    // compute distance to sample point on sphere
+    const float sinTheta = Trig::sinFromCos(cosTheta);
+    const float sideOppositeTheta = centerDistance * sinTheta;
+    const float sideHelper = std::sqrt(
+        std::max(0.f, m_radius * m_radius - sideOppositeTheta * sideOppositeTheta)
+    );
+    const float sampleDistance = centerDistance * cosTheta - sideHelper;
+    const float sampleDistance2 = sampleDistance * sampleDistance;
+
+    // compute internal angle to sample
+    const float cosAlpha = util::clampClose(
+        (centerDistance2 + radius2 - sampleDistance2)
+        / (2.f * m_radius * centerDistance),
+        0.f, 1.f
+    );
+    const float sinAlpha = Trig::sinFromCos(cosAlpha);
+
+    const Vector3 localSample = sphericalToCartesian(phi, cosAlpha, sinAlpha);
+    const Transform localToWorld = normalToWorldSpace((referencePoint - m_center).toVector().normalized());
+    const Vector3 worldSample = localToWorld.apply(localSample).normalized();
+
+    SurfaceSample sample = {
+        .point = m_center + worldSample * m_radius,
+        .normal = worldSample.normalized(),
+        .invPDF = 1.f / UniformConePdf(cosThetaMax),
+        .measure = Measure::SolidAngle
+    };
+
+    return sample;
+}
+
+float Sphere::pdf(const Point3 &point, const Point3 &referencePoint, Measure measure) const
+{
+    if (measure == Measure::Area) { throw std::runtime_error("Unsupported measure"); }
+
+    // Redo some of the sampling logic to generate cosThetaMax
+    const float centerDistance = (m_center - referencePoint).toVector().length();
+    const float centerDistance2 = centerDistance * centerDistance;
+    if (centerDistance <= m_radius) {
+        std::cout << "TODO: Needs to be converted to solid angle measure" << std::endl;
+        return pdf(point, measure);
+    }
+
+    const float radius2 = m_radius * m_radius;
+    const float sin2ThetaMax = m_radius * m_radius / centerDistance2;
+    const float cosThetaMax = Trig::cosFromSin2(sin2ThetaMax);
+
+    return UniformConePdf(cosThetaMax);
+}
+
+float Sphere::pdf(const Point3 &point, Measure measure) const
+{
+    if (measure == Measure::SolidAngle) { throw std::runtime_error("Unsupported measure"); }
+
     return 1.f / area();
 }
 
