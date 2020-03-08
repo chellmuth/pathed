@@ -10,18 +10,18 @@
   "models": [
     {
       "type": "obj",
-      "filename": "cornell-glossy/CornellBox-Glossy.obj"
+      "filename": "scenes/cornell-glossy/CornellBox-Glossy.obj"
     },
     {
       "type": "obj",
-      "filename": "cornell-glossy/box.obj",
+      "filename": "scenes/cornell-glossy/box.obj",
       "bsdf": {
         "type": "mirror"
       }
     },
     {
       "type": "obj",
-      "filename": "cornell-glossy/ball.obj",
+      "filename": "scenes/cornell-glossy/ball.obj",
       "bsdf": {
         "type": "glass"
       },

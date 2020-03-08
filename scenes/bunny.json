@@ -16,7 +16,7 @@
   "models": [
     {
       "type": "obj",
-      "filename": "bunny.obj",
+      "filename": "scenes/bunny.obj",
       "bsdf": {
         "type": "lambertian",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],

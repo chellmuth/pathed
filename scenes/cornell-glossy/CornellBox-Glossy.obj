@@ -1,7 +1,7 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
 # File Created: 05.12.2012 22:05:26
 
-mtllib cornell-glossy/CornellBox-Glossy.mtl
+mtllib scenes/cornell-glossy/CornellBox-Glossy.mtl
 
 
 #

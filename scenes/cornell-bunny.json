@@ -16,11 +16,11 @@
   "models": [
     {
       "type": "obj",
-      "filename": "CornellBox-Original.obj"
+      "filename": "scenes/CornellBox-Original.obj"
     },
     {
       "type": "obj",
-      "filename": "bunny.obj",
+      "filename": "scenes/bunny.obj",
       "bsdf": {
         "type": "lambertian",
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ],

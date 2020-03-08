@@ -10,7 +10,7 @@
   "models": [
     {
       "type": "obj",
-      "filename": "CornellBox-Original.obj"
+      "filename": "scenes/CornellBox-Original.obj"
     }
   ]
 }
