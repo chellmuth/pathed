@@ -53,7 +53,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/cornell.png" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/cornell.png?update=202003081552" width="400">
 <br /><b>Traditional Cornell box</b>
 </p>
 
