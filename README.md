@@ -48,7 +48,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/mis-veach.png" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/mis-veach.png?update=202003081324" width="400">
 <br /><b>Veach MIS scene</b>
 </p>
 
