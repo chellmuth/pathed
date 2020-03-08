@@ -1,0 +1,38 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "0", "0.7", "4" ],
+      "target": [ "0", "0.7", "0" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "28"
+  },
+
+  "film": {
+    "width": "768",
+    "height": "512"
+  },
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "bunny.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ],
+        "specularReflectance": [ "0.0", "0.0", "0.0" ]
+       }
+    },
+    {
+      "type": "sphere",
+      "center": [ "0", "0", "5" ],
+      "radius": "0.5",
+      "radiance": [ "3", "3", "3" ],
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ],
+        "specularReflectance": "0"
+      }
+    }
+  ]
+}

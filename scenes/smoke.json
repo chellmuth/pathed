@@ -1,0 +1,53 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "-0.61423", "0.154197", "-1.43132" ],
+      "target": [ "-0.166029", "0.148984", "-0.537402" ],
+      "up": [ "-0.000640925", "-0.999985", "-0.0055102" ]
+    },
+    "fov": "35.1899",
+    "flipHandedness": true
+  },
+
+  "media": [
+    {
+      "name": "smoke",
+      "type": "heterogeneous",
+      "albedo": "0.9",
+      "scale": "100",
+      "filename": "assets/smoke/smoke.vol"
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/smoke/plane.obj",
+      "transform": {
+        "translate": [ "0", "0.48", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.2", "0.2", "0.3" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/smoke/bounds.obj",
+      "internal_medium": "smoke",
+      "bsdf": {
+        "type": "passthrough"
+      }
+    },
+    {
+      "type": "sphere",
+      "center": [ "0", "-2", "-1" ],
+      "radius": "0.2",
+      "bsdf": {
+        "type": "lambertian",
+        "emit": [ "400", "400", "400" ],
+        "diffuseReflectance": [ "0.0", "0.0", "0.0" ]
+      }
+    }
+  ]
+}
