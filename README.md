@@ -56,3 +56,20 @@ My most recent project has been attempting to render Disney's Moana research sce
 <img src="https://pathed.s3-us-west-2.amazonaws.com/cornell.png" width="400">
 <br /><b>Traditional Cornell box</b>
 </p>
+
+## Build Instructions ##
+```
+> git clone https://github.com/chellmuth/pathed
+> cd pathed
+> git submodule update --init --recursive
+> mkdir Release; cd Release
+> cmake ..
+> make
+```
+
+## Render Instructions ##
+```
+> cp job.json.example job.json
+> cd Release
+> ./pathed
+```
