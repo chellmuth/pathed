@@ -13,11 +13,6 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/volumetric-caustic.png" width="400">
-<br /><b>Volumetric caustic in homogeneous medium</b>
-</p>
-
-<p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/homogeneous-absorption-teapot.png" width="400">
 <br /><b>Glass material, homogeneous absorption, and environment lighting</b>
 </p>
@@ -28,8 +23,18 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/cloud.png" width="400">
+<br /><b>Heterogeneous volume scattering</b>
+</p>
+
+<p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/smoke.png" width="400">
 <br /><b>Heterogeneous volume scattering</b>
+</p>
+
+<p align="center">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/volumetric-caustic.png" width="400">
+<br /><b>Volumetric caustic in homogeneous medium</b>
 </p>
 
 <p align="center">
