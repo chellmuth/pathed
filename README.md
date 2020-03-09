@@ -43,7 +43,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/mirrors-cornell.png" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/mirrors-cornell.png?update=202003090854" width="400">
 <br /><b>Cornell box with mirror material</b>
 </p>
 
