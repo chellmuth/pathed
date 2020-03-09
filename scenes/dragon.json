@@ -19,7 +19,7 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "0.7", "0.7", "0.7" ]
+        "diffuseReflectance": [ "0.1", "0.1", "0.1" ]
       }
     },
     {
@@ -33,7 +33,7 @@
       "bsdf": {
         "type": "plastic",
         "diffuseReflectance": [ "0.1", "0.1", "0.4" ],
-        "roughness": "0.03"
+        "roughness": "0.1"
       }
     }
   ],

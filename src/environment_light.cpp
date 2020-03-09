@@ -57,8 +57,10 @@ Color EnvironmentLight::emit() const
     return Color(0.f, 20.f, 0.f);
 }
 
-Color EnvironmentLight::emit(const Vector3 &direction) const
+Color EnvironmentLight::emit(const Vector3 &lightWo) const
 {
+    const Vector3 direction(-lightWo);
+
     float phi, theta;
     cartesianToSpherical(
         m_worldToMap.apply(direction).normalized(),

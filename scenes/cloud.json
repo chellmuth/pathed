@@ -16,7 +16,7 @@
       "scale": "100",
       "transform": {
         "translate": [ "-1", "0", "-1.2" ],
-        "rotate": [ "90", "0", "0" ]
+        "rotate": [ "-90", "0", "0" ]
       },
       "filename": "assets/cloud/density.vol"
     },
@@ -35,16 +35,32 @@
       "internal_medium": "cloud",
       "transform": {
         "translate": [ "-1", "0", "-1.2" ],
-        "rotate": [ "90", "0", "0" ]
+        "rotate": [ "-90", "0", "0" ]
       },
       "bsdf": {
         "type": "passthrough"
+      }
+    },
+    {
+      "type": "quad",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.03", "0.03", "0.03" ]
+      },
+      "transform": {
+        "scale": [ "30", "30", "1" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "0.0146579", "16.5663", "-25.0113" ]
       }
     }
   ],
 
   "environmentLight": {
     "filename": "assets/cloud/skylight-morn.exr",
-    "scale": "1"
+    "transform": {
+      "scale": [ "1", "-1", "1" ],
+      "rotate": [ "90", "0", "0" ]
+    },
+    "scale": "3"
   }
 }
