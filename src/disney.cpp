@@ -24,6 +24,11 @@ Color Disney::f(
         return Color(0.f);
     }
 
+    if (wiWorld.dot(intersection.shadingNormal) < 0.f) {
+        *pdf = 0.f;
+        return Color(0.f);
+    }
+
     const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
     *pdf = CosineHemispherePdf(wi);
 
