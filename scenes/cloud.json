@@ -40,6 +40,18 @@
       "bsdf": {
         "type": "passthrough"
       }
+    },
+    {
+      "type": "quad",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.03", "0.03", "0.03" ]
+      },
+      "transform": {
+        "scale": [ "30", "30", "1" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "0.0146579", "16.5663", "-25.0113" ]
+      }
     }
   ],
 
