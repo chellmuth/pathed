@@ -64,7 +64,7 @@
           "0",
           "-0.732108"
         ],
-        "scale": [ "5.43618", "5.43618", "5.43618" ],
+        "scale": [ "2.71809", "2.71809", "2.71809" ],
         "rotate": [
           "-90",
           "46.1511",
@@ -77,7 +77,7 @@
           "type": "checkerboard",
           "onColor": [ "0.725", "0.71", "0.68" ],
           "offColor": [ "0.325", "0.31", "0.25" ],
-          "resolution": { "u": "40", "v": "40" }
+          "resolution": { "u": "20", "v": "20" }
         },
         "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
@@ -86,6 +86,9 @@
 
   "environmentLight": {
     "filename": "assets/material-ball/envmap.exr",
+    "transform": {
+      "rotate": [ "0", "247.2613999", "0" ]
+    },
     "scale": "1"
   }
 }
