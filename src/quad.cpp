@@ -32,11 +32,11 @@ void Quad::parse(
 
     UV uvs[] = {
         { 0.f, 0.f, },
-        { 0.f, 1.f, },
         { 1.f, 0.f, },
         { 0.f, 1.f, },
+        { 0.f, 1.f, },
+        { 1.f, 0.f, },
         { 1.f, 1.f, },
-        { 1.f, 0.f, },
     };
 
     std::shared_ptr<Shape> triangle1 = std::make_shared<Triangle>(
