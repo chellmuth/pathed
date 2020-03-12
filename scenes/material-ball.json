@@ -13,7 +13,7 @@
       "filename": "assets/material-ball/Mesh000.obj",
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "diffuseReflectance": [ "0.2", "0.2", "0.2" ]
       },
       "transform": {
         "translate": [
