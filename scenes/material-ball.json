@@ -7,6 +7,14 @@
     },
     "fov": "20.114293"
   },
+  "materials": [
+    {
+      "name": "ball",
+      "type": "plastic",
+      "diffuseReflectance": [ "0.6", "0.2", "0.3" ],
+      "roughness": "0.4617"
+    }
+  ],
   "models": [
     {
       "type": "obj",
@@ -28,8 +36,8 @@
       "type": "obj",
       "filename": "assets/material-ball/Mesh001.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "ball"
       },
       "transform": {
         "translate": [
@@ -44,8 +52,8 @@
       "type": "obj",
       "filename": "assets/material-ball/Mesh002.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "ball"
       },
       "transform": {
         "translate": [
@@ -78,8 +86,7 @@
           "onColor": [ "0.725", "0.71", "0.68" ],
           "offColor": [ "0.325", "0.31", "0.25" ],
           "resolution": { "u": "20", "v": "20" }
-        },
-        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
+        }
       }
     }
   ],
