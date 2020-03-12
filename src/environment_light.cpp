@@ -132,7 +132,9 @@ float EnvironmentLight::emitPDF(const Vector3 &direction, Measure measure) const
     const float thetaPDF = m_thetaDistribution->pdf(thetaStep);
     const float phiPDF = m_phiDistributions[thetaStep].pdf(phiStep);
 
-    return thetaPDF * phiPDF;
+    const float pdf = thetaPDF * phiPDF * m_width * m_height / (sinf(theta) * M_TWO_PI * M_PI);
+
+    return pdf;
 }
 
 Color EnvironmentLight::biradiance(const SurfaceSample &lightSample, const Point3 &surfacePoint) const
