@@ -18,7 +18,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/microfacet--dragon.png?update=202003081931" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/microfacet--dragon.png?update=202003131448" width="400">
 <br /><b>Microfacet reflection modeled with Beckmann distribution</b>
 </p>
 
