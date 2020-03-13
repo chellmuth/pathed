@@ -1,11 +1,15 @@
 #pragma once
 
+#include "microfacet_distribution.h"
 #include "random_generator.h"
 #include "vector.h"
 
-Vector3 beckmannSampleWh(float alpha, const Vector3 &wo, RandomGenerator &random);
-float beckmannPDF(float alpha, const Vector3 &wh);
+class Beckmann : public MicrofacetDistribution {
+public:
+    Vector3 sampleWh(float alpha, const Vector3 &wo, RandomGenerator &random) const override;
+    float pdf(float alpha, const Vector3 &wh) const override;
 
-float beckmannD(const float alpha, const Vector3 &wh);
-float beckmannLambda(float alphaX, float alphaY, const Vector3 &w);
-float beckmannG(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi);
+    float D(const float alpha, const Vector3 &wh) const override;
+    float G(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi) const override;
+    float lambda(float alphaX, float alphaY, const Vector3 &w) const override;
+};

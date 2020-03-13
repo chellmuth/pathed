@@ -1,8 +1,10 @@
 #pragma once
 
+#include "beckmann.h"
 #include "color.h"
 #include "intersection.h"
 #include "material.h"
+#include "microfacet_distribution.h"
 #include "random_generator.h"
 #include "vector.h"
 
@@ -12,6 +14,7 @@ class Microfacet : public Material {
 public:
     Microfacet(float alpha)
     : Material(0.f),
+        m_distribution(std::make_unique<Beckmann>()),
         m_alpha(alpha)
     {}
 
@@ -27,5 +30,6 @@ public:
     ) const override;
 
 private:
+    std::unique_ptr<MicrofacetDistribution> m_distribution;
     float m_alpha;
 };

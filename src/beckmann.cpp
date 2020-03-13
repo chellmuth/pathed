@@ -24,7 +24,7 @@ static float sampleTan2Theta(float alpha, const Vector3 &wo, RandomGenerator &ra
     return -alpha * alpha * logXi;
 }
 
-Vector3 beckmannSampleWh(float alpha, const Vector3 &wo, RandomGenerator &random)
+Vector3 Beckmann::sampleWh(float alpha, const Vector3 &wo, RandomGenerator &random) const
 {
     const float phi = random.next() * M_PI * 2.f;
     const float tan2Theta = sampleTan2Theta(alpha, wo, random);
@@ -33,12 +33,12 @@ Vector3 beckmannSampleWh(float alpha, const Vector3 &wo, RandomGenerator &random
     return sample;
 }
 
-float beckmannPDF(float alpha, const Vector3 &wh)
+float Beckmann::pdf(float alpha, const Vector3 &wh) const
 {
-    return beckmannD(alpha, wh) * std::abs(TangentFrame::cosTheta(wh));
+    return D(alpha, wh) * std::abs(TangentFrame::cosTheta(wh));
 }
 
-float beckmannD(const float alpha, const Vector3 &wh)
+float Beckmann::D(const float alpha, const Vector3 &wh) const
 {
     const float tan2Theta = TangentFrame::tan2Theta(wh);
     if (std::isinf(tan2Theta)) { return 0.f; }
@@ -58,7 +58,7 @@ float beckmannD(const float alpha, const Vector3 &wh)
     return numerator / denominator;
 }
 
-float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
+float Beckmann::lambda(float alphaX, float alphaY, const Vector3 &w) const
 {
     const float absTanTheta = std::abs(TangentFrame::tanTheta(w));
     if (std::isinf(absTanTheta)) { return 0.f; }
@@ -76,7 +76,7 @@ float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
         / (3.535f * a + 2.181f * a * a);
 }
 
-float beckmannG(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi)
+float Beckmann::G(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi) const
 {
-    return 1.f / (1.f + beckmannLambda(alphaX, alphaY, wo) + beckmannLambda(alphaX, alphaY, wi));
+    return 1.f / (1.f + lambda(alphaX, alphaY, wo) + lambda(alphaX, alphaY, wi));
 }
