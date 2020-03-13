@@ -12,7 +12,17 @@ GGX::GGX(float alpha)
 
 Vector3 GGX::sampleWh(const Vector3 &wo, RandomGenerator &random) const
 {
-    return Vector3(0.f, 0.f, 0.f);
+    const float xi1 = random.next();
+    const float xi2 = random.next();
+
+    const float numerator = m_alpha * std::sqrt(xi1);
+    const float denominator = std::sqrt(1.f - xi1);
+
+    const float theta = std::atan(numerator / denominator);
+    const float phi = M_TWO_PI * xi2;
+
+    const Vector3 cartesian = sphericalToCartesian(theta, phi);
+    return cartesian;
 }
 
 float GGX::pdf(const Vector3 &wh) const
