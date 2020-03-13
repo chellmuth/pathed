@@ -14,8 +14,7 @@ class Microfacet : public Material {
 public:
     Microfacet(float alpha)
     : Material(0.f),
-        m_distribution(std::make_unique<Beckmann>()),
-        m_alpha(alpha)
+        m_distribution(std::make_unique<Beckmann>(alpha))
     {}
 
     Color f(
@@ -31,5 +30,4 @@ public:
 
 private:
     std::unique_ptr<MicrofacetDistribution> m_distribution;
-    float m_alpha;
 };

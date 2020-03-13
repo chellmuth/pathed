@@ -6,10 +6,14 @@
 
 class Beckmann : public MicrofacetDistribution {
 public:
-    Vector3 sampleWh(float alpha, const Vector3 &wo, RandomGenerator &random) const override;
-    float pdf(float alpha, const Vector3 &wh) const override;
+    Beckmann(float alpha);
 
-    float D(const float alpha, const Vector3 &wh) const override;
-    float G(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi) const override;
-    float lambda(float alphaX, float alphaY, const Vector3 &w) const override;
+    Vector3 sampleWh(const Vector3 &wo, RandomGenerator &random) const override;
+    float pdf(const Vector3 &wh) const override;
+
+    float D(const Vector3 &wh) const override;
+    float G(const Vector3 &wo, const Vector3 &wi) const override;
+
+private:
+    float m_alpha;
 };
