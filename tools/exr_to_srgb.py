@@ -6,11 +6,11 @@ import numpy as np
 import pyexr
 from PIL import Image
 
-def save_png(image, output_pathname):
+def save_png(image, output_path):
     uint8_image = (image * 255).astype(np.uint8)
 
     pil_image = Image.fromarray(uint8_image)
-    pil_image.save(output_pathname)
+    pil_image.save(str(output_path))
 
 def to_srgb(linear_image):
     a = 0.055
@@ -25,32 +25,17 @@ def to_srgb(linear_image):
 def clip(image):
     return np.clip(image, 0.0, 1.0)
 
-def _convert(hdr_filename, out_directory):
-    image = pyexr.read(str(hdr_filename))
+def _convert(exr_path, png_path):
+    image = pyexr.read(str(exr_path))
 
     srgb = clip(to_srgb(image))
-    output_pathname = str(out_directory / f"{hdr_filename.stem}.png")
-    save_png(srgb, output_pathname)
-
-def _convert_wrapper(args):
-    print(f"Converting {args}")
-    _convert(*args)
+    save_png(srgb, png_path)
 
 @click.command()
-@click.argument("root", type=click.Path(exists=True))
-@click.argument("out_directory", type=click.Path(exists=False, file_okay=False))
-def init(root, out_directory):
-    queue = []
-
-    root = Path(root)
-    out_directory = Path(out_directory)
-    out_directory.mkdir(exist_ok=True)
-
-    for exr_path in root.glob("*.exr"):
-        queue.append((exr_path, out_directory))
-
-    pool = Pool(7)
-    pool.map(_convert_wrapper, queue)
+@click.argument("exr_path", type=click.Path(exists=True))
+@click.argument("png_path", type=click.Path(exists=False, file_okay=True))
+def init(exr_path, png_path):
+    _convert(exr_path, png_path)
 
 if __name__ == "__main__":
     init()

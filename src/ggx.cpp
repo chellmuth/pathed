@@ -27,7 +27,7 @@ Vector3 GGX::sampleWh(const Vector3 &wo, RandomGenerator &random) const
 
 float GGX::pdf(const Vector3 &wh) const
 {
-    return 0.f;
+    return D(wh) * TangentFrame::absCosTheta(wh);
 }
 
 float GGX::D(const Vector3 &wh) const

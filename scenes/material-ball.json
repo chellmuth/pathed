@@ -10,9 +10,11 @@
   "materials": [
     {
       "name": "ball",
-      "type": "plastic",
-      "diffuseReflectance": [ "0.6", "0.2", "0.3" ],
-      "roughness": "0.4617"
+      "type": "microfacet",
+      "distribution": {
+        "type": "beckmann",
+        "alpha": "0.1"
+      }
     }
   ],
   "models": [
