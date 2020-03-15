@@ -23,6 +23,11 @@
       "name": "floor-tiles",
       "type": "lambertian",
       "texture": "assets/staircase2/Tiles.jpg"
+    },
+    {
+      "name": "glass",
+      "type": "glass",
+      "ior": "1.5"
     }
   ],
 
@@ -143,8 +148,8 @@
       "type": "obj",
       "filename": "assets/staircase2/Mesh014.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "glass"
       }
     },
     {
@@ -184,6 +189,6 @@
 
   "environmentLight": {
     "filename": "assets/teapot/envmap.exr",
-    "scale": "3"
+    "scale": "1"
   }
 }
