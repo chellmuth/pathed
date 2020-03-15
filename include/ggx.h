@@ -14,8 +14,8 @@ public:
     float D(const Vector3 &wh) const override;
     float G(const Vector3 &wo, const Vector3 &wi) const override;
 
+    float G1(const Vector3 &v) const;
+
 private:
     float m_alpha;
-
-    float G1(const Vector3 &v) const;
 };

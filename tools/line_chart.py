@@ -44,4 +44,5 @@ if __name__ == "__main__":
     # vectors(data["snell"])
 
     data = load("../Release/testbed-microfacet.json")
-    chart(data["D"])
+    # chart(data["D"])
+    chart(data["G1"])

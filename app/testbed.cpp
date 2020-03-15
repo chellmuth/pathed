@@ -100,13 +100,8 @@ static void generateTestJson()
     std::cout << "Wrote to testbed.json" << std::endl;
 }
 
-static void generateMicrofacetChartData()
+static json generateDJson(const GGX &ggx, const Beckmann &beckmann)
 {
-    const float alpha = 0.2f;
-
-    GGX ggx(alpha);
-    Beckmann beckmann(alpha);
-
     json ggxJson = json::array();
     json beckmannJson = json::array();
 
@@ -123,11 +118,47 @@ static void generateMicrofacetChartData()
         beckmannJson.push_back({{ "x", x * 90 }, { "y", beckmannD }});
     }
 
-    json jsonData;
-    jsonData["D"] = {
+    json jsonData = {
         { { "legend", "ggx" }, { "data", ggxJson } },
         { { "legend", "beckmann" }, { "data", beckmannJson } },
     };
+    return jsonData;
+}
+
+static json generateG1Json(const GGX &ggx, const Beckmann &beckmann)
+{
+    json ggxJson = json::array();
+    json beckmannJson = json::array();
+
+    const int sampleCount = 100;
+    for (int i = 0; i < sampleCount; i++) {
+        const float x = 1.f * i / sampleCount;
+        const float theta = x * M_PI / 2.f;
+        const Vector3 v = sphericalToCartesian(0.f, theta);
+
+        const float ggxG1 = ggx.G1(v);
+        ggxJson.push_back({{ "x", x * 90 }, { "y", ggxG1 }});
+
+        // const float beckmannD = beckmann.D(m);
+        // beckmannJson.push_back({{ "x", x * 90 }, { "y", beckmannD }});
+    }
+
+    json jsonData = {
+        { { "legend", "ggx" }, { "data", ggxJson } },
+    };
+    return jsonData;
+}
+
+static void generateMicrofacetChartData()
+{
+    const float alpha = 0.2f;
+
+    GGX ggx(alpha);
+    Beckmann beckmann(alpha);
+
+    json jsonData;
+    jsonData["D"] = generateDJson(ggx, beckmann);
+    jsonData["G1"] = generateG1Json(ggx, beckmann);
 
     std::ofstream jsonFile("testbed-microfacet.json");
     jsonFile << jsonData.dump(4) << std::endl;
