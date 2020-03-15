@@ -1,4 +1,7 @@
+#include "beckmann.h"
+#include "coordinate.h"
 #include "fresnel.h"
+#include "ggx.h"
 #include "job.h"
 #include "snell.h"
 #include "tangent_frame.h"
@@ -97,11 +100,77 @@ static void generateTestJson()
     std::cout << "Wrote to testbed.json" << std::endl;
 }
 
+static json generateDJson(const GGX &ggx, const Beckmann &beckmann)
+{
+    json ggxJson = json::array();
+    json beckmannJson = json::array();
+
+    const int sampleCount = 100;
+    for (int i = 0; i < sampleCount; i++) {
+        const float x = 1.f * i / sampleCount;
+        const float theta = x * M_PI / 2.f;
+        const Vector3 m = sphericalToCartesian(0.f, theta);
+
+        const float ggxD = ggx.D(m);
+        ggxJson.push_back({{ "x", x * 90 }, { "y", ggxD }});
+
+        const float beckmannD = beckmann.D(m);
+        beckmannJson.push_back({{ "x", x * 90 }, { "y", beckmannD }});
+    }
+
+    json jsonData = {
+        { { "legend", "ggx" }, { "data", ggxJson } },
+        { { "legend", "beckmann" }, { "data", beckmannJson } },
+    };
+    return jsonData;
+}
+
+static json generateG1Json(const GGX &ggx, const Beckmann &beckmann)
+{
+    json ggxJson = json::array();
+    json beckmannJson = json::array();
+
+    const int sampleCount = 100;
+    for (int i = 0; i < sampleCount; i++) {
+        const float x = 1.f * i / sampleCount;
+        const float theta = x * M_PI / 2.f;
+        const Vector3 v = sphericalToCartesian(0.f, theta);
+
+        const float ggxG1 = ggx.G1(v);
+        ggxJson.push_back({{ "x", x * 90 }, { "y", ggxG1 }});
+
+        // const float beckmannD = beckmann.D(m);
+        // beckmannJson.push_back({{ "x", x * 90 }, { "y", beckmannD }});
+    }
+
+    json jsonData = {
+        { { "legend", "ggx" }, { "data", ggxJson } },
+    };
+    return jsonData;
+}
+
+static void generateMicrofacetChartData()
+{
+    const float alpha = 0.2f;
+
+    GGX ggx(alpha);
+    Beckmann beckmann(alpha);
+
+    json jsonData;
+    jsonData["D"] = generateDJson(ggx, beckmann);
+    jsonData["G1"] = generateG1Json(ggx, beckmann);
+
+    std::ofstream jsonFile("testbed-microfacet.json");
+    jsonFile << jsonData.dump(4) << std::endl;
+    std::cout << "Wrote to testbed-microfacet.json" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello, world!" << std::endl;
 
-    generateTestJson();
+    // generateTestJson();
+    generateMicrofacetChartData();
 
     return 0;
 }

@@ -29,7 +29,7 @@ public:
         if (spp > 0) {
             return spp;
         }
-        return 99999;
+        return 9999999;
     }
 
     int portOffset() const { return m_json["port_offset"].get<int>(); }

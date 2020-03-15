@@ -1,12 +1,13 @@
 #include "plastic.h"
 
+#include "beckmann.h"
 #include "monte_carlo.h"
 #include "transform.h"
 
 Plastic::Plastic(Color diffuse, float roughness)
     : Material(Color(0.f)),
       m_lambertian(diffuse, Color(0.f)),
-      m_microfacet(roughness)
+      m_microfacet(std::make_unique<Beckmann>(roughness))
 {}
 
 Color Plastic::f(

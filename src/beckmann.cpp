@@ -6,6 +6,10 @@
 
 #include <cmath>
 
+Beckmann::Beckmann(float alpha)
+    : m_alpha(alpha)
+{}
+
 static Vector3 cartestianFromTan2Theta(float tan2Theta, float phi)
 {
     const float cosTheta = 1.f / sqrtf(1.f + tan2Theta);
@@ -24,28 +28,28 @@ static float sampleTan2Theta(float alpha, const Vector3 &wo, RandomGenerator &ra
     return -alpha * alpha * logXi;
 }
 
-Vector3 beckmannSampleWh(float alpha, const Vector3 &wo, RandomGenerator &random)
+Vector3 Beckmann::sampleWh(const Vector3 &wo, RandomGenerator &random) const
 {
     const float phi = random.next() * M_PI * 2.f;
-    const float tan2Theta = sampleTan2Theta(alpha, wo, random);
+    const float tan2Theta = sampleTan2Theta(m_alpha, wo, random);
 
     const Vector3 sample = cartestianFromTan2Theta(tan2Theta, phi);
     return sample;
 }
 
-float beckmannPDF(float alpha, const Vector3 &wh)
+float Beckmann::pdf(const Vector3 &wh) const
 {
-    return beckmannD(alpha, wh) * std::abs(TangentFrame::cosTheta(wh));
+    return D(wh) * std::abs(TangentFrame::cosTheta(wh));
 }
 
-float beckmannD(const float alpha, const Vector3 &wh)
+float Beckmann::D(const Vector3 &wh) const
 {
     const float tan2Theta = TangentFrame::tan2Theta(wh);
     if (std::isinf(tan2Theta)) { return 0.f; }
 
     const float cos2Theta = TangentFrame::cos2Theta(wh);
     const float cos4Theta = cos2Theta * cos2Theta;
-    const float alpha2 = alpha * alpha;
+    const float alpha2 = m_alpha * m_alpha;
 
     const float numerator = std::exp(
         -tan2Theta * (
@@ -58,7 +62,7 @@ float beckmannD(const float alpha, const Vector3 &wh)
     return numerator / denominator;
 }
 
-float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
+static float lambda(float alphaX, float alphaY, const Vector3 &w)
 {
     const float absTanTheta = std::abs(TangentFrame::tanTheta(w));
     if (std::isinf(absTanTheta)) { return 0.f; }
@@ -76,7 +80,10 @@ float beckmannLambda(float alphaX, float alphaY, const Vector3 &w)
         / (3.535f * a + 2.181f * a * a);
 }
 
-float beckmannG(float alphaX, float alphaY, const Vector3 &wo, const Vector3 &wi)
+float Beckmann::G(const Vector3 &wo, const Vector3 &wi) const
 {
-    return 1.f / (1.f + beckmannLambda(alphaX, alphaY, wo) + beckmannLambda(alphaX, alphaY, wi));
+    const float alphaX = m_alpha;
+    const float alphaY = m_alpha;
+
+    return 1.f / (1.f + lambda(alphaX, alphaY, wo) + lambda(alphaX, alphaY, wi));
 }

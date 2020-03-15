@@ -16,6 +16,10 @@ def chart(data):
         axes.plot(xs, ys)
 
     plt.legend([d["legend"] for d in data])
+
+    axes.axhline(color="black", linewidth=1.)
+    axes.axvline(color="black", linewidth=1.)
+
     plt.show()
 
 def vectors(data):
@@ -35,6 +39,10 @@ def vectors(data):
     plt.show()
 
 if __name__ == "__main__":
-    data = load("../Release/testbed.json")
-    chart(data["fresnel"])
-    vectors(data["snell"])
+    # data = load("../Release/testbed.json")
+    # chart(data["fresnel"])
+    # vectors(data["snell"])
+
+    data = load("../Release/testbed-microfacet.json")
+    # chart(data["D"])
+    chart(data["G1"])

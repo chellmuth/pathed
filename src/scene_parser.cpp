@@ -7,6 +7,7 @@
 #include "curve_parser.h"
 #include "disney.h"
 #include "environment_light.h"
+#include "ggx.h"
 #include "glass.h"
 #include "globals.h"
 #include "homogeneous_medium.h"
@@ -16,6 +17,7 @@
 #include "matrix.h"
 #include "medium.h"
 #include "microfacet.h"
+#include "microfacet_distribution.h"
 #include "mirror.h"
 #include "obj_parser.h"
 #include "oren_nayar.h"
@@ -63,6 +65,7 @@ static UV parseUV(json &UVJson);
 static Transform parseTransform(json &transformJson);
 static Transform parseTransform(json &transformJson, Transform defaultTransform);
 static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &materialLookup);
+static std::unique_ptr<MicrofacetDistribution> parseDistribution(json &distributionJson);
 
 static void parseMedia(
     json &mediaJson,
@@ -599,10 +602,9 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         float sigma = parseFloat(bsdfJson["sigma"]);
 
         return std::make_shared<OrenNayar>(diffuse, sigma);
-    } else if (bsdfJson["type"] == "beckmann") {
-        float alpha = parseFloat(bsdfJson["alpha"]);
-
-        return std::make_shared<Microfacet>(alpha);
+    } else if (bsdfJson["type"] == "microfacet") {
+        auto distribution = parseDistribution(bsdfJson["distribution"]);
+        return std::make_shared<Microfacet>(std::move(distribution));
     } else if (bsdfJson["type"] == "ptex") {
         std::string texturePath = parseString(bsdfJson["filename"]);
         auto texture = std::make_shared<PtexLocal>(texturePath);
@@ -644,6 +646,21 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         }
     } else {
         throw std::runtime_error("Unimplemented material: " + parseString(bsdfJson["type"], "<missing>"));
+    }
+}
+
+static std::unique_ptr<MicrofacetDistribution> parseDistribution(json &distributionJson)
+{
+    const float alpha = parseFloat(distributionJson["alpha"]);
+    if (distributionJson["type"] == "beckmann") {
+        return std::make_unique<Beckmann>(alpha);
+    } else if (distributionJson["type"] == "ggx") {
+        return std::make_unique<GGX>(alpha);
+    } else {
+        throw std::runtime_error(
+            "Unimplemented distribution: " +
+            parseString(distributionJson["type"], "<missing>")
+        );
     }
 }
 
