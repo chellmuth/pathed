@@ -8,6 +8,24 @@
     "fov": "70"
   },
 
+  "materials": [
+    {
+      "name": "wood",
+      "type": "lambertian",
+      "texture": "assets/staircase2/wood5.jpg"
+    },
+    {
+      "name": "wallpaper",
+      "type": "lambertian",
+      "texture": "assets/staircase2/Wallpaper.jpg"
+    },
+    {
+      "name": "floor-tiles",
+      "type": "lambertian",
+      "texture": "assets/staircase2/Tiles.jpg"
+    }
+  ],
+
   "models": [
     {
       "type": "obj",
@@ -21,8 +39,8 @@
       "type": "obj",
       "filename": "assets/staircase2/Mesh001.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "wood"
       }
     },
     {
@@ -101,8 +119,8 @@
       "type": "obj",
       "filename": "assets/staircase2/Mesh011.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "floor-tiles"
       }
     },
     {
@@ -141,22 +159,31 @@
       "type": "obj",
       "filename": "assets/staircase2/Mesh016.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "wood"
       }
     },
     {
       "type": "obj",
       "filename": "assets/staircase2/Mesh017.obj",
       "bsdf": {
-        "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "1" ]
+        "type": "reference",
+        "name": "wood"
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh018.obj",
+      "bsdf": {
+        "type": "reference",
+        "name": "wallpaper"
       }
     }
+
   ],
 
   "environmentLight": {
     "filename": "assets/teapot/envmap.exr",
-    "scale": "1"
+    "scale": "3"
   }
 }
