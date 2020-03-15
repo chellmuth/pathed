@@ -25,7 +25,7 @@ def to_srgb(linear_image):
 def clip(image):
     return np.clip(image, 0.0, 1.0)
 
-def _convert(exr_path, png_path):
+def convert(exr_path, png_path):
     image = pyexr.read(str(exr_path))
 
     srgb = clip(to_srgb(image))
@@ -35,7 +35,7 @@ def _convert(exr_path, png_path):
 @click.argument("exr_path", type=click.Path(exists=True))
 @click.argument("png_path", type=click.Path(exists=False, file_okay=True))
 def init(exr_path, png_path):
-    _convert(exr_path, png_path)
+    convert(exr_path, png_path)
 
 if __name__ == "__main__":
     init()
