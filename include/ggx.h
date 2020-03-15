@@ -16,4 +16,6 @@ public:
 
 private:
     float m_alpha;
+
+    float G1(const Vector3 &v) const;
 };

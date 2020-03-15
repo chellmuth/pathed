@@ -21,7 +21,7 @@ Vector3 GGX::sampleWh(const Vector3 &wo, RandomGenerator &random) const
     const float theta = std::atan(numerator / denominator);
     const float phi = M_TWO_PI * xi2;
 
-    const Vector3 cartesian = sphericalToCartesian(theta, phi);
+    const Vector3 cartesian = sphericalToCartesian(phi, theta);
     return cartesian;
 }
 
@@ -46,13 +46,18 @@ float GGX::D(const Vector3 &wh) const
     return alpha2 / denominator;
 }
 
-float GGX::G(const Vector3 &wo, const Vector3 &wi) const
+float GGX::G1(const Vector3 &v) const
 {
-    const float tan2Theta = TangentFrame::tan2Theta(wo);
+    const float tan2Theta = TangentFrame::tan2Theta(v);
     if (std::isinf(tan2Theta)) { return 0.f; }
 
     const float alpha2 = m_alpha * m_alpha;
     const float sqrtTerm = (1 + alpha2 * tan2Theta);
 
     return 2.f / (1 + std::sqrt(sqrtTerm));
+}
+
+float GGX::G(const Vector3 &wo, const Vector3 &wi) const
+{
+    return G1(wo) * G1(wi);
 }
