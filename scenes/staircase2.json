@@ -1,0 +1,162 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "6.9118194580078125", "1.6516278982162476", "2.5541365146636963" ],
+      "target": [ "2.328019380569458", "1.6516276597976685", "0.33640459179878235" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "70"
+  },
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh000.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh001.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh002.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh003.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh004.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh005.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh006.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh007.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh008.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh009.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh010.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh011.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh012.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh013.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh014.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh015.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh016.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/staircase2/Mesh017.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "1" ]
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/teapot/envmap.exr",
+    "scale": "1"
+  }
+}
