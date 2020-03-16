@@ -93,8 +93,8 @@ void matrix::rotateX(GLfloat (&result)[4][4], GLfloat theta)
     makeIdentity(rotation);
 
     rotation[1][1] = cosf(theta);
-    rotation[1][2] = sinf(theta);
-    rotation[2][1] = -sinf(theta);
+    rotation[1][2] = -sinf(theta);
+    rotation[2][1] = sinf(theta);
     rotation[2][2] = cosf(theta);
 
     GLfloat original[4][4];
@@ -123,8 +123,8 @@ void matrix::rotateZ(GLfloat (&result)[4][4], GLfloat theta)
     makeIdentity(rotation);
 
     rotation[0][0] = cosf(theta);
-    rotation[0][1] = sinf(theta);
-    rotation[1][0] = -sinf(theta);
+    rotation[0][1] = -sinf(theta);
+    rotation[1][0] = sinf(theta);
     rotation[1][1] = cosf(theta);
 
     GLfloat original[4][4];

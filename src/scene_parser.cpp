@@ -693,7 +693,7 @@ static Transform parseTransform(json &transformJson)
 
     if (rotate.is_array()) {
          rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
-         rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
+         rotateY = -parseFloat(rotate[1]) * M_PI / 180.f;
          rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
     }
 
@@ -717,9 +717,9 @@ static Transform parseTransform(json &transformJson)
         scaleZ
     );
 
+    matrix::rotateZ(matrix, rotateZ);
     matrix::rotateX(matrix, rotateX);
     matrix::rotateY(matrix, rotateY);
-    matrix::rotateZ(matrix, rotateZ);
 
     matrix::translate(
         matrix,
@@ -737,9 +737,9 @@ static Transform parseTransform(json &transformJson)
         -translateZ
     );
 
-    matrix::rotateZ(inverse, -rotateZ);
     matrix::rotateY(inverse, -rotateY);
     matrix::rotateX(inverse, -rotateX);
+    matrix::rotateZ(inverse, -rotateZ);
 
     matrix::scale(
         inverse,

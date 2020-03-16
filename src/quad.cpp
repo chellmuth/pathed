@@ -21,13 +21,13 @@ void Quad::parse(
     );
 
     Point3 points[] = {
-        transform.apply(Point3(-1.f, -1.f, 0.f)),
-        transform.apply(Point3(1.f, -1.f, 0.f)),
-        transform.apply(Point3(-1.f, 1.f, 0.f)),
+        transform.apply(Point3(-1.f, 0.f, -1.f)),
+        transform.apply(Point3(-1.f, 0.f, 1.f)),
+        transform.apply(Point3(1.f, 0.f, -1.f)),
 
-        transform.apply(Point3(-1.f, 1.f, 0.f)),
-        transform.apply(Point3(1.f, -1.f, 0.f)),
-        transform.apply(Point3(1.f, 1.f, 0.f))
+        transform.apply(Point3(-1.f, 0.f, 1.f)),
+        transform.apply(Point3(1.f, 0.f, 1.f)),
+        transform.apply(Point3(1.f, 0.f, -1.f)),
     };
 
     UV uvs[] = {
@@ -101,7 +101,7 @@ void Quad::parse(
         3 * 2                             /* item count */
     );
 
-    Vector3 normal = Vector3(0.f, 0.f, 1.f);
+    Vector3 normal = Vector3(0.f, 1.f, 0.f);
     for (int i = 0; i < 3 * 2; i++) {
         Vector3 transformedNormal = transform.apply(normal).normalized();
 
