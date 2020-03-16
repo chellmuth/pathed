@@ -617,7 +617,17 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
     } else if (bsdfJson["type"] == "plastic") {
         const Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         const float roughness = parseFloat(bsdfJson["roughness"]);
-        return std::make_shared<Plastic>(diffuse, roughness);
+
+        if (bsdfJson["texture"].is_string()) {
+            std::string texturePath = bsdfJson["texture"].get<std::string>();
+            auto texture = std::make_shared<Texture>(texturePath);
+            texture->load();
+
+            auto lambertianPtr = std::make_unique<Lambertian>(texture, Color(0.f));
+            return std::make_shared<Plastic>(std::move(lambertianPtr), roughness);
+        } else {
+            return std::make_shared<Plastic>(diffuse, roughness);
+        }
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

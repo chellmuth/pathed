@@ -6,7 +6,13 @@
 
 Plastic::Plastic(Color diffuse, float roughness)
     : Material(Color(0.f)),
-      m_lambertian(diffuse, Color(0.f)),
+      m_lambertian(std::make_unique<Lambertian>(diffuse, Color(0.f))),
+      m_microfacet(std::make_unique<Beckmann>(roughness))
+{}
+
+Plastic::Plastic(std::unique_ptr<Lambertian> lambertian, float roughness)
+    : Material(Color(0.f)),
+      m_lambertian(std::move(lambertian)),
       m_microfacet(std::make_unique<Beckmann>(roughness))
 {}
 
@@ -18,7 +24,7 @@ Color Plastic::f(
 {
     float lambertianPDF;
     float microfacetPDF;
-    const Color f = m_lambertian.f(intersection, wiWorld, &lambertianPDF) +
+    const Color f = m_lambertian->f(intersection, wiWorld, &lambertianPDF) +
         m_microfacet.f(intersection, wiWorld, &microfacetPDF);
 
     *pdf = (lambertianPDF + microfacetPDF) / 2.f;
@@ -33,7 +39,7 @@ BSDFSample Plastic::sample(
 {
     const float xi = random.next();
     if (xi > 0.5f) {
-        BSDFSample sample = m_lambertian.sample(intersection, random);
+        BSDFSample sample = m_lambertian->sample(intersection, random);
 
         float microfacetPDF;
         Color microfacetThroughput = m_microfacet.f(intersection, sample.wiWorld, &microfacetPDF);
@@ -48,7 +54,7 @@ BSDFSample Plastic::sample(
         BSDFSample sample = m_microfacet.sample(intersection, random);
 
         float lambertianPDF;
-        Color lambertianThroughput = m_lambertian.f(intersection, sample.wiWorld, &lambertianPDF);
+        Color lambertianThroughput = m_lambertian->f(intersection, sample.wiWorld, &lambertianPDF);
 
         return BSDFSample({
             sample.wiWorld,

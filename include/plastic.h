@@ -14,6 +14,7 @@
 class Plastic : public Material {
 public:
     Plastic(Color diffuse, float roughness);
+    Plastic(std::unique_ptr<Lambertian> lambertian, float roughness);
 
     Color f(
         const Intersection &intersection,
@@ -27,10 +28,10 @@ public:
     ) const override;
 
     void writeStream(std::ostream &os) const override {
-        os << "[Plastic lambertian=" << m_lambertian << " microfacet=" << m_microfacet << "]";
+        os << "[Plastic lambertian=" << *m_lambertian << " microfacet=" << m_microfacet << "]";
     }
 
 private:
-    Lambertian m_lambertian;
+    std::unique_ptr<Lambertian> m_lambertian;
     Microfacet m_microfacet;
 };
