@@ -6,6 +6,7 @@
 #include "lambertian.h"
 #include "material.h"
 #include "microfacet.h"
+#include "microfacet_distribution.h"
 #include "random_generator.h"
 #include "vector.h"
 
@@ -13,8 +14,8 @@
 
 class Plastic : public Material {
 public:
-    Plastic(Color diffuse, float roughness);
-    Plastic(std::unique_ptr<Lambertian> lambertian, float roughness);
+    Plastic(Color diffuse, std::unique_ptr<MicrofacetDistribution> distributionPtr);
+    Plastic(std::unique_ptr<Lambertian> lambertianPtr, std::unique_ptr<MicrofacetDistribution> distributionPtr);
 
     Color f(
         const Intersection &intersection,
@@ -28,10 +29,10 @@ public:
     ) const override;
 
     void writeStream(std::ostream &os) const override {
-        os << "[Plastic lambertian=" << *m_lambertian << " microfacet=" << m_microfacet << "]";
+        os << "[Plastic lambertian=" << *m_lambertianPtr << " microfacet=" << m_microfacet << "]";
     }
 
 private:
-    std::unique_ptr<Lambertian> m_lambertian;
+    std::unique_ptr<Lambertian> m_lambertianPtr;
     Microfacet m_microfacet;
 };

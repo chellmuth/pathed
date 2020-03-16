@@ -12,7 +12,10 @@
     {
       "name": "wood",
       "type": "plastic",
-      "roughness": "0.1",
+      "distribution": {
+        "type": "ggx",
+        "alpha": "0.1"
+      },
       "diffuseReflectance": [ "0", "0", "0" ],
       "texture": "assets/staircase2/wood5.jpg"
     },

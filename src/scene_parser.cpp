@@ -603,8 +603,8 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
 
         return std::make_shared<OrenNayar>(diffuse, sigma);
     } else if (bsdfJson["type"] == "microfacet") {
-        auto distribution = parseDistribution(bsdfJson["distribution"]);
-        return std::make_shared<Microfacet>(std::move(distribution));
+        auto distributionPtr = parseDistribution(bsdfJson["distribution"]);
+        return std::make_shared<Microfacet>(std::move(distributionPtr));
     } else if (bsdfJson["type"] == "ptex") {
         std::string texturePath = parseString(bsdfJson["filename"]);
         auto texture = std::make_shared<PtexLocal>(texturePath);
@@ -616,7 +616,7 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         return std::make_shared<Disney>(diffuse);
     } else if (bsdfJson["type"] == "plastic") {
         const Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
-        const float roughness = parseFloat(bsdfJson["roughness"]);
+        auto distributionPtr = parseDistribution(bsdfJson["distribution"]);
 
         if (bsdfJson["texture"].is_string()) {
             std::string texturePath = bsdfJson["texture"].get<std::string>();
@@ -624,9 +624,12 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
             texture->load();
 
             auto lambertianPtr = std::make_unique<Lambertian>(texture, Color(0.f));
-            return std::make_shared<Plastic>(std::move(lambertianPtr), roughness);
+            return std::make_shared<Plastic>(
+                std::move(lambertianPtr),
+                std::move(distributionPtr)
+            );
         } else {
-            return std::make_shared<Plastic>(diffuse, roughness);
+            return std::make_shared<Plastic>(diffuse, std::move(distributionPtr));
         }
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
