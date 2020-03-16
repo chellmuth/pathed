@@ -26,7 +26,12 @@
     },
     {
       "name": "floor-tiles",
-      "type": "lambertian",
+      "type": "plastic",
+      "distribution": {
+        "type": "ggx",
+        "alpha": "0.01"
+      },
+      "diffuseReflectance": [ "0", "0", "0" ],
       "texture": "assets/staircase2/Tiles.jpg"
     },
     {
