@@ -395,6 +395,7 @@
       }
     },
     {
+      "comment": "back-light",
       "type": "quad",
       "transform": {
         "scale": [

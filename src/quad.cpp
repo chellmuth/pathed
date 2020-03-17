@@ -4,6 +4,26 @@
 #include "point.h"
 #include "triangle.h"
 
+static const Point3 yUpPoints[] = {
+    Point3(-1.f, 0.f, -1.f),
+    Point3(-1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, -1.f),
+
+    Point3(-1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, -1.f),
+};
+
+static const Point3 zUpPoints[] = {
+    Point3(-1.f, -1.f, 0.f),
+    Point3(1.f, -1.f, 0.f),
+    Point3(-1.f, 1.f, 0.f),
+
+    Point3(-1.f, 1.f, 0.f),
+    Point3(1.f, -1.f, 0.f),
+    Point3(1.f, 1.f, 0.f),
+};
+
 void Quad::parse(
     const Transform &transform,
     std::shared_ptr<Material> material,
@@ -21,27 +41,22 @@ void Quad::parse(
         6                       /* item count */
     );
 
-    // default to upAxis = Axis::Y
     Point3 points[] = {
-        Point3(-1.f, 0.f, -1.f),
-        Point3(1.f, 0.f, -1.f),
-        Point3(-1.f, 0.f, 1.f),
-
-        Point3(-1.f, 0.f, 1.f),
-        Point3(1.f, 0.f, -1.f),
-        Point3(1.f, 0.f, 1.f)
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
     };
 
-    if (upAxis == Axis::Z) {
-        for (int i = 0; i < 6; i++) {
-            const Point3 &p{points[i]};
-            points[i] = Point3(
-                p.x(), p.z(), p.y()
-            );
-        }
-    }
-
     for (int i = 0; i < 6; i++) {
+        if (upAxis == Axis::Y) {
+            points[i] = yUpPoints[i];
+        } else if (upAxis == Axis::Z) {
+            points[i] = zUpPoints[i];
+        }
+
         points[i] = transform.apply(points[i]);
     }
 

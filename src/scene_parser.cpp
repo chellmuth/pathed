@@ -257,6 +257,8 @@ static void parseObjects(
     RTCManager &rtcManager
 ) {
     for (auto &objectJson : objectsJson) {
+        if (parseBool(objectJson["skip"], false)) { continue; }
+
         bool needsRegistration = true;
 
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -716,6 +718,8 @@ static Transform parseTransform(json &transformJson)
         if (legacyMode) {
             rotateX *= -1;
             rotateZ *= -1;
+        } else {
+            rotateY *= -1;
         }
     }
 
