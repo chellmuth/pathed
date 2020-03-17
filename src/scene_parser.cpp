@@ -707,9 +707,9 @@ static Transform parseTransform(json &transformJson)
     float rotateZ = 0.f;
 
     if (rotate.is_array()) {
-         rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
-         rotateY = -parseFloat(rotate[1]) * M_PI / 180.f;
-         rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
+         rotateX = -parseFloat(rotate[0]) * M_PI / 180.f;
+         rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
+         rotateZ = -parseFloat(rotate[2]) * M_PI / 180.f;
     }
 
     auto &translate = transformJson["translate"];
