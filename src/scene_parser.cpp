@@ -66,6 +66,7 @@ static Transform parseTransform(json &transformJson);
 static Transform parseTransform(json &transformJson, Transform defaultTransform);
 static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &materialLookup);
 static std::unique_ptr<MicrofacetDistribution> parseDistribution(json &distributionJson);
+static Axis parseAxis(json &axisJson, Axis defaultAxis);
 
 static void parseMedia(
     json &mediaJson,
@@ -534,7 +535,8 @@ static void parseQuad(
         transform = parseTransform(transformJson);
     }
 
-    Quad::parse(transform, materialPtr, nullptr, surfaces);
+    Axis upAxis = parseAxis(quadJson["upAxis"], Axis::Y);
+    Quad::parse(transform, materialPtr, nullptr, surfaces, upAxis);
 }
 
 static void parseEnvironmentLight(
@@ -843,6 +845,22 @@ static UV parseUV(json &UVJson)
         stof(UVJson["u"].get<std::string>()),
         stof(UVJson["v"].get<std::string>())
     };
+}
+
+static Axis parseAxis(json &axisJson, Axis defaultAxis)
+{
+    try {
+        std::string axisString = parseString(axisJson);
+        if (axisString == "z") {
+            return Axis::Z;
+        }
+        if (axisString == "y") {
+            return Axis::Y;
+        }
+        throw std::runtime_error("Unsupported axis: " + axisString);
+    } catch (nlohmann::detail::type_error) {
+        return defaultAxis;
+    }
 }
 
 static bool checkString(json &stringJson, std::string *value)

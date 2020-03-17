@@ -12,6 +12,7 @@
   "models": [
     {
       "type": "quad",
+      "upAxis": "z",
       "transform": {
         "scale": [ "1000", "1000", "1" ],
         "rotate": [ "0", "0", "0" ],
@@ -33,7 +34,10 @@
       "bsdf": {
         "type": "plastic",
         "diffuseReflectance": [ "0.1", "0.1", "0.4" ],
-        "roughness": "0.1"
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.1"
+        }
       }
     }
   ],

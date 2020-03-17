@@ -43,6 +43,7 @@
     },
     {
       "type": "quad",
+      "upAxis": "z",
       "bsdf": {
         "type": "lambertian",
         "diffuseReflectance": [ "0.03", "0.03", "0.03" ]

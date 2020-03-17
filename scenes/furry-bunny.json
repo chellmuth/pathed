@@ -15,7 +15,10 @@
       "filename": "assets/furry-bunny/bunnyfur.pbrt",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.1",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.1"
+        },
         "diffuseReflectance": [ "0.5", "0.5", "0.2" ]
       }
     },
@@ -32,9 +35,13 @@
     },
     {
       "type": "quad",
+      "upAxis": "z",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.5",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.5"
+        },
         "diffuseReflectance": [ "0.1", "0.1", "0.1" ]
       },
       "transform": {

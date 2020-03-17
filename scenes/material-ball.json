@@ -68,6 +68,7 @@
     },
     {
       "type": "quad",
+      "upAxis": "z",
       "transform": {
         "translate": [
           "-0.708772",
