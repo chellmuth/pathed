@@ -13,6 +13,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Light.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "1.46089", "3.86075", "2.64273" ],
         "rotate": [ "-90", "0", "0" ],
         "translate": [ "-4.4391", "1.50656", "-4.44377" ]
@@ -115,6 +116,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh009.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "148.272", "0" ],
         "translate": [ "-1.95645", "0.648205", "-1.77687" ]
@@ -129,6 +131,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh000.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "148.272", "0" ],
         "translate": [ "-1.95645", "0.648205", "-1.77687" ]
@@ -143,6 +146,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh009.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "180", "0" ],
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
@@ -157,6 +161,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh000.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "180", "0" ],
         "translate": [ "-1.95645", "0.648205", "-2.67687" ]
@@ -171,6 +176,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh009.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "-160.056", "0" ],
         "translate": [ "-1.95645", "0.651268", "-3.57687" ]
@@ -185,6 +191,7 @@
       "type": "obj",
       "filename": "scenes/veach-ajar/models/Mesh000.obj",
       "transform": {
+        "legacy": true,
         "scale": [ "0.0891049", "0.0891049", "0.0891049" ],
         "rotate": [ "0", "-160.056", "0" ],
         "translate": [ "-1.95645", "0.651268", "-3.57687" ]

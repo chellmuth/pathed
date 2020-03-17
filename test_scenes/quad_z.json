@@ -1,0 +1,46 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "4", "4", "4" ],
+      "target": [ "0", "0", "0" ],
+      "up": [ "0", "0", "1" ]
+    },
+    "fov": "33"
+  },
+
+  "models": [
+    {
+      "type": "quad",
+      "upAxis": "z",
+      "transform": {
+        "scale": [ "0.75", "0.75", "0.75" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "1", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "1", "1", "0" ]
+      }
+    },
+    {
+      "type": "quad",
+      "upAxis": "z",
+      "transform": {
+        "scale": [ "0.75", "0.75", "0.75" ],
+        "rotate": [ "0", "0", "0" ],
+        "translate": [ "-1", "0", "0" ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0", "0", "0" ],
+        "emit": [ "1", "1", "1" ]
+      }
+    }
+
+  ],
+
+  "environmentLight": {
+    "filename": "assets/test/background.exr",
+    "scale": "1"
+  }
+}

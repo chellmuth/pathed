@@ -66,7 +66,10 @@
       "filename": "assets/mis-pbrt/geometry/plate1.ply",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.005",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.005"
+        },
         "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
@@ -75,7 +78,10 @@
       "filename": "assets/mis-pbrt/geometry/plate2.ply",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.02",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.02"
+        },
         "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
@@ -84,7 +90,10 @@
       "filename": "assets/mis-pbrt/geometry/plate3.ply",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.05",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.05"
+        },
         "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },
@@ -93,7 +102,10 @@
       "filename": "assets/mis-pbrt/geometry/plate4.ply",
       "bsdf": {
         "type": "plastic",
-        "roughness": "0.1",
+        "distribution": {
+          "type": "beckmann",
+          "alpha": "0.1"
+        },
         "diffuseReflectance": [ "0.07", "0.09", "0.13" ]
        }
     },

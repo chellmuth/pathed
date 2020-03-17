@@ -66,6 +66,7 @@ static Transform parseTransform(json &transformJson);
 static Transform parseTransform(json &transformJson, Transform defaultTransform);
 static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &materialLookup);
 static std::unique_ptr<MicrofacetDistribution> parseDistribution(json &distributionJson);
+static Axis parseAxis(json &axisJson, Axis defaultAxis);
 
 static void parseMedia(
     json &mediaJson,
@@ -256,6 +257,8 @@ static void parseObjects(
     RTCManager &rtcManager
 ) {
     for (auto &objectJson : objectsJson) {
+        if (parseBool(objectJson["skip"], false)) { continue; }
+
         bool needsRegistration = true;
 
         std::vector<std::shared_ptr<Surface>> localSurfaces;
@@ -534,7 +537,8 @@ static void parseQuad(
         transform = parseTransform(transformJson);
     }
 
-    Quad::parse(transform, materialPtr, nullptr, surfaces);
+    Axis upAxis = parseAxis(quadJson["upAxis"], Axis::Y);
+    Quad::parse(transform, materialPtr, nullptr, surfaces, upAxis);
 }
 
 static void parseEnvironmentLight(
@@ -603,8 +607,8 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
 
         return std::make_shared<OrenNayar>(diffuse, sigma);
     } else if (bsdfJson["type"] == "microfacet") {
-        auto distribution = parseDistribution(bsdfJson["distribution"]);
-        return std::make_shared<Microfacet>(std::move(distribution));
+        auto distributionPtr = parseDistribution(bsdfJson["distribution"]);
+        return std::make_shared<Microfacet>(std::move(distributionPtr));
     } else if (bsdfJson["type"] == "ptex") {
         std::string texturePath = parseString(bsdfJson["filename"]);
         auto texture = std::make_shared<PtexLocal>(texturePath);
@@ -616,8 +620,21 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         return std::make_shared<Disney>(diffuse);
     } else if (bsdfJson["type"] == "plastic") {
         const Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
-        const float roughness = parseFloat(bsdfJson["roughness"]);
-        return std::make_shared<Plastic>(diffuse, roughness);
+        auto distributionPtr = parseDistribution(bsdfJson["distribution"]);
+
+        if (bsdfJson["texture"].is_string()) {
+            std::string texturePath = bsdfJson["texture"].get<std::string>();
+            auto texture = std::make_shared<Texture>(texturePath);
+            texture->load();
+
+            auto lambertianPtr = std::make_unique<Lambertian>(texture, Color(0.f));
+            return std::make_shared<Plastic>(
+                std::move(lambertianPtr),
+                std::move(distributionPtr)
+            );
+        } else {
+            return std::make_shared<Plastic>(diffuse, std::move(distributionPtr));
+        }
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);
@@ -672,6 +689,8 @@ static Transform parseTransform(json &transformJson, Transform defaultTransform)
 
 static Transform parseTransform(json &transformJson)
 {
+    const bool legacyMode = parseBool(transformJson["legacy"], false);
+
     float matrix[4][4];
     float inverse[4][4];
 
@@ -692,9 +711,16 @@ static Transform parseTransform(json &transformJson)
     float rotateZ = 0.f;
 
     if (rotate.is_array()) {
-         rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
-         rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
-         rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
+        rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
+        rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
+        rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
+
+        if (legacyMode) {
+            rotateX *= -1;
+            rotateZ *= -1;
+        } else {
+            rotateY *= -1;
+        }
     }
 
     auto &translate = transformJson["translate"];
@@ -717,9 +743,15 @@ static Transform parseTransform(json &transformJson)
         scaleZ
     );
 
-    matrix::rotateX(matrix, rotateX);
-    matrix::rotateY(matrix, rotateY);
-    matrix::rotateZ(matrix, rotateZ);
+    if (legacyMode) {
+        matrix::rotateX(matrix, rotateX);
+        matrix::rotateY(matrix, rotateY);
+        matrix::rotateZ(matrix, rotateZ);
+    } else {
+        matrix::rotateZ(matrix, rotateZ);
+        matrix::rotateX(matrix, rotateX);
+        matrix::rotateY(matrix, rotateY);
+    }
 
     matrix::translate(
         matrix,
@@ -737,9 +769,15 @@ static Transform parseTransform(json &transformJson)
         -translateZ
     );
 
-    matrix::rotateZ(inverse, -rotateZ);
-    matrix::rotateY(inverse, -rotateY);
-    matrix::rotateX(inverse, -rotateX);
+    if (legacyMode) {
+        matrix::rotateZ(inverse, -rotateZ);
+        matrix::rotateY(inverse, -rotateY);
+        matrix::rotateX(inverse, -rotateX);
+    } else {
+        matrix::rotateY(inverse, -rotateY);
+        matrix::rotateX(inverse, -rotateX);
+        matrix::rotateZ(inverse, -rotateZ);
+    }
 
     matrix::scale(
         inverse,
@@ -830,6 +868,22 @@ static UV parseUV(json &UVJson)
         stof(UVJson["u"].get<std::string>()),
         stof(UVJson["v"].get<std::string>())
     };
+}
+
+static Axis parseAxis(json &axisJson, Axis defaultAxis)
+{
+    try {
+        std::string axisString = parseString(axisJson);
+        if (axisString == "z") {
+            return Axis::Z;
+        }
+        if (axisString == "y") {
+            return Axis::Y;
+        }
+        throw std::runtime_error("Unsupported axis: " + axisString);
+    } catch (nlohmann::detail::type_error) {
+        return defaultAxis;
+    }
 }
 
 static bool checkString(json &stringJson, std::string *value)

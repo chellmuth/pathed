@@ -16,6 +16,7 @@
       "scale": "1",
       "filename": "assets/dummy_medium.vol",
       "transform": {
+        "legacy": true,
         "translate": [ "1.0", "0.0", "1.2" ],
         "rotate": [ "45", "0", "0" ]
       }
@@ -34,6 +35,7 @@
       "filename": "assets/dummy_medium.obj",
       "internal_medium": "cloud",
       "transform": {
+        "legacy": true,
         "translate": [ "1.0", "0.0", "1.2" ],
         "rotate": [ "45", "0", "0" ]
       },

@@ -4,11 +4,32 @@
 #include "point.h"
 #include "triangle.h"
 
+static const Point3 yUpPoints[] = {
+    Point3(-1.f, 0.f, -1.f),
+    Point3(-1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, -1.f),
+
+    Point3(-1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, 1.f),
+    Point3(1.f, 0.f, -1.f),
+};
+
+static const Point3 zUpPoints[] = {
+    Point3(-1.f, -1.f, 0.f),
+    Point3(1.f, -1.f, 0.f),
+    Point3(-1.f, 1.f, 0.f),
+
+    Point3(-1.f, 1.f, 0.f),
+    Point3(1.f, -1.f, 0.f),
+    Point3(1.f, 1.f, 0.f),
+};
+
 void Quad::parse(
     const Transform &transform,
     std::shared_ptr<Material> material,
     std::shared_ptr<Medium> internalMedium,
-    std::vector<std::shared_ptr<Surface>> &surfaces
+    std::vector<std::shared_ptr<Surface>> &surfaces,
+    Axis upAxis
 ) {
     RTCGeometry rtcMesh = rtcNewGeometry(g_rtcDevice, RTC_GEOMETRY_TYPE_TRIANGLE);
     float *rtcVertices = (float *)rtcSetNewGeometryBuffer(
@@ -21,14 +42,23 @@ void Quad::parse(
     );
 
     Point3 points[] = {
-        transform.apply(Point3(-1.f, -1.f, 0.f)),
-        transform.apply(Point3(1.f, -1.f, 0.f)),
-        transform.apply(Point3(-1.f, 1.f, 0.f)),
-
-        transform.apply(Point3(-1.f, 1.f, 0.f)),
-        transform.apply(Point3(1.f, -1.f, 0.f)),
-        transform.apply(Point3(1.f, 1.f, 0.f))
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
+        Point3(0.f, 0.f, 0.f),
     };
+
+    for (int i = 0; i < 6; i++) {
+        if (upAxis == Axis::Y) {
+            points[i] = yUpPoints[i];
+        } else if (upAxis == Axis::Z) {
+            points[i] = zUpPoints[i];
+        }
+
+        points[i] = transform.apply(points[i]);
+    }
 
     UV uvs[] = {
         { 0.f, 0.f, },
@@ -101,7 +131,11 @@ void Quad::parse(
         3 * 2                             /* item count */
     );
 
-    Vector3 normal = Vector3(0.f, 0.f, 1.f);
+    Vector3 normal = upAxis == Axis::Y
+        ? Vector3(0.f, 1.f, 0.f)
+        : Vector3(0.f, 0.f, 1.f)
+    ;
+
     for (int i = 0; i < 3 * 2; i++) {
         Vector3 transformedNormal = transform.apply(normal).normalized();
 

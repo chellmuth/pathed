@@ -29,7 +29,9 @@
     },
     {
       "type": "quad",
+      "upAxis": "z",
       "transform": {
+        "legacy": true,
         "scale": [ "113.071", "113.071", "113.071" ],
         "rotate": [ "90", "45", "0" ],
         "translate": [ "0", "0", "0" ]

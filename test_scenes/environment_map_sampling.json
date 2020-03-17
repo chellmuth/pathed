@@ -11,7 +11,9 @@
   "models": [
     {
       "type": "quad",
+      "upAxis": "z",
       "transform": {
+        "legacy": true,
         "scale": [ "3", "3", "3" ],
         "rotate": [ "90", "0", "0" ]
       },

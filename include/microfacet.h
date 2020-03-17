@@ -13,9 +13,9 @@
 
 class Microfacet : public Material {
 public:
-    Microfacet(std::unique_ptr<MicrofacetDistribution> distribution)
+    Microfacet(std::unique_ptr<MicrofacetDistribution> distributionPtr)
     : Material(0.f),
-        m_distribution(std::move(distribution))
+        m_distributionPtr(std::move(distributionPtr))
     {}
 
     Color f(
@@ -30,5 +30,5 @@ public:
     ) const override;
 
 private:
-    std::unique_ptr<MicrofacetDistribution> m_distribution;
+    std::unique_ptr<MicrofacetDistribution> m_distributionPtr;
 };
