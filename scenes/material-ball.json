@@ -70,6 +70,7 @@
       "type": "quad",
       "upAxis": "z",
       "transform": {
+        "legacy": true,
         "translate": [
           "-0.708772",
           "0",
@@ -97,6 +98,7 @@
   "environmentLight": {
     "filename": "assets/material-ball/envmap.exr",
     "transform": {
+      "legacy": true,
       "rotate": [ "0", "247.2613999", "0" ]
     },
     "scale": "1"

@@ -687,6 +687,8 @@ static Transform parseTransform(json &transformJson, Transform defaultTransform)
 
 static Transform parseTransform(json &transformJson)
 {
+    const bool legacyMode = parseBool(transformJson["legacy"], false);
+
     float matrix[4][4];
     float inverse[4][4];
 
@@ -707,9 +709,14 @@ static Transform parseTransform(json &transformJson)
     float rotateZ = 0.f;
 
     if (rotate.is_array()) {
-         rotateX = -parseFloat(rotate[0]) * M_PI / 180.f;
-         rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
-         rotateZ = -parseFloat(rotate[2]) * M_PI / 180.f;
+        rotateX = parseFloat(rotate[0]) * M_PI / 180.f;
+        rotateY = parseFloat(rotate[1]) * M_PI / 180.f;
+        rotateZ = parseFloat(rotate[2]) * M_PI / 180.f;
+
+        if (legacyMode) {
+            rotateX *= -1;
+            rotateZ *= -1;
+        }
     }
 
     auto &translate = transformJson["translate"];
@@ -732,9 +739,15 @@ static Transform parseTransform(json &transformJson)
         scaleZ
     );
 
-    matrix::rotateZ(matrix, rotateZ);
-    matrix::rotateX(matrix, rotateX);
-    matrix::rotateY(matrix, rotateY);
+    if (legacyMode) {
+        matrix::rotateX(matrix, rotateX);
+        matrix::rotateY(matrix, rotateY);
+        matrix::rotateZ(matrix, rotateZ);
+    } else {
+        matrix::rotateZ(matrix, rotateZ);
+        matrix::rotateX(matrix, rotateX);
+        matrix::rotateY(matrix, rotateY);
+    }
 
     matrix::translate(
         matrix,
@@ -752,9 +765,15 @@ static Transform parseTransform(json &transformJson)
         -translateZ
     );
 
-    matrix::rotateY(inverse, -rotateY);
-    matrix::rotateX(inverse, -rotateX);
-    matrix::rotateZ(inverse, -rotateZ);
+    if (legacyMode) {
+        matrix::rotateZ(inverse, -rotateZ);
+        matrix::rotateY(inverse, -rotateY);
+        matrix::rotateX(inverse, -rotateX);
+    } else {
+        matrix::rotateY(inverse, -rotateY);
+        matrix::rotateX(inverse, -rotateX);
+        matrix::rotateZ(inverse, -rotateZ);
+    }
 
     matrix::scale(
         inverse,

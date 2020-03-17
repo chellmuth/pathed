@@ -46,6 +46,7 @@
     "filename": "assets/20060807_wells6_hd.exr",
     "scale": "2.5",
     "transform": {
+      "legacy": true,
       "scale": [ "1", "-1", "1" ],
       "rotate": [ "180", "0", "-90" ]
     }

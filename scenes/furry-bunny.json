@@ -45,6 +45,7 @@
         "diffuseReflectance": [ "0.1", "0.1", "0.1" ]
       },
       "transform": {
+        "legacy": true,
         "rotate": [ "90", "0", "0" ]
       }
     }
@@ -54,6 +55,7 @@
     "filename": "assets/20060807_wells6_hd.exr",
     "scale": "12",
     "transform": {
+      "legacy": true,
       "scale": [ "1", "1", "-1" ],
       "rotate": [ "180", "0", "0" ]
     }
