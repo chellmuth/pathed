@@ -5,6 +5,9 @@
 
 #include <sstream>
 
+Logger::LoggerCout Logger::cout;
+const bool Logger::enabled = false;
+
 void Logger::line(const std::string &line)
 {
     std::string directory = g_job->outputDirectory();
