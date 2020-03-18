@@ -4,6 +4,8 @@
 #include "random_generator.h"
 #include "vector.h"
 
+#include <ostream>
+
 class Material;
 class Scene;
 struct Intersection;
