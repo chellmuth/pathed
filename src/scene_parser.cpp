@@ -10,6 +10,7 @@
 #include "ggx.h"
 #include "glass.h"
 #include "globals.h"
+#include "homogeneous_absorption_medium.h"
 #include "homogeneous_medium.h"
 #include "job.h"
 #include "lambertian.h"
@@ -217,6 +218,11 @@ static void parseMedia(
                 parseTransform(mediumJson["transform"], Transform())
             );
 
+            media[mediumJson["name"]] = mediumPtr;
+        } else if (mediumJson["type"] == "homogeneous-absorption") {
+            Color sigmaA = parseColor(mediumJson["sigma_a"]);
+
+            auto mediumPtr = std::make_shared<HomogeneousAbsorptionMedium>(sigmaA);
             media[mediumJson["name"]] = mediumPtr;
         } else if (mediumJson["type"] == "homogeneous") {
             Color sigmaT = parseColor(mediumJson["sigma_t"]);

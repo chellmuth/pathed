@@ -131,8 +131,11 @@ Color BasicVolumeIntegrator::L(
                     sample
                 );
                 result += Ld * modulation;
+
                 // sample.contributions.push_back({result - previous, invPDF});
             }
+
+            modulation *= integrationResult.transmittance;
 
             interaction.isSurface = true;
             interaction.intersection = bounceIntersection;

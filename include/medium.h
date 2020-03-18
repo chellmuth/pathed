@@ -23,7 +23,7 @@ struct IntegrationResult {
 namespace IntegrationHelper {
     inline IntegrationResult noScatter() {
         return IntegrationResult({
-            false, Point3(0.f, 0.f, 0.f), Color(0.f), Color(0.f), Color(0.f)
+            false, Point3(0.f, 0.f, 0.f), Color(1.f), Color(0.f), Color(0.f)
         });
     }
 }
