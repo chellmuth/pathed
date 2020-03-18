@@ -86,16 +86,6 @@ void SampleIntegrator::sampleImage(
     const int width = g_job->width();
     const int height = g_job->height();
 
-    // samplePixel(
-    //     400 - 184 - 1, 97, // 0.0827, 0.0068, 0.0017
-    //     width, height,
-    //     radianceLookup,
-    //     sampleLookup,
-    //     scene,
-    //     random
-    // );
-    // std::cout << "DONE!" << std::endl;
-
     #pragma omp parallel for
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
@@ -107,7 +97,6 @@ void SampleIntegrator::sampleImage(
                 scene,
                 random
             );
-            // std::cout << "row: " << row << " col: " << col << std::endl;
         }
     }
 }

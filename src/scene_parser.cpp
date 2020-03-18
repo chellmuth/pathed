@@ -340,7 +340,12 @@ static void parseObj(
             auto shapePtr = surfacePtr->getShape();
             auto materialPtr = surfacePtr->getMaterial();
 
-            auto surface = std::make_shared<Surface>(shapePtr, materialPtr, mediumPtr);
+            auto surface = std::make_shared<Surface>(
+                shapePtr,
+                materialPtr,
+                mediumPtr,
+                nullptr
+            );
             localSurfaces.push_back(surface);
         }
 
@@ -382,7 +387,12 @@ static void parsePLY(
     for (auto surfacePtr : plySurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
+            auto surface = std::make_shared<Surface>(
+                shape,
+                materialPtr,
+                mediumPtr,
+                nullptr
+            );
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -412,7 +422,12 @@ static void parseCurve(
     for (auto surfacePtr : curveSurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr, nullptr);
+            auto surface = std::make_shared<Surface>(
+                shape,
+                materialPtr,
+                nullptr,
+                nullptr
+            );
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -517,7 +532,12 @@ static void parseSphere(
         parseFloat(sphereJson["radius"])
     );
 
-    auto surface = std::make_shared<Surface>(sphere, materialPtr, mediumPtr);
+    auto surface = std::make_shared<Surface>(
+        sphere,
+        materialPtr,
+        mediumPtr,
+        nullptr
+    );
 
     surfaces.push_back(surface);
 

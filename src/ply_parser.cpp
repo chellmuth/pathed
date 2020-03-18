@@ -124,6 +124,7 @@ std::vector<std::shared_ptr<Surface> > PLYParser::parse()
         auto surface = std::make_shared<Surface>(
             shape,
             material,
+            nullptr,
             nullptr
         );
 

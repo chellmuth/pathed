@@ -19,13 +19,15 @@ public:
     Surface(
         std::shared_ptr<Shape> shape,
         std::shared_ptr<Material> material,
-        std::shared_ptr<Medium> internalMedium
+        std::shared_ptr<Medium> internalMedium,
+        std::shared_ptr<Medium> externalMedium
     );
 
     Surface(
         std::shared_ptr<Shape> shape,
         std::shared_ptr<Material> material,
         std::shared_ptr<Medium> internalMedium,
+        std::shared_ptr<Medium> externalMedium,
         int faceIndex
     );
 
@@ -38,6 +40,7 @@ public:
     std::shared_ptr<Shape> getShape() const;
     std::shared_ptr<Material> getMaterial() const;
     std::shared_ptr<Medium> getInternalMedium() const { return m_internalMedium; }
+    std::shared_ptr<Medium> getExternalMedium() const { return m_externalMedium; }
     int getFaceIndex() const { return m_faceIndex; }
 
     Color getRadiance() const;
@@ -46,5 +49,6 @@ private:
     std::shared_ptr<Shape> m_shape;
     std::shared_ptr<Material> m_material;
     std::shared_ptr<Medium> m_internalMedium;
+    std::shared_ptr<Medium> m_externalMedium;
     int m_faceIndex;
 };

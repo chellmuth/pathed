@@ -106,10 +106,10 @@ void Quad::parse(
         points[5]
     );
 
-    auto surface1 = std::make_shared<Surface>(triangle1, material, internalMedium);
+    auto surface1 = std::make_shared<Surface>(triangle1, material, internalMedium, nullptr);
     surfaces.push_back(surface1);
 
-    auto surface2 = std::make_shared<Surface>(triangle2, material, internalMedium);
+    auto surface2 = std::make_shared<Surface>(triangle2, material, internalMedium, nullptr);
     surfaces.push_back(surface2);
 
     for (int i = 0; i < 6; i++) {
