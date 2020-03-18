@@ -327,13 +327,19 @@ static void parseObj(
     );
     auto objSurfaces = objParser.parse();
 
-    std::shared_ptr<Medium> mediumPtr(nullptr);
-    std::string mediumKey;
-    if (checkString(objJson["internal_medium"], &mediumKey)) {
-        mediumPtr = media[mediumKey];
+    std::shared_ptr<Medium> internalMediumPtr(nullptr);
+    std::string internalMediumKey;
+    if (checkString(objJson["internal_medium"], &internalMediumKey)) {
+        internalMediumPtr = media[internalMediumKey];
     }
 
-    if (mediumPtr) {
+    std::shared_ptr<Medium> externalMediumPtr(nullptr);
+    std::string externalMediumKey;
+    if (checkString(objJson["external_medium"], &externalMediumKey)) {
+        externalMediumPtr = media[externalMediumKey];
+    }
+
+    if (internalMediumPtr || externalMediumPtr) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
 
         for (auto surfacePtr : objSurfaces) {
@@ -343,8 +349,8 @@ static void parseObj(
             auto surface = std::make_shared<Surface>(
                 shapePtr,
                 materialPtr,
-                mediumPtr,
-                nullptr
+                internalMediumPtr,
+                externalMediumPtr
             );
             localSurfaces.push_back(surface);
         }

@@ -162,19 +162,32 @@ void BasicVolumeIntegrator::updateMediumPtrs(
         const bool isWiFrontside = intersection.normal.dot(bsdfSample.wiWorld) >= 0.f;
         if (isWoFrontside != isWiFrontside) {
 
+            std::shared_ptr<Medium> addMediumPtr;
+            std::shared_ptr<Medium> removeMediumPtr;
+
             // Internal, entering medium
             if (!isWiFrontside) {
-                auto mediumPtr = intersection.surface->getInternalMedium();
-                mediumPtrs.push_back(mediumPtr);
-                return;
+                addMediumPtr = intersection.surface->getInternalMedium();
+                removeMediumPtr = intersection.surface->getExternalMedium();
             } else { // External, exiting medium
-                auto mediumPtr = intersection.surface->getInternalMedium();
-                auto findResult = std::find(mediumPtrs.begin(), mediumPtrs.end(), mediumPtr);
+                removeMediumPtr = intersection.surface->getInternalMedium();
+                addMediumPtr = intersection.surface->getExternalMedium();
+            }
+
+            if (addMediumPtr) {
+                mediumPtrs.push_back(addMediumPtr);
+            }
+            if (removeMediumPtr) {
+                auto findResult = std::find(
+                    mediumPtrs.begin(),
+                    mediumPtrs.end(),
+                    removeMediumPtr
+                );
                 if (findResult != mediumPtrs.end()) {
                     mediumPtrs.erase(findResult);
                 }
-                return;
             }
+            return;
         } // else Reflection, medium does not change
     }
 }
