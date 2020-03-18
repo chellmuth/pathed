@@ -24,6 +24,24 @@ static const Point3 zUpPoints[] = {
     Point3(1.f, 1.f, 0.f),
 };
 
+static const UV zUpUVs[] = {
+    { 0.f, 0.f, },
+    { 1.f, 0.f, },
+    { 0.f, 1.f, },
+    { 0.f, 1.f, },
+    { 1.f, 0.f, },
+    { 1.f, 1.f, },
+};
+
+static const UV yUpUVs[] = {
+    { 0.f, 0.f, },
+    { 0.f, 1.f, },
+    { 1.f, 0.f, },
+    { 0.f, 1.f, },
+    { 1.f, 1.f, },
+    { 1.f, 0.f, },
+};
+
 void Quad::parse(
     const Transform &transform,
     std::shared_ptr<Material> material,
@@ -61,13 +79,21 @@ void Quad::parse(
     }
 
     UV uvs[] = {
-        { 0.f, 0.f, },
-        { 1.f, 0.f, },
-        { 0.f, 1.f, },
-        { 0.f, 1.f, },
-        { 1.f, 0.f, },
-        { 1.f, 1.f, },
+        { 0.f, 0.f },
+        { 0.f, 0.f },
+        { 0.f, 0.f },
+        { 0.f, 0.f },
+        { 0.f, 0.f },
+        { 0.f, 0.f },
     };
+
+    for (int i = 0; i < 6; i++) {
+        if (upAxis == Axis::Y) {
+            uvs[i] = yUpUVs[i];
+        } else if (upAxis == Axis::Z) {
+            uvs[i] = zUpUVs[i];
+        }
+    }
 
     std::shared_ptr<Shape> triangle1 = std::make_shared<Triangle>(
         points[0],
