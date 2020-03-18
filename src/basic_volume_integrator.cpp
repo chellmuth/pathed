@@ -96,6 +96,9 @@ Color BasicVolumeIntegrator::L(
         if (integrationResult.shouldScatter) {
             modulation *= integrationResult.weight;
 
+            // TODO: Necessary? Or taken care of by the PDF?
+            modulation *= integrationResult.transmittance;
+
             // Direct light on the scatter point
             const Color Ld = integrationResult.Ld;
             result += Ld * modulation;
@@ -130,12 +133,12 @@ Color BasicVolumeIntegrator::L(
                     random,
                     sample
                 );
+
+                modulation *= integrationResult.transmittance;
                 result += Ld * modulation;
 
                 // sample.contributions.push_back({result - previous, invPDF});
             }
-
-            modulation *= integrationResult.transmittance;
 
             interaction.isSurface = true;
             interaction.intersection = bounceIntersection;
