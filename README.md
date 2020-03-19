@@ -13,7 +13,7 @@ My most recent project has been attempting to render Disney's Moana research sce
 </p>
 
 <p align="center">
-<img src="https://pathed.s3-us-west-2.amazonaws.com/homogeneous-absorption-teapot.png" width="400">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/teapot.png?202003190048" width="400">
 <br /><b>Glass material, homogeneous absorption, and environment lighting</b>
 </p>
 
