@@ -20,7 +20,7 @@
     {
       "type": "obj",
       "filename": "assets/teapot-full/Mesh000.obj",
-      "internal_medium": "tea",
+      "external_medium": "tea",
       "bsdf": {
         "type": "glass",
         "ior": "1.13",
