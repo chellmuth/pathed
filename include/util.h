@@ -61,4 +61,8 @@ namespace util {
             std::exp(color.b())
         );
     }
+
+    inline float square(float x) {
+        return x * x;
+    }
 };

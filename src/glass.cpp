@@ -83,10 +83,18 @@ BSDFSample Glass::sample(
             ? 0.f
             : Color(fresnelTransmittance / cosTheta)
         ;
+
+        // PBRT page 961 "Non-symmetry Due to Refraction"
+        // Always incident / transmitted because we swap at top of
+        // function if we're going inside-out
+        const float nonSymmetricEtaCorrection = util::square(
+            etaIncident / etaTransmitted
+        );
+
         BSDFSample sample = {
             .wiWorld = intersection.tangentToWorld.apply(localWi),
             .pdf = fresnelTransmittance,
-            .throughput = throughput,
+            .throughput = throughput * nonSymmetricEtaCorrection,
             .material = this
         };
 
