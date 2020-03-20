@@ -8,18 +8,14 @@
     "fov": "20.114293"
   },
 
-  "media": [
-    {
-      "name": "glass-filling",
-      "type": "homogeneous-absorption",
-      "sigma_a": [ "0.0", "0.9", "0.0" ]
-    }
-  ],
-
   "materials": [
     {
       "name": "ball",
-      "type": "glass",
+      "type": "rough-transmission",
+      "distribution": {
+        "type": "beckmann",
+        "alpha": "0.1"
+      },
       "ior": "1.5"
     }
   ],

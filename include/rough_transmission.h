@@ -1,8 +1,6 @@
 #pragma once
 
-#include "beckmann.h"
 #include "color.h"
-#include "ggx.h"
 #include "intersection.h"
 #include "material.h"
 #include "microfacet_distribution.h"
