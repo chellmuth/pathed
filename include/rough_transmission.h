@@ -11,9 +11,9 @@
 
 #include <memory>
 
-class RoughRefraction : public Material {
+class RoughTransmission : public Material {
 public:
-    RoughRefraction(std::unique_ptr<MicrofacetDistribution> distributionPtr, float ior)
+    RoughTransmission(std::unique_ptr<MicrofacetDistribution> distributionPtr, float ior)
     : Material(0.f),
         m_distributionPtr(std::move(distributionPtr)),
         m_ior(ior)

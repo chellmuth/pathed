@@ -1,4 +1,4 @@
-#include "rough_refraction.h"
+#include "rough_transmission.h"
 
 #include "fresnel.h"
 #include "monte_carlo.h"
@@ -9,7 +9,7 @@
 #include <cmath>
 #include <iostream>
 
-Color RoughRefraction::f(
+Color RoughTransmission::f(
     const Intersection &intersection,
     const Vector3 &wiWorld,
     float *pdf
@@ -66,7 +66,7 @@ Color RoughRefraction::f(
     return value;
 }
 
-BSDFSample RoughRefraction::sample(
+BSDFSample RoughTransmission::sample(
     const Intersection &intersection,
     RandomGenerator &random
 ) const
