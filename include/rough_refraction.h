@@ -13,9 +13,10 @@
 
 class RoughRefraction : public Material {
 public:
-    RoughRefraction(std::unique_ptr<MicrofacetDistribution> distributionPtr)
+    RoughRefraction(std::unique_ptr<MicrofacetDistribution> distributionPtr, float ior)
     : Material(0.f),
-        m_distributionPtr(std::move(distributionPtr))
+        m_distributionPtr(std::move(distributionPtr)),
+        m_ior(ior)
     {}
 
     Color f(
@@ -30,5 +31,6 @@ public:
     ) const override;
 
 private:
+    float m_ior;
     std::unique_ptr<MicrofacetDistribution> m_distributionPtr;
 };

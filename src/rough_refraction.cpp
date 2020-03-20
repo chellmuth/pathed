@@ -15,32 +15,37 @@ Color RoughRefraction::f(
     float *pdf
 ) const
 {
-    const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
+    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
+    const Vector3 localWi = intersection.worldToTangent.apply(wiWorld).normalized();
 
-    if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
+    bool isWoFrontside = localWo.y() >= 0.f;
+    bool isWiFrontside = localWi.y() >= 0.f;
+
+    if (isWoFrontside == isWiFrontside) {
         *pdf = 0.f;
         return Color(0.f);
     }
 
-    if (wiWorld.dot(intersection.shadingNormal) < 0.f) {
-        *pdf = 0.f;
-        return Color(0.f);
+    float etaIncident = 1.f;
+    float etaTransmitted = m_ior;
+
+    if (!isWiFrontside) {
+        std::swap(etaIncident, etaTransmitted);
     }
 
-    const float cosThetaO = TangentFrame::absCosTheta(wo);
-    const float cosThetaI = TangentFrame::absCosTheta(wi);
-    const Vector3 wh = (wo + wi).normalized();
+    const float cosThetaO = TangentFrame::absCosTheta(localWo);
+    const float cosThetaI = TangentFrame::absCosTheta(localWi);
+    const Vector3 wh = (localWo + localWi).normalized();
 
-    *pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh));
+    *pdf = m_distributionPtr->pdf(wh) / (4.f * localWo.dot(wh));
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
 
-    float cosThetaIncident = util::clampClose(wi.dot(wh), 0.f, 1.f);
+    float cosThetaIncident = util::clampClose(localWi.dot(wh), 0.f, 1.f);
     float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f));
     float distribution = m_distributionPtr->D(wh);
-    float masking = m_distributionPtr->G(wo, wi);
+    float masking = m_distributionPtr->G(localWo, localWi);
     Color albedo(1.f);
 
     // std::cout << "D: " << distribution << std::endl;
@@ -48,8 +53,13 @@ Color RoughRefraction::f(
     // std::cout << "F: " << fresnel << std::endl;
     // std::cout << "cos's: " << cosThetaI << " " << cosThetaO << std::endl;
 
-    const Color value = albedo * distribution * masking * fresnel
-        / (4 * cosThetaI * cosThetaO);
+    const float dotProducts = (localWi.absDot(wh) * localWo.absDot(wh)) / (cosThetaO + cosThetaI);
+    const float numerator = etaTransmitted * (1.f - fresnel) * distribution * masking;
+    const float denominator = util::square(
+        etaIncident * localWi.absDot(wh) + etaTransmitted * localWo.absDot(wh)
+    );
+
+    const Color value = albedo * numerator / denominator;
 
     // std::cout << "value: " << value << std::endl;
 
