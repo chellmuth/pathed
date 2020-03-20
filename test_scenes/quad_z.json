@@ -19,7 +19,13 @@
       },
       "bsdf": {
         "type": "lambertian",
-        "diffuseReflectance": [ "1", "1", "0" ]
+        "albedo": {
+          "type": "checkerboard",
+          "onColor": [ "0.75", "0.75", "0.75" ],
+          "offColor": [ "0.25", "0.25", "0.25" ],
+          "resolution": { "u": "10", "v": "10" }
+        },
+        "diffuseReflectance": [ "1.0", "1.0", "1.0" ]
       }
     },
     {

@@ -59,7 +59,12 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
             width0,
             width1
         );
-        auto surfacePtr = std::make_shared<Surface>(splinePtr, m_materialPtr, nullptr);
+        auto surfacePtr = std::make_shared<Surface>(
+            splinePtr,
+            m_materialPtr,
+            nullptr,
+            nullptr
+        );
         surfaces.push_back({surfacePtr});
 
         for (int i = 0; i < points.size() - 3; i++) {
@@ -67,6 +72,7 @@ std::vector<std::vector<std::shared_ptr<Surface> > > BSplineParser::parse(
                 std::make_shared<Surface>(
                     std::make_shared<BlankSpline>(),
                     m_materialPtr,
+                    nullptr,
                     nullptr
                 )
             });

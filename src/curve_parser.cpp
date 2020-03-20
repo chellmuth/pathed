@@ -101,7 +101,7 @@ std::vector<std::shared_ptr<Surface> > CurveParser::parse()
     for (auto curvePtr : curves) {
         Transform identity;
         auto materialPtr = std::make_shared<Lambertian>(Color(1.f, 0.f, 0.f), Color(0.f));
-        auto surfacePtr = std::make_shared<Surface>(curvePtr, materialPtr, nullptr);
+        auto surfacePtr = std::make_shared<Surface>(curvePtr, materialPtr, nullptr, nullptr);
         surfaces.push_back(surfacePtr);
     }
 

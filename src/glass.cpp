@@ -57,10 +57,15 @@ BSDFSample Glass::sample(
     if (random.next() < fresnelReflectance) {
         localWi = localWo.reflect(Vector3(0.f, 1.f, 0.f));
 
+        const float cosTheta = TangentFrame::absCosTheta(localWi);
+        const Color throughput = cosTheta == 0.f
+            ? 0.f
+            : Color(fresnelReflectance / cosTheta)
+        ;
         BSDFSample sample = {
             .wiWorld = intersection.tangentToWorld.apply(localWi),
             .pdf = fresnelReflectance,
-            .throughput = Color(fresnelReflectance / TangentFrame::absCosTheta(localWi)),
+            .throughput = throughput,
             .material = this
         };
 
@@ -73,10 +78,23 @@ BSDFSample Glass::sample(
 
         const float fresnelTransmittance = 1.f - fresnelReflectance;
 
+        const float cosTheta = TangentFrame::absCosTheta(localWi);
+        const Color throughput = cosTheta == 0.f
+            ? 0.f
+            : Color(fresnelTransmittance / cosTheta)
+        ;
+
+        // PBRT page 961 "Non-symmetry Due to Refraction"
+        // Always incident / transmitted because we swap at top of
+        // function if we're going inside-out
+        const float nonSymmetricEtaCorrection = util::square(
+            etaIncident / etaTransmitted
+        );
+
         BSDFSample sample = {
             .wiWorld = intersection.tangentToWorld.apply(localWi),
             .pdf = fresnelTransmittance,
-            .throughput = Color(fresnelTransmittance / TangentFrame::absCosTheta(localWi)),
+            .throughput = throughput * nonSymmetricEtaCorrection,
             .material = this
         };
 

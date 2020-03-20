@@ -5,6 +5,8 @@
 #include "material.h"
 #include "vector.h"
 
+#include <ostream>
+
 class Glass : public Material {
 public:
     Glass(float ior);
@@ -22,6 +24,10 @@ public:
     ) const override;
 
     bool isDelta() const override { return true; }
+
+    virtual void writeStream(std::ostream &os) const {
+        os << "[Glass: ior=" << m_ior << "]";
+    }
 
 private:
     float m_ior;

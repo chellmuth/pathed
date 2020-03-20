@@ -10,6 +10,7 @@
 #include "ggx.h"
 #include "glass.h"
 #include "globals.h"
+#include "homogeneous_absorption_medium.h"
 #include "homogeneous_medium.h"
 #include "job.h"
 #include "lambertian.h"
@@ -218,6 +219,11 @@ static void parseMedia(
             );
 
             media[mediumJson["name"]] = mediumPtr;
+        } else if (mediumJson["type"] == "homogeneous-absorption") {
+            Color sigmaA = parseColor(mediumJson["sigma_a"]);
+
+            auto mediumPtr = std::make_shared<HomogeneousAbsorptionMedium>(sigmaA);
+            media[mediumJson["name"]] = mediumPtr;
         } else if (mediumJson["type"] == "homogeneous") {
             Color sigmaT = parseColor(mediumJson["sigma_t"]);
             Color sigmaS = parseColor(mediumJson["sigma_s"], Color(0.f));
@@ -321,20 +327,31 @@ static void parseObj(
     );
     auto objSurfaces = objParser.parse();
 
-    std::shared_ptr<Medium> mediumPtr(nullptr);
-    std::string mediumKey;
-    if (checkString(objJson["internal_medium"], &mediumKey)) {
-        mediumPtr = media[mediumKey];
+    std::shared_ptr<Medium> internalMediumPtr(nullptr);
+    std::string internalMediumKey;
+    if (checkString(objJson["internal_medium"], &internalMediumKey)) {
+        internalMediumPtr = media[internalMediumKey];
     }
 
-    if (mediumPtr) {
+    std::shared_ptr<Medium> externalMediumPtr(nullptr);
+    std::string externalMediumKey;
+    if (checkString(objJson["external_medium"], &externalMediumKey)) {
+        externalMediumPtr = media[externalMediumKey];
+    }
+
+    if (internalMediumPtr || externalMediumPtr) {
         std::vector<std::shared_ptr<Surface>> localSurfaces;
 
         for (auto surfacePtr : objSurfaces) {
             auto shapePtr = surfacePtr->getShape();
             auto materialPtr = surfacePtr->getMaterial();
 
-            auto surface = std::make_shared<Surface>(shapePtr, materialPtr, mediumPtr);
+            auto surface = std::make_shared<Surface>(
+                shapePtr,
+                materialPtr,
+                internalMediumPtr,
+                externalMediumPtr
+            );
             localSurfaces.push_back(surface);
         }
 
@@ -376,7 +393,12 @@ static void parsePLY(
     for (auto surfacePtr : plySurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr, mediumPtr);
+            auto surface = std::make_shared<Surface>(
+                shape,
+                materialPtr,
+                mediumPtr,
+                nullptr
+            );
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -406,7 +428,12 @@ static void parseCurve(
     for (auto surfacePtr : curveSurfaces) {
         auto shape = surfacePtr->getShape();
         if (materialPtr) {
-            auto surface = std::make_shared<Surface>(shape, materialPtr, nullptr);
+            auto surface = std::make_shared<Surface>(
+                shape,
+                materialPtr,
+                nullptr,
+                nullptr
+            );
             surfaces.push_back(surface);
         } else {
             surfaces.push_back(surfacePtr);
@@ -511,7 +538,12 @@ static void parseSphere(
         parseFloat(sphereJson["radius"])
     );
 
-    auto surface = std::make_shared<Surface>(sphere, materialPtr, mediumPtr);
+    auto surface = std::make_shared<Surface>(
+        sphere,
+        materialPtr,
+        mediumPtr,
+        nullptr
+    );
 
     surfaces.push_back(surface);
 

@@ -262,6 +262,7 @@ void ObjParser::processFace(std::shared_ptr<Shape> facePtr)
         shapePtr,
         materialPtr,
         nullptr,
+        nullptr,
         m_currentFaceIndex
     );
 
