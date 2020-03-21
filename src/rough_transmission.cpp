@@ -50,17 +50,26 @@ Color RoughTransmission::f(
 
     const float cosThetaO = TangentFrame::absCosTheta(localWo);
     const float cosThetaI = TangentFrame::absCosTheta(localWi);
-    const Vector3 wh = (localWo + localWi).normalized();
+    const Vector3 wh = Snell::computeHalfVector(
+        localWo,
+        localWi,
+        etaIncident,
+        etaTransmitted,
+        isReflect
+    );
+    Logger::cout << "Rough eval w_h: " << wh.toString() << std::endl;
 
-    const float cosThetaIncident = util::clampClose(localWi.dot(wh), 0.f, 1.f);
+    const float woDotWh = localWo.absDot(wh);
+    Logger::cout << "Rough eval fresnel args: " << woDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnel = Fresnel::dielectricReflectance(
-        cosThetaIncident,
+        woDotWh,
         etaIncident,
         etaTransmitted
     );
 
+    Logger::cout << "Rough eval F: " << fresnel << std::endl;
+
     const float wiDotWh = localWi.absDot(wh);
-    const float woDotWh = localWo.absDot(wh);
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
@@ -146,6 +155,7 @@ BSDFSample RoughTransmission::sample(
         const bool doesRefract = Snell::refract(
             localWo,
             &localWi,
+            wh,
             etaIncident,
             etaTransmitted
         );
@@ -163,12 +173,15 @@ BSDFSample RoughTransmission::sample(
             woDotWh
         );
 
+        Logger::cout << "Calculating throughput..." << std::endl;
+        const Color throughput = Material::f(intersection, wiWorld);
+
         const BSDFSample sample = {
             .wiWorld = wiWorld,
             .pdf = m_distributionPtr->pdf(wh)
                 * jacobian
                 * fresnelTransmittance,
-            .throughput = Material::f(intersection, wiWorld),
+            .throughput = throughput,
             .material = this
         };
 

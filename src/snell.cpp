@@ -9,13 +9,14 @@
 bool Snell::refract(
     const Vector3 &incidentLocal,
     Vector3 *transmittedLocal,
+    Vector3 normal,
     float etaIncident,
     float etaTransmitted
 ) {
-    Vector3 normal = Vector3(0.f, 1.f, 0.f);
-    if (incidentLocal.y() < 0.f) {
+    if (incidentLocal.dot(normal) < 0.f) {
         normal = normal * -1.f;
     }
+
     const Vector3 wIncidentPerpendicular = incidentLocal - (normal * incidentLocal.dot(normal));
     const Vector3 wTransmittedPerpendicular = -wIncidentPerpendicular * (etaIncident / etaTransmitted);
 
@@ -34,6 +35,38 @@ bool Snell::refract(
         return false;
     }
     return true;
+}
+
+bool Snell::refract(
+    const Vector3 &incidentLocal,
+    Vector3 *transmittedLocal,
+    float etaIncident,
+    float etaTransmitted
+) {
+    return refract(
+        incidentLocal,
+        transmittedLocal,
+        Vector3(0.f, 1.f, 0.f),
+        etaIncident,
+        etaTransmitted
+    );
+}
+
+Vector3 Snell::computeHalfVector(
+    const Vector3 incidentLocal,
+    const Vector3 outgoingLocal,
+    float etaIncident,
+    float etaTransmitted,
+    bool isReflect
+) {
+    if (isReflect) {
+        return (incidentLocal + outgoingLocal).normalized();
+    } else {
+        return (
+            incidentLocal * etaIncident
+            + outgoingLocal * etaTransmitted
+        ).negate().normalized();
+    }
 }
 
 float Snell::transmittedSinTheta(

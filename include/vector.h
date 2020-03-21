@@ -22,6 +22,7 @@ public:
     Vector3 cross(const Vector3& v) const;
     Vector3 reflect(const Vector3& normal) const;
     bool isZero() const { return m_x == 0.f && m_y == 0.f && m_z == 0.f; }
+    Vector3 negate() const;
 
     Vector3 normalized() const;
 

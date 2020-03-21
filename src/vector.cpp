@@ -71,6 +71,11 @@ Vector3 Vector3::reflect(const Vector3& normal) const
     return (normal * dot(normal) * 2) - *this;
 }
 
+Vector3 Vector3::negate() const
+{
+    return -*this;
+}
+
 Vector3 Vector3::operator* (const float t) const
 {
     return Vector3(
