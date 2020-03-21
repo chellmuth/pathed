@@ -3,6 +3,7 @@
 #include "fresnel.h"
 #include "logger.h"
 #include "monte_carlo.h"
+#include "snell.h"
 #include "tangent_frame.h"
 #include "transform.h"
 #include "util.h"
@@ -108,45 +109,69 @@ BSDFSample RoughTransmission::sample(
     RandomGenerator &random
 ) const
 {
-    // const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
-    // Vector3 localWi(0.f);
+    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
+    const Vector3 wh = m_distributionPtr->sampleWh(localWo, random);
 
-    // float etaIncident = 1.f;
-    // float etaTransmitted = m_ior;
+    float etaIncident = 1.f;
+    float etaTransmitted = m_ior;
 
-    // if (localWo.y() < 0.f) {
-    //     std::swap(etaIncident, etaTransmitted);
-    // }
+    if (localWo.y() < 0.f) {
+        std::swap(etaIncident, etaTransmitted);
+    }
 
-    // const bool doesRefract = Snell::refract(
-    //     localWo,
-    //     &localWi,
-    //     etaIncident,
-    //     etaTransmitted
-    // );
+    const float woDotWh = localWo.absDot(wh);
+    const float fresnelReflectance = Fresnel::dielectricReflectance(
+        woDotWh,
+        etaIncident, etaTransmitted
+    );
 
-    // const float fresnelReflectance = Fresnel::dielectricReflectance(
-    //     TangentFrame::absCosTheta(localWo),
-    //     etaIncident, etaTransmitted
-    // );
+    if (random.next() < fresnelReflectance) {
+        const Vector3 localWi = localWo.reflect(wh);
+        const Vector3 wiWorld = intersection.tangentToWorld.apply(localWi);
 
-    // const Vector3 wh = m_distributionPtr->sampleWh(wo, random);
+        const BSDFSample sample = {
+            .wiWorld = wiWorld,
+            .pdf = m_distributionPtr->pdf(wh)
+                * reflectJacobian(woDotWh)
+                * fresnelReflectance,
+            .throughput = Material::f(intersection, wiWorld),
+            .material = this
+        };
 
-    // const Vector3 wiWorld = intersection.tangentToWorld.apply(wi);
+        return sample;
+    } else {
+        Vector3 localWi(0.f);
 
-    // const BSDFSample sample = {
-    //     .wiWorld = wiWorld,
-    //     .pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh)),
-    //     .throughput = Material::f(intersection, wiWorld),
-    //     .material = this
-    // };
+        // Need to refract over a micronormal...
+        const bool doesRefract = Snell::refract(
+            localWo,
+            &localWi,
+            etaIncident,
+            etaTransmitted
+        );
+        assert(doesRefract);
 
-    const BSDFSample sample = {
-        .wiWorld = Vector3(0.f, 0.f, 0.f),
-        .pdf = 0.f,
-        .throughput = Color(0.f),
-        .material = this
-    };
+        const Vector3 wiWorld = intersection.tangentToWorld.apply(localWi);
 
-    return sample;
+        const float fresnelTransmittance = 1.f - fresnelReflectance;
+        const float wiDotWh = localWi.dot(wh);
+
+        const float jacobian = refractJacobian(
+            etaIncident,
+            etaTransmitted,
+            wiDotWh,
+            woDotWh
+        );
+
+        const BSDFSample sample = {
+            .wiWorld = wiWorld,
+            .pdf = m_distributionPtr->pdf(wh)
+                * jacobian
+                * fresnelTransmittance,
+            .throughput = Material::f(intersection, wiWorld),
+            .material = this
+        };
+
+        return sample;
+    }
 }
