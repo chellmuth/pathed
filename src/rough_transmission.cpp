@@ -22,9 +22,9 @@ static float refractJacobian(
     float wiDotWh,
     float woDotWh
 ) {
-    const float numerator = util::square(etaTransmitted) * std::abs(woDotWh);
+    const float numerator = util::square(etaTransmitted) * std::abs(wiDotWh);
     const float denominator = util::square(
-        etaIncident * wiDotWh + etaTransmitted * woDotWh
+        etaIncident * woDotWh + etaTransmitted * wiDotWh
     );
     return numerator / denominator;
 }
@@ -83,7 +83,7 @@ Color RoughTransmission::f(
     const Color albedo(1.f);
 
     if (isReflect) {
-        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh);
+        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(wiAbsDotWh);
 
         Logger::cout << "Rough eval reflect PDF: " << *pdf << std::endl;
 
@@ -108,8 +108,10 @@ Color RoughTransmission::f(
             * distribution
             * masking;
         const float denominator = util::square(
-            etaIncident * wiDotWh + etaTransmitted * woDotWh
+            etaIncident * woDotWh + etaTransmitted * wiDotWh
         );
+
+        if (denominator == 0.f) { return Color(0.f); }
 
         // PBRT page 961 "Non-symmetry Due to Refraction"
         // Always incident / transmitted because we swap at top of
@@ -118,7 +120,13 @@ Color RoughTransmission::f(
             etaIncident / etaTransmitted
         );
 
-        const Color value = albedo * dotProducts * (numerator / denominator) * nonSymmetricEtaCorrection;
+        const Color value = albedo
+            * dotProducts
+            * (numerator / denominator)
+            * nonSymmetricEtaCorrection;
+
+        assert(!std::isinf(value.r()));
+        assert(!std::isnan(value.r()));
 
         if (value.r() < 0.f || value.g() < 0.f || value.b() < 0.f) {
             Logger::cout << value << std::endl;
@@ -159,12 +167,17 @@ BSDFSample RoughTransmission::sample(
         const Vector3 localWi = localWo.reflect(wh);
         const Vector3 wiWorld = intersection.tangentToWorld.apply(localWi);
 
+        const float wiAbsDotWh = localWi.absDot(wh);
+        const float pdf = m_distributionPtr->pdf(wh)
+            * reflectJacobian(wiAbsDotWh)
+            * fresnelReflectance;
+
+        const Color throughput = Material::f(intersection, wiWorld);
+
         const BSDFSample sample = {
             .wiWorld = wiWorld,
-            .pdf = m_distributionPtr->pdf(wh)
-                * reflectJacobian(woAbsDotWh)
-                * fresnelReflectance,
-            .throughput = Material::f(intersection, wiWorld),
+            .pdf = pdf,
+            .throughput = throughput,
             .material = this
         };
 
