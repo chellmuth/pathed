@@ -24,7 +24,7 @@ bool Snell::refract(
     const float wTransmittedParallelLength = sqrtf(std::max(0.f, 1.f - transmittedPerpendicularLength2));
     const Vector3 wTransmittedParallel = normal * -wTransmittedParallelLength;
 
-    const float cosThetaIncident = TangentFrame::cosTheta(incidentLocal);
+    const float cosThetaIncident = incidentLocal.absDot(normal);
     const float sin2ThetaIncident = Trig::sin2FromCos(cosThetaIncident);
     const float eta2 = (etaIncident / etaTransmitted) * (etaIncident / etaTransmitted);
     const float sin2ThetaTransmitted = eta2 * sin2ThetaIncident;
