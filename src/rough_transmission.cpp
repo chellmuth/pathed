@@ -57,18 +57,14 @@ Color RoughTransmission::f(
         etaTransmitted,
         isReflect
     );
-    Logger::cout << "Rough eval w_h: " << wh.toString() << std::endl;
 
     const float wiDotWh = localWi.dot(wh);
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
-    Logger::cout << "Rough eval fresnel args: " << wiDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnel = Fresnel::dielectricReflectance(
         wiAbsDotWh,
         etaIncident,
         etaTransmitted
     );
-
-    Logger::cout << "Rough eval F: " << fresnel << std::endl;
 
     const float woDotWh = localWo.dot(wh);
     const float woAbsDotWh = localWo.absDot(wh);
@@ -84,8 +80,6 @@ Color RoughTransmission::f(
     if (isReflect) {
         *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh);
 
-        Logger::cout << "Rough eval reflect PDF: " << *pdf << std::endl;
-
         const Color value = albedo * distribution * masking * fresnel
             / (4 * cosThetaI * cosThetaO);
 
@@ -98,8 +92,6 @@ Color RoughTransmission::f(
             wiDotWh,
             woDotWh
         );
-
-        Logger::cout << "Rough eval refract PDF: " << *pdf << std::endl;
 
         const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaI * cosThetaO);
         const float numerator = util::square(etaTransmitted)
@@ -124,15 +116,6 @@ Color RoughTransmission::f(
             * (numerator / denominator)
             * nonSymmetricEtaCorrection;
 
-        assert(!std::isinf(value.r()));
-        assert(!std::isnan(value.r()));
-
-        if (value.r() < 0.f || value.g() < 0.f || value.b() < 0.f) {
-            Logger::cout << value << std::endl;
-        }
-
-        // std::cout << "value: " << value << std::endl;
-
         return value;
     }
 }
@@ -155,8 +138,6 @@ BSDFSample RoughTransmission::sample(
     const float wiDotWh = localWi.dot(wh);
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.f);
 
-    Logger::cout << "Rough sample w_h: " << wh.toString() << std::endl;
-    Logger::cout << "Rough sample fresnel args: " << wiDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnelReflectance = Fresnel::dielectricReflectance(
         wiAbsDotWh,
         etaIncident, etaTransmitted
@@ -205,20 +186,10 @@ BSDFSample RoughTransmission::sample(
             woDotWh
         );
 
-        Logger::cout << "Calculating throughput..." << std::endl;
         const Color throughput = Material::f(intersection, woWorld);
-        Logger::cout << "Done! (" << throughput << ")" << std::endl;
-
         const float pdf = m_distributionPtr->pdf(wh)
             * jacobian
             * fresnelTransmittance;
-
-        Logger::cout << "Calculating PDF..." << std::endl
-                     << "  PDF: " << pdf << std::endl
-                     << "  D term: " << m_distributionPtr->pdf(wh) << std::endl
-                     << "  Jacobian: " << jacobian << std::endl
-                     << "  Fresnel: " << fresnelTransmittance << std::endl
-                     << "Done!" << std::endl;
 
         const BSDFSample sample = {
             .wiWorld = woWorld,
