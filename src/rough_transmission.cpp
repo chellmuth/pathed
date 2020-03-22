@@ -22,9 +22,9 @@ static float refractJacobian(
     float wiDotWh,
     float woDotWh
 ) {
-    const float numerator = util::square(etaTransmitted) * std::abs(wiDotWh);
+    const float numerator = util::square(etaTransmitted) * std::abs(woDotWh);
     const float denominator = util::square(
-        etaIncident * woDotWh + etaTransmitted * wiDotWh
+        etaIncident * wiDotWh + etaTransmitted * woDotWh
     );
     return numerator / denominator;
 }
@@ -35,55 +35,54 @@ Color RoughTransmission::f(
     float *pdf
 ) const
 {
-    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 localWi = intersection.worldToTangent.apply(wiWorld).normalized();
+    const auto [localWi, localWo] = buildLocalWs(intersection, wiWorld);
 
     float etaIncident = 1.f;
     float etaTransmitted = m_ior;
 
     const bool isWiFrontside = localWi.y() >= 0.f;
     const bool isWoFrontside = localWo.y() >= 0.f;
-    if (!isWoFrontside) {
+    if (!isWiFrontside) {
         std::swap(etaIncident, etaTransmitted);
     }
 
     const bool isReflect = isWiFrontside == isWoFrontside;
 
-    const float cosThetaO = TangentFrame::absCosTheta(localWo);
     const float cosThetaI = TangentFrame::absCosTheta(localWi);
+    const float cosThetaO = TangentFrame::absCosTheta(localWo);
     const Vector3 wh = Snell::computeHalfVector(
-        localWo,
         localWi,
+        localWo,
         etaIncident,
         etaTransmitted,
         isReflect
     );
     Logger::cout << "Rough eval w_h: " << wh.toString() << std::endl;
 
-    const float woDotWh = localWo.dot(wh);
-    const float woAbsDotWh = util::clamp(localWo.absDot(wh), 0.f, 1.);
-    Logger::cout << "Rough eval fresnel args: " << woDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
+    const float wiDotWh = localWi.dot(wh);
+    const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
+    Logger::cout << "Rough eval fresnel args: " << wiDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnel = Fresnel::dielectricReflectance(
-        woAbsDotWh,
+        wiAbsDotWh,
         etaIncident,
         etaTransmitted
     );
 
     Logger::cout << "Rough eval F: " << fresnel << std::endl;
 
-    const float wiDotWh = localWi.dot(wh);
-    const float wiAbsDotWh = localWi.absDot(wh);
+    const float woDotWh = localWo.dot(wh);
+    const float woAbsDotWh = localWo.absDot(wh);
 
-    if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
+    if (cosThetaI == 0.f || cosThetaO == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
 
     const float distribution = m_distributionPtr->D(wh);
-    const float masking = m_distributionPtr->G(localWo, localWi);
+    const float masking = m_distributionPtr->G(localWi, localWo);
 
     const Color albedo(1.f);
 
     if (isReflect) {
-        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(wiAbsDotWh);
+        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh);
 
         Logger::cout << "Rough eval reflect PDF: " << *pdf << std::endl;
 
@@ -102,13 +101,13 @@ Color RoughTransmission::f(
 
         Logger::cout << "Rough eval refract PDF: " << *pdf << std::endl;
 
-        const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaO * cosThetaI);
+        const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaI * cosThetaO);
         const float numerator = util::square(etaTransmitted)
             * (1.f - fresnel)
             * distribution
             * masking;
         const float denominator = util::square(
-            etaIncident * woDotWh + etaTransmitted * wiDotWh
+            etaIncident * wiDotWh + etaTransmitted * woDotWh
         );
 
         if (denominator == 0.f) { return Color(0.f); }
@@ -143,39 +142,39 @@ BSDFSample RoughTransmission::sample(
     RandomGenerator &random
 ) const
 {
-    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
-    const Vector3 wh = m_distributionPtr->sampleWh(localWo, random);
+    const Vector3 localWi = buildLocalWi(intersection);
+    const Vector3 wh = m_distributionPtr->sampleWh(localWi, random);
 
     float etaIncident = 1.f;
     float etaTransmitted = m_ior;
 
-    if (localWo.y() < 0.f) {
+    if (localWi.y() < 0.f) {
         std::swap(etaIncident, etaTransmitted);
     }
 
-    const float woDotWh = localWo.dot(wh);
-    const float woAbsDotWh = util::clamp(localWo.absDot(wh), 0.f, 1.f);
+    const float wiDotWh = localWi.dot(wh);
+    const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.f);
 
     Logger::cout << "Rough sample w_h: " << wh.toString() << std::endl;
-    Logger::cout << "Rough sample fresnel args: " << woDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
+    Logger::cout << "Rough sample fresnel args: " << wiDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnelReflectance = Fresnel::dielectricReflectance(
-        woAbsDotWh,
+        wiAbsDotWh,
         etaIncident, etaTransmitted
     );
 
     if (random.next() < fresnelReflectance) {
-        const Vector3 localWi = localWo.reflect(wh);
-        const Vector3 wiWorld = intersection.tangentToWorld.apply(localWi);
+        const Vector3 localWo = localWi.reflect(wh);
+        const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
 
-        const float wiAbsDotWh = localWi.absDot(wh);
+        const float woAbsDotWh = localWo.absDot(wh);
         const float pdf = m_distributionPtr->pdf(wh)
-            * reflectJacobian(wiAbsDotWh)
+            * reflectJacobian(woAbsDotWh)
             * fresnelReflectance;
 
-        const Color throughput = Material::f(intersection, wiWorld);
+        const Color throughput = Material::f(intersection, woWorld);
 
         const BSDFSample sample = {
-            .wiWorld = wiWorld,
+            .wiWorld = woWorld,
             .pdf = pdf,
             .throughput = throughput,
             .material = this
@@ -183,21 +182,21 @@ BSDFSample RoughTransmission::sample(
 
         return sample;
     } else {
-        Vector3 localWi(0.f);
+        Vector3 localWo(0.f);
 
         const bool doesRefract = Snell::refract(
-            localWo,
-            &localWi,
+            localWi,
+            &localWo,
             wh,
             etaIncident,
             etaTransmitted
         );
         assert(doesRefract);
 
-        const Vector3 wiWorld = intersection.tangentToWorld.apply(localWi);
+        const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
 
         const float fresnelTransmittance = 1.f - fresnelReflectance;
-        const float wiDotWh = localWi.dot(wh);
+        const float woDotWh = localWo.dot(wh);
 
         const float jacobian = refractJacobian(
             etaIncident,
@@ -207,7 +206,7 @@ BSDFSample RoughTransmission::sample(
         );
 
         Logger::cout << "Calculating throughput..." << std::endl;
-        const Color throughput = Material::f(intersection, wiWorld);
+        const Color throughput = Material::f(intersection, woWorld);
         Logger::cout << "Done! (" << throughput << ")" << std::endl;
 
         const float pdf = m_distributionPtr->pdf(wh)
@@ -222,7 +221,7 @@ BSDFSample RoughTransmission::sample(
                      << "Done!" << std::endl;
 
         const BSDFSample sample = {
-            .wiWorld = wiWorld,
+            .wiWorld = woWorld,
             .pdf = pdf,
             .throughput = throughput,
             .material = this
