@@ -21,7 +21,7 @@ static float refractJacobian(
     float wiDotWh,
     float woDotWh
 ) {
-    const float numerator = util::square(etaTransmitted) * woDotWh;
+    const float numerator = util::square(etaTransmitted) * std::abs(woDotWh);
     const float denominator = util::square(
         etaIncident * wiDotWh + etaTransmitted * woDotWh
     );
