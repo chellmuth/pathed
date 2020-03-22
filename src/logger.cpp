@@ -6,7 +6,7 @@
 #include <sstream>
 
 Logger::LoggerCout Logger::cout;
-const bool Logger::enabled = true;
+const bool Logger::enabled = false;
 
 void Logger::line(const std::string &line)
 {

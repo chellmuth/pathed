@@ -69,7 +69,8 @@ Color RoughTransmission::f(
 
     Logger::cout << "Rough eval F: " << fresnel << std::endl;
 
-    const float wiDotWh = localWi.absDot(wh);
+    const float wiDotWh = localWi.dot(wh);
+    const float wiAbsDotWh = localWi.absDot(wh);
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
@@ -95,13 +96,20 @@ Color RoughTransmission::f(
             woDotWh
         );
 
-        const float dotProducts = (wiDotWh * woDotWh) / (cosThetaO + cosThetaI);
+        const float dotProducts = (wiAbsDotWh * woDotWh) / (cosThetaO + cosThetaI);
         const float numerator = etaTransmitted * (1.f - fresnel) * distribution * masking;
         const float denominator = util::square(
             etaIncident * wiDotWh + etaTransmitted * woDotWh
         );
 
-        const Color value = albedo * numerator / denominator;
+        // PBRT page 961 "Non-symmetry Due to Refraction"
+        // Always incident / transmitted because we swap at top of
+        // function if we're going inside-out
+        const float nonSymmetricEtaCorrection = util::square(
+            etaIncident / etaTransmitted
+        );
+
+        const Color value = albedo * (numerator / denominator) * nonSymmetricEtaCorrection;
 
         if (value.r() < 0.f || value.g() < 0.f || value.b() < 0.f) {
             Logger::cout << value << std::endl;
@@ -175,12 +183,22 @@ BSDFSample RoughTransmission::sample(
 
         Logger::cout << "Calculating throughput..." << std::endl;
         const Color throughput = Material::f(intersection, wiWorld);
+        Logger::cout << "Done! (" << throughput << ")" << std::endl;
+
+        const float pdf = m_distributionPtr->pdf(wh)
+            * jacobian
+            * fresnelTransmittance;
+
+        Logger::cout << "Calculating PDF..." << std::endl
+                     << "  PDF: " << pdf << std::endl
+                     << "  D term: " << m_distributionPtr->pdf(wh) << std::endl
+                     << "  Jacobian: " << jacobian << std::endl
+                     << "  Fresnel: " << fresnelTransmittance << std::endl
+                     << "Done!" << std::endl;
 
         const BSDFSample sample = {
             .wiWorld = wiWorld,
-            .pdf = m_distributionPtr->pdf(wh)
-                * jacobian
-                * fresnelTransmittance,
+            .pdf = pdf,
             .throughput = throughput,
             .material = this
         };
