@@ -15,8 +15,7 @@ Color Microfacet::f(
     float *pdf
 ) const
 {
-    const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
+    const auto [wi, wo] = buildLocalWs(intersection, wiWorld);
 
     if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
         *pdf = 0.f;
@@ -61,16 +60,16 @@ BSDFSample Microfacet::sample(
     RandomGenerator &random
 ) const
 {
-    const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld);
-    const Vector3 wh = m_distributionPtr->sampleWh(wo, random);
-    const Vector3 wi = wo.reflect(wh);
+    const Vector3 wi = buildLocalWi(intersection);
+    const Vector3 wh = m_distributionPtr->sampleWh(wi, random);
+    const Vector3 wo = wi.reflect(wh);
 
-    const Vector3 wiWorld = intersection.tangentToWorld.apply(wi);
+    const Vector3 woWorld = intersection.tangentToWorld.apply(wo);
 
     BSDFSample sample = {
-        .wiWorld = wiWorld,
-        .pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh)),
-        .throughput = Material::f(intersection, wiWorld),
+        .wiWorld = woWorld,
+        .pdf = m_distributionPtr->pdf(wh) / (4.f * wo.absDot(wh)),
+        .throughput = Material::f(intersection, woWorld),
         .material = this
     };
 
