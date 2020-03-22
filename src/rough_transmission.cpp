@@ -10,9 +10,10 @@
 
 #include <cmath>
 
-static float reflectJacobian(float woDotWh)
+static float reflectJacobian(float woAbsDotWh)
 {
-    return 1.f / (4.f * woDotWh);
+    assert(woAbsDotWh >= 0.f);
+    return 1.f / (4.f * woAbsDotWh);
 }
 
 static float refractJacobian(
@@ -82,7 +83,9 @@ Color RoughTransmission::f(
     const Color albedo(1.f);
 
     if (isReflect) {
-        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woDotWh);
+        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh);
+
+        Logger::cout << "Rough eval reflect PDF: " << *pdf << std::endl;
 
         const Color value = albedo * distribution * masking * fresnel
             / (4 * cosThetaI * cosThetaO);
@@ -97,8 +100,13 @@ Color RoughTransmission::f(
             woDotWh
         );
 
-        const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaO + cosThetaI);
-        const float numerator = etaTransmitted * (1.f - fresnel) * distribution * masking;
+        Logger::cout << "Rough eval refract PDF: " << *pdf << std::endl;
+
+        const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaO * cosThetaI);
+        const float numerator = util::square(etaTransmitted)
+            * (1.f - fresnel)
+            * distribution
+            * masking;
         const float denominator = util::square(
             etaIncident * wiDotWh + etaTransmitted * woDotWh
         );
@@ -110,7 +118,7 @@ Color RoughTransmission::f(
             etaIncident / etaTransmitted
         );
 
-        const Color value = albedo * (numerator / denominator) * nonSymmetricEtaCorrection;
+        const Color value = albedo * dotProducts * (numerator / denominator) * nonSymmetricEtaCorrection;
 
         if (value.r() < 0.f || value.g() < 0.f || value.b() < 0.f) {
             Logger::cout << value << std::endl;
@@ -154,7 +162,7 @@ BSDFSample RoughTransmission::sample(
         const BSDFSample sample = {
             .wiWorld = wiWorld,
             .pdf = m_distributionPtr->pdf(wh)
-                * reflectJacobian(woDotWh)
+                * reflectJacobian(woAbsDotWh)
                 * fresnelReflectance,
             .throughput = Material::f(intersection, wiWorld),
             .material = this
