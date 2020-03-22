@@ -59,10 +59,11 @@ Color RoughTransmission::f(
     );
     Logger::cout << "Rough eval w_h: " << wh.toString() << std::endl;
 
-    const float woDotWh = localWo.absDot(wh);
+    const float woDotWh = localWo.dot(wh);
+    const float woAbsDotWh = util::clamp(localWo.absDot(wh), 0.f, 1.);
     Logger::cout << "Rough eval fresnel args: " << woDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnel = Fresnel::dielectricReflectance(
-        woDotWh,
+        woAbsDotWh,
         etaIncident,
         etaTransmitted
     );
@@ -96,7 +97,7 @@ Color RoughTransmission::f(
             woDotWh
         );
 
-        const float dotProducts = (wiAbsDotWh * woDotWh) / (cosThetaO + cosThetaI);
+        const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaO + cosThetaI);
         const float numerator = etaTransmitted * (1.f - fresnel) * distribution * masking;
         const float denominator = util::square(
             etaIncident * wiDotWh + etaTransmitted * woDotWh
@@ -136,9 +137,13 @@ BSDFSample RoughTransmission::sample(
         std::swap(etaIncident, etaTransmitted);
     }
 
-    const float woDotWh = localWo.absDot(wh);
+    const float woDotWh = localWo.dot(wh);
+    const float woAbsDotWh = util::clamp(localWo.absDot(wh), 0.f, 1.f);
+
+    Logger::cout << "Rough sample w_h: " << wh.toString() << std::endl;
+    Logger::cout << "Rough sample fresnel args: " << woDotWh << " " << etaIncident << " " << etaTransmitted << std::endl;
     const float fresnelReflectance = Fresnel::dielectricReflectance(
-        woDotWh,
+        woAbsDotWh,
         etaIncident, etaTransmitted
     );
 
@@ -159,7 +164,6 @@ BSDFSample RoughTransmission::sample(
     } else {
         Vector3 localWi(0.f);
 
-        // Need to refract over a micronormal...
         const bool doesRefract = Snell::refract(
             localWo,
             &localWi,
