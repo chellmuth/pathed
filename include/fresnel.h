@@ -10,6 +10,12 @@ namespace Fresnel {
         float etaT
     );
 
+    float dielectricReflectanceWalter(
+        float cosThetaIncident,
+        float etaI,
+        float etaT
+    );
+
     float dielectricReflectance(
         const Vector3 &incidentDirection,
         float etaIncident,

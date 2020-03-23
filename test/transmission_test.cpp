@@ -180,3 +180,20 @@ TEST_CASE("fresnel wi above wh below", "[microfacet]") {
 
     REQUIRE(actual == Approx(expected));
 }
+
+TEST_CASE("fresnel negative wi dot wh", "[debug]") {
+    {
+        const float expected = Fresnel::dielectricReflectanceWalter(
+            -0.56f, 1.f, 1.5
+        );
+
+        REQUIRE(1.f == Approx(expected));
+    }
+    {
+        const float expected = Fresnel::dielectricReflectanceWalter(
+            -0.88f, 1.f, 1.5
+        );
+
+        REQUIRE(0.0507509f == Approx(expected));
+    }
+}

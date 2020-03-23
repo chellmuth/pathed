@@ -20,7 +20,24 @@ float Fresnel::dielectricReflectanceWalter(
     float etaI,
     float etaT
 ) {
-    const float c = wi.absDot(wh);
+    return Fresnel::dielectricReflectanceWalter(
+        wi.dot(wh),
+        etaI,
+        etaT
+    );
+}
+
+float Fresnel::dielectricReflectanceWalter(
+    float cosThetaIncident,
+    float etaI,
+    float etaT
+) {
+    if (cosThetaIncident < 0.f) {
+        std::swap(etaI, etaT);
+        cosThetaIncident *= -1.f;
+    }
+
+    const float c = cosThetaIncident;
     const float invEta2 = (util::square(etaT) / util::square(etaI));
     const float sqrtG = invEta2 - 1 + util::square(c);
     if (sqrtG < 0.f) {

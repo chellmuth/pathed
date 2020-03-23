@@ -139,8 +139,7 @@ BSDFSample RoughTransmission::sample(
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.f);
 
     const float fresnelReflectance = Fresnel::dielectricReflectanceWalter(
-        localWi,
-        wh,
+        localWi, wh,
         etaIncident, etaTransmitted
     );
 
