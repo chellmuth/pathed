@@ -14,6 +14,28 @@ static float divide(const float a, const float b)
     return a / b;
 }
 
+float Fresnel::dielectricReflectanceWalter(
+    const Vector3 &wi,
+    const Vector3 &wh,
+    float etaI,
+    float etaT
+) {
+    const float c = wi.absDot(wh);
+    const float invEta2 = (util::square(etaT) / util::square(etaI));
+    const float sqrtG = invEta2 - 1 + util::square(c);
+    if (sqrtG < 0.f) {
+        // TIR
+        return 1.f;
+    }
+    const float g = std::sqrt(sqrtG);
+
+    const float term1 = util::square(g - c) / util::square(g + c);
+    const float term2 = 1 + util::square(c * (g + c) - 1) / util::square(c * (g - c) + 1);
+
+    const float F = 0.5f * term1 * term2;
+    return F;
+}
+
 float Fresnel::dielectricReflectance(
     const Vector3 &incidentDirection,
     float etaIncident,
@@ -47,8 +69,8 @@ float Fresnel::dielectricReflectance(
     assert(cosThetaIncident >= 0.f);
     assert(cosThetaIncident <= 1.f);
 
-    assert (cosThetaTransmitted >= 0.f);
-    assert (cosThetaTransmitted <= 1.f);
+    assert(cosThetaTransmitted >= 0.f);
+    assert(cosThetaTransmitted <= 1.f);
 
     const float rParallel = divide(
         etaTransmitted * cosThetaIncident - etaIncident * cosThetaTransmitted,

@@ -39,7 +39,7 @@ Color Microfacet::f(
     float cosThetaIncident = util::clampClose(wi.dot(wh), 0.f, 1.f);
     float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f));
     float distribution = m_distributionPtr->D(wh);
-    float masking = m_distributionPtr->G(wo, wi);
+    float masking = m_distributionPtr->G(wo, wi, wh);
     Color albedo(1.f);
 
     // std::cout << "D: " << distribution << std::endl;

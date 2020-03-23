@@ -12,7 +12,6 @@
 
 static float reflectJacobian(float woAbsDotWh)
 {
-    assert(woAbsDotWh >= 0.f);
     return 1.f / (4.f * woAbsDotWh);
 }
 
@@ -60,8 +59,9 @@ Color RoughTransmission::f(
 
     const float wiDotWh = localWi.dot(wh);
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
-    const float fresnel = Fresnel::dielectricReflectance(
-        wiAbsDotWh,
+    const float fresnel = Fresnel::dielectricReflectanceWalter(
+        localWi,
+        wh,
         etaIncident,
         etaTransmitted
     );
@@ -73,7 +73,7 @@ Color RoughTransmission::f(
     if (wh.isZero()) { return Color(0.f); }
 
     const float distribution = m_distributionPtr->D(wh);
-    const float masking = m_distributionPtr->G(localWi, localWo);
+    const float masking = m_distributionPtr->G(localWi, localWo, wh);
 
     const Color albedo(1.f);
 
@@ -138,8 +138,9 @@ BSDFSample RoughTransmission::sample(
     const float wiDotWh = localWi.dot(wh);
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.f);
 
-    const float fresnelReflectance = Fresnel::dielectricReflectance(
-        wiAbsDotWh,
+    const float fresnelReflectance = Fresnel::dielectricReflectanceWalter(
+        localWi,
+        wh,
         etaIncident, etaTransmitted
     );
 

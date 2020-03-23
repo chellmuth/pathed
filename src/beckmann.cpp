@@ -80,7 +80,7 @@ static float lambda(float alphaX, float alphaY, const Vector3 &w)
         / (3.535f * a + 2.181f * a * a);
 }
 
-float Beckmann::G(const Vector3 &wo, const Vector3 &wi) const
+float Beckmann::G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const
 {
     const float alphaX = m_alpha;
     const float alphaY = m_alpha;

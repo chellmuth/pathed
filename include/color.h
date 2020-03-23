@@ -12,6 +12,7 @@ public:
     float b() const { return m_b; }
 
     bool isBlack() const;
+    bool isValid() const;
 
     float luminance() const {
         return (

@@ -65,4 +65,9 @@ namespace util {
     inline float square(float x) {
         return x * x;
     }
+
+    inline float sign(float x) {
+        if (x < 0.f) { return -1.f; }
+        return 1.f;
+    }
 };

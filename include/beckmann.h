@@ -12,7 +12,7 @@ public:
     float pdf(const Vector3 &wh) const override;
 
     float D(const Vector3 &wh) const override;
-    float G(const Vector3 &wo, const Vector3 &wi) const override;
+    float G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const override;
 
 private:
     float m_alpha;

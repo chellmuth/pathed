@@ -57,7 +57,7 @@ float GGX::G1(const Vector3 &v) const
     return 2.f / (1 + std::sqrt(sqrtTerm));
 }
 
-float GGX::G(const Vector3 &wo, const Vector3 &wi) const
+float GGX::G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const
 {
     return G1(wo) * G1(wi);
 }

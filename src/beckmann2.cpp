@@ -3,6 +3,7 @@
 #include "coordinate.h"
 #include "tangent_frame.h"
 #include "trig.h"
+#include "util.h"
 
 #include <cmath>
 
@@ -45,7 +46,7 @@ float Beckmann2::D(const Vector3 &wh) const
 
 float Beckmann2::G1(const Vector3 &v) const
 {
-    const float a = 1.f / (m_alpha * TangentFrame::tanTheta(v));
+    const float a = 1.f / (m_alpha * TangentFrame::absTanTheta(v));
 
     if (a >= 1.6f) { return 1.f; }
 
@@ -55,7 +56,13 @@ float Beckmann2::G1(const Vector3 &v) const
     return numerator / denominator;
 }
 
-float Beckmann2::G(const Vector3 &wi, const Vector3 &wo) const
+float Beckmann2::G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const
 {
+    if (util::sign(wo.dot(wh)) != util::sign(TangentFrame::cosTheta(wo))) {
+        return 0.f;
+    }
+    if (util::sign(wi.dot(wh)) != util::sign(TangentFrame::cosTheta(wi))) {
+        return 0.f;
+    }
     return G1(wi) * G1(wo);
 }
