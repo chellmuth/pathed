@@ -3,6 +3,12 @@
 #include "vector.h"
 
 namespace Snell {
+    float cosThetaTransmitted(
+        float wiDotWh,
+        float etaIncident,
+        float etaTransmitted
+    );
+
     Vector3 refract(
         const Vector3 &wi,
         const Vector3 &wh,

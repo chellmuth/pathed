@@ -11,6 +11,29 @@ static float sign(float x) {
     return -1.f;
 }
 
+float Snell::cosThetaTransmitted(
+    float wiDotWh,
+    float etaIncident,
+    float etaTransmitted
+) {
+    if (wiDotWh < 0.f) {
+        std::swap(etaIncident, etaTransmitted);
+    }
+
+    const float eta = etaIncident / etaTransmitted;
+    const float eta2 = util::square(etaIncident) / util::square(etaTransmitted);
+
+    const float cosThetaIncident = wiDotWh;
+    const float sin2ThetaIncident = 1.f - cosThetaIncident * cosThetaIncident;
+    const float sin2ThetaTransmitted = eta2 * sin2ThetaIncident;
+
+    float cosThetaTransmitted = 0.f;
+    if (sin2ThetaTransmitted <= 1.f) {
+        cosThetaTransmitted = std::sqrt(std::max(1.f - sin2ThetaTransmitted, 0.f));
+    }
+    return cosThetaTransmitted;
+}
+
 Vector3 Snell::refract(
     const Vector3 &wi,
     const Vector3 &wh,
@@ -21,9 +44,6 @@ Vector3 Snell::refract(
     if (wiDotWh < 0.f) {
         std::swap(etaIncident, etaTransmitted);
     }
-
-    const Vector3 reflectWo = wi.reflect(wh);
-    const float reflectWoDotWh = reflectWo.dot(wh);
 
     const float eta = etaIncident / etaTransmitted;
     const float eta2 = util::square(etaIncident) / util::square(etaTransmitted);
