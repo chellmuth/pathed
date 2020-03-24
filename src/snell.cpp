@@ -6,6 +6,42 @@
 #include <algorithm>
 #include <cmath>
 
+static float sign(float x) {
+    if (x > 0.f) { return 1.f; }
+    return -1.f;
+}
+
+Vector3 Snell::refract(
+    const Vector3 &wi,
+    const Vector3 &wh,
+    float etaIncident,
+    float etaTransmitted
+) {
+    const float wiDotWh = wi.dot(wh);
+    if (wiDotWh < 0.f) {
+        std::swap(etaIncident, etaTransmitted);
+    }
+
+    const Vector3 reflectWo = wi.reflect(wh);
+    const float reflectWoDotWh = reflectWo.dot(wh);
+
+    const float eta = etaIncident / etaTransmitted;
+    const float eta2 = util::square(etaIncident) / util::square(etaTransmitted);
+
+    const float cosThetaIncident = wiDotWh;
+    const float sin2ThetaIncident = 1.f - cosThetaIncident * cosThetaIncident;
+    const float sin2ThetaTransmitted = eta2 * sin2ThetaIncident;
+
+    float cosThetaTransmitted = 0.f;
+    if (sin2ThetaTransmitted <= 1.f) {
+        cosThetaTransmitted = std::sqrt(std::max(1.f - sin2ThetaTransmitted, 0.f));
+    }
+
+    const Vector3 refractWo = wh * (eta * wiDotWh - sign(wiDotWh) * cosThetaTransmitted) - wi * eta;
+    return refractWo;
+}
+
+
 bool Snell::refract(
     const Vector3 &incidentLocal,
     Vector3 *transmittedLocal,
@@ -15,6 +51,7 @@ bool Snell::refract(
 ) {
     if (incidentLocal.dot(normal) < 0.f) {
         normal = normal * -1.f;
+        std::swap(etaIncident, etaTransmitted);
     }
 
     const Vector3 wIncidentPerpendicular = incidentLocal - (normal * incidentLocal.dot(normal));

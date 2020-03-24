@@ -3,6 +3,13 @@
 #include "vector.h"
 
 namespace Snell {
+    Vector3 refract(
+        const Vector3 &wi,
+        const Vector3 &wh,
+        float etaIncident,
+        float etaTransmitted
+    );
+
     bool refract(
         const Vector3 &incidentLocal,
         Vector3 *transmittedLocal,

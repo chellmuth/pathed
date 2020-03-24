@@ -163,16 +163,12 @@ BSDFSample RoughTransmission::sample(
 
         return sample;
     } else {
-        Vector3 localWo(0.f);
-
-        const bool doesRefract = Snell::refract(
+        const Vector3 localWo = Snell::refract(
             localWi,
-            &localWo,
             wh,
             etaIncident,
             etaTransmitted
         );
-        assert(doesRefract);
 
         const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
 
