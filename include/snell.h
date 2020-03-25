@@ -5,8 +5,16 @@
 namespace Snell {
     float cosThetaTransmitted(
         float wiDotWh,
-        float etaIncident,
-        float etaTransmitted
+        float etaExternal,
+        float etaInternal
+    );
+
+    Vector3 refract(
+        const Vector3 &wi,
+        const Vector3 &wh,
+        float cosThetaTransmitted,
+        float etaExternal,
+        float etaInternal
     );
 
     Vector3 refract(

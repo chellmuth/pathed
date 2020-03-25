@@ -36,11 +36,15 @@ Color RoughTransmission::f(
 {
     const auto [localWi, localWo] = buildLocalWs(intersection, wiWorld);
 
-    float etaIncident = 1.f;
-    float etaTransmitted = m_ior;
+    const float etaExternal = 1.f;
+    const float etaInternal = m_ior;
 
-    const bool isWiFrontside = localWi.y() >= 0.f;
-    const bool isWoFrontside = localWo.y() >= 0.f;
+    float etaIncident = etaExternal;
+    float etaTransmitted = etaInternal;
+
+    const bool isWiFrontside = TangentFrame::cosTheta(localWi) >= 0.f;
+    const bool isWoFrontside = TangentFrame::cosTheta(localWo) >= 0.f;
+
     if (!isWiFrontside) {
         std::swap(etaIncident, etaTransmitted);
     }
@@ -49,7 +53,7 @@ Color RoughTransmission::f(
 
     const float cosThetaI = TangentFrame::absCosTheta(localWi);
     const float cosThetaO = TangentFrame::absCosTheta(localWo);
-    const Vector3 wh = Snell::computeHalfVector(
+    Vector3 wh = Snell::computeHalfVector(
         localWi,
         localWo,
         etaIncident,
@@ -57,13 +61,18 @@ Color RoughTransmission::f(
         isReflect
     );
 
+    if (TangentFrame::cosTheta(wh) < 0.f) {
+        wh = wh.negate();
+    }
+
     const float wiDotWh = localWi.dot(wh);
+
     const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
     const float fresnel = Fresnel::dielectricReflectanceWalter(
         localWi,
         wh,
-        etaIncident,
-        etaTransmitted
+        etaExternal,
+        etaInternal
     );
 
     const float woDotWh = localWo.dot(wh);
@@ -78,11 +87,12 @@ Color RoughTransmission::f(
     const Color albedo(1.f);
 
     if (isReflect) {
-        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh);
+        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh) * fresnel;
 
         const Color value = albedo * distribution * masking * fresnel
             / (4 * cosThetaI * cosThetaO);
 
+        assert(value.isValid());
         return value;
 
     } else {
@@ -91,7 +101,7 @@ Color RoughTransmission::f(
             etaTransmitted,
             wiDotWh,
             woDotWh
-        );
+        ) * (1.f - fresnel);
 
         const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaI * cosThetaO);
         const float numerator = util::square(etaTransmitted)
@@ -116,6 +126,7 @@ Color RoughTransmission::f(
             * (numerator / denominator)
             * nonSymmetricEtaCorrection;
 
+        assert(value.isValid());
         return value;
     }
 }
@@ -126,12 +137,17 @@ BSDFSample RoughTransmission::sample(
 ) const
 {
     const Vector3 localWi = buildLocalWi(intersection);
-    const Vector3 wh = m_distributionPtr->sampleWh(localWi, random);
 
-    float etaIncident = 1.f;
-    float etaTransmitted = m_ior;
+    // Note: doesn't use localWi
+    Vector3 wh = m_distributionPtr->sampleWh(localWi, random);
 
-    if (localWi.y() < 0.f) {
+    const float etaExternal = 1.f;
+    const float etaInternal = m_ior;
+
+    float etaIncident = etaExternal;
+    float etaTransmitted = etaInternal;
+
+    if (TangentFrame::cosTheta(localWi) < 0.f) {
         std::swap(etaIncident, etaTransmitted);
     }
 
@@ -140,7 +156,7 @@ BSDFSample RoughTransmission::sample(
 
     const float fresnelReflectance = Fresnel::dielectricReflectanceWalter(
         localWi, wh,
-        etaIncident, etaTransmitted
+        etaExternal, etaInternal
     );
 
     if (random.next() < fresnelReflectance) {
@@ -151,6 +167,10 @@ BSDFSample RoughTransmission::sample(
         const float pdf = m_distributionPtr->pdf(wh)
             * reflectJacobian(woAbsDotWh)
             * fresnelReflectance;
+
+        assert(!std::isnan(pdf));
+        assert(!std::isinf(pdf));
+        assert(pdf > 0.f);
 
         const Color throughput = Material::f(intersection, woWorld);
 
@@ -163,11 +183,17 @@ BSDFSample RoughTransmission::sample(
 
         return sample;
     } else {
+        const float cosThetaTransmitted = Snell::cosThetaTransmitted(
+            wiDotWh,
+            etaExternal,
+            etaInternal
+        );
         const Vector3 localWo = Snell::refract(
             localWi,
             wh,
-            etaIncident,
-            etaTransmitted
+            cosThetaTransmitted,
+            etaExternal,
+            etaInternal
         );
 
         const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
@@ -186,6 +212,10 @@ BSDFSample RoughTransmission::sample(
         const float pdf = m_distributionPtr->pdf(wh)
             * jacobian
             * fresnelTransmittance;
+
+        assert(!std::isnan(pdf));
+        assert(!std::isinf(pdf));
+        assert(pdf > 0.f);
 
         const BSDFSample sample = {
             .wiWorld = woWorld,
