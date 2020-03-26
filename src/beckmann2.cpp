@@ -50,8 +50,8 @@ float Beckmann2::G1(const Vector3 &v) const
 
     if (a >= 1.6f) { return 1.f; }
 
-    const float numerator = 3.535 * a + 2.181 * a * a;
-    const float denominator = 1 + 2.276 * a + 2.577 * a * a;
+    const float numerator = 3.535f * a + 2.181f * a * a;
+    const float denominator = 1.f + 2.276f * a + 2.577f * a * a;
 
     return numerator / denominator;
 }

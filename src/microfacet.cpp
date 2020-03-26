@@ -31,7 +31,7 @@ Color Microfacet::f(
     const float cosThetaI = TangentFrame::absCosTheta(wi);
     const Vector3 wh = (wo + wi).normalized();
 
-    *pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh));
+    *pdf = m_distributionPtr->pdf(wh) / (4.f * wo.absDot(wh));
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
