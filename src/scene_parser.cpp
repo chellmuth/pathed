@@ -3,7 +3,6 @@
 #include "area_light.h"
 #include "b_spline_parser.h"
 #include "beckmann.h"
-#include "beckmann2.h"
 #include "camera.h"
 #include "checkerboard.h"
 #include "curve_parser.h"
@@ -709,7 +708,7 @@ static std::unique_ptr<MicrofacetDistribution> parseDistribution(json &distribut
 {
     const float alpha = parseFloat(distributionJson["alpha"]);
     if (distributionJson["type"] == "beckmann") {
-        return std::make_unique<Beckmann2>(alpha);
+        return std::make_unique<Beckmann>(alpha);
     } else if (distributionJson["type"] == "ggx") {
         return std::make_unique<GGX>(alpha);
     } else {
