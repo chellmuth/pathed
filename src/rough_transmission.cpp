@@ -81,27 +81,42 @@ Color RoughTransmission::f(
     if (cosThetaI == 0.f || cosThetaO == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
 
-    const float distribution = m_distributionPtr->D(wh);
+    const float distribution = m_distributionPtr->D(localWi, wh);
     const float masking = m_distributionPtr->G(localWi, localWo, wh);
+
+    if (distribution < 1e-6) {
+        *pdf = 0;
+        return Color(0.f);
+    }
 
     const Color albedo(1.f);
 
     if (isReflect) {
-        *pdf = m_distributionPtr->pdf(wh) * reflectJacobian(woAbsDotWh) * fresnel;
+        const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
+        const float jacobian = reflectJacobian(woAbsDotWh);
+
+        *pdf = distributionPDF * jacobian * fresnel;
 
         const Color value = albedo * distribution * masking * fresnel
             / (4 * cosThetaI * cosThetaO);
 
-        assert(value.isValid());
         return value;
 
     } else {
-        *pdf = m_distributionPtr->pdf(wh) * refractJacobian(
+        if (fresnel == 1.f) {
+            *pdf = 0.f;
+            return Color(0.f);
+        }
+
+        const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
+        const float jacobian = refractJacobian(
             etaIncident,
             etaTransmitted,
             wiDotWh,
             woDotWh
-        ) * (1.f - fresnel);
+        );
+
+        *pdf = distributionPDF * jacobian * (1.f - fresnel);
 
         const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaI * cosThetaO);
         const float numerator = util::square(etaTransmitted)
@@ -126,9 +141,18 @@ Color RoughTransmission::f(
             * (numerator / denominator)
             * nonSymmetricEtaCorrection;
 
-        assert(value.isValid());
         return value;
     }
+}
+
+static BSDFSample invalidSample(const Material *material) {
+    const BSDFSample sample = {
+        .wiWorld = Vector3(0.f, 0.f, 0.f),
+        .pdf = 0.f,
+        .throughput = Color(0.f),
+        .material = material
+    };
+    return sample;
 }
 
 BSDFSample RoughTransmission::sample(
@@ -137,6 +161,7 @@ BSDFSample RoughTransmission::sample(
 ) const
 {
     const Vector3 localWi = buildLocalWi(intersection);
+    const float cosThetaI = TangentFrame::cosTheta(localWi);
 
     // Note: doesn't use localWi
     Vector3 wh = m_distributionPtr->sampleWh(localWi, random);
@@ -163,14 +188,14 @@ BSDFSample RoughTransmission::sample(
         const Vector3 localWo = localWi.reflect(wh);
         const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
 
+        if (TangentFrame::cosTheta(localWo) * cosThetaI < 0.f) {
+            return invalidSample(this);
+        }
+
         const float woAbsDotWh = localWo.absDot(wh);
-        const float pdf = m_distributionPtr->pdf(wh)
+        const float pdf = m_distributionPtr->pdf(localWi, wh)
             * reflectJacobian(woAbsDotWh)
             * fresnelReflectance;
-
-        assert(!std::isnan(pdf));
-        assert(!std::isinf(pdf));
-        assert(pdf > 0.f);
 
         const Color throughput = Material::f(intersection, woWorld);
 
@@ -196,6 +221,10 @@ BSDFSample RoughTransmission::sample(
             etaInternal
         );
 
+        if (TangentFrame::cosTheta(localWo) * cosThetaI > 0.f) {
+            return invalidSample(this);
+        }
+
         const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
 
         const float fresnelTransmittance = 1.f - fresnelReflectance;
@@ -209,13 +238,9 @@ BSDFSample RoughTransmission::sample(
         );
 
         const Color throughput = Material::f(intersection, woWorld);
-        const float pdf = m_distributionPtr->pdf(wh)
+        const float pdf = m_distributionPtr->pdf(localWi, wh)
             * jacobian
             * fresnelTransmittance;
-
-        assert(!std::isnan(pdf));
-        assert(!std::isinf(pdf));
-        assert(pdf > 0.f);
 
         const BSDFSample sample = {
             .wiWorld = woWorld,

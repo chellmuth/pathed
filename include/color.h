@@ -26,6 +26,10 @@ public:
         return (m_r + m_g + m_b) / 3.f;
     }
 
+    float max() const {
+        return std::max(m_r, std::max(m_g, m_b));
+    }
+
     Color toLinear() const;
     Color toSRGB() const;
 

@@ -11,11 +11,17 @@ Beckmann2::Beckmann2(float alpha)
     : m_alpha(alpha)
 {}
 
-Vector3 Beckmann2::sampleWh(const Vector3 &wo, RandomGenerator &random) const
+float Beckmann2::sampleAlpha(float absCosThetaI) const
+{
+    return (1.2f - 0.2f * std::sqrt(absCosThetaI)) * m_alpha;
+}
+
+Vector3 Beckmann2::sampleWh(const Vector3 &wi, RandomGenerator &random) const
 {
     const float phi = random.next() * M_PI * 2.f;
 
-    const float alpha2 = m_alpha * m_alpha;
+    const float alpha = sampleAlpha(TangentFrame::absCosTheta(wi));
+    const float alpha2 = alpha * alpha;
     const float sqrtTerm = (-alpha2 * std::log(1 - random.next()));
     const float theta = std::atan(std::sqrt(sqrtTerm));
 
@@ -23,14 +29,15 @@ Vector3 Beckmann2::sampleWh(const Vector3 &wo, RandomGenerator &random) const
     return sample;
 }
 
-float Beckmann2::pdf(const Vector3 &wh) const
+float Beckmann2::pdf(const Vector3 &wi, const Vector3 &wh) const
 {
-    return D(wh) * std::abs(TangentFrame::cosTheta(wh));
+    return D(wi, wh) * std::abs(TangentFrame::cosTheta(wh));
 }
 
-float Beckmann2::D(const Vector3 &wh) const
+float Beckmann2::D(const Vector3 &wi, const Vector3 &wh) const
 {
-    const float alpha2 = m_alpha * m_alpha;
+    const float alpha = sampleAlpha(TangentFrame::absCosTheta(wi));
+    const float alpha2 = alpha * alpha;
 
     const float cos2Theta = TangentFrame::cos2Theta(wh);
     const float cos4Theta = cos2Theta * cos2Theta;
@@ -56,7 +63,7 @@ float Beckmann2::G1(const Vector3 &v) const
     return numerator / denominator;
 }
 
-float Beckmann2::G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const
+float Beckmann2::G(const Vector3 &wi, const Vector3 &wo, const Vector3 &wh) const
 {
     if (util::sign(wo.dot(wh)) != util::sign(TangentFrame::cosTheta(wo))) {
         return 0.f;

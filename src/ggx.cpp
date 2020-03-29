@@ -25,12 +25,12 @@ Vector3 GGX::sampleWh(const Vector3 &wo, RandomGenerator &random) const
     return cartesian;
 }
 
-float GGX::pdf(const Vector3 &wh) const
+float GGX::pdf(const Vector3 &wi, const Vector3 &wh) const
 {
-    return D(wh) * TangentFrame::absCosTheta(wh);
+    return D(wi, wh) * TangentFrame::absCosTheta(wh);
 }
 
-float GGX::D(const Vector3 &wh) const
+float GGX::D(const Vector3 &wi, const Vector3 &wh) const
 {
     const float alpha2 = m_alpha * m_alpha;
 
