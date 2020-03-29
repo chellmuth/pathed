@@ -11,7 +11,7 @@
   "materials": [
     {
       "name": "ball",
-      "type": "rough-transmission",
+      "type": "rough-dielectric",
       "distribution": {
         "type": "beckmann",
         "alpha": "0.1"

@@ -1,4 +1,4 @@
-#include "rough_transmission.h"
+#include "rough_dielectric.h"
 
 #include "fresnel.h"
 #include "logger.h"
@@ -28,7 +28,7 @@ static float refractJacobian(
     return numerator / denominator;
 }
 
-Color RoughTransmission::f(
+Color RoughDielectric::f(
     const Intersection &intersection,
     const Vector3 &wiWorld,
     float *pdf
@@ -155,7 +155,7 @@ static BSDFSample invalidSample(const Material *material) {
     return sample;
 }
 
-BSDFSample RoughTransmission::sample(
+BSDFSample RoughDielectric::sample(
     const Intersection &intersection,
     RandomGenerator &random
 ) const

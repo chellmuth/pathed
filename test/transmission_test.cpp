@@ -4,7 +4,7 @@
 #include "microfacet_distribution.h"
 #include "point.h"
 #include "snell.h"
-#include "rough_transmission.h"
+#include "rough_dielectric.h"
 #include "vector.h"
 
 #include "catch.hpp"
@@ -55,7 +55,7 @@ static Intersection intersectionBuilder(const Vector3 &woWorld, Material *bsdf)
 }
 
 TEST_CASE("smoke test", "[microfacet]") {
-    RoughTransmission bsdf(
+    RoughDielectric bsdf(
         std::make_unique<Beckmann>(0.1f),
         1.5f
     );
@@ -88,12 +88,12 @@ TEST_CASE("snell half vector reflects both sides the same", "[microfacet]") {
 }
 
 TEST_CASE("both sides work the same - trivial reflection", "[microfacet]") {
-    RoughTransmission bsdf1(
+    RoughDielectric bsdf1(
         std::make_unique<Beckmann>(0.2f),
         1.5f
     );
 
-    RoughTransmission bsdf2(
+    RoughDielectric bsdf2(
         std::make_unique<Beckmann>(0.2f),
         1.f/1.5f
     );
@@ -225,7 +225,7 @@ TEST_CASE("refraction direction", "[microfacet]") {
 }
 
 TEST_CASE("tungsten debugging", "[microfacet]") {
-    RoughTransmission bsdf(
+    RoughDielectric bsdf(
         std::make_unique<Beckmann>(0.1f),
         1.5f
     );
@@ -247,7 +247,7 @@ TEST_CASE("tungsten debugging", "[microfacet]") {
 }
 
 TEST_CASE("firefly debugging", "[microfacet]") {
-    RoughTransmission bsdf(
+    RoughDielectric bsdf(
         std::make_unique<Beckmann>(0.1f),
         1.5f
     );

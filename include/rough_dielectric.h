@@ -9,9 +9,9 @@
 
 #include <memory>
 
-class RoughTransmission : public Material {
+class RoughDielectric : public Material {
 public:
-    RoughTransmission(std::unique_ptr<MicrofacetDistribution> distributionPtr, float ior)
+    RoughDielectric(std::unique_ptr<MicrofacetDistribution> distributionPtr, float ior)
     : Material(0.f),
         m_distributionPtr(std::move(distributionPtr)),
         m_ior(ior)
