@@ -212,18 +212,6 @@ TEST_CASE("fresnel negative wi dot wh", "[microfacet]") {
     }
 }
 
-TEST_CASE("refraction direction", "[microfacet]") {
-    Vector3 wo = Snell::refract(
-        Vector3(-5.96046448e-08, -0.641917706f, -0.766773522f),
-        Vector3(0.0918058753f, 0.995119154f, -0.0361871757f),
-        1.f,
-        1.5
-    );
-
-    Vector3 expected(-0.0841451f, 0.0507944f, 1.18333f);
-    REQUIRE_VECTOR_APPROX(wo, expected);
-}
-
 TEST_CASE("tungsten debugging", "[microfacet]") {
     RoughDielectric bsdf(
         std::make_unique<Beckmann>(0.1f),

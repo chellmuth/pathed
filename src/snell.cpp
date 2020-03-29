@@ -39,36 +39,6 @@ float Snell::cosThetaTransmitted(
 Vector3 Snell::refract(
     const Vector3 &wi,
     const Vector3 &wh,
-    float etaIncident,
-    float etaTransmitted
-) {
-    const float wiDotWh = wi.dot(wh);
-
-    // etaI and etaT are relative to wi and n,
-    // but here they need to be relative to wi and wh
-    if (util::sign(wiDotWh) != util::sign(TangentFrame::cosTheta(wi))) {
-        std::swap(etaIncident, etaTransmitted);
-    }
-
-    const float eta = etaIncident / etaTransmitted;
-    const float eta2 = util::square(etaIncident) / util::square(etaTransmitted);
-
-    const float cosThetaIncident = wiDotWh;
-    const float sin2ThetaIncident = 1.f - cosThetaIncident * cosThetaIncident;
-    const float sin2ThetaTransmitted = eta2 * sin2ThetaIncident;
-
-    float cosThetaTransmitted = 0.f;
-    if (sin2ThetaTransmitted <= 1.f) {
-        cosThetaTransmitted = std::sqrt(std::max(1.f - sin2ThetaTransmitted, 0.f));
-    }
-
-    const Vector3 refractWo = wh * (eta * wiDotWh - sign(wiDotWh) * cosThetaTransmitted) - wi * eta;
-    return refractWo.normalized();
-}
-
-Vector3 Snell::refract(
-    const Vector3 &wi,
-    const Vector3 &wh,
     float cosThetaTransmitted,
     float etaExternal,
     float etaInternal
@@ -88,7 +58,6 @@ Vector3 Snell::refract(
     const Vector3 refractWo = wh * (eta * wiDotWh - sign(wiDotWh) * cosThetaTransmitted) - wi * eta;
     return refractWo.normalized();
 }
-
 
 bool Snell::refract(
     const Vector3 &incidentLocal,
