@@ -32,7 +32,7 @@ BSDFSample Glass::sample(
     RandomGenerator &random
 ) const
 {
-    Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
+    const Vector3 localWo = intersection.worldToTangent.apply(intersection.woWorld);
     Vector3 localWi(0.f);
 
     float etaIncident = 1.f;
@@ -42,7 +42,7 @@ BSDFSample Glass::sample(
         std::swap(etaIncident, etaTransmitted);
     }
 
-    bool doesRefract = Snell::refract(
+    const bool doesRefract = Snell::refract(
         localWo,
         &localWi,
         etaIncident,

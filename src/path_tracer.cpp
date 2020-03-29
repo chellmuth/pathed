@@ -171,6 +171,8 @@ Color PathTracer::directSampleBSDF(
     RandomGenerator &random,
     Sample &sample
 ) const {
+    if (bsdfSample.throughput.isBlack()) { return Color(0.f); }
+
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const Intersection bounceIntersection = scene.testIntersect(bounceRay);
 

@@ -143,6 +143,8 @@ static Color directSampleBSDF(
     RandomGenerator &random,
     Sample &sample
 ) {
+    if (bsdfSample.throughput.isBlack()) { return Color(0.f); }
+
     const Ray bounceRay(intersection.point, bsdfSample.wiWorld);
     const IntersectionResult bounceResult = scene.testVolumetricIntersect(bounceRay);
     const Intersection &bounceIntersection = bounceResult.intersection;

@@ -133,6 +133,15 @@ Color Color::operator/ (const float t) const
     return *this * invT;
 }
 
+bool Color::isValid() const
+{
+    if (std::isnan(m_r) || std::isnan(m_g) || std::isnan(m_b)) { return false; }
+    if (std::isinf(m_r) || std::isinf(m_g) || std::isinf(m_b)) { return false; }
+    if (m_r < 0.f || m_g < 0.f || m_b < 0.f) { return false; }
+
+    return true;
+}
+
 std::ostream &operator<<(std::ostream &os, const Color &c)
 {
     return os << "Color: " << c.r() << " " << c.g() << " " << c.b();

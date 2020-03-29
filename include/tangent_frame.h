@@ -71,6 +71,11 @@ namespace TangentFrame {
         return sinTheta(vector) / cosTheta(vector);
     }
 
+    inline float absTanTheta(const Vector3 &vector)
+    {
+        return std::abs(tanTheta(vector));
+    }
+
     inline float tan2Theta(const Vector3 &vector)
     {
         return sin2Theta(vector) / cos2Theta(vector);

@@ -15,8 +15,7 @@ Color Microfacet::f(
     float *pdf
 ) const
 {
-    const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld).normalized();
-    const Vector3 wi = intersection.worldToTangent.apply(wiWorld).normalized();
+    const auto [wi, wo] = buildLocalWs(intersection, wiWorld);
 
     if (intersection.woWorld.dot(intersection.shadingNormal) < 0.f) {
         *pdf = 0.f;
@@ -32,15 +31,15 @@ Color Microfacet::f(
     const float cosThetaI = TangentFrame::absCosTheta(wi);
     const Vector3 wh = (wo + wi).normalized();
 
-    *pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh));
+    *pdf = m_distributionPtr->pdf(wi, wh) / (4.f * wo.absDot(wh));
 
     if (cosThetaO == 0.f || cosThetaI == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
 
     float cosThetaIncident = util::clampClose(wi.dot(wh), 0.f, 1.f);
     float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f));
-    float distribution = m_distributionPtr->D(wh);
-    float masking = m_distributionPtr->G(wo, wi);
+    float distribution = m_distributionPtr->D(wi, wh);
+    float masking = m_distributionPtr->G(wi, wo, wh);
     Color albedo(1.f);
 
     // std::cout << "D: " << distribution << std::endl;
@@ -61,16 +60,16 @@ BSDFSample Microfacet::sample(
     RandomGenerator &random
 ) const
 {
-    const Vector3 wo = intersection.worldToTangent.apply(intersection.woWorld);
-    const Vector3 wh = m_distributionPtr->sampleWh(wo, random);
-    const Vector3 wi = wo.reflect(wh);
+    const Vector3 wi = buildLocalWi(intersection);
+    const Vector3 wh = m_distributionPtr->sampleWh(wi, random);
+    const Vector3 wo = wi.reflect(wh);
 
-    const Vector3 wiWorld = intersection.tangentToWorld.apply(wi);
+    const Vector3 woWorld = intersection.tangentToWorld.apply(wo);
 
     BSDFSample sample = {
-        .wiWorld = wiWorld,
-        .pdf = m_distributionPtr->pdf(wh) / (4.f * wo.dot(wh)),
-        .throughput = Material::f(intersection, wiWorld),
+        .wiWorld = woWorld,
+        .pdf = m_distributionPtr->pdf(wi, wh) / (4.f * wo.absDot(wh)),
+        .throughput = Material::f(intersection, woWorld),
         .material = this
     };
 

@@ -5,6 +5,7 @@
 #include "vector.h"
 
 #include <ostream>
+#include <tuple>
 
 class Material;
 class Scene;
@@ -65,5 +66,12 @@ public:
     }
 
 protected:
+    Vector3 buildLocalWi(const Intersection &intersection) const;
+
+    std::tuple<Vector3, Vector3> buildLocalWs(
+        const Intersection &intersection,
+        const Vector3 &woWorld
+    ) const;
+
     Color m_emit;
 };

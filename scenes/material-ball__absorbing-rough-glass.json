@@ -8,6 +8,14 @@
     "fov": "20.114293"
   },
 
+  "media": [
+    {
+      "name": "glass-filling",
+      "type": "homogeneous-absorption",
+      "sigma_a": [ "0.0", "0.9", "0.0" ]
+    }
+  ],
+
   "materials": [
     {
       "name": "ball",
@@ -40,6 +48,7 @@
     {
       "type": "obj",
       "filename": "assets/material-ball/Mesh001.obj",
+      "internal_medium": "glass-filling",
       "bsdf": {
         "type": "reference",
         "name": "ball"
@@ -56,6 +65,7 @@
     {
       "type": "obj",
       "filename": "assets/material-ball/Mesh002.obj",
+      "internal_medium": "glass-filling",
       "bsdf": {
         "type": "reference",
         "name": "ball"

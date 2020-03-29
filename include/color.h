@@ -12,6 +12,7 @@ public:
     float b() const { return m_b; }
 
     bool isBlack() const;
+    bool isValid() const;
 
     float luminance() const {
         return (
@@ -23,6 +24,10 @@ public:
 
     float average() const {
         return (m_r + m_g + m_b) / 3.f;
+    }
+
+    float max() const {
+        return std::max(m_r, std::max(m_g, m_b));
     }
 
     Color toLinear() const;

@@ -2,6 +2,7 @@
 
 #include "area_light.h"
 #include "b_spline_parser.h"
+#include "beckmann.h"
 #include "camera.h"
 #include "checkerboard.h"
 #include "curve_parser.h"
@@ -29,6 +30,7 @@
 #include "plastic.h"
 #include "ply_parser.h"
 #include "ptex_local.h"
+#include "rough_dielectric.h"
 #include "quad.h"
 #include "rtc_manager.h"
 #include "scene.h"
@@ -667,6 +669,10 @@ static std::shared_ptr<Material> parseMaterial(json &bsdfJson, MaterialMap &mate
         } else {
             return std::make_shared<Plastic>(diffuse, std::move(distributionPtr));
         }
+    } else if (bsdfJson["type"] == "rough-dielectric") {
+        auto distributionPtr = parseDistribution(bsdfJson["distribution"]);
+        const float ior = parseFloat(bsdfJson["ior"]);
+        return std::make_shared<RoughDielectric>(std::move(distributionPtr), ior);
     } else if (bsdfJson["type"] == "lambertian") {
         Color diffuse = parseColor(bsdfJson["diffuseReflectance"]);
         Color emit = parseColor(bsdfJson["emit"], false);

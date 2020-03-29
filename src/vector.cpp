@@ -25,6 +25,11 @@ float Vector3::dot(const Point3& p) const
     return m_x * p.x() + m_y * p.y() + m_z * p.z();
 }
 
+float Vector3::absDot(const Vector3& v) const
+{
+    return std::abs(m_x * v.x() + m_y * v.y() + m_z * v.z());
+}
+
 float Vector3::length() const
 {
     return sqrtf(
@@ -64,6 +69,11 @@ Vector3 Vector3::normalized() const
 Vector3 Vector3::reflect(const Vector3& normal) const
 {
     return (normal * dot(normal) * 2) - *this;
+}
+
+Vector3 Vector3::negate() const
+{
+    return -*this;
 }
 
 Vector3 Vector3::operator* (const float t) const

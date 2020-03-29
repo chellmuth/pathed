@@ -25,12 +25,12 @@ Vector3 GGX::sampleWh(const Vector3 &wo, RandomGenerator &random) const
     return cartesian;
 }
 
-float GGX::pdf(const Vector3 &wh) const
+float GGX::pdf(const Vector3 &wi, const Vector3 &wh) const
 {
-    return D(wh) * TangentFrame::absCosTheta(wh);
+    return D(wi, wh) * TangentFrame::absCosTheta(wh);
 }
 
-float GGX::D(const Vector3 &wh) const
+float GGX::D(const Vector3 &wi, const Vector3 &wh) const
 {
     const float alpha2 = m_alpha * m_alpha;
 
@@ -57,7 +57,7 @@ float GGX::G1(const Vector3 &v) const
     return 2.f / (1 + std::sqrt(sqrtTerm));
 }
 
-float GGX::G(const Vector3 &wo, const Vector3 &wi) const
+float GGX::G(const Vector3 &wo, const Vector3 &wi, const Vector3 &wh) const
 {
     return G1(wo) * G1(wi);
 }
