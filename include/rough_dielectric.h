@@ -29,6 +29,23 @@ public:
     ) const override;
 
 private:
+    float reflectPDF(
+        const Vector3 &localWi,
+        const Vector3 &localWo,
+        const Vector3 &wh,
+        float fresnel
+    ) const;
+
+    float refractPDF(
+        const Vector3 &localWi,
+        const Vector3 &localWo,
+        const Vector3 &wh,
+        float etaIncident,
+        float etaTransmitted,
+        float fresnel
+    ) const;
+
+
     float m_ior;
     std::unique_ptr<MicrofacetDistribution> m_distributionPtr;
 };

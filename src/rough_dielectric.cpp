@@ -28,6 +28,39 @@ static float refractJacobian(
     return numerator / denominator;
 }
 
+float RoughDielectric::reflectPDF(
+    const Vector3 &localWi,
+    const Vector3 &localWo,
+    const Vector3 &wh,
+    float fresnelReflectance
+) const {
+    const float woAbsDotWh = localWo.absDot(wh);
+
+    const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
+    const float jacobian = reflectJacobian(woAbsDotWh);
+
+    return distributionPDF * jacobian * fresnelReflectance;
+}
+
+float RoughDielectric::refractPDF(
+    const Vector3 &localWi,
+    const Vector3 &localWo,
+    const Vector3 &wh,
+    float etaIncident,
+    float etaTransmitted,
+    float fresnelTransmittance
+) const {
+    const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
+    const float jacobian = refractJacobian(
+        etaIncident,
+        etaTransmitted,
+        localWi.dot(wh),
+        localWo.dot(wh)
+    );
+
+    return distributionPDF * jacobian * fresnelTransmittance;
+}
+
 Color RoughDielectric::f(
     const Intersection &intersection,
     const Vector3 &wiWorld,
@@ -65,18 +98,13 @@ Color RoughDielectric::f(
         wh = wh.negate();
     }
 
-    const float wiDotWh = localWi.dot(wh);
 
-    const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
-    const float fresnel = Fresnel::dielectricReflectanceWalter(
+    const float fresnelReflectance = Fresnel::dielectricReflectanceWalter(
         localWi,
         wh,
         etaExternal,
         etaInternal
     );
-
-    const float woDotWh = localWo.dot(wh);
-    const float woAbsDotWh = localWo.absDot(wh);
 
     if (cosThetaI == 0.f || cosThetaO == 0.f) { return Color(0.f); }
     if (wh.isZero()) { return Color(0.f); }
@@ -92,35 +120,41 @@ Color RoughDielectric::f(
     const Color albedo(1.f);
 
     if (isReflect) {
-        const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
-        const float jacobian = reflectJacobian(woAbsDotWh);
+        *pdf = reflectPDF(
+            localWi,
+            localWo,
+            wh,
+            fresnelReflectance
+        );
 
-        *pdf = distributionPDF * jacobian * fresnel;
-
-        const Color value = albedo * distribution * masking * fresnel
+        const Color value = albedo * distribution * masking * fresnelReflectance
             / (4 * cosThetaI * cosThetaO);
 
         return value;
 
     } else {
-        if (fresnel == 1.f) {
+        if (fresnelReflectance == 1.f) {
             *pdf = 0.f;
             return Color(0.f);
         }
 
-        const float distributionPDF = m_distributionPtr->pdf(localWi, wh);
-        const float jacobian = refractJacobian(
+        *pdf = refractPDF(
+            localWi,
+            localWo,
+            wh,
             etaIncident,
             etaTransmitted,
-            wiDotWh,
-            woDotWh
+            (1.f - fresnelReflectance)
         );
 
-        *pdf = distributionPDF * jacobian * (1.f - fresnel);
+        const float woAbsDotWh = localWo.absDot(wh);
+        const float woDotWh = localWo.dot(wh);
+        const float wiAbsDotWh = util::clamp(localWi.absDot(wh), 0.f, 1.);
+        const float wiDotWh = localWi.dot(wh);
 
         const float dotProducts = (wiAbsDotWh * woAbsDotWh) / (cosThetaI * cosThetaO);
         const float numerator = util::square(etaTransmitted)
-            * (1.f - fresnel)
+            * (1.f - fresnelReflectance)
             * distribution
             * masking;
         const float denominator = util::square(
@@ -192,10 +226,12 @@ BSDFSample RoughDielectric::sample(
             return invalidSample(this);
         }
 
-        const float woAbsDotWh = localWo.absDot(wh);
-        const float pdf = m_distributionPtr->pdf(localWi, wh)
-            * reflectJacobian(woAbsDotWh)
-            * fresnelReflectance;
+        const float pdf = reflectPDF(
+            localWi,
+            localWo,
+            wh,
+            fresnelReflectance
+        );
 
         const Color throughput = Material::f(intersection, woWorld);
 
@@ -226,21 +262,17 @@ BSDFSample RoughDielectric::sample(
         }
 
         const Vector3 woWorld = intersection.tangentToWorld.apply(localWo);
+        const Color throughput = Material::f(intersection, woWorld);
 
         const float fresnelTransmittance = 1.f - fresnelReflectance;
-        const float woDotWh = localWo.dot(wh);
-
-        const float jacobian = refractJacobian(
+        const float pdf = refractPDF(
+            localWi,
+            localWo,
+            wh,
             etaIncident,
             etaTransmitted,
-            wiDotWh,
-            woDotWh
+            fresnelTransmittance
         );
-
-        const Color throughput = Material::f(intersection, woWorld);
-        const float pdf = m_distributionPtr->pdf(localWi, wh)
-            * jacobian
-            * fresnelTransmittance;
 
         const BSDFSample sample = {
             .wiWorld = woWorld,
