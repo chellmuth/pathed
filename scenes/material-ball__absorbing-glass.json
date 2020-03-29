@@ -1,0 +1,115 @@
+{
+  "sensor": {
+    "lookAt": {
+      "origin": [ "3.04068", "3.17153", "3.20454" ],
+      "target": [ "0.118789", "0.473398", "0.161081" ],
+      "up": [ "0", "1", "0" ]
+    },
+    "fov": "20.114293"
+  },
+
+  "media": [
+    {
+      "name": "glass-filling",
+      "type": "homogeneous-absorption",
+      "sigma_a": [ "0.0", "0.9", "0.0" ]
+    }
+  ],
+
+  "materials": [
+    {
+      "name": "ball",
+      "type": "glass",
+      "ior": "1.5"
+    }
+  ],
+
+  "models": [
+    {
+      "type": "obj",
+      "filename": "assets/material-ball/Mesh000.obj",
+      "bsdf": {
+        "type": "lambertian",
+        "diffuseReflectance": [ "0.2", "0.2", "0.2" ]
+      },
+      "transform": {
+        "translate": [
+          "0.110507",
+          "0.494301",
+          "0.126194"
+        ],
+        "scale": [ "0.482906", "0.482906", "0.482906" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/material-ball/Mesh001.obj",
+      "internal_medium": "glass-filling",
+      "bsdf": {
+        "type": "reference",
+        "name": "ball"
+      },
+      "transform": {
+        "translate": [
+          "0.0571719",
+          "0.213656",
+          "0.0682078"
+        ],
+        "scale": [ "0.482906", "0.482906", "0.482906" ]
+      }
+    },
+    {
+      "type": "obj",
+      "filename": "assets/material-ball/Mesh002.obj",
+      "internal_medium": "glass-filling",
+      "bsdf": {
+        "type": "reference",
+        "name": "ball"
+      },
+      "transform": {
+        "translate": [
+          "0.156382",
+          "0.777229",
+          "0.161698"
+        ],
+        "scale": [ "0.482906", "0.482906", "0.482906" ]
+      }
+    },
+    {
+      "type": "quad",
+      "upAxis": "z",
+      "transform": {
+        "legacy": true,
+        "translate": [
+          "-0.708772",
+          "0",
+          "-0.732108"
+        ],
+        "scale": [ "2.71809", "2.71809", "2.71809" ],
+        "rotate": [
+          "-90",
+          "136.1511",
+          "180"
+        ]
+      },
+      "bsdf": {
+        "type": "lambertian",
+        "albedo": {
+          "type": "checkerboard",
+          "onColor": [ "0.725", "0.71", "0.68" ],
+          "offColor": [ "0.325", "0.31", "0.25" ],
+          "resolution": { "u": "20", "v": "20" }
+        }
+      }
+    }
+  ],
+
+  "environmentLight": {
+    "filename": "assets/material-ball/envmap.exr",
+    "transform": {
+      "legacy": true,
+      "rotate": [ "0", "247.2613999", "0" ]
+    },
+    "scale": "1"
+  }
+}
