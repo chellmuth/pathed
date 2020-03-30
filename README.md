@@ -37,6 +37,10 @@ My most recent project has been attempting to render Disney's Moana research sce
 <br /><b>Tungsten's material ball with absorbing glass material</b>
 </p>
 
+<p align="center">
+<img src="https://pathed.s3-us-west-2.amazonaws.com/material-ball_rough-dielectric.png?202003300854" width="400">
+<br /><b>Tungsten's material ball with rough glass material</b>
+</p>
 
 <p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/volumetric-caustic.png?update=202003081202" width="400">
