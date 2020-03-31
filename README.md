@@ -34,12 +34,12 @@ My most recent project has been attempting to render Disney's Moana research sce
 
 <p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/material-ball.png?202003191041" width="400">
-<br /><b>Tungsten's material ball with absorbing glass material</b>
+<br /><b>Tungsten's material ball with absorbing dielectric material</b>
 </p>
 
 <p align="center">
 <img src="https://pathed.s3-us-west-2.amazonaws.com/material-ball_rough-dielectric.png?202003300854" width="400">
-<br /><b>Tungsten's material ball with rough glass material</b>
+<br /><b>Tungsten's material ball with rough dielectric material</b>
 </p>
 
 <p align="center">
