@@ -126,7 +126,7 @@ Resolution = Tuple[int, int]
 def build_grid(photon_path: Path, grid_size: Resolution):
     bundle = read_photon_bundle(photon_path)
 
-    grid = PhiThetaGrid(10, 10)
+    grid = PhiThetaGrid(*grid_size)
     adapter = PhotonGridAdapter(
         bundle.position,
         bundle.normal,
