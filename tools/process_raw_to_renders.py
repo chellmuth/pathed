@@ -10,6 +10,8 @@ import photon_reader
 
 Parts = namedtuple("Parts", ["identifier", "block"])
 
+GridShape = (5, 5)
+
 def convert_rgb_to_single_channel(exr_path):
     exr = pyexr.read(str(exr_path))
 
@@ -78,14 +80,14 @@ def run(chunk_size, raw_path, renders_path):
             pyexr.write(str(iteration_root / f"pdf_{i:05d}.exr"), pdf_exr)
 
             photon_path = build_photon_path(raw_path, parts)
-            grid = photon_reader.build_grid(photon_path, (10, 10))
+            grid = photon_reader.build_grid(photon_path, GridShape)
             grid.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
 
 def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
     pdf_exr = convert_rgb_to_single_channel(pdf_in_path)
     pyexr.write(str(pdf_out_path), pdf_exr)
 
-    grid = photon_reader.build_grid(photon_in_path, (10, 10))
+    grid = photon_reader.build_grid(photon_in_path, GridShape)
     grid.export_dat(photon_out_path)
 
 
