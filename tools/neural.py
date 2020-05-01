@@ -15,22 +15,27 @@ import runner
 import variance
 import visualize
 from mitsuba import run_mitsuba
+from parameters import GridShape
 
-default_scene_name = "kitchen-diffuse"
-default_output_name = "kitchen-diffuse--1spp"
+default_scene_name = "staircase"
+default_output_name = "staircase--grid-11--render-with-10-photons"
 
 default_checkpoints = {
     "kitchen": None,
-    "kitchen-diffuse": "20200128-kitchen-diffuse-4",
+    "kitchen-diffuse": "kitchen-diffuse-20200429-1",
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
+    "green-bounce": "green-bounce-20200429-1",
+    "staircase": "staircase-grid-20200501-1",
 }
 
 dimensions = {
     "kitchen": (1280, 720),
-    "kitchen-diffuse": (1280, 720),
+    "kitchen-diffuse": (80, 45),
     "cbox-ppg": (400, 400),
     "cbox-bw": (400, 400),
+    "green-bounce": (80, 45),
+    "staircase": (45, 80),
 }
 
 interesting_points = [
@@ -197,7 +202,7 @@ def pdf_compare(all, point):
         )
 
         grid_path = Path(f"grid_{point[0]}_{point[1]}.bin")
-        grid = photon_reader.read_raw_grid(grid_path, (10, 10))
+        grid = photon_reader.read_raw_grid(grid_path, GridShape)
 
         from matplotlib import cm, pyplot as plt
 
@@ -317,53 +322,57 @@ def pdf_analyze(all, point):
 
 # Quick 1spp comparison between neural and path
 @cli.command()
+@click.option("--skip-neural", is_flag=True)
+@click.option("--skip-path", is_flag=True)
 @click.option("--include-gt", is_flag=True)
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
-def render(include_gt, size, spp):
-    _render(Context(), include_gt, size, spp)
+def render(skip_neural, skip_path, include_gt, size, spp):
+    _render(Context(), skip_neural, skip_path, include_gt, size, spp)
 
-def _render(context, include_gt, size, spp):
+def _render(context, skip_neural, skip_path, include_gt, size, spp):
     scene_name = context.scene_name
     aspect_ratio = dimensions[scene_name][1] / dimensions[scene_name][0]
 
     width = size
     height = int(size * aspect_ratio)
 
-    server_process = runner.launch_server(
-        context.server_path,
-        0,
-        context.checkpoint_path
-    )
+    if not skip_neural:
+        server_process = runner.launch_server(
+            context.server_path,
+            0,
+            context.checkpoint_path
+        )
 
-    time.sleep(10) # make sure server starts up
+        time.sleep(10) # make sure server starts up
 
-    run_mitsuba(
-        context.mitsuba_path,
-        context.scene_path("scene-neural.xml"),
-        context.output_root / "render.exr",
-        [ "-p1" ],
-        {
-            "width": width,
-            "height": height,
-            "spp": spp,
-        },
-        verbose=True
-    )
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-neural.xml"),
+            context.output_root / "render.exr",
+            [ "-p1" ],
+            {
+                "width": width,
+                "height": height,
+                "spp": spp,
+            },
+            verbose=True
+        )
 
-    server_process.join()
+        server_process.join()
 
-    run_mitsuba(
-        context.mitsuba_path,
-        context.scene_path("scene-path.xml"),
-        context.output_root / "path.exr",
-        [],
-        {
-            "width": width,
-            "height": height,
-            "spp": spp,
-        }
-    )
+    if not skip_path:
+        run_mitsuba(
+            context.mitsuba_path,
+            context.scene_path("scene-path.xml"),
+            context.output_root / "path.exr",
+            [],
+            {
+                "width": width,
+                "height": height,
+                "spp": spp,
+            }
+        )
 
     if include_gt:
         run_mitsuba(
@@ -557,7 +566,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
 
     dataset_path = context.dataset_path(dataset_name)
 
-    phases = [ ("train", pdf_count), ("test", 1)  ]
+    phases = [ ("train", pdf_count), ("test", pdf_count)  ]
     for phase, count in phases:
         raw_path = dataset_path / phase / "raw"
         renders_path = dataset_path / phase / "renders"
@@ -569,6 +578,8 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
             "whatever.exr",
             [],
             {
+                "width": dimensions[scene_name][0],
+                "height": dimensions[scene_name][1],
                 "pdfCount": count,
             }
         )
@@ -594,7 +605,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "500000",
+            "--num_training_steps", "10000",
         ]
     )
 
@@ -603,7 +614,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name):
         context.checkpoint_path
     )
 
-    _render(context, True, 80, 1)
+    _render(context, False, False, False, 80, 1)
 
 if __name__ == "__main__":
     cli()

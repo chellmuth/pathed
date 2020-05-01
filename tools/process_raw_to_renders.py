@@ -7,10 +7,9 @@ import numpy as np
 import pyexr
 
 import photon_reader
+from parameters import GridShape
 
 Parts = namedtuple("Parts", ["identifier", "block"])
-
-GridShape = (5, 5)
 
 def convert_rgb_to_single_channel(exr_path):
     exr = pyexr.read(str(exr_path))
