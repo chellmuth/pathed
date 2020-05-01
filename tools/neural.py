@@ -20,7 +20,7 @@ from mitsuba import run_mitsuba
 from parameters import GridShape
 
 default_scene_name = "staircase"
-default_output_name = "staircase-fancy"
+default_output_name = "staircase"
 
 default_checkpoints = {
     "kitchen": None,
@@ -55,7 +55,7 @@ interesting_points = [
 
 Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path" ])
 
-def build_output_root(root_path, output_name):
+def build_output_root(root_path, output_name, comment):
     counter = 1
     for file_name in glob.glob(str(root_path / output_name) + "-[0-9]*"):
         match = re.search(output_name + r"-(\d+)", file_name)
@@ -63,17 +63,22 @@ def build_output_root(root_path, output_name):
             identifier = int(match.group(1))
             counter = max(counter, identifier + 1)
 
-    return Path(root_path / (output_name + f"-{counter}"))
+    dir_name = output_name + f"-{counter}"
+    if comment:
+        dir_name += f"--{comment}"
+
+    return Path(root_path / dir_name)
 
 class Context:
-    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None):
+    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None, comment=None):
         self.scene_name = scene_name or default_scene_name
 
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
         self.output_root = build_output_root(
             Path("/tmp"),
-            output_name or default_output_name
+            output_name or default_output_name,
+            comment
         )
         self.output_root.mkdir(exist_ok=True, parents=True)
 
@@ -342,8 +347,9 @@ def pdf_analyze(all, point):
 @click.option("--include-gt", is_flag=True)
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
-def render(skip_neural, skip_path, include_gt, size, spp):
-    _render(Context(), skip_neural, skip_path, include_gt, size, spp)
+@click.option("--comment", type=str)
+def render(skip_neural, skip_path, include_gt, size, spp, comment):
+    _render(Context(comment=comment), skip_neural, skip_path, include_gt, size, spp)
 
 def _render(context, skip_neural, skip_path, include_gt, size, spp):
     scene_name = context.scene_name
@@ -572,9 +578,10 @@ def check_convergence(x, y):
 @click.argument("scene_name")
 @click.argument("pdf_count", type=int)
 @click.argument("checkpoint_name", type=str)
-def pipeline(scene_name, pdf_count, checkpoint_name):
+@click.option("--comment", type=str)
+def pipeline(scene_name, pdf_count, checkpoint_name, comment):
     dataset_name = scene_name
-    context = Context(scene_name=scene_name, checkpoint_name=checkpoint_name)
+    context = Context(scene_name=scene_name, checkpoint_name=checkpoint_name, comment=comment)
 
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
