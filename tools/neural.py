@@ -1,4 +1,6 @@
+import glob
 import os
+import re
 import shutil
 import time
 from collections import namedtuple
@@ -18,7 +20,7 @@ from mitsuba import run_mitsuba
 from parameters import GridShape
 
 default_scene_name = "staircase"
-default_output_name = "staircase--grid-11--render-with-10-photons"
+default_output_name = "staircase-fancy"
 
 default_checkpoints = {
     "kitchen": None,
@@ -53,13 +55,26 @@ interesting_points = [
 
 Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path" ])
 
+def build_output_root(root_path, output_name):
+    counter = 1
+    for file_name in glob.glob(str(root_path / output_name) + "-[0-9]*"):
+        match = re.search(output_name + r"-(\d+)", file_name)
+        if match:
+            identifier = int(match.group(1))
+            counter = max(counter, identifier + 1)
+
+    return Path(root_path / (output_name + f"-{counter}"))
+
 class Context:
     def __init__(self, scene_name=None, checkpoint_name=None, output_name=None):
         self.scene_name = scene_name or default_scene_name
 
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
-        self.output_root = Path("/tmp") / (output_name or default_output_name)
+        self.output_root = build_output_root(
+            Path("/tmp"),
+            output_name or default_output_name
+        )
         self.output_root.mkdir(exist_ok=True, parents=True)
 
         self.server_path = Path(os.environ["NSF_ROOT"])
