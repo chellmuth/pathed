@@ -27,7 +27,7 @@ default_checkpoints = {
     "kitchen-diffuse": "kitchen-diffuse-20200429-1",
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
-    "green-bounce": "green-bounce-20200429-1",
+    "green-bounce": "green-bounce-grid-20200501-1",
     "staircase": "staircase-grid-20200501-2",
 }
 
@@ -55,13 +55,17 @@ interesting_points = [
 
 Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path", "server_viz_path" ])
 
-def build_output_root(root_path, output_name, comment):
+def build_output_root(root_path, output_name, comment, reuse):
     counter = 1
     for file_name in glob.glob(str(root_path / output_name) + "-[0-9]*"):
         match = re.search(output_name + r"-(\d+)", file_name)
         if match:
             identifier = int(match.group(1))
-            counter = max(counter, identifier + 1)
+
+            if reuse:
+                counter = max(counter, identifier)
+            else:
+                counter = max(counter, identifier + 1)
 
     dir_name = output_name + f"-{counter}"
     if comment:
@@ -70,7 +74,7 @@ def build_output_root(root_path, output_name, comment):
     return Path(root_path / dir_name)
 
 class Context:
-    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None, comment=None):
+    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
         self.scene_name = scene_name or default_scene_name
 
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
@@ -78,7 +82,8 @@ class Context:
         self.output_root = build_output_root(
             Path("/tmp"),
             output_name or default_output_name,
-            comment
+            comment,
+            reuse_output_directory
         )
         self.output_root.mkdir(exist_ok=True, parents=True)
 
@@ -120,8 +125,9 @@ def cli():
 @click.option("--point", type=int, nargs=2)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
-def pdf_compare(all, point, output_name, comment):
-    context = Context(output_name=output_name, comment=comment)
+@click.option("--reuse", is_flag=True)
+def pdf_compare(all, point, output_name, comment, reuse):
+    context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
 
     if all:
         points = interesting_points
@@ -354,8 +360,10 @@ def pdf_analyze(all, point):
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
 @click.option("--comment", type=str)
-def render(skip_neural, skip_path, include_gt, size, spp, comment):
-    _render(Context(comment=comment), skip_neural, skip_path, include_gt, size, spp)
+@click.option("--reuse", is_flag=True)
+def render(skip_neural, skip_path, include_gt, size, spp, comment, reuse):
+    context = Context(comment=comment, reuse_output_directory=reuse)
+    _render(context, skip_neural, skip_path, include_gt, size, spp)
 
 def _render(context, skip_neural, skip_path, include_gt, size, spp):
     scene_name = context.scene_name
