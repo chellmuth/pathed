@@ -24,11 +24,8 @@ default_output_name = "staircase"
 
 default_checkpoints = {
     "kitchen": None,
-    "kitchen-diffuse": "kitchen-diffuse-20200429-1",
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
-    "green-bounce": "green-bounce-grid-20200501-1",
-    "staircase": "staircase-grid-20200501-2",
 }
 
 dimensions = {
@@ -73,6 +70,20 @@ def build_output_root(root_path, output_name, comment, reuse):
 
     return Path(root_path / dir_name)
 
+def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
+    checkpoint_files = glob.glob(str(root_path / scene_name) + "*")
+    if checkpoint_files:
+        latest_checkpoint_path = Path(sorted(checkpoint_files)[-1])
+        if verbose:
+            print(f"Using latest checkpoint: {latest_checkpoint_path}")
+
+        return latest_checkpoint_path.stem
+
+    if verbose:
+        print(f"Using default checkpoint: {default_checkpoints[self.scene_name]}")
+
+    return default_checkpoints[self.scene_name]
+
 class Context:
     def __init__(self, scene_name=None, checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
         self.scene_name = scene_name or default_scene_name
@@ -93,8 +104,9 @@ class Context:
         self.scenes_path = self.research_path / "scenes" / self.scene_name
         self.datasets_path = self.research_path / "datasets"
 
-        self.checkpoint_name = checkpoint_name or default_checkpoints[self.scene_name]
-        self.checkpoint_path = self.research_path / "checkpoints" / f"{self.checkpoint_name}.t"
+        self.checkpoint_root = self.research_path / "checkpoints"
+        self.checkpoint_name = checkpoint_name or get_default_checkpoint_stem(self.scene_name, self.checkpoint_root, verbose=True)
+        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
 
         self.gt_path = self.scenes_path / "gt.exr"
 
