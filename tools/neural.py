@@ -28,7 +28,7 @@ default_checkpoints = {
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
     "green-bounce": "green-bounce-20200429-1",
-    "staircase": "staircase-grid-20200501-1",
+    "staircase": "staircase-grid-20200501-2",
 }
 
 dimensions = {
@@ -53,7 +53,7 @@ interesting_points = [
     (94, 175), # tall box - left side
 ]
 
-Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path" ])
+Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path", "server_viz_path" ])
 
 def build_output_root(root_path, output_name, comment):
     counter = 1
@@ -104,6 +104,7 @@ class Context:
             render_path=self.output_root / f"render_{point[0]}_{point[1]}.exr",
             batch_path=self.output_root / f"batch_{point[0]}_{point[1]}.exr",
             samples_path=self.output_root / f"samples_{point[0]}_{point[1]}.bin",
+            server_viz_path=self.server_path / f"server_viz_{point[0]}_{point[1]}.png",
         )
 
     def gt_pixel(self, point, channel=0):
@@ -117,8 +118,10 @@ def cli():
 @cli.command()
 @click.option("--all", is_flag=True)
 @click.option("--point", type=int, nargs=2)
-def pdf_compare(all, point):
-    context = Context()
+@click.option("--output-name", type=str)
+@click.option("--comment", type=str)
+def pdf_compare(all, point, output_name, comment):
+    context = Context(output_name=output_name, comment=comment)
 
     if all:
         points = interesting_points
@@ -130,10 +133,12 @@ def pdf_compare(all, point):
     print(f"Processing points: {points}")
 
     for point in points:
+        server_viz_path = context.artifacts(point).server_viz_path
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.checkpoint_path
+            context.checkpoint_path,
+            server_viz_path
         )
 
         time.sleep(10) # make sure server starts up
@@ -248,6 +253,7 @@ def pdf_compare(all, point):
         shutil.move(photons_filename, context.output_root / photons_filename)
         shutil.move(neural_filename, context.output_root / neural_filename)
         shutil.move(samples_filename, context.output_root / samples_filename)
+        shutil.move(server_viz_path, context.output_root / server_viz_path.name)
 
 @cli.command()
 @click.option("--all", is_flag=True)
@@ -578,10 +584,16 @@ def check_convergence(x, y):
 @click.argument("scene_name")
 @click.argument("pdf_count", type=int)
 @click.argument("checkpoint_name", type=str)
+@click.option("--output-name", type=str)
 @click.option("--comment", type=str)
-def pipeline(scene_name, pdf_count, checkpoint_name, comment):
+def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
     dataset_name = scene_name
-    context = Context(scene_name=scene_name, checkpoint_name=checkpoint_name, comment=comment)
+    context = Context(
+        scene_name=scene_name,
+        checkpoint_name=checkpoint_name,
+        output_name=output_name,
+        comment=comment
+    )
 
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
@@ -627,7 +639,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name, comment):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "10000",
+            "--num_training_steps", "100000",
         ]
     )
 
