@@ -7,7 +7,10 @@ from collections import namedtuple
 from pathlib import Path
 
 import click
+import colorama
 import pyexr
+
+colorama.init(autoreset=True)
 
 import compare_pdfs
 import photon_reader
@@ -26,6 +29,14 @@ default_checkpoints = {
     "kitchen": None,
     "cbox-ppg": "20191205-cbox-ppg-2",
     "cbox-bw": "20191217-cbox-bw-4",
+}
+
+default_viz_points = {
+    "staircase": [
+        (12, 39),
+        (11, 5),
+        (23, 64),
+    ],
 }
 
 dimensions = {
@@ -51,6 +62,9 @@ interesting_points = [
 ]
 
 Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path", "server_viz_path" ])
+
+def log(line):
+    print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + line)
 
 def build_output_root(root_path, output_name, comment, reuse):
     counter = 1
@@ -165,7 +179,8 @@ def pdf_compare(all, point, output_name, comment, reuse):
             context.mitsuba_path,
             context.scene_path("scene-training.xml"),
             context.output_root / "training.exr",
-            [], # "-p1" gives reproducible results
+            [ "-p1" ],
+            # [], # "-p1" gives reproducible results
             {
                 "x": point[0],
                 "y": point[1],
@@ -607,6 +622,8 @@ def check_convergence(x, y):
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
+    log("Running pipeline!")
+
     dataset_name = scene_name
     context = Context(
         scene_name=scene_name,
@@ -622,8 +639,8 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
 
     phases = [ ("train", pdf_count), ("test", pdf_count)  ]
     for phase, count in phases:
+        log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
-        renders_path = dataset_path / phase / "renders"
         raw_path.mkdir(parents=True, exist_ok=True)
 
         run_mitsuba(
@@ -641,6 +658,44 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
         for artifact_path in results_path.glob("*"):
             shutil.move(str(artifact_path), str(raw_path))
 
+    for phase in [ "viz" ]:
+        log(f"Generating raw {phase} data...")
+        raw_path = dataset_path / phase / "raw"
+        raw_path.mkdir(parents=True, exist_ok=True)
+
+        for i, point in enumerate(default_viz_points[scene_name]):
+            run_mitsuba(
+                context.mitsuba_path,
+                context.scene_path("scene-training.xml"),
+                "whatever.exr",
+                [ "-p1" ], # deterministic
+                {
+                    "x": point[0],
+                    "y": point[1],
+                    "width": dimensions[scene_name][0],
+                    "height": dimensions[scene_name][1],
+                }
+            )
+
+            pdf_path = Path(f"render_{point[0]}_{point[1]}.exr")
+            pdf_destination_name = f"pdf_{i}-block_0x0.exr"
+            shutil.move(
+                pdf_path,
+                raw_path / pdf_destination_name
+            )
+
+            photons_path = Path(f"photons_{point[0]}_{point[1]}.bin")
+            photons_destination_name = f"photons_{i}-block_0x0.bin"
+            shutil.move(
+                photons_path,
+                raw_path / photons_destination_name
+            )
+
+    for phase in [ "train", "test", "viz" ]:
+        log(f"Processing raw {phase} data...")
+        raw_path = dataset_path / phase / "raw"
+        renders_path = dataset_path / phase / "renders"
+
         process_raw_to_renders.run(
             500,
             raw_path,
@@ -653,13 +708,14 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
             [ phase, dataset_name ]
         )
 
+    log("Training...")
     runner.run_nsf_command(
         context.server_path,
         "experiments/plane.py",
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "100000",
+            "--num_training_steps", "10000",
         ]
     )
 
@@ -668,7 +724,10 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
         context.checkpoint_path
     )
 
+    log("Rendering...")
     _render(context, False, False, False, 80, 1)
+
+    log("Pipeline complete!")
 
 if __name__ == "__main__":
     cli()
