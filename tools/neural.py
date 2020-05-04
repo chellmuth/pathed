@@ -100,12 +100,13 @@ def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
     return default_checkpoints[self.scene_name]
 
 def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
-    prefix = "-".join([token for token in [scene_name, comment] if token])
-
     today = datetime.datetime.now().strftime("%Y%m%d")
+
+    prefix = "-".join([token for token in [scene_name, comment, today] if token])
+
     counter = 1
 
-    checkpoints_pattern = str(root_path / prefix) + "-[0123456789]*"
+    checkpoints_pattern = str(root_path / prefix) + "-*"
     checkpoint_filenames = glob.glob(checkpoints_pattern)
 
     if checkpoint_filenames:
@@ -114,12 +115,12 @@ def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
         if verbose:
             print(f"Most recent checkpoint: {latest_filename}")
 
-        match = re.search(f"{prefix}-{today}-" + r"(\d+)", latest_filename)
+        match = re.search(f"{prefix}-" + r"(\d+)", latest_filename)
         identifier = int(match.group(1))
 
         counter = max(counter, identifier + 1)
 
-    next_stem = f"{prefix}-{today}-{counter:02}"
+    next_stem = f"{prefix}-{counter:02}"
 
     if verbose:
         print(f"Next checkpoint: {next_stem}")
@@ -656,28 +657,13 @@ def check_convergence(x, y):
         errors = variance.errors(samples, 2 ** i, context.gt_pixel(point))
         print(2 ** i, errors)
 
-@cli.command()
-@click.argument("scene_name")
-@click.argument("pdf_count", type=int)
-@click.option("--checkpoint", type=str)
-@click.option("--output-name", type=str)
-@click.option("--comment", type=str)
-@click.option("--steps", type=int, default=10000)
-def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps):
-    log("Running pipeline!")
-
+def _generate_training_samples(context, pdf_count):
+    scene_name = context.scene_name
     dataset_name = scene_name
-    context = Context(
-        scene_name=scene_name,
-        next_checkpoint_name=checkpoint or "",
-        output_name=output_name,
-        comment=comment
-    )
+    dataset_path = context.dataset_path(dataset_name)
 
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
-
-    dataset_path = context.dataset_path(dataset_name)
 
     phases = [ ("train", pdf_count), ("test", pdf_count)  ]
     for phase, count in phases:
@@ -733,6 +719,10 @@ def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps):
                 raw_path / photons_destination_name
             )
 
+def _process_training_data(context):
+    dataset_name = context.scene_name
+    dataset_path = context.dataset_path(dataset_name)
+
     for phase in [ "train", "test", "viz" ]:
         log(f"Processing raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
@@ -750,7 +740,10 @@ def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps):
             [ phase, dataset_name ]
         )
 
-    log("Training...")
+def _train(context, steps):
+    dataset_name = context.scene_name
+    dataset_path = context.dataset_path(dataset_name)
+
     runner.run_nsf_command(
         context.server_path,
         "experiments/plane.py",
@@ -776,10 +769,47 @@ def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps):
         context.checkpoint_path
     )
 
-    log("Rendering...")
-    _render(context, False, False, False, dimensions[scene_name][0], 1)
+@cli.command()
+@click.argument("scene_name")
+@click.argument("pdf_count", type=int)
+@click.option("--checkpoint", type=str)
+@click.option("--output-name", type=str)
+@click.option("--comment", type=str)
+@click.option("--steps", type=int, default=10000)
+@click.option("--skip-sample-generation", is_flag=True)
+@click.option("--skip-training", is_flag=True)
+@click.option("--skip-render", is_flag=True)
+def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps, skip_sample_generation, skip_training, skip_render):
+    log("Running pipeline!")
+
+    context = Context(
+        scene_name=scene_name,
+        next_checkpoint_name=checkpoint or "",
+        output_name=output_name,
+        comment=comment
+    )
+
+    if skip_sample_generation:
+        log("Skipping sample generation")
+    else:
+        _generate_training_samples(context, pdf_count)
+        _process_training_data(context)
+
+    if skip_training:
+        log("Skipping training")
+    else:
+        log("Training...")
+        _train(context, steps)
+
+    if skip_render:
+        log("Skipping render")
+    else:
+        log("Rendering...")
+        _render(context, False, False, False, dimensions[scene_name][0], 1)
 
     log("Pipeline complete!")
+    print(context.output_root)
+
 
 if __name__ == "__main__":
     cli()
