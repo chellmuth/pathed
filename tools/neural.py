@@ -1,3 +1,4 @@
+import datetime
 import glob
 import os
 import re
@@ -98,8 +99,35 @@ def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
 
     return default_checkpoints[self.scene_name]
 
+def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
+    prefix = "-".join([token for token in [scene_name, comment] if token])
+
+    today = datetime.datetime.now().strftime("%Y%m%d")
+    counter = 1
+
+    checkpoints_pattern = str(root_path / prefix) + "-[0123456789]*"
+    checkpoint_filenames = glob.glob(checkpoints_pattern)
+
+    if checkpoint_filenames:
+        latest_filename = sorted(checkpoint_filenames)[-1]
+
+        if verbose:
+            print(f"Most recent checkpoint: {latest_filename}")
+
+        match = re.search(f"{prefix}-{today}-" + r"(\d+)", latest_filename)
+        identifier = int(match.group(1))
+
+        counter = max(counter, identifier + 1)
+
+    next_stem = f"{prefix}-{today}-{counter:02}"
+
+    if verbose:
+        print(f"Next checkpoint: {next_stem}")
+
+    return next_stem
+
 class Context:
-    def __init__(self, scene_name=None, checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
+    def __init__(self, scene_name=None, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
         self.scene_name = scene_name or default_scene_name
 
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
@@ -119,7 +147,20 @@ class Context:
         self.datasets_path = self.research_path / "datasets"
 
         self.checkpoint_root = self.research_path / "checkpoints"
-        self.checkpoint_name = checkpoint_name or get_default_checkpoint_stem(self.scene_name, self.checkpoint_root, verbose=True)
+        if next_checkpoint_name is None:
+            self.checkpoint_name = get_default_checkpoint_stem(
+                self.scene_name,
+                self.checkpoint_root,
+                verbose=True
+            )
+        else:
+            self.checkpoint_name = build_next_checkpoint_stem(
+                self.scene_name,
+                next_checkpoint_name,
+                self.checkpoint_root,
+                verbose=True
+            )
+
         self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
 
         self.gt_path = self.scenes_path / "gt.exr"
@@ -618,17 +659,17 @@ def check_convergence(x, y):
 @cli.command()
 @click.argument("scene_name")
 @click.argument("pdf_count", type=int)
-@click.argument("checkpoint_name", type=str)
+@click.option("--checkpoint", type=str)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--steps", type=int, default=10000)
-def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment, steps):
+def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps):
     log("Running pipeline!")
 
     dataset_name = scene_name
     context = Context(
         scene_name=scene_name,
-        checkpoint_name=checkpoint_name,
+        next_checkpoint_name=checkpoint or "",
         output_name=output_name,
         comment=comment
     )
@@ -736,7 +777,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment, steps
     )
 
     log("Rendering...")
-    _render(context, False, False, False, dimensions[scene_name], 1)
+    _render(context, False, False, False, dimensions[scene_name][0], 1)
 
     log("Pipeline complete!")
 
