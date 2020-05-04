@@ -621,7 +621,8 @@ def check_convergence(x, y):
 @click.argument("checkpoint_name", type=str)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
-def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
+@click.option("--steps", type=int, default=10000)
+def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment, steps):
     log("Running pipeline!")
 
     dataset_name = scene_name
@@ -715,7 +716,7 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment):
         [
             "--dataset_name", context.checkpoint_name,
             "--dataset_path", dataset_path,
-            "--num_training_steps", "10000",
+            "--num_training_steps", str(steps),
         ]
     )
 
