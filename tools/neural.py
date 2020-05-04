@@ -86,7 +86,8 @@ def build_output_root(root_path, output_name, comment, reuse):
     return Path(root_path / dir_name)
 
 def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
-    checkpoint_files = glob.glob(str(root_path / scene_name) + "*")
+    # TODO: handle custom checkpoint names
+    checkpoint_files = glob.glob(str(root_path / scene_name) + "-[0-9]*-*")
     if checkpoint_files:
         latest_checkpoint_path = Path(sorted(checkpoint_files)[-1])
         if verbose:
@@ -95,7 +96,7 @@ def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
         return latest_checkpoint_path.stem
 
     if verbose:
-        print(f"Using default checkpoint: {default_checkpoints[self.scene_name]}")
+        print(f"Using default checkpoint: {default_checkpoints[scene_name]}")
 
     return default_checkpoints[self.scene_name]
 
@@ -665,7 +666,7 @@ def _generate_training_samples(context, pdf_count):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    phases = [ ("train", pdf_count), ("test", pdf_count)  ]
+    phases = [ ("train", pdf_count), ("test", min(pdf_count, 5))  ]
     for phase, count in phases:
         log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
