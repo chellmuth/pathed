@@ -720,13 +720,23 @@ def pipeline(scene_name, pdf_count, checkpoint_name, output_name, comment, steps
         ]
     )
 
+    server_out_path = context.server_path / "roots/tmp/decomposition-flows/out"
+    for viz_filename in glob.glob(str(server_out_path) + f"/{context.checkpoint_name}-*.png"):
+        print(viz_filename)
+        shutil.move(viz_filename, context.output_root)
+
+    shutil.move(
+        server_out_path / f"test-losses-{context.checkpoint_name}.png",
+        context.output_root / "graph-convergence.png"
+    )
+
     shutil.move(
         context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{context.checkpoint_name}.t",
         context.checkpoint_path
     )
 
     log("Rendering...")
-    _render(context, False, False, False, 80, 1)
+    _render(context, False, False, False, dimensions[scene_name], 1)
 
     log("Pipeline complete!")
 
