@@ -69,12 +69,12 @@ def log(line):
 
 def build_output_root(root_path, output_name, comment, reuse):
     counter = 1
-    for file_name in glob.glob(str(root_path / output_name) + "-[0-9]*"):
-        match = re.search(output_name + r"-(\d+)", file_name)
+    for filename in glob.glob(str(root_path / output_name) + "-[0-9]*"):
+        match = re.search(output_name + r"-(\d+)", filename)
         if match:
             identifier = int(match.group(1))
 
-            if reuse:
+            if reuse or not [f for f in Path(filename).rglob("*") if f.is_file()]:
                 counter = max(counter, identifier)
             else:
                 counter = max(counter, identifier + 1)
