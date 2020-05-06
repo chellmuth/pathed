@@ -23,8 +23,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "staircase"
-default_output_name = "staircase"
+default_scene_name = "kitchen-diffuse"
+default_output_name = "kitchen-diffuse"
 
 default_checkpoints = {
     "kitchen": None,
@@ -38,6 +38,12 @@ default_viz_points = {
         (11, 5),
         (23, 64),
     ],
+    "kitchen-diffuse": [
+        (10, 15),
+        (32, 37),
+        (6, 41),
+        # (29, 12),
+    ]
 }
 
 dimensions = {
@@ -218,6 +224,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
 
         time.sleep(10) # make sure server starts up
 
+        log("Rendering fisheye...")
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("scene-training.xml"),
@@ -233,6 +240,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
             verbose=True
         )
 
+        log("Rendering neural 1...")
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("scene-neural.xml"),
@@ -257,6 +265,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
 
         time.sleep(10) # make sure server starts up
 
+        log("Rendering neural 2...")
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("scene-neural.xml"),
@@ -265,7 +274,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
             {
                 "x": point[0],
                 "y": point[1],
-                "spp": 1024,
+                "spp": 100,
                 "width": dimensions[default_scene_name][0],
                 "height": dimensions[default_scene_name][1],
             },
@@ -424,15 +433,16 @@ def pdf_analyze(all, point):
 
 # Quick 1spp comparison between neural and path
 @cli.command()
+@click.option("--size", type=int, default=10)
+@click.option("--spp", type=int, default=1)
 @click.option("--skip-neural", is_flag=True)
 @click.option("--skip-path", is_flag=True)
 @click.option("--include-gt", is_flag=True)
-@click.option("--size", type=int, default=10)
-@click.option("--spp", type=int, default=1)
+@click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def render(skip_neural, skip_path, include_gt, size, spp, comment, reuse):
-    context = Context(comment=comment, reuse_output_directory=reuse)
+def render(size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
+    context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
     _render(context, skip_neural, skip_path, include_gt, size, spp)
 
 def _render(context, skip_neural, skip_path, include_gt, size, spp):
@@ -776,18 +786,20 @@ def _train(context, steps):
 @click.option("--checkpoint", type=str)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
+@click.option("--reuse", is_flag=True)
 @click.option("--steps", type=int, default=10000)
 @click.option("--skip-sample-generation", is_flag=True)
 @click.option("--skip-training", is_flag=True)
 @click.option("--skip-render", is_flag=True)
-def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, steps, skip_sample_generation, skip_training, skip_render):
+def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
     log("Running pipeline!")
 
     context = Context(
         scene_name=scene_name,
         next_checkpoint_name=checkpoint or "",
         output_name=output_name,
-        comment=comment
+        comment=comment,
+        reuse_output_directory=reuse
     )
 
     if skip_sample_generation:
