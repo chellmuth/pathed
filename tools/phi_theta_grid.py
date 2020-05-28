@@ -58,8 +58,13 @@ class FatPhotonDataset(PhotonRepresentation):
         # count_data = struct.pack("d", count)
         # output_file.write(count_data)
 
+        normalized_values = []
+        length = np.sum(self.values)
+        for value in self.values:
+            normalized_values.append(value / length)
+
         merged = []
-        for photon, value in zip(self.photons, self.values):
+        for photon, value in zip(self.photons, normalized_values):
             merged.append((photon[0], photon[1], value))
 
         if count > 0:
