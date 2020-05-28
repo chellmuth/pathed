@@ -1,3 +1,4 @@
+import itertools
 import math
 import struct
 
@@ -26,7 +27,52 @@ class PhotonGridAdapter:
         return phi, theta, power
 
 
-class PhiThetaGrid:
+class PhotonRepresentation:
+    def splat(self, phi, theta, value):
+        raise NotImplementedError()
+
+    def export_dat(self, output_path):
+        raise NotImplementedError()
+
+class FatPhotonDataset(PhotonRepresentation):
+    def __init__(self):
+        self.photons = []
+        self.values = []
+
+    def splat(self, phi, theta, value):
+        # if theta > math.pi / 2.:
+        #     return False
+
+        self.photons.append((
+            phi / (2. * math.pi) - 0.5,
+            theta / (math.pi / 2.) - 0.5,
+        ))
+        self.values.append(value)
+
+        return True
+
+    def export_dat(self, output_path):
+        output_file = open(str(output_path), mode="wb")
+
+        count = len(self.photons)
+        # count_data = struct.pack("d", count)
+        # output_file.write(count_data)
+
+        merged = []
+        for photon, value in zip(self.photons, self.values):
+            merged.append((photon[0], photon[1], value))
+
+        if count > 0:
+            float_data = struct.pack(
+                f"{count * len(merged[0])}f",
+                *list(itertools.chain(*merged))
+            )
+
+            output_file.write(float_data)
+
+        output_file.close()
+
+class PhiThetaGrid(PhotonRepresentation):
     def __init__(self, phi_steps, theta_steps):
         self.phi_steps = phi_steps
         self.theta_steps = theta_steps

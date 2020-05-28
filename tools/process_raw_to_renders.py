@@ -8,6 +8,7 @@ import pyexr
 
 import photon_reader
 from parameters import GridShape
+from phi_theta_grid import FatPhotonDataset, PhiThetaGrid
 
 Parts = namedtuple("Parts", ["identifier", "block"])
 
@@ -79,8 +80,14 @@ def run(chunk_size, raw_path, renders_path):
             pyexr.write(str(iteration_root / f"pdf_{i:05d}.exr"), pdf_exr)
 
             photon_path = build_photon_path(raw_path, parts)
-            grid = photon_reader.build_grid(photon_path, GridShape)
-            grid.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
+
+            grid = PhiThetaGrid(*GridShape)
+            grid_data = photon_reader.build_grid(photon_path, grid)
+            grid_data.export_dat(iteration_root / f"photon-bundle_{i:05d}.dat")
+
+            fat = FatPhotonDataset()
+            fat_data = photon_reader.build_grid(photon_path, fat)
+            fat_data.export_dat(iteration_root / f"photon-fat_{i:05d}.dat")
 
 def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
     pdf_exr = convert_rgb_to_single_channel(pdf_in_path)
@@ -93,6 +100,6 @@ def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
 if __name__ == "__main__":
     run(
         500,
-        Path("/home/cjh/workpad/Dropbox/research/datasets/mitsuba/raw"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/mitsuba/train/renders"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/kitchen-diffuse/train/raw"),
+        Path("/tmp/photon-test")
     )

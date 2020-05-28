@@ -7,7 +7,7 @@ from typing import List, Tuple
 import numpy as np
 
 import coordinates
-from phi_theta_grid import PhiThetaGrid, PhotonGridAdapter
+from phi_theta_grid import PhotonGridAdapter, PhotonRepresentation
 from transform import Transform
 from vector import Vector
 
@@ -123,10 +123,9 @@ def read_photon_bundle(photon_path: Path):
         )
 
 Resolution = Tuple[int, int]
-def build_grid(photon_path: Path, grid_size: Resolution):
+def build_grid(photon_path: Path, photon_data: PhotonRepresentation):
     bundle = read_photon_bundle(photon_path)
 
-    grid = PhiThetaGrid(*grid_size)
     adapter = PhotonGridAdapter(
         bundle.position,
         bundle.normal,
@@ -134,9 +133,9 @@ def build_grid(photon_path: Path, grid_size: Resolution):
     )
 
     splats = 0
-    for photon_data in bundle.photons:
-        phi, theta, power = adapter.splat_params(photon_data)
-        success = grid.splat(phi, theta, power)
+    for photon_params in bundle.photons:
+        phi, theta, power = adapter.splat_params(photon_params)
+        success = photon_data.splat(phi, theta, power)
 
         if success:
             splats += 1
@@ -144,7 +143,7 @@ def build_grid(photon_path: Path, grid_size: Resolution):
     if Debug:
         print("Splatted Ratio: ", splats / len(bundle.photons))
 
-    return grid
+    return photon_data
 
 def read_raw_grid(grid_path: Path, grid_size: Resolution):
     phi_steps, theta_steps = grid_size
