@@ -43,13 +43,19 @@ default_viz_points = {
         (32, 37),
         (6, 41),
         # (29, 12),
+    ],
+    "cbox-ppg": [
+        (10, 15),
+        (32, 37),
+        (6, 50),
     ]
+
 }
 
 dimensions = {
     "kitchen": (1280, 720),
     "kitchen-diffuse": (80, 45),
-    "cbox-ppg": (400, 400),
+    "cbox-ppg": (60, 60),
     "cbox-bw": (400, 400),
     "green-bounce": (80, 45),
     "staircase": (45, 80),
@@ -771,13 +777,13 @@ def _train(context, steps):
         shutil.move(viz_filename, context.output_root)
 
     shutil.move(
-        server_out_path / f"test-losses-{context.checkpoint_name}.png",
-        context.output_root / "graph-convergence.png"
+        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{context.checkpoint_name}.t",
+        context.checkpoint_path
     )
 
     shutil.move(
-        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{context.checkpoint_name}.t",
-        context.checkpoint_path
+        server_out_path / f"test-losses-{context.checkpoint_name}.png",
+        context.output_root / "graph-convergence.png"
     )
 
 @cli.command()
