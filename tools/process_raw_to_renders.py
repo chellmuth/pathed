@@ -89,12 +89,17 @@ def run(chunk_size, raw_path, renders_path):
             fat_data = photon_reader.build_grid(photon_path, fat)
             fat_data.export_dat(iteration_root / f"photon-fat_{i:05d}.dat")
 
-def execute(pdf_in_path, photon_in_path, pdf_out_path, photon_out_path):
+def execute(pdf_in_path, photon_in_path, pdf_out_path, grid_out_path, rich_out_path):
     pdf_exr = convert_rgb_to_single_channel(pdf_in_path)
     pyexr.write(str(pdf_out_path), pdf_exr)
 
-    grid = photon_reader.build_grid(photon_in_path, GridShape)
-    grid.export_dat(photon_out_path)
+    grid = PhiThetaGrid(*GridShape)
+    grid_data = photon_reader.build_grid(photon_in_path, grid)
+    grid_data.export_dat(grid_out_path)
+
+    rich = FatPhotonDataset()
+    rich_data = photon_reader.build_grid(photon_in_path, rich)
+    rich_data.export_dat(rich_out_path)
 
 
 if __name__ == "__main__":

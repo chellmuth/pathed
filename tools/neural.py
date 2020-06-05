@@ -23,8 +23,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "kitchen-diffuse"
-default_output_name = "kitchen-diffuse"
+default_scene_name = "cbox-ppg"
+default_output_name = "cbox-ppg"
 
 default_checkpoints = {
     "kitchen": None,
@@ -288,12 +288,14 @@ def pdf_compare(all, point, output_name, comment, reuse):
         )
 
         pdf_out_path = context.output_root / f"pdf_{point[0]}_{point[1]}.exr"
-        photons_out_path = context.output_root / f"photon-bundle_{point[0]}_{point[1]}.dat"
+        photons_grid_out_path = context.output_root / f"photon-grid_{point[0]}_{point[1]}.dat"
+        photons_rich_out_path = context.output_root / f"photon-rich_{point[0]}_{point[1]}.dat"
         process_raw_to_renders.execute(
             Path(f"render_{point[0]}_{point[1]}.exr"),
             Path(f"photons_{point[0]}_{point[1]}.bin"),
             pdf_out_path,
-            photons_out_path
+            photons_grid_out_path,
+            photons_rich_out_path,
         )
 
         # run viz
@@ -304,7 +306,8 @@ def pdf_compare(all, point, output_name, comment, reuse):
             "evaluate.py",
             [
                 str(pdf_out_path),
-                str(photons_out_path),
+                str(photons_grid_out_path),
+                str(photons_rich_out_path),
                 str(viz_out_path),
                 str(context.checkpoint_path)
             ]
