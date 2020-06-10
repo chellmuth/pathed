@@ -52,6 +52,63 @@ def build_datasets(error_fn, gt, data_sources):
 def power_of_two_formatter(x, pos):
     return int(2 ** x)
 
+class SingleSPPDataSource:
+    def __init__(self, label, exr_path):
+        self.label = label
+        self.exr_path = exr_path
+
+    def build_dataset(self, error_fn, gt):
+        error = error_fn(
+            pyexr.read(str(self.exr_path)),
+            gt
+        )
+
+        return [ error ]
+
+def run2(gt_path, data_sources, max_spp=None):
+    gt = pyexr.read(str(gt_path))
+
+    errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
+
+    fig, axs = plt.subplots(nrows=len(errors))
+    fig.suptitle("Convergence Plots")
+
+    bar_width = 0.4
+
+    for error, ax in zip(errors, axs):
+        error_name, error_fn = error
+
+        ys_list = [
+            data_source.build_dataset(error_fn, gt)
+            for data_source
+            in data_sources
+        ]
+
+        for i, ys in enumerate(ys_list):
+            xs = np.array(range(len(ys)))
+
+            if max_spp:
+                max_index = int(math.log2(max_spp)) + 1
+                xs = xs[:max_index]
+                ys = ys[:max_index]
+
+            offset = -(bar_width * len(ys_list) / 2) + i * bar_width
+            ax.bar(
+                xs + offset,
+                ys,
+                label=data_sources[i].label,
+                width=bar_width,
+                align="edge"
+            )
+
+        ax.set(xlabel='spp (log)', ylabel=error_name)
+        ax.xaxis.set_major_formatter(power_of_two_formatter)
+
+        ax.legend(loc='upper right')
+
+    plt.tight_layout(rect=[0, 0, 1, 0.95]) # rect fixes suptitle clipping
+    plt.show()
+
 def run(gt, data_sources, max_spp):
     errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
 
