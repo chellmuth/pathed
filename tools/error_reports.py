@@ -65,7 +65,7 @@ class SingleSPPDataSource:
 
         return [ error ]
 
-def run2(gt_path, data_sources, max_spp=None):
+def run_with_data_source_objects(gt_path, data_sources, max_spp=None, out_path=None):
     gt = pyexr.read(str(gt_path))
 
     errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
@@ -107,7 +107,10 @@ def run2(gt_path, data_sources, max_spp=None):
         ax.legend(loc='upper right')
 
     plt.tight_layout(rect=[0, 0, 1, 0.95]) # rect fixes suptitle clipping
-    plt.show()
+    if out_path:
+        plt.savefig(out_path)
+    else:
+        plt.show()
 
 def run(gt, data_sources, max_spp):
     errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
