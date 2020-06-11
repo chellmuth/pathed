@@ -24,8 +24,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "kitchen-diffuse"
-default_output_name = "kitchen-diffuse"
+default_scene_name = "staircase"
+default_output_name = "staircase"
 
 default_checkpoints = {
     "kitchen": None,
@@ -844,7 +844,7 @@ def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, reuse, ste
         log("Skipping render")
     else:
         log("Rendering...")
-        _render(context, False, False, False, dimensions[scene_name][0], 1)
+        _render(context, False, False, True, dimensions[scene_name][0], 1)
 
     log("Pipeline complete!")
     print(context.output_root)
