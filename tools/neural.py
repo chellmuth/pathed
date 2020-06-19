@@ -24,8 +24,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "staircase"
-default_output_name = "staircase"
+default_scene_name = "dining-room"
+default_output_name = "dining-room"
 
 default_checkpoints = {
     "kitchen": None,
@@ -49,8 +49,12 @@ default_viz_points = {
         (10, 15),
         (32, 37),
         (6, 50),
-    ]
-
+    ],
+    "dining-room": [
+        (10, 15),
+        (32, 37),
+        (6, 41),
+    ],
 }
 
 dimensions = {
@@ -60,6 +64,7 @@ dimensions = {
     "cbox-bw": (400, 400),
     "green-bounce": (80, 45),
     "staircase": (45, 80),
+    "dining-room": (80, 45),
 }
 
 interesting_points = [
