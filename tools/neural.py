@@ -782,16 +782,17 @@ def _process_training_data(context):
             [ phase, dataset_name ]
         )
 
-def _train(context, steps):
-    dataset_name = context.scene_name
-    dataset_path = context.dataset_path(dataset_name)
+def _train(context, steps, dataset_paths=None):
+    if dataset_paths is None:
+        dataset_name = context.scene_name
+        dataset_paths = [ context.dataset_path(dataset_name) ]
 
     runner.run_nsf_command(
         context.server_path,
         "experiments/plane.py",
         [
             "--dataset_name", context.checkpoint_name,
-            "--dataset_path", dataset_path,
+            "--dataset_paths", *dataset_paths,
             "--num_training_steps", str(steps),
         ]
     )
