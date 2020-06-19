@@ -60,6 +60,9 @@ def _chunker(iterator, chunk_size):
         for i in range(math.ceil(count / chunk_size))
     ]
 
+def _clip_fireflies(exr, upper_bound):
+    return np.clip(exr, 0, upper_bound)
+
 def run(chunk_size, raw_path, renders_path):
     renders_path.mkdir(exist_ok=True, parents=True)
 
@@ -72,7 +75,7 @@ def run(chunk_size, raw_path, renders_path):
 
         for i, parts in enumerate(chunk):
             pdf_path = build_pdf_path(raw_path, parts)
-            pdf_exr = convert_rgb_to_single_channel(pdf_path)
+            pdf_exr = _clip_fireflies(convert_rgb_to_single_channel(pdf_path), 10.)
 
             if np.all(pdf_exr == 0.):
                 continue
