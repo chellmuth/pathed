@@ -24,8 +24,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "dining-room"
-default_output_name = "dining-room"
+default_scene_name = "living-room-3-diffuse"
+default_output_name = "living-room-3-diffuse"
 
 default_checkpoints = {
     "kitchen": None,
@@ -38,6 +38,11 @@ default_viz_points = {
         (12, 39),
         (11, 5),
         (23, 64),
+    ],
+    "staircase2-diffuse": [
+        (15, 39),
+        (30, 5),
+        (45, 20),
     ],
     "kitchen-diffuse": [
         (10, 15),
@@ -55,6 +60,41 @@ default_viz_points = {
         (32, 37),
         (6, 41),
     ],
+    "living-room-diffuse": [
+        (10, 15),
+        (32, 37),
+        (50, 20),
+    ],
+    "living-room-2-diffuse": [
+        (10, 15),
+        (32, 37),
+        (50, 20),
+    ],
+    "living-room-3-diffuse": [
+        (10, 15),
+        (32, 37),
+        (50, 20),
+    ],
+    "bedroom-diffuse": [
+        (10, 15),
+        (32, 37),
+        (50, 20),
+    ],
+    "bathroom-diffuse": [
+        (10, 15),
+        (32, 37),
+        (45, 20),
+    ],
+    "bathroom2-diffuse": [
+        (10, 15),
+        (32, 37),
+        (40, 20),
+    ],
+    "classroom-diffuse": [
+        (10, 15),
+        (32, 37),
+        (50, 20),
+    ],
 }
 
 dimensions = {
@@ -64,6 +104,14 @@ dimensions = {
     "cbox-bw": (400, 400),
     "green-bounce": (80, 45),
     "staircase": (45, 80),
+    "staircase2-diffuse": (50, 50),
+    "living-room-diffuse": (80, 40),
+    "living-room-2-diffuse": (80, 40),
+    "living-room-3-diffuse": (80, 40),
+    "classroom-diffuse": (80, 40),
+    "bathroom-diffuse": (50, 50),
+    "bathroom2-diffuse": (80, 40),
+    "bedroom-diffuse": (80, 40),
     "dining-room": (80, 45),
 }
 
@@ -781,6 +829,23 @@ def _process_training_data(context):
             "build_render_dataset.py",
             [ phase, dataset_name ]
         )
+
+@cli.command()
+@click.option("--steps", type=int, default=10000)
+def train(steps):
+    context = Context()
+    dataset_paths = [
+        Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom2-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/bedroom-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/classroom-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-2-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-3-diffuse"),
+        Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
+    ]
+
+    _train(context, steps, dataset_paths)
 
 def _train(context, steps, dataset_paths=None):
     if dataset_paths is None:
