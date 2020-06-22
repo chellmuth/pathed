@@ -747,6 +747,10 @@ def check_convergence(x, y):
         errors = variance.errors(samples, 2 ** i, context.gt_pixel(point))
         print(2 ** i, errors)
 
+def _generate_seed():
+    timestamp_format = "%Y%m%d%H%M%S"
+    return datetime.datetime.now().strftime(timestamp_format)
+
 def _generate_training_samples(context, pdf_count):
     scene_name = context.scene_name
     dataset_name = scene_name
@@ -755,26 +759,30 @@ def _generate_training_samples(context, pdf_count):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    phases = [ ("train", pdf_count), ("test", min(pdf_count, 5))  ]
-    for phase, count in phases:
+    phases = [ ("train", pdf_count, _generate_seed()), ("test", min(pdf_count, 5), None)  ]
+    for phase, count, seed in phases:
         log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
         raw_path.mkdir(parents=True, exist_ok=True)
+
+        args = {
+            "width": dimensions[scene_name][0],
+            "height": dimensions[scene_name][1],
+            "pdfCount": count,
+        }
+        if seed:
+            args["seed"] = seed
 
         run_mitsuba(
             context.mitsuba_path,
             context.scene_path("scene-training.xml"),
             "whatever.exr",
             [],
-            {
-                "width": dimensions[scene_name][0],
-                "height": dimensions[scene_name][1],
-                "pdfCount": count,
-            }
+            args
         )
 
         for artifact_path in results_path.glob("*"):
-            shutil.move(str(artifact_path), str(raw_path))
+            os.replace(str(artifact_path), str(raw_path / artifact_path.name))
 
     for phase in [ "viz" ]:
         log(f"Generating raw {phase} data...")
@@ -796,15 +804,15 @@ def _generate_training_samples(context, pdf_count):
             )
 
             pdf_path = Path(f"render_{point[0]}_{point[1]}.exr")
-            pdf_destination_name = f"pdf_{i}-block_0x0.exr"
-            shutil.move(
+            pdf_destination_name = f"pdf_noseed-id_{i}-block_0x0.exr"
+            os.replace(
                 pdf_path,
                 raw_path / pdf_destination_name
             )
 
             photons_path = Path(f"photons_{point[0]}_{point[1]}.bin")
-            photons_destination_name = f"photons_{i}-block_0x0.bin"
-            shutil.move(
+            photons_destination_name = f"photons_noseed-id_{i}-block_0x0.bin"
+            os.replace(
                 photons_path,
                 raw_path / photons_destination_name
             )
