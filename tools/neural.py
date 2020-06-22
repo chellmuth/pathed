@@ -24,8 +24,8 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "living-room-3-diffuse"
-default_output_name = "living-room-3-diffuse"
+default_scene_name = "kitchen-diffuse"
+default_output_name = "kitchen-diffuse"
 
 default_checkpoints = {
     "kitchen": None,
@@ -270,7 +270,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
     context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
 
     if all:
-        points = interesting_points
+        points = default_viz_points[default_scene_name]
     elif point:
         points = [point]
     else:
@@ -832,8 +832,10 @@ def _process_training_data(context):
 
 @cli.command()
 @click.option("--steps", type=int, default=10000)
-def train(steps):
-    context = Context()
+@click.option("--comment", type=str)
+@click.option("--output-name", type=str)
+def train(steps, comment, output_name):
+    context = Context(comment=comment, output_name=output_name)
     dataset_paths = [
         Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom-diffuse"),
         Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom2-diffuse"),
@@ -845,21 +847,29 @@ def train(steps):
         Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
     ]
 
-    _train(context, steps, dataset_paths)
+    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/staircase")
+    _train(context, steps, dataset_paths, viz_path)
 
-def _train(context, steps, dataset_paths=None):
+def _train(context, steps, dataset_paths=None, viz_path=None):
     if dataset_paths is None:
         dataset_name = context.scene_name
         dataset_paths = [ context.dataset_path(dataset_name) ]
 
+    args = [
+        "--dataset_name", context.checkpoint_name,
+        "--dataset_paths", *dataset_paths,
+        "--num_training_steps", str(steps),
+    ]
+
+    if viz_path:
+        args.extend([
+            "--viz_dataset_path", str(viz_path)
+        ])
+
     runner.run_nsf_command(
         context.server_path,
         "experiments/plane.py",
-        [
-            "--dataset_name", context.checkpoint_name,
-            "--dataset_paths", *dataset_paths,
-            "--num_training_steps", str(steps),
-        ]
+        args
     )
 
     server_out_path = context.server_path / "roots/tmp/decomposition-flows/out"
