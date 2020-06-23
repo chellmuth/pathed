@@ -10,6 +10,30 @@ import matplotlib.ticker as ticker
 import numpy as np
 import pyexr
 
+def trim_error(pixel_error):
+    trim = 10 / 100
+    h, w = pixel_error.shape
+
+    sorted_error = np.sort(pixel_error, axis=None)
+
+    trim_index = int(round(w * h * trim))
+    print("TRIM INDEX:", trim_index)
+    if trim_index > 0:
+        trimmed = sorted_error[:-trim_index]
+    else:
+        trimmed = sorted_error
+
+    return np.mean(trimmed)
+
+def calculate_mse_trim(test, gt):
+    return trim_error(np.mean((gt - test) ** 2, axis=2))
+
+def calculate_ae_trim(test, gt):
+    return trim_error(np.mean(np.abs(gt - test), axis=2))
+
+def calculate_mrse_trim(test, gt):
+    return trim_error(np.mean((gt - test) ** 2 / (gt + 1e-5), axis=2))
+
 def calculate_mse(test, gt):
     h, w, _ = gt.shape
     return np.sum((gt - test) ** 2) / (h * w)
@@ -68,7 +92,7 @@ class SingleSPPDataSource:
 def run_with_data_source_objects(gt_path, data_sources, max_spp=None, out_path=None):
     gt = pyexr.read(str(gt_path))
 
-    errors = [ ("MRSE", calculate_mrse), ("AE", calculate_ae) ]
+    errors = [ ("MRSE-trim", calculate_mrse_trim), ("AE-trim", calculate_ae_trim), ("MSE-trim", calculate_mse_trim) ]
 
     fig, axs = plt.subplots(nrows=len(errors))
     fig.suptitle("Convergence Plots")
