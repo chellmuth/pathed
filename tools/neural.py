@@ -25,7 +25,7 @@ from mitsuba import run_mitsuba
 from parameters import GridShape
 
 default_scene_name = "cbox-ppg"
-default_output_name = "cbox-ppg"
+default_output_name = "mis"
 
 default_checkpoints = {
     "kitchen": None,
@@ -33,6 +33,7 @@ default_checkpoints = {
     "cbox-bw": "20191217-cbox-bw-4",
 }
 
+# Convert to (0, 1) x (0, 1)
 default_viz_points = {
     "staircase": [
         (12, 39),
@@ -51,9 +52,9 @@ default_viz_points = {
         # (29, 12),
     ],
     "cbox-ppg": [
-        (10, 15),
-        (32, 37),
-        (6, 50),
+        (0.1667, 0.25), # (10, 15),
+        (0.5333, 0.6167), # (32, 37),
+        (0.1, 0.8334), # (6, 50),
     ],
     "dining-room": [
         (10, 15),
@@ -276,6 +277,12 @@ def pdf_compare(all, point, output_name, comment, reuse):
     else:
         points = [(20, 134)]
 
+    size = dimensions[default_scene_name]
+    points = [
+        (round(p[0] * size[0]), round(p[1] * size[1]))
+        for p in points
+    ]
+
     print(f"Processing points: {points}")
 
     for point in points:
@@ -299,8 +306,8 @@ def pdf_compare(all, point, output_name, comment, reuse):
             {
                 "x": point[0],
                 "y": point[1],
-                "width": dimensions[default_scene_name][0],
-                "height": dimensions[default_scene_name][1],
+                "width": size[0],
+                "height": size[1],
             },
             verbose=True
         )
@@ -316,6 +323,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
                 "y": point[1],
                 "width": dimensions[default_scene_name][0],
                 "height": dimensions[default_scene_name][1],
+                "integrator": "neural",
             },
             verbose=True
         )
@@ -342,6 +350,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
                 "spp": 100,
                 "width": dimensions[default_scene_name][0],
                 "height": dimensions[default_scene_name][1],
+                "integrator": "neural",
             },
             verbose=True
         )
@@ -601,7 +610,7 @@ def train(steps, comment, output_name):
         Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
     ]
 
-    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/staircase")
+    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/cbox-ppg")
     _train(context, steps, dataset_paths, viz_path)
 
 def _train(context, steps, dataset_paths=None, viz_path=None):
