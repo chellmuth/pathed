@@ -15,6 +15,7 @@ colorama.init(autoreset=True)
 
 import compare_pdfs
 import error_reports
+import exr_to_srgb
 import photon_reader
 import process_raw_to_renders
 import simple_chart
@@ -55,6 +56,7 @@ default_viz_points = {
         (0.1667, 0.25), # (10, 15),
         (0.5333, 0.6167), # (32, 37),
         (0.1, 0.8334), # (6, 50),
+        (0.4333, 0.4333), # (26, 26),
     ],
     "dining-room": [
         (10, 15),
@@ -264,10 +266,11 @@ def cli():
 @cli.command()
 @click.option("--all", is_flag=True)
 @click.option("--point", type=int, nargs=2)
+@click.option("--size", type=int, nargs=2)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def pdf_compare(all, point, output_name, comment, reuse):
+def pdf_compare(all, point, size, output_name, comment, reuse):
     context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
 
     if all:
@@ -277,7 +280,9 @@ def pdf_compare(all, point, output_name, comment, reuse):
     else:
         points = [(20, 134)]
 
-    size = dimensions[default_scene_name]
+    if not size:
+        size = dimensions[default_scene_name]
+
     points = [
         (round(p[0] * size[0]), round(p[1] * size[1]))
         for p in points
@@ -285,7 +290,9 @@ def pdf_compare(all, point, output_name, comment, reuse):
 
     print(f"Processing points: {points}")
 
-    for point in points:
+    for i, point in enumerate(points):
+        color_name = exr_to_srgb.ColorNames[i]
+
         server_viz_path = context.artifacts(point).server_viz_path
         server_process = runner.launch_server(
             context.server_path,
@@ -321,8 +328,8 @@ def pdf_compare(all, point, output_name, comment, reuse):
             {
                 "x": point[0],
                 "y": point[1],
-                "width": dimensions[default_scene_name][0],
-                "height": dimensions[default_scene_name][1],
+                "width": size[0],
+                "height": size[1],
                 "integrator": "neural",
             },
             verbose=True
@@ -348,8 +355,8 @@ def pdf_compare(all, point, output_name, comment, reuse):
                 "x": point[0],
                 "y": point[1],
                 "spp": 100,
-                "width": dimensions[default_scene_name][0],
-                "height": dimensions[default_scene_name][1],
+                "width": size[0],
+                "height": size[1],
                 "integrator": "neural",
             },
             verbose=True
@@ -367,7 +374,7 @@ def pdf_compare(all, point, output_name, comment, reuse):
         )
 
         # run viz
-        viz_out_path = context.output_root / f"viz_{point[0]}_{point[1]}.png"
+        viz_out_path = context.output_root / f"viz_{color_name}.png"
 
         runner.run_nsf_command(
             context.server_path,
@@ -416,6 +423,17 @@ def pdf_compare(all, point, output_name, comment, reuse):
         shutil.move(neural_filename, context.output_root / neural_filename)
         shutil.move(samples_filename, context.output_root / samples_filename)
         shutil.move(server_viz_path, context.output_root / server_viz_path.name)
+
+    gt_path = context.gt_path(size[0], size[1])
+    if gt_path.exists():
+        exr = pyexr.read(str(gt_path))
+        annotated_gt = exr_to_srgb.add_points(exr, points)
+
+        pyexr.write(str(context.output_root / "map.exr"), annotated_gt)
+
+    print("Finished pdf analysis!")
+    print(context.output_root)
+
 
 # Quick 1spp comparison between neural and path
 @cli.command()
@@ -544,28 +562,31 @@ def _generate_training_samples(context, pdf_count):
         raw_path = dataset_path / phase / "raw"
         raw_path.mkdir(parents=True, exist_ok=True)
 
+        size = dimensions[scene_name]
         for i, point in enumerate(default_viz_points[scene_name]):
+            pixel = (round(size[0] * point[0]), round(size[1] * point[1]))
+
             run_mitsuba(
                 context.mitsuba_path,
                 context.scene_path("scene-training.xml"),
                 "whatever.exr",
                 [ "-p1" ], # deterministic
                 {
-                    "x": point[0],
-                    "y": point[1],
-                    "width": dimensions[scene_name][0],
-                    "height": dimensions[scene_name][1],
+                    "x": pixel[0],
+                    "y": pixel[1],
+                    "width": size[0],
+                    "height": size[1],
                 }
             )
 
-            pdf_path = Path(f"render_{point[0]}_{point[1]}.exr")
+            pdf_path = Path(f"render_{pixel[0]}_{pixel[1]}.exr")
             pdf_destination_name = f"pdf_noseed-id_{i}-block_0x0.exr"
             os.replace(
                 pdf_path,
                 raw_path / pdf_destination_name
             )
 
-            photons_path = Path(f"photons_{point[0]}_{point[1]}.bin")
+            photons_path = Path(f"photons_{pixel[0]}_{pixel[1]}.bin")
             photons_destination_name = f"photons_noseed-id_{i}-block_0x0.bin"
             os.replace(
                 photons_path,

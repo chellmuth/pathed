@@ -11,7 +11,7 @@ import numpy as np
 import pyexr
 
 def trim_error(pixel_error):
-    trim = 10 / 100
+    trim = 0.1 / 100
     h, w = pixel_error.shape
 
     sorted_error = np.sort(pixel_error, axis=None)
