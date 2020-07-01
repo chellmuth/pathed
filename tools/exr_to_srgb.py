@@ -6,8 +6,8 @@ import numpy as np
 import pyexr
 from PIL import Image
 
-ColorMap = [ (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0, 1) ]
-ColorNames = [ "red", "blue", "green", "purple" ]
+ColorMap = [ (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0, 1), (1, 1, 0), (0, 1, 1) ]
+ColorNames = [ "red", "blue", "green", "purple", "yellow", "cyan" ]
 
 def save_png(image, output_path):
     uint8_image = (image * 255).astype(np.uint8)
@@ -39,7 +39,7 @@ def grow(image, factor):
 def add_points(image, points):
     colored = np.copy(image)
 
-    assert len(points) <= 4
+    assert len(points) <= len(ColorMap)
 
     for point, color in zip(points, ColorMap):
         colored[point[1], point[0]] = color

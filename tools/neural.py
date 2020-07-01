@@ -53,10 +53,16 @@ default_viz_points = {
         # (29, 12),
     ],
     "cbox-ppg": [
-        (0.1667, 0.25), # (10, 15),
-        (0.5333, 0.6167), # (32, 37),
-        (0.1, 0.8334), # (6, 50),
-        (0.4333, 0.4333), # (26, 26),
+        # (0.1667, 0.25), # (10, 15),
+        # (0.5333, 0.6167), # (32, 37),
+        # (0.1, 0.8334), # (6, 50),
+        # (0.4333, 0.4333), # (26, 26),
+        (0.6075, 0.53),
+        (0.6175, 0.53),
+        (0.6275, 0.53),
+        (0.6375, 0.53),
+        (0.6475, 0.53),
+        (0.6575, 0.53),
     ],
     "dining-room": [
         (10, 15),
@@ -265,35 +271,35 @@ def cli():
 
 @cli.command()
 @click.option("--all", is_flag=True)
-@click.option("--point", type=int, nargs=2)
+@click.option("--pixel", type=int, nargs=2)
 @click.option("--size", type=int, nargs=2)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def pdf_compare(all, point, size, output_name, comment, reuse):
+def pdf_compare(all, pixel, size, output_name, comment, reuse):
     context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
-
-    if all:
-        points = default_viz_points[default_scene_name]
-    elif point:
-        points = [point]
-    else:
-        points = [(20, 134)]
 
     if not size:
         size = dimensions[default_scene_name]
 
-    points = [
-        (round(p[0] * size[0]), round(p[1] * size[1]))
-        for p in points
-    ]
+    if all:
+        pixels = [
+            (round(p[0] * size[0]), round(p[1] * size[1]))
+            for p in default_viz_points[default_scene_name]
+        ]
+    elif pixel:
+        pixels = [pixel]
+    else:
+        print("Nothing to compare!")
+        exit(1)
 
-    print(f"Processing points: {points}")
 
-    for i, point in enumerate(points):
+    print(f"Processing pixels: {pixels}")
+
+    for i, pixel in enumerate(pixels):
         color_name = exr_to_srgb.ColorNames[i]
 
-        server_viz_path = context.artifacts(point).server_viz_path
+        server_viz_path = context.artifacts(pixel).server_viz_path
         server_process = runner.launch_server(
             context.server_path,
             0,
@@ -311,8 +317,8 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
             [ "-p1" ],
             # [], # "-p1" gives reproducible results
             {
-                "x": point[0],
-                "y": point[1],
+                "x": pixel[0],
+                "y": pixel[1],
                 "width": size[0],
                 "height": size[1],
             },
@@ -326,8 +332,8 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
-                "x": point[0],
-                "y": point[1],
+                "x": pixel[0],
+                "y": pixel[1],
                 "width": size[0],
                 "height": size[1],
                 "integrator": "neural",
@@ -352,8 +358,8 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
             context.output_root / "neural.exr",
             [ "-p1" ],
             {
-                "x": point[0],
-                "y": point[1],
+                "x": pixel[0],
+                "y": pixel[1],
                 "spp": 100,
                 "width": size[0],
                 "height": size[1],
@@ -362,19 +368,19 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
             verbose=True
         )
 
-        pdf_out_path = context.output_root / f"pdf_{point[0]}_{point[1]}.exr"
-        photons_grid_out_path = context.output_root / f"photon-grid_{point[0]}_{point[1]}.dat"
-        photons_rich_out_path = context.output_root / f"photon-rich_{point[0]}_{point[1]}.dat"
+        pdf_out_path = context.output_root / f"pdf_{pixel[0]}_{pixel[1]}.exr"
+        photons_grid_out_path = context.output_root / f"photon-grid_{pixel[0]}_{pixel[1]}.dat"
+        photons_rich_out_path = context.output_root / f"photon-rich_{pixel[0]}_{pixel[1]}.dat"
         process_raw_to_renders.execute(
-            Path(f"render_{point[0]}_{point[1]}.exr"),
-            Path(f"photons_{point[0]}_{point[1]}.bin"),
+            Path(f"render_{pixel[0]}_{pixel[1]}.exr"),
+            Path(f"photons_{pixel[0]}_{pixel[1]}.bin"),
             pdf_out_path,
             photons_grid_out_path,
             photons_rich_out_path,
         )
 
         # run viz
-        viz_out_path = context.output_root / f"viz_{color_name}.png"
+        viz_out_path = context.output_root / f"viz_{i}_{color_name}_{pixel[0]}_{pixel[1]}.png"
 
         runner.run_nsf_command(
             context.server_path,
@@ -388,14 +394,14 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
             ]
         )
 
-        batch_path = Path(f"batch_{point[0]}_{point[1]}.exr")
-        neural_out_path = context.output_root / f"neural_{point[0]}_{point[1]}.png"
+        batch_path = Path(f"batch_{pixel[0]}_{pixel[1]}.exr")
+        neural_out_path = context.output_root / f"neural_{pixel[0]}_{pixel[1]}.png"
         visualize.convert_to_density_mesh(
             batch_path,
             neural_out_path
         )
 
-        grid_path = Path(f"grid_{point[0]}_{point[1]}.bin")
+        grid_path = Path(f"grid_{pixel[0]}_{pixel[1]}.bin")
         grid = photon_reader.read_raw_grid(grid_path, GridShape)
 
         from matplotlib import cm, pyplot as plt
@@ -404,20 +410,20 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
         visualize.photon_bundle(axes, grid)
 
         plt.tight_layout()
-        plt.savefig(context.output_root / f"grid_{point[0]}_{point[1]}.png", bbox_inches='tight')
+        plt.savefig(context.output_root / f"grid_{pixel[0]}_{pixel[1]}.png", bbox_inches='tight')
         plt.close()
 
         # Cleanup
-        render_filename = f"render_{point[0]}_{point[1]}.exr"
-        batch_filename = f"batch_{point[0]}_{point[1]}.exr"
-        samples_filename = f"samples_{point[0]}_{point[1]}.bin"
+        render_filename = f"render_{pixel[0]}_{pixel[1]}.exr"
+        batch_filename = f"batch_{pixel[0]}_{pixel[1]}.exr"
+        samples_filename = f"samples_{pixel[0]}_{pixel[1]}.bin"
 
         shutil.move(render_filename, context.output_root / render_filename)
         shutil.move(batch_filename, context.output_root / batch_filename)
 
-        grid_filename = f"grid_{point[0]}_{point[1]}.bin"
-        photons_filename = f"photons_{point[0]}_{point[1]}.bin"
-        neural_filename = f"neural_{point[0]}_{point[1]}.bin"
+        grid_filename = f"grid_{pixel[0]}_{pixel[1]}.bin"
+        photons_filename = f"photons_{pixel[0]}_{pixel[1]}.bin"
+        neural_filename = f"neural_{pixel[0]}_{pixel[1]}.bin"
         shutil.move(grid_filename, context.output_root / grid_filename)
         shutil.move(photons_filename, context.output_root / photons_filename)
         shutil.move(neural_filename, context.output_root / neural_filename)
@@ -427,11 +433,12 @@ def pdf_compare(all, point, size, output_name, comment, reuse):
     gt_path = context.gt_path(size[0], size[1])
     if gt_path.exists():
         exr = pyexr.read(str(gt_path))
-        annotated_gt = exr_to_srgb.add_points(exr, points)
+        annotated_gt = exr_to_srgb.add_points(exr, pixels)
 
         pyexr.write(str(context.output_root / "map.exr"), annotated_gt)
 
     print("Finished pdf analysis!")
+    print(f"tev {context.output_root}/viz*.png {context.output_root}/map.exr")
     print(context.output_root)
 
 
