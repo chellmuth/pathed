@@ -6,8 +6,8 @@ import numpy as np
 import pyexr
 from PIL import Image
 
-ColorMap = [ (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0, 1), (1, 1, 0), (0, 1, 1) ]
-ColorNames = [ "red", "blue", "green", "purple", "yellow", "cyan" ]
+ColorMap = [ (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0, 1), (1, 1, 0), (0, 1, 1), (1, 0.5, 0) ]
+ColorNames = [ "red", "blue", "green", "purple", "yellow", "cyan", "orange" ]
 
 def save_png(image, output_path):
     uint8_image = (image * 255).astype(np.uint8)
