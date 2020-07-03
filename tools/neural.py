@@ -25,7 +25,7 @@ import visualize
 from mitsuba import run_mitsuba
 from parameters import GridShape
 
-default_scene_name = "cbox-ppg"
+default_scene_name = "kitchen-diffuse"
 default_output_name = "mis"
 
 default_checkpoints = {
@@ -47,22 +47,30 @@ default_viz_points = {
         (45, 20),
     ],
     "kitchen-diffuse": [
-        (10, 15),
-        (32, 37),
-        (6, 41),
-        # (29, 12),
+        (0.125, 0.3333),
+        (0.4, 0.8222),
+        (0.075, 0.9111),
     ],
     "cbox-ppg": [
         # (0.1667, 0.25), # (10, 15),
         # (0.5333, 0.6167), # (32, 37),
         # (0.1, 0.8334), # (6, 50),
         # (0.4333, 0.4333), # (26, 26),
-        (0.6075, 0.53),
-        (0.6175, 0.53),
-        (0.6275, 0.53),
-        (0.6375, 0.53),
-        (0.6475, 0.53),
-        (0.6575, 0.53),
+
+        # (0.6075, 0.53),
+        # (0.6175, 0.53),
+        # (0.6275, 0.53),
+        # (0.6375, 0.53),
+        # (0.6475, 0.53),
+        # (0.6575, 0.53),
+
+        (0.70, 0.49),
+        (0.70, 0.51),
+        (0.70, 0.53),
+        (0.70, 0.55),
+        (0.70, 0.57),
+        (0.70, 0.59),
+        (0.70, 0.61),
     ],
     "dining-room": [
         (10, 15),
@@ -526,6 +534,17 @@ def _render(context, skip_neural, skip_path, include_gt, size, spp):
 
         shutil.copyfile(gt_path, context.output_root / "gt.exr")
 
+    shutil.move("g_position1.exr", context.output_root / "g_position1.exr")
+    shutil.move("g_normal1.exr", context.output_root / "g_normal1.exr")
+    shutil.move("g_position2.exr", context.output_root / "g_position2.exr")
+    shutil.move("g_normal2.exr", context.output_root / "g_normal2.exr")
+    shutil.move("g_neural_wo.exr", context.output_root / "g_neural_wo.exr")
+    shutil.move("g_lit1.exr", context.output_root / "g_lit1.exr")
+    shutil.move("g_lit2.exr", context.output_root / "g_lit2.exr")
+    shutil.move("g_phi_theta.exr", context.output_root / "g_phi_theta.exr")
+    shutil.move("g_local_wi.exr", context.output_root / "g_local_wi.exr")
+    shutil.move("g_world_wi.exr", context.output_root / "g_world_wi.exr")
+    shutil.move("g_intersection_wi.exr", context.output_root / "g_intersection_wi.exr")
 
 def _generate_seed():
     timestamp_format = "%Y%m%d%H%M%S"
