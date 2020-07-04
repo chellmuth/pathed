@@ -23,8 +23,9 @@ class PhotonGridAdapter:
 
         phi, theta = coordinates.cartesian_to_spherical(direction)
         power = sum(photon_data.power) / 3.
+        depth = photon_data.depth
 
-        return phi, theta, power
+        return phi, theta, power, depth
 
 
 class PhotonRepresentation:
@@ -38,8 +39,9 @@ class FatPhotonDataset(PhotonRepresentation):
     def __init__(self):
         self.photons = []
         self.values = []
+        self.depths = []
 
-    def splat(self, phi, theta, value):
+    def splat(self, phi, theta, value, depth):
         # if theta > math.pi / 2.:
         #     return False
 
@@ -48,6 +50,7 @@ class FatPhotonDataset(PhotonRepresentation):
             theta / (math.pi / 2.) - 0.5,
         ))
         self.values.append(value)
+        self.depths.append(depth)
 
         return True
 
@@ -64,8 +67,8 @@ class FatPhotonDataset(PhotonRepresentation):
             normalized_values.append(value / length)
 
         merged = []
-        for photon, value in zip(self.photons, normalized_values):
-            merged.append((photon[0], photon[1], value))
+        for photon, value, depth in zip(self.photons, normalized_values, self.depths):
+            merged.append((photon[0], photon[1], value, depth))
 
         if count > 0:
             float_data = struct.pack(
@@ -101,7 +104,7 @@ class PhiThetaGrid(PhotonRepresentation):
 
         return self._index_stepped(phi_step, theta_step)
 
-    def splat(self, phi, theta, value):
+    def splat(self, phi, theta, value, depth):
         index = self._index(phi, theta)
 
         if 0 <= index < self.length:

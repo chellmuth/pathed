@@ -12,7 +12,7 @@ from transform import Transform
 from vector import Vector
 
 FloatSize = 4
-PhotonSize = 9
+PhotonSize = 10
 
 Debug = True
 
@@ -44,11 +44,14 @@ class PhotonData:
     power_g: float
     power_b: float
 
+    depth: float
+
     def __repr__(self):
         return " - ".join([
             f"position: ({self.position_x:f}, {self.position_y:f}, {self.position_z:f})",
             f"source: ({self.source_x:f}, {self.source_y:f}, {self.source_z:f})",
-            f"power: ({self.power_r:f}, {self.power_g:f}, {self.power_b:f})"
+            f"power: ({self.power_r:f}, {self.power_g:f}, {self.power_b:f})",
+            f"depth: ({self.depth:f})",
         ])
 
     @property
@@ -134,8 +137,8 @@ def build_grid(photon_path: Path, photon_data: PhotonRepresentation):
 
     splats = 0
     for photon_params in bundle.photons:
-        phi, theta, power = adapter.splat_params(photon_params)
-        success = photon_data.splat(phi, theta, power)
+        phi, theta, power, depth = adapter.splat_params(photon_params)
+        success = photon_data.splat(phi, theta, power, depth)
 
         if success:
             splats += 1
