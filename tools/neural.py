@@ -42,9 +42,9 @@ default_viz_points = {
         (23, 64),
     ],
     "staircase2-diffuse": [
-        (15, 39),
-        (30, 5),
-        (45, 20),
+        (0.3, .78),
+        (0.6, 0.1),
+        (0.9, 0.4),
     ],
     "kitchen-diffuse": [
         (0.125, 0.3333),
@@ -78,9 +78,9 @@ default_viz_points = {
         (6, 41),
     ],
     "living-room-diffuse": [
-        (10, 15),
-        (32, 37),
-        (50, 20),
+        (0.125, 0.375),
+        (0.4, 0.925),
+        (0.625, 0.5),
     ],
     "living-room-2-diffuse": [
         (10, 15),
@@ -639,6 +639,15 @@ def _process_training_data(context):
             "build_render_dataset.py",
             [ phase, dataset_name ]
         )
+
+@cli.command()
+@click.option("--scene", "scenes", type=str, multiple=True)
+@click.option("--minutes", type=int)
+def generate_samples(scenes, minutes):
+    for scene_name in scenes:
+        context = Context(scene_name=scene_name)
+        _generate_training_samples(context, minutes)
+        _process_training_data(context)
 
 @cli.command()
 @click.option("--steps", type=int, default=10000)
