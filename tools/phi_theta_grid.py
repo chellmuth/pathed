@@ -24,12 +24,14 @@ class PhotonGridAdapter:
         phi, theta = coordinates.cartesian_to_spherical(direction)
         power = sum(photon_data.power) / 3.
         depth = photon_data.depth
+        radius = (photon_data.position - self.position).length()
+        distance = (photon_data.source - self.position).length()
 
-        return phi, theta, power, depth
+        return phi, theta, power, depth, radius, distance
 
 
 class PhotonRepresentation:
-    def splat(self, phi, theta, value):
+    def splat(self, phi, theta, value, depth, radius, distance):
         raise NotImplementedError()
 
     def export_dat(self, output_path):
@@ -40,8 +42,10 @@ class FatPhotonDataset(PhotonRepresentation):
         self.photons = []
         self.values = []
         self.depths = []
+        self.radiuses = []
+        self.distances = []
 
-    def splat(self, phi, theta, value, depth):
+    def splat(self, phi, theta, value, depth, radius, distance):
         # if theta > math.pi / 2.:
         #     return False
 
@@ -51,6 +55,8 @@ class FatPhotonDataset(PhotonRepresentation):
         ))
         self.values.append(value)
         self.depths.append(depth)
+        self.radiuses.append(radius)
+        self.distances.append(distance)
 
         return True
 
@@ -67,8 +73,14 @@ class FatPhotonDataset(PhotonRepresentation):
             normalized_values.append(value / length)
 
         merged = []
-        for photon, value, depth in zip(self.photons, normalized_values, self.depths):
-            merged.append((photon[0], photon[1], value, depth))
+        for photon, value, depth, radius, distance in zip(
+                self.photons,
+                normalized_values,
+                self.depths,
+                self.radiuses,
+                self.distances
+        ):
+            merged.append((photon[0], photon[1], value, depth, radius, distance))
 
         if count > 0:
             float_data = struct.pack(
@@ -104,7 +116,7 @@ class PhiThetaGrid(PhotonRepresentation):
 
         return self._index_stepped(phi_step, theta_step)
 
-    def splat(self, phi, theta, value, depth):
+    def splat(self, phi, theta, value, depth, radius, distance):
         index = self._index(phi, theta)
 
         if 0 <= index < self.length:

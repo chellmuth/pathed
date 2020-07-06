@@ -137,8 +137,7 @@ def build_grid(photon_path: Path, photon_data: PhotonRepresentation):
 
     splats = 0
     for photon_params in bundle.photons:
-        phi, theta, power, depth = adapter.splat_params(photon_params)
-        success = photon_data.splat(phi, theta, power, depth)
+        success = photon_data.splat(*adapter.splat_params(photon_params))
 
         if success:
             splats += 1
