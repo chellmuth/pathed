@@ -606,14 +606,14 @@ def _generate_training_samples(context, pdf_count):
             )
 
             pdf_path = Path(f"render_{pixel[0]}_{pixel[1]}.exr")
-            pdf_destination_name = f"pdf_noseed-id_{i}-block_0x0.exr"
+            pdf_destination_name = f"pdf_noseed-id_{i}-depth_0-block_0x0.exr"
             os.replace(
                 pdf_path,
                 raw_path / pdf_destination_name
             )
 
             photons_path = Path(f"photons_{pixel[0]}_{pixel[1]}.bin")
-            photons_destination_name = f"photons_noseed-id_{i}-block_0x0.bin"
+            photons_destination_name = f"photons_noseed-id_{i}-depth_0-block_0x0.bin"
             os.replace(
                 photons_path,
                 raw_path / photons_destination_name

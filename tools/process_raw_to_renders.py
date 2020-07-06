@@ -10,7 +10,7 @@ import photon_reader
 from parameters import GridShape
 from phi_theta_grid import FatPhotonDataset, PhiThetaGrid
 
-Parts = namedtuple("Parts", ["seed", "identifier", "block"])
+Parts = namedtuple("Parts", ["seed", "identifier", "depth", "block"])
 
 def convert_rgb_to_single_channel(exr_path):
     exr = pyexr.read(str(exr_path))
@@ -19,20 +19,20 @@ def convert_rgb_to_single_channel(exr_path):
     return np.stack([pixel_average, pixel_average, pixel_average], axis=2)
 
 def build_pdf_path(root_path, parts):
-    return root_path / f"pdf_{parts.seed}-id_{parts.identifier}-block_{parts.block}.exr"
+    return root_path / f"pdf_{parts.seed}-id_{parts.identifier}-depth_{parts.depth}-block_{parts.block}.exr"
 
 def build_photon_path(root_path, parts):
-    return root_path / f"photons_{parts.seed}-id_{parts.identifier}-block_{parts.block}.bin"
+    return root_path / f"photons_{parts.seed}-id_{parts.identifier}-depth_{parts.depth}-block_{parts.block}.bin"
 
 def pdf_path_parts(pdf_path):
-    match = re.match(r"pdf_(\d+|noseed)-id_(\d+)-block_(\d+x\d+).exr", pdf_path.name)
+    match = re.match(r"pdf_(\d+|noseed)-id_(\d+)-depth_(\d+)-block_(\d+x\d+).exr", pdf_path.name)
     if not match:
         breakpoint()
-    return Parts(match.group(1), match.group(2), match.group(3))
+    return Parts(match.group(1), match.group(2), match.group(3), match.group(4))
 
 def photon_path_parts(photon_path):
-    match = re.match(r"photons_(\d+|noseed)-id_(\d+)-block_(\d+x\d+).bin", photon_path.name)
-    return Parts(match.group(1), match.group(2), match.group(3))
+    match = re.match(r"photons_(\d+|noseed)-id_(\d+)-depth_(\d+)-block_(\d+x\d+).bin", photon_path.name)
+    return Parts(match.group(1), match.group(2), match.group(3), match.group(4))
 
 def valid_parts(raw_path):
     parts_to_index = {}
