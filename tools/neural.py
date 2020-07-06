@@ -650,24 +650,31 @@ def generate_samples(scenes, minutes):
         _process_training_data(context)
 
 @cli.command()
+@click.option("--scene", "scenes", type=str, multiple=True)
 @click.option("--steps", type=int, default=10000)
 @click.option("--comment", type=str)
 @click.option("--output-name", type=str)
-def train(steps, comment, output_name):
+def train(scenes, steps, comment, output_name):
     context = Context(comment=comment, output_name=output_name)
     dataset_paths = [
-        Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom2-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/bedroom-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/classroom-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-2-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-3-diffuse"),
-        Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
+        context.dataset_path(scene_name)
+        for scene_name in scenes
     ]
 
-    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/cbox-ppg")
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom2-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/bedroom-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/classroom-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-2-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-3-diffuse"),
+    # Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
+
+    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/kitchen-diffuse")
     _train(context, steps, dataset_paths, viz_path)
+
+    print("Training complete!")
+    print(str(context.output_root))
 
 def _train(context, steps, dataset_paths=None, viz_path=None):
     if dataset_paths is None:
@@ -676,7 +683,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 
     args = [
         "--dataset_name", context.checkpoint_name,
-        "--dataset_paths", *dataset_paths,
+        "--dataset_paths", *[str(p) for p in dataset_paths],
         "--num_training_steps", str(steps),
     ]
 
