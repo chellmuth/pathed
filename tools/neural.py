@@ -550,7 +550,7 @@ def _generate_seed():
     timestamp_format = "%Y%m%d%H%M%S"
     return datetime.datetime.now().strftime(timestamp_format)
 
-def _generate_training_samples(context, pdf_count):
+def _generate_training_samples(context, allotment):
     scene_name = context.scene_name
     dataset_name = scene_name
     dataset_path = context.dataset_path(dataset_name)
@@ -558,8 +558,8 @@ def _generate_training_samples(context, pdf_count):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    phases = [ ("train", pdf_count, _generate_seed()), ("test", min(pdf_count, 5), None)  ]
-    for phase, count, seed in phases:
+    phases = [ ("train", allotment, _generate_seed()), ("test", min(allotment, 5), None)  ]
+    for phase, allotment, seed in phases:
         log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
         raw_path.mkdir(parents=True, exist_ok=True)
@@ -567,7 +567,7 @@ def _generate_training_samples(context, pdf_count):
         args = {
             "width": dimensions[scene_name][0],
             "height": dimensions[scene_name][1],
-            "pdfCount": count,
+            "minutesAllotment": allotment,
         }
         if seed:
             args["seed"] = seed
@@ -699,7 +699,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 
 @cli.command()
 @click.argument("scene_name")
-@click.argument("pdf_count", type=int)
+@click.argument("minutes", type=int)
 @click.option("--checkpoint", type=str)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
@@ -708,7 +708,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 @click.option("--skip-sample-generation", is_flag=True)
 @click.option("--skip-training", is_flag=True)
 @click.option("--skip-render", is_flag=True)
-def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
+def pipeline(scene_name, minutes, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
     log("Running pipeline!")
 
     context = Context(
@@ -722,7 +722,7 @@ def pipeline(scene_name, pdf_count, checkpoint, output_name, comment, reuse, ste
     if skip_sample_generation:
         log("Skipping sample generation")
     else:
-        _generate_training_samples(context, pdf_count)
+        _generate_training_samples(context, minutes)
         _process_training_data(context)
 
     if skip_training:
