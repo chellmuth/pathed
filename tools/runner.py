@@ -17,7 +17,7 @@ def run_renderer(job_json):
 def run_nsf_command(nsf_root, command, args_list):
     command = ["pipenv", "run", "python", command, *args_list]
 
-    print("Running command:", " ".join(command))
+    print("Running command:", " ".join([str(c) for c in command]))
 
     subprocess.check_output(
         command,

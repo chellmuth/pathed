@@ -26,12 +26,6 @@ from context import Context, default_scene_name
 from mitsuba import run_mitsuba
 from parameters import *
 
-default_checkpoints = {
-    "kitchen": None,
-    "cbox-ppg": "20191205-cbox-ppg-2",
-    "cbox-bw": "20191217-cbox-bw-4",
-}
-
 default_viz_points = {
     "staircase": [
         (12/45, 39/80),

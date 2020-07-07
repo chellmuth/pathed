@@ -34,10 +34,7 @@ def get_default_checkpoint_stem(scene_name, root_path, verbose=False):
 
         return latest_checkpoint_path.stem
 
-    if verbose:
-        print(f"Using default checkpoint: {default_checkpoints[scene_name]}")
-
-    return default_checkpoints[self.scene_name]
+    return None
 
 def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
     today = datetime.datetime.now().strftime("%Y%m%d")
