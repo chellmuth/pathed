@@ -72,9 +72,6 @@ class CheckpointTypeBase:
 
 class CheckpointType:
     class General(CheckpointTypeBase):
-        def __init__(self, next_checkpoint_name=None):
-            self.next_checkpoint_name = next_checkpoint_name
-
         def current_name(self, checkpoint_root):
             return get_default_checkpoint_stem(
                 "generalized",
@@ -85,15 +82,14 @@ class CheckpointType:
         def next_name(self, checkpoint_root):
             return build_next_checkpoint_stem(
                 "generalized",
-                self.next_checkpoint_name,
+                None,
                 checkpoint_root,
                 verbose=True
             )
 
     class Overfit(CheckpointTypeBase):
-        def __init__(self, scene_name, next_checkpoint_name=None):
+        def __init__(self, scene_name):
             self.scene_name = scene_name
-            self.next_checkpoint_name = next_checkpoint_name
 
         def current_name(self, checkpoint_root):
             return get_default_checkpoint_stem(
@@ -105,7 +101,7 @@ class CheckpointType:
         def next_name(self, checkpoint_root):
             return build_next_checkpoint_stem(
                 self.scene_name,
-                self.next_checkpoint_name,
+                None,
                 checkpoint_root,
                 verbose=True
             )

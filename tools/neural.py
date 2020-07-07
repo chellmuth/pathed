@@ -647,7 +647,6 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 @cli.command()
 @click.argument("scene_name")
 @click.argument("minutes", type=int)
-@click.option("--checkpoint", type=str)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
@@ -655,12 +654,11 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 @click.option("--skip-sample-generation", is_flag=True)
 @click.option("--skip-training", is_flag=True)
 @click.option("--skip-render", is_flag=True)
-def pipeline(scene_name, minutes, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
+def pipeline(scene_name, minutes, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
     log("Running pipeline!")
 
     context = Context(
         scene_name=scene_name,
-        next_checkpoint_name=checkpoint or "",
         output_name=output_name,
         comment=comment,
         reuse_output_directory=reuse
