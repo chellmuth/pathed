@@ -170,11 +170,12 @@ def normalize(scenes):
     mins = np.amin(full_data, axis=0)
     maxes = np.amax(full_data, axis=0)
 
-    results = (full_data - mins) / (maxes - mins) * 2 - 1.
+    # results = (full_data - mins) / (maxes - mins) * 2 - 1.
 
+    combined = np.stack((mins, maxes))
     np.save(
         context.normalize_path,
-        np.concatenate((mins, maxes))
+        combined
     )
 
     print(f"Saved to: {context.normalize_path}")
