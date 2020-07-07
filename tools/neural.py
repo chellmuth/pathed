@@ -262,7 +262,7 @@ def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reu
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.checkpoint_path
+            context.current_checkpoint_path
         )
 
         time.sleep(10) # make sure server starts up
@@ -306,7 +306,7 @@ def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reu
                 str(photons_grid_out_path),
                 str(photons_rich_out_path),
                 str(viz_out_path),
-                str(context.checkpoint_path)
+                str(context.current_checkpoint_path)
             ]
         )
 
@@ -670,6 +670,9 @@ def pipeline(scene_name, minutes, output_name, comment, reuse, steps, skip_sampl
     else:
         _generate_training_samples(context, minutes)
         _process_training_data(context)
+
+    print("Update pre-process normalization?")
+    breakpoint()
 
     if skip_training:
         log("Skipping training")
