@@ -135,7 +135,6 @@ class BaseContext:
     @property
     def next_checkpoint_name(self):
         return self.checkpoint_type.next_name(self.checkpoint_root)
-        return self.full_checkpoint_path(checkpoint_name)
 
     @property
     def next_checkpoint_path(self):

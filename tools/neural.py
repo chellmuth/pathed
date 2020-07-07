@@ -659,6 +659,7 @@ def pipeline(scene_name, minutes, output_name, comment, reuse, steps, skip_sampl
 
     context = Context(
         scene_name=scene_name,
+        checkpoint_type=CheckpointType.Overfit(scene_name),
         output_name=output_name,
         comment=comment,
         reuse_output_directory=reuse
