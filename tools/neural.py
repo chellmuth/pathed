@@ -3,7 +3,6 @@ import glob
 import os
 import shutil
 import time
-from collections import namedtuple
 from pathlib import Path
 
 import click
@@ -69,9 +68,10 @@ default_viz_points = {
         (6/80, 41/40),
     ],
     "living-room-diffuse": [
-        (0.125, 0.375),
-        (0.4, 0.925),
-        (0.625, 0.5),
+        (143/800, 291/400),
+        (705/800, 305/400),
+        (359/800, 312/400),
+        (455/800, 27/400),
     ],
     "living-room-2-diffuse": [
         (10/80, 15/40),
@@ -136,8 +136,6 @@ interesting_points = [
     (94, 175), # tall box - left side
 ]
 
-Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path", "server_viz_path" ])
-
 def log(line):
     print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + line)
 
@@ -148,7 +146,7 @@ def cli():
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 def normalize(scenes):
-    context = Context()
+    context = Context(scene_name="none")
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes

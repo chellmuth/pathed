@@ -2,9 +2,12 @@ import datetime
 import glob
 import os
 import re
+from collections import namedtuple
 from pathlib import Path
 
 default_output_name = "output"
+
+Artifacts = namedtuple("Artifacts", [ "render_path", "batch_path", "samples_path", "server_viz_path" ])
 
 def build_output_root(root_path, output_name, comment, reuse):
     counter = 1
