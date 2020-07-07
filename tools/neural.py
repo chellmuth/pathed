@@ -22,7 +22,7 @@ import simple_chart
 import runner
 import variance
 import visualize
-from context import Context, default_scene_name
+from context import Context
 from mitsuba import run_mitsuba
 from parameters import *
 
@@ -175,22 +175,28 @@ def normalize(scenes):
     print(f"Saved to: {context.normalize_path}")
 
 @cli.command()
+@click.argument("scene_name", type=str)
 @click.option("--all", is_flag=True)
 @click.option("--pixel", type=int, nargs=2)
 @click.option("--size", type=int, nargs=2)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def pdf_compare(all, pixel, size, output_name, comment, reuse):
-    context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
+def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
+    context = Context(
+        scene_name=scene_name,
+        output_name=output_name,
+        comment=comment,
+        reuse_output_directory=reuse
+    )
 
     if not size:
-        size = dimensions[default_scene_name]
+        size = dimensions[scene_name]
 
     if all:
         pixels = [
             (round(p[0] * size[0]), round(p[1] * size[1]))
-            for p in default_viz_points[default_scene_name]
+            for p in default_viz_points[scene_name]
         ]
     elif pixel:
         pixels = [pixel]
@@ -349,6 +355,7 @@ def pdf_compare(all, pixel, size, output_name, comment, reuse):
 
 # Quick 1spp comparison between neural and path
 @cli.command()
+@click.argument("scene_name", type=str)
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
 @click.option("--skip-neural", is_flag=True)
@@ -357,8 +364,13 @@ def pdf_compare(all, pixel, size, output_name, comment, reuse):
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def render(size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
-    context = Context(output_name=output_name, comment=comment, reuse_output_directory=reuse)
+def render(scene_name, size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
+    context = Context(
+        scene_name=scene_name,
+        output_name=output_name,
+        comment=comment,
+        reuse_output_directory=reuse
+    )
     _render(context, skip_neural, skip_path, include_gt, size, spp)
 
 def _render(context, skip_neural, skip_path, include_gt, size, spp):

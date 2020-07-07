@@ -3,8 +3,7 @@ import os
 import re
 from pathlib import Path
 
-default_scene_name = "kitchen-diffuse"
-default_output_name = "mis"
+default_output_name = "output"
 
 def build_output_root(root_path, output_name, comment, reuse):
     counter = 1
@@ -65,8 +64,8 @@ def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
     return next_stem
 
 class Context:
-    def __init__(self, scene_name=None, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
-        self.scene_name = scene_name or default_scene_name
+    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
+        self.scene_name = scene_name
 
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
 
