@@ -87,6 +87,9 @@ class CheckpointType:
                 verbose=True
             )
 
+        def normalize_path(self, datasets_path):
+            return datasets_path / "normalize.npy"
+
     class Overfit(CheckpointTypeBase):
         def __init__(self, scene_name):
             self.scene_name = scene_name
@@ -106,6 +109,9 @@ class CheckpointType:
                 verbose=True
             )
 
+        def normalize_path(self, datasets_path):
+            return datasets_path / self.scene_name / "normalize.npy"
+
 class BaseContext:
     def __init__(self, checkpoint_type=None, output_name=None, comment=None, reuse_output_directory=False):
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
@@ -113,7 +119,6 @@ class BaseContext:
         self.research_path = Path(os.environ["RESEARCH_ROOT"])
         self.datasets_path = self.research_path / "datasets"
         self.checkpoint_root = self.research_path / "checkpoints"
-        self.normalize_path = self.datasets_path / "normalize.npy"
 
         self.checkpoint_type = checkpoint_type
         self.output_root = build_output_root(
@@ -126,6 +131,10 @@ class BaseContext:
 
     def dataset_path(self, dataset_name):
         return self.datasets_path / dataset_name
+
+    @property
+    def normalize_path(self):
+        return self.checkpoint_type.normalize_path(self.datasets_path)
 
     @property
     def current_checkpoint_path(self):

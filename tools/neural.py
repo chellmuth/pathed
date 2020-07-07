@@ -146,7 +146,12 @@ def cli():
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 def normalize(scenes):
-    context = BaseContext()
+    if len(scenes) == 1:
+        checkpoint_type = CheckpointType.Overfit(scenes[0])
+    else:
+        checkpoint_type = CheckpointType.General()
+
+    context = BaseContext(checkpoint_type=checkpoint_type)
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
