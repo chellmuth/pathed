@@ -564,7 +564,11 @@ def generate_samples(scenes, minutes):
 @click.option("--comment", type=str)
 @click.option("--output-name", type=str)
 def train(scenes, steps, comment, output_name):
-    context = Context(comment=comment, output_name=output_name)
+    if len(scenes) > 1:
+        context = Context(scene_name="none", comment=comment, output_name=output_name)
+    else:
+        context = Context(scene_name=scenes[0], comment=comment, output_name=output_name)
+
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
@@ -590,8 +594,15 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
         dataset_name = context.scene_name
         dataset_paths = [ context.dataset_path(dataset_name) ]
 
+    if len(dataset_paths) > 1:
+        checkpoint_name = context.next_general_checkpoint_name()
+        checkpoint_path = context.build_checkpoint_path(checkpoint_name)
+    else:
+        checkpoint_name = context.checkpoint_name
+        checkpoint_path = context.build_checkpoint_path(checkpoint_name)
+
     args = [
-        "--dataset_name", context.checkpoint_name,
+        "--dataset_name", checkpoint_name,
         "--dataset_paths", *[str(p) for p in dataset_paths],
         "--num_training_steps", str(steps),
     ]
@@ -608,17 +619,17 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
     )
 
     server_out_path = context.server_path / "roots/tmp/decomposition-flows/out"
-    for viz_filename in glob.glob(str(server_out_path) + f"/{context.checkpoint_name}-*.png"):
+    for viz_filename in glob.glob(str(server_out_path) + f"/{checkpoint_name}-*.png"):
         print(viz_filename)
         shutil.move(viz_filename, context.output_root)
 
     shutil.move(
-        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{context.checkpoint_name}.t",
-        context.checkpoint_path
+        context.server_path / "roots/tmp/decomposition-flows/checkpoints" / f"{checkpoint_name}.t",
+        checkpoint_path
     )
 
     shutil.move(
-        server_out_path / f"test-losses-{context.checkpoint_name}.png",
+        server_out_path / f"test-losses-{checkpoint_name}.png",
         context.output_root / "graph-convergence.png"
     )
 

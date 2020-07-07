@@ -1,3 +1,4 @@
+import datetime
 import glob
 import os
 import re
@@ -100,6 +101,20 @@ class Context:
 
         self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
         self.normalize_path = self.datasets_path / "normalize.npy"
+
+    def next_general_checkpoint_name(self):
+        return build_next_checkpoint_stem(
+            "generalized",
+            None,
+            self.checkpoint_root,
+            verbose=True
+        )
+
+    def build_checkpoint_path(self, checkpoint_name):
+        if checkpoint_name:
+            return self.checkpoint_root / f"{checkpoint_name}.t"
+        else:
+            return self.checkpoint_root / f"{self.checkpoint_name}.t"
 
     @property
     def convergence_plot_path(self):
