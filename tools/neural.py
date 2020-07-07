@@ -57,10 +57,10 @@ default_viz_points = {
         (0.70, 0.49),
         (0.70, 0.51),
         (0.70, 0.53),
-        (0.70, 0.55),
-        (0.70, 0.57),
-        (0.70, 0.59),
-        (0.70, 0.61),
+        # (0.70, 0.55),
+        # (0.70, 0.57),
+        # (0.70, 0.59),
+        # (0.70, 0.61),
     ],
     "dining-room": [
         (10/80, 15/40),
@@ -615,6 +615,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
     args = [
         "--dataset_name", checkpoint_name,
         "--dataset_paths", *[str(p) for p in dataset_paths],
+        "--normalization_path", str(context.normalize_path),
         "--num_training_steps", str(steps),
     ]
 
