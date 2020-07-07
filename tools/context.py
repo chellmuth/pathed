@@ -67,12 +67,59 @@ def build_next_checkpoint_stem(scene_name, comment, root_path, verbose=False):
 
     return next_stem
 
-class Context:
-    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
-        self.scene_name = scene_name
+class CheckpointTypeBase:
+    pass
 
+class CheckpointType:
+    class General(CheckpointTypeBase):
+        def __init__(self, next_checkpoint_name=None):
+            self.next_checkpoint_name = next_checkpoint_name
+
+        def current_name(self, checkpoint_root):
+            return get_default_checkpoint_stem(
+                "generalized",
+                checkpoint_root,
+                verbose=True
+            )
+
+        def next_name(self, checkpoint_root):
+            return build_next_checkpoint_stem(
+                "generalized",
+                self.next_checkpoint_name,
+                checkpoint_root,
+                verbose=True
+            )
+
+    class Overfit(CheckpointTypeBase):
+        def __init__(self, scene_name, next_checkpoint_name=None):
+            self.scene_name = scene_name
+            self.next_checkpoint_name = next_checkpoint_name
+
+        def current_name(self, checkpoint_root):
+            return get_default_checkpoint_stem(
+                self.scene_name,
+                checkpoint_root,
+                verbose=True
+            )
+
+        def next_name(self, checkpoint_root):
+            return build_next_checkpoint_stem(
+                self.scene_name,
+                self.next_checkpoint_name,
+                checkpoint_root,
+                verbose=True
+            )
+
+class BaseContext:
+    def __init__(self, checkpoint_type=None, output_name=None, comment=None, reuse_output_directory=False):
         self.mitsuba_path = Path(os.environ["MITSUBA_ROOT"])
+        self.server_path = Path(os.environ["NSF_ROOT"])
+        self.research_path = Path(os.environ["RESEARCH_ROOT"])
+        self.datasets_path = self.research_path / "datasets"
+        self.checkpoint_root = self.research_path / "checkpoints"
+        self.normalize_path = self.datasets_path / "normalize.npy"
 
+        self.checkpoint_type = checkpoint_type
         self.output_root = build_output_root(
             Path("/tmp"),
             output_name or default_output_name,
@@ -81,28 +128,32 @@ class Context:
         )
         self.output_root.mkdir(exist_ok=True, parents=True)
 
-        self.server_path = Path(os.environ["NSF_ROOT"])
-        self.research_path = Path(os.environ["RESEARCH_ROOT"])
+    def dataset_path(self, dataset_name):
+        return self.datasets_path / dataset_name
 
+    @property
+    def current_checkpoint_path(self):
+        checkpoint_name = self.checkpoint_type.current_name(self.checkpoint_root)
+        return self.full_checkpoint_path(checkpoint_name)
+
+    @property
+    def next_checkpoint_name(self):
+        return self.checkpoint_type.next_name(self.checkpoint_root)
+        return self.full_checkpoint_path(checkpoint_name)
+
+    @property
+    def next_checkpoint_path(self):
+        return self.full_checkpoint_path(self.next_checkpoint_name)
+
+    def full_checkpoint_path(self, checkpoint_name):
+        return self.checkpoint_root / f"{checkpoint_name}.t"
+
+class Context(BaseContext):
+    def __init__(self, scene_name, checkpoint_type=None, output_name=None, comment=None, reuse_output_directory=False):
+        super().__init__(checkpoint_type)
+
+        self.scene_name = scene_name
         self.scenes_path = self.research_path / "scenes" / self.scene_name
-        self.datasets_path = self.research_path / "datasets"
-
-        self.checkpoint_root = self.research_path / "checkpoints"
-        self.normalize_path = self.datasets_path / "normalize.npy"
-
-    def next_general_checkpoint_name(self):
-        return build_next_checkpoint_stem(
-            "generalized",
-            None,
-            self.checkpoint_root,
-            verbose=True
-        )
-
-    def build_checkpoint_path(self, checkpoint_name):
-        if checkpoint_name:
-            return self.checkpoint_root / f"{checkpoint_name}.t"
-        else:
-            return self.checkpoint_root / f"{self.checkpoint_name}.t"
 
     @property
     def convergence_plot_path(self):
@@ -110,9 +161,6 @@ class Context:
 
     def scene_path(self, scene_file):
         return self.scenes_path / scene_file
-
-    def dataset_path(self, dataset_name):
-        return self.datasets_path / dataset_name
 
     def artifacts(self, point):
         return Artifacts(
@@ -128,34 +176,3 @@ class Context:
 
     def gt_path(self, width, height):
         return self.scenes_path / f"gt_size{width}x{height}.exr"
-
-
-class GeneralizedContext(Context):
-    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
-        super().__init__(scene_name, output_name, comment, reuse_output_directory)
-
-        self.checkpoint_name = get_default_checkpoint_stem(
-            "generalized",
-            self.checkpoint_root,
-            verbose=True
-        )
-        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
-
-class OverfitContext(Context):
-    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
-        super().__init__(scene_name, output_name, comment, reuse_output_directory)
-
-        if next_checkpoint_name is None:
-            self.checkpoint_name = get_default_checkpoint_stem(
-                self.scene_name,
-                self.checkpoint_root,
-                verbose=True
-            )
-        else:
-            self.checkpoint_name = build_next_checkpoint_stem(
-                self.scene_name,
-                next_checkpoint_name,
-                self.checkpoint_root,
-                verbose=True
-            )
-        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"

@@ -21,7 +21,7 @@ import simple_chart
 import runner
 import variance
 import visualize
-from context import Context, GeneralizedContext, OverfitContext
+from context import BaseContext, Context, CheckpointType
 from mitsuba import run_mitsuba
 from parameters import *
 
@@ -146,7 +146,7 @@ def cli():
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 def normalize(scenes):
-    context = OverfitContext(scene_name="none")
+    context = BaseContext()
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
@@ -174,15 +174,22 @@ def normalize(scenes):
 
 @cli.command()
 @click.argument("scene_name", type=str)
+@click.option("--overfit", is_flag=True, default=False)
 @click.option("--all", is_flag=True)
 @click.option("--pixel", type=int, nargs=2)
 @click.option("--size", type=int, nargs=2)
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
-    context = OverfitContext(
-        scene_name=scene_name,
+def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reuse):
+    if overfit:
+        checkpoint_type = CheckpointType.Overfit(scene_name)
+    else:
+        checkpoint_type = CheckpointType.General()
+
+    context = Context(
+        scene_name,
+        checkpoint_type,
         output_name=output_name,
         comment=comment,
         reuse_output_directory=reuse
@@ -212,7 +219,7 @@ def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.checkpoint_path,
+            context.current_checkpoint_path,
             server_viz_path
         )
 
@@ -354,6 +361,7 @@ def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
 # Quick 1spp comparison between neural and path
 @cli.command()
 @click.argument("scene_name", type=str)
+@click.option("--overfit", is_flag=True, default=False)
 @click.option("--size", type=int, default=10)
 @click.option("--spp", type=int, default=1)
 @click.option("--skip-neural", is_flag=True)
@@ -362,9 +370,15 @@ def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
 @click.option("--output-name", type=str)
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
-def render(scene_name, size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
-    context = GeneralizedContext(
-        scene_name=scene_name,
+def render(scene_name, overfit, size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
+    if overfit:
+        checkpoint_type = CheckpointType.Overfit(scene_name)
+    else:
+        checkpoint_type = CheckpointType.General()
+
+    context = Context(
+        scene_name,
+        checkpoint_type,
         output_name=output_name,
         comment=comment,
         reuse_output_directory=reuse
@@ -382,7 +396,7 @@ def _render(context, skip_neural, skip_path, include_gt, size, spp):
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.checkpoint_path
+            context.current_checkpoint_path
         )
 
         time.sleep(10) # make sure server starts up
@@ -552,7 +566,7 @@ def _process_training_data(context):
 @click.option("--minutes", type=int)
 def generate_samples(scenes, minutes):
     for scene_name in scenes:
-        context = OverfitContext(scene_name=scene_name)
+        context = Context(scene_name=scene_name)
         _generate_training_samples(context, minutes)
         _process_training_data(context)
 
@@ -563,9 +577,12 @@ def generate_samples(scenes, minutes):
 @click.option("--output-name", type=str)
 def train(scenes, steps, comment, output_name):
     if len(scenes) > 1:
-        context = OverfitContext(scene_name="none", comment=comment, output_name=output_name)
+        checkpoint_type = CheckpointType.General()
+        context = BaseContext(checkpoint_type=checkpoint_type, comment=comment, output_name=output_name)
     else:
-        context = OverfitContext(scene_name=scenes[0], comment=comment, output_name=output_name)
+        scene_name = scenes[0]
+        checkpoint_type = CheckpointType.Overfit(scene_name)
+        context = Context(scene_name, checkpoint_type, comment=comment, output_name=output_name)
 
     dataset_paths = [
         context.dataset_path(scene_name)
@@ -592,12 +609,8 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
         dataset_name = context.scene_name
         dataset_paths = [ context.dataset_path(dataset_name) ]
 
-    if len(dataset_paths) > 1:
-        checkpoint_name = context.next_general_checkpoint_name()
-        checkpoint_path = context.build_checkpoint_path(checkpoint_name)
-    else:
-        checkpoint_name = context.checkpoint_name
-        checkpoint_path = context.build_checkpoint_path(checkpoint_name)
+    checkpoint_name = context.next_checkpoint_name
+    checkpoint_path = context.full_checkpoint_path(checkpoint_name)
 
     args = [
         "--dataset_name", checkpoint_name,
@@ -645,7 +658,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 def pipeline(scene_name, minutes, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
     log("Running pipeline!")
 
-    context = OverfitContext(
+    context = Context(
         scene_name=scene_name,
         next_checkpoint_name=checkpoint or "",
         output_name=output_name,
