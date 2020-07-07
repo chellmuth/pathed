@@ -21,7 +21,7 @@ import simple_chart
 import runner
 import variance
 import visualize
-from context import Context
+from context import Context, GeneralizedContext, OverfitContext
 from mitsuba import run_mitsuba
 from parameters import *
 
@@ -146,7 +146,7 @@ def cli():
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 def normalize(scenes):
-    context = Context(scene_name="none")
+    context = OverfitContext(scene_name="none")
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
@@ -181,7 +181,7 @@ def normalize(scenes):
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
 def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
-    context = Context(
+    context = OverfitContext(
         scene_name=scene_name,
         output_name=output_name,
         comment=comment,
@@ -363,7 +363,7 @@ def pdf_compare(scene_name, all, pixel, size, output_name, comment, reuse):
 @click.option("--comment", type=str)
 @click.option("--reuse", is_flag=True)
 def render(scene_name, size, spp, skip_neural, skip_path, include_gt, output_name, comment, reuse):
-    context = Context(
+    context = GeneralizedContext(
         scene_name=scene_name,
         output_name=output_name,
         comment=comment,
@@ -552,7 +552,7 @@ def _process_training_data(context):
 @click.option("--minutes", type=int)
 def generate_samples(scenes, minutes):
     for scene_name in scenes:
-        context = Context(scene_name=scene_name)
+        context = OverfitContext(scene_name=scene_name)
         _generate_training_samples(context, minutes)
         _process_training_data(context)
 
@@ -563,9 +563,9 @@ def generate_samples(scenes, minutes):
 @click.option("--output-name", type=str)
 def train(scenes, steps, comment, output_name):
     if len(scenes) > 1:
-        context = Context(scene_name="none", comment=comment, output_name=output_name)
+        context = OverfitContext(scene_name="none", comment=comment, output_name=output_name)
     else:
-        context = Context(scene_name=scenes[0], comment=comment, output_name=output_name)
+        context = OverfitContext(scene_name=scenes[0], comment=comment, output_name=output_name)
 
     dataset_paths = [
         context.dataset_path(scene_name)
@@ -645,7 +645,7 @@ def _train(context, steps, dataset_paths=None, viz_path=None):
 def pipeline(scene_name, minutes, checkpoint, output_name, comment, reuse, steps, skip_sample_generation, skip_training, skip_render):
     log("Running pipeline!")
 
-    context = Context(
+    context = OverfitContext(
         scene_name=scene_name,
         next_checkpoint_name=checkpoint or "",
         output_name=output_name,

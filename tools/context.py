@@ -88,21 +88,6 @@ class Context:
         self.datasets_path = self.research_path / "datasets"
 
         self.checkpoint_root = self.research_path / "checkpoints"
-        if next_checkpoint_name is None:
-            self.checkpoint_name = get_default_checkpoint_stem(
-                self.scene_name,
-                self.checkpoint_root,
-                verbose=True
-            )
-        else:
-            self.checkpoint_name = build_next_checkpoint_stem(
-                self.scene_name,
-                next_checkpoint_name,
-                self.checkpoint_root,
-                verbose=True
-            )
-
-        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
         self.normalize_path = self.datasets_path / "normalize.npy"
 
     def next_general_checkpoint_name(self):
@@ -143,3 +128,34 @@ class Context:
 
     def gt_path(self, width, height):
         return self.scenes_path / f"gt_size{width}x{height}.exr"
+
+
+class GeneralizedContext(Context):
+    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
+        super().__init__(scene_name, output_name, comment, reuse_output_directory)
+
+        self.checkpoint_name = get_default_checkpoint_stem(
+            "generalized",
+            self.checkpoint_root,
+            verbose=True
+        )
+        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
+
+class OverfitContext(Context):
+    def __init__(self, scene_name, next_checkpoint_name=None, output_name=None, comment=None, reuse_output_directory=False):
+        super().__init__(scene_name, output_name, comment, reuse_output_directory)
+
+        if next_checkpoint_name is None:
+            self.checkpoint_name = get_default_checkpoint_stem(
+                self.scene_name,
+                self.checkpoint_root,
+                verbose=True
+            )
+        else:
+            self.checkpoint_name = build_next_checkpoint_stem(
+                self.scene_name,
+                next_checkpoint_name,
+                self.checkpoint_root,
+                verbose=True
+            )
+        self.checkpoint_path = self.checkpoint_root / f"{self.checkpoint_name}.t"
