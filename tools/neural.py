@@ -56,10 +56,10 @@ default_viz_points = {
         (0.075, 0.9111),
     ],
     "cbox-ppg": [
-        # (0.1667, 0.25), # (10, 15),
-        # (0.5333, 0.6167), # (32, 37),
-        # (0.1, 0.8334), # (6, 50),
-        # (0.4333, 0.4333), # (26, 26),
+        (0.1667, 0.25), # (10, 15),
+        (0.5333, 0.6167), # (32, 37),
+        (0.1, 0.8334), # (6, 50),
+        (0.4333, 0.4333), # (26, 26),
 
         # (0.6075, 0.53),
         # (0.6175, 0.53),
@@ -68,9 +68,9 @@ default_viz_points = {
         # (0.6475, 0.53),
         # (0.6575, 0.53),
 
-        (0.70, 0.49),
-        (0.70, 0.51),
-        (0.70, 0.53),
+        # (0.70, 0.49),
+        # (0.70, 0.51),
+        # (0.70, 0.53),
         # (0.70, 0.55),
         # (0.70, 0.57),
         # (0.70, 0.59),
@@ -159,7 +159,11 @@ def cli():
 
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
-def normalize(scenes):
+@click.option("--all", is_flag=True)
+def normalize(scenes, all):
+    if all:
+        scenes = default_scenes
+
     if len(scenes) == 1:
         checkpoint_type = CheckpointType.Overfit(scenes[0])
     else:
@@ -192,6 +196,7 @@ def _normalize(context, scenes):
         combined
     )
 
+    print("Normalizing scenes:", scenes)
     print(f"Saved to: {context.normalize_path}")
 
 @cli.command()
@@ -602,10 +607,15 @@ def generate_samples(scenes, minutes, all):
 
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
+@click.option("--skip", "skip_scene", type=str)
 @click.option("--steps", type=int, default=10000)
 @click.option("--comment", type=str)
 @click.option("--output-name", type=str)
-def train(scenes, steps, comment, output_name):
+def train(scenes, skip_scene, steps, comment, output_name):
+    if skip_scene:
+        scenes = default_scenes[:]
+        scenes.remove(skip_scene)
+
     if len(scenes) > 1:
         checkpoint_type = CheckpointType.General()
         context = BaseContext(checkpoint_type=checkpoint_type, comment=comment, output_name=output_name)
@@ -619,16 +629,7 @@ def train(scenes, steps, comment, output_name):
         for scene_name in scenes
     ]
 
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/bathroom2-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/bedroom-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/classroom-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-2-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/living-room-3-diffuse"),
-    # Path("/home/cjh/workpad/Dropbox/research/datasets/staircase2-diffuse"),
-
-    viz_path = Path("/home/cjh/workpad/Dropbox/research/datasets/kitchen-diffuse")
+    viz_path = context.dataset_path(skip_scene)
     _train(context, steps, dataset_paths, viz_path)
 
     print("Training complete!")
