@@ -166,6 +166,9 @@ def normalize(scenes):
         checkpoint_type = CheckpointType.General()
 
     context = BaseContext(checkpoint_type=checkpoint_type)
+    _normalize(context, scenes)
+
+def _normalize(context, scenes):
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
@@ -239,6 +242,7 @@ def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reu
             context.server_path,
             0,
             context.current_checkpoint_path,
+            context.normalize_path,
             server_viz_path
         )
 
@@ -281,7 +285,8 @@ def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reu
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.current_checkpoint_path
+            context.current_checkpoint_path,
+            context.normalize_path,
         )
 
         time.sleep(10) # make sure server starts up
@@ -325,7 +330,8 @@ def pdf_compare(scene_name, overfit, all, pixel, size, output_name, comment, reu
                 str(photons_grid_out_path),
                 str(photons_rich_out_path),
                 str(viz_out_path),
-                str(context.current_checkpoint_path)
+                str(context.current_checkpoint_path),
+                str(context.normalize_path),
             ]
         )
 
@@ -415,7 +421,8 @@ def _render(context, skip_neural, skip_path, include_gt, size, spp):
         server_process = runner.launch_server(
             context.server_path,
             0,
-            context.current_checkpoint_path
+            context.current_checkpoint_path,
+            context.normalize_path,
         )
 
         time.sleep(10) # make sure server starts up
@@ -694,9 +701,7 @@ def pipeline(scene_name, minutes, output_name, comment, reuse, steps, skip_sampl
     else:
         _generate_training_samples(context, minutes)
         _process_training_data(context)
-
-    print("Update pre-process normalization?")
-    breakpoint()
+        _normalize(context, [scene_name])
 
     if skip_training:
         log("Skipping training")

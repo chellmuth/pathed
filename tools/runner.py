@@ -24,17 +24,17 @@ def run_nsf_command(nsf_root, command, args_list):
         cwd=str(nsf_root)
     )
 
-def run_server(server_path, port_offset, checkpoint_path, viz_path):
-    args = [str(port_offset), checkpoint_path]
+def run_server(server_path, port_offset, checkpoint_path, normalize_path, viz_path):
+    args = [str(port_offset), checkpoint_path, normalize_path]
     if viz_path:
         args.append(str(viz_path))
 
     run_nsf_command(server_path, "server.py", args)
 
-def launch_server(server_path, port_offset, checkpoint_path, viz_path=None):
+def launch_server(server_path, port_offset, checkpoint_path, normalize_path, viz_path=None):
     server_process = Process(
         target=run_server,
-        args=(server_path, port_offset, checkpoint_path, viz_path)
+        args=(server_path, port_offset, checkpoint_path, normalize_path, viz_path)
     )
     server_process.start()
     return server_process
