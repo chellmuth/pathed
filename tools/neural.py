@@ -25,6 +25,20 @@ from context import BaseContext, Context, CheckpointType
 from mitsuba import run_mitsuba
 from parameters import *
 
+default_scenes = [
+    "cbox-ppg",
+
+    "bathroom-diffuse",
+    "bathroom2-diffuse",
+    "bedroom-diffuse",
+    "classroom-diffuse",
+    "kitchen-diffuse",
+    "living-room-2-diffuse",
+    "living-room-3-diffuse",
+    "living-room-diffuse",
+    "staircase2-diffuse",
+]
+
 default_viz_points = {
     "staircase": [
         (12/45, 39/80),
@@ -484,7 +498,7 @@ def _generate_training_samples(context, allotment):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    phases = [ ("train", allotment, _generate_seed()), ("test", min(allotment, 5), None)  ]
+    phases = [ ("train", allotment, _generate_seed()), ("test", min(allotment, 1), None)  ]
     for phase, allotment, seed in phases:
         log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
@@ -569,7 +583,11 @@ def _process_training_data(context):
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 @click.option("--minutes", type=int)
-def generate_samples(scenes, minutes):
+@click.option("--all", is_flag=True)
+def generate_samples(scenes, minutes, all):
+    if all:
+        scenes = default_scenes
+
     for scene_name in scenes:
         context = Context(scene_name=scene_name)
         _generate_training_samples(context, minutes)
