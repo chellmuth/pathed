@@ -502,7 +502,7 @@ def _generate_seed():
     timestamp_format = "%Y%m%d%H%M%S"
     return datetime.datetime.now().strftime(timestamp_format)
 
-def _generate_training_samples(context, allotment):
+def _generate_training_samples(context, allotment, train_only=False):
     scene_name = context.scene_name
     dataset_name = scene_name
     dataset_path = context.dataset_path(dataset_name)
@@ -510,7 +510,10 @@ def _generate_training_samples(context, allotment):
     results_path = Path("./results").absolute()
     results_path.mkdir(exist_ok=True)
 
-    phases = [ ("train", allotment, _generate_seed()), ("test", min(allotment, 1), None)  ]
+    phases = [ ("train", allotment, _generate_seed()) ]
+    if not train_only:
+        phases.append(("test", min(allotment, 1), None))
+
     for phase, allotment, seed in phases:
         log(f"Generating raw {phase} data...")
         raw_path = dataset_path / phase / "raw"
@@ -534,6 +537,8 @@ def _generate_training_samples(context, allotment):
 
         for artifact_path in results_path.glob("*"):
             os.replace(str(artifact_path), str(raw_path / artifact_path.name))
+
+    if train_only: return
 
     for phase in [ "viz" ]:
         log(f"Generating raw {phase} data...")
@@ -596,25 +601,29 @@ def _process_training_data(context):
 @click.option("--scene", "scenes", type=str, multiple=True)
 @click.option("--minutes", type=int)
 @click.option("--all", is_flag=True)
-def generate_samples(scenes, minutes, all):
+@click.option("--train-only", is_flag=True)
+def generate_samples(scenes, minutes, all, train_only):
     if all:
         scenes = default_scenes
 
     for scene_name in scenes:
         context = Context(scene_name=scene_name)
-        _generate_training_samples(context, minutes)
+        _generate_training_samples(context, minutes, train_only)
         _process_training_data(context)
 
 @cli.command()
 @click.option("--scene", "scenes", type=str, multiple=True)
 @click.option("--skip", "skip_scene", type=str)
+@click.option("--all", is_flag=True)
 @click.option("--steps", type=int, default=10000)
 @click.option("--comment", type=str)
 @click.option("--output-name", type=str)
-def train(scenes, skip_scene, steps, comment, output_name):
+def train(scenes, skip_scene, all, steps, comment, output_name):
     if skip_scene:
         scenes = default_scenes[:]
         scenes.remove(skip_scene)
+    elif all:
+        scenes = default_scenes[:]
 
     if len(scenes) > 1:
         checkpoint_type = CheckpointType.General()
@@ -624,12 +633,16 @@ def train(scenes, skip_scene, steps, comment, output_name):
         checkpoint_type = CheckpointType.Overfit(scene_name)
         context = Context(scene_name, checkpoint_type, comment=comment, output_name=output_name)
 
+    if skip_scene:
+        viz_path = context.dataset_path(skip_scene)
+    else:
+        viz_path = context.dataset_path(scenes[0])
+
     dataset_paths = [
         context.dataset_path(scene_name)
         for scene_name in scenes
     ]
 
-    viz_path = context.dataset_path(skip_scene)
     _train(context, steps, dataset_paths, viz_path)
 
     print("Training complete!")
